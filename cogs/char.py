@@ -20,11 +20,11 @@ class Character(commands.Cog):
         msg = None
         
         
-        elif isinstance(error, commands.BadArgument):
+        if isinstance(error, commands.BadArgument):
             # convert string to int failed
             msg = "Your stats and level need to be numbers. "
         
-        if isinstance(error, commands.MissingRequiredArgument):
+        elif isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'char':
                 msg = ":warning: You're missing the character name in the command.\n"
             elif error.param.name == "name":
