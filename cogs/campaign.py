@@ -12,7 +12,7 @@ from discord.ext import commands
 from math import ceil, floor
 from itertools import product      
 from datetime import datetime, timezone,timedelta
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array
+from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, channel_id_dic
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
@@ -264,9 +264,9 @@ class Campaign(commands.Cog):
         guild = ctx.guild
         #information on how to use the command, set up here for ease of reading and repeatability
         prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, @player3..." "quest name"(*)```***** - The quest name is optional.'
-
+        usersCollection = db.users
         #prevent the command if not in a proper channel (game/campaign)
-        if str(channel.category.id) != settingsRecord['Campaign Category ID']:
+        if channel.category.id != channel_id_dic[ctx.guild.id]["Campaign Rooms"]:
             #exception to the check above in case it is a testing channel
             if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
                 pass
@@ -881,20 +881,16 @@ class Campaign(commands.Cog):
                 # for every player update their campaign entry with the addition time
                 for v in value:
                     temp += f"{v['Member'].mention}\n"
-                    v["inc"] = {"Campaigns."+campaignRecord["Name"] :tempTime}
+                    v["inc"] = {"Games" : 1, "Campaigns."+campaignRecord["Name"] :tempTime}
                     playerData.append(v)
                     stopEmbed.add_field(name=key, value=temp, inline=False)
 
             try:   
                 # update the DM's entry
-                usersCollection.update_one({'User ID': str(dmChar["Member"].id)}, {"$set": {campaignRecord["Name"]+" inc" : {"Campaigns."+campaignRecord["Name"]: total_duration, 'Noodles': (total_duration/3600)//3}}}, upsert=True)
+                usersCollection.update_one({'User ID': str(dmChar["Member"].id)}, {"$set": {campaignRecord["Name"]+" inc" : {"Games" : 1, "Campaigns."+campaignRecord["Name"]: total_duration, 'Noodles': (total_duration/3600)//3}}}, upsert=True)
                 # update the player entries in bulk
                 usersData = list(map(lambda item: UpdateOne({'_id': item["DB Entry"]['_id']}, {'$set': {campaignRecord["Name"]+" inc" : item["inc"]}}, upsert=True), playerData))
                 usersCollection.bulk_write(usersData)
-                # don't update the DM's character if they did not sign up with one
-                if(dmchar[1]!= "No Rewards"):
-                    dmRecords = data['records'][0]
-                    playersCollection.update_one({'_id': dmRecords['_id']},  dmRecords['fields'] , upsert=True)
             except BulkWriteError as bwe:
                 print(bwe.details)
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")

@@ -200,7 +200,8 @@ class Admin(commands.Cog, name="Admin"):
             count = db.players.delete_many(
                {"User ID": userID}
             )
-            await msg.edit(content=f"Successfully deleted {count.deletedCount} characters.")
+            print(count)
+            await msg.edit(content=f"Successfully deleted {count.deleted_count} characters.")
     
         except Exception as e:
             traceback.print_exc()        

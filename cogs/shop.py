@@ -62,7 +62,7 @@ class Shop(commands.Cog):
         author = ctx.author
         shopEmbed = discord.Embed()
         shopCog = self.bot.get_cog('Shop')
-        if ("misc" == buyItem.lower() or "miscellaneous" == buyItem.lower()):
+        if ("misc" != buyItem.lower() and "miscellaneous" != buyItem.lower()):
             amount = int(amount)
         # Check if character exists
         charRecords, shopEmbedmsg = await checkForChar(ctx, charName, shopEmbed)
@@ -204,9 +204,9 @@ class Shop(commands.Cog):
                         # If it's a consumable, throw it in consumables, otherwise magic item list
                         elif "Consumable" in bRecord:
                             if charRecords['Consumables'] != "None":
-                                charRecords['Consumables'] += ', ' + bRecord['Name']
+                                charRecords['Consumables'] += (', ' + bRecord['Name'])*amount
                             else:
-                                charRecords['Consumables'] = bRecord['Name']
+                                charRecords['Consumables'] = bRecord['Name'] + (', ' + bRecord['Name'])*(amount -1 )
                         # Unpacks all items, ex. Dungeoneer's Pack
                         elif "Unpack" in bRecord:
                             for pk, pv in bRecord["Unpack"].items():
@@ -738,7 +738,7 @@ class Shop(commands.Cog):
                     
 
                 if bookChoice == "Spellbook":
-                    if 'Wizard' not in bRecord*['Classes']:
+                    if 'Wizard' not in bRecord['Classes']:
                         await channel.send(f"**{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook.")
                         ctx.command.reset_cooldown(ctx)
                         return   

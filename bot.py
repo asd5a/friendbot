@@ -22,6 +22,7 @@ cogs_dir = "cogs"
 # ~ Suggestions.
 # ~ General Reports.
 # ~ Staff Reports.
+
 async def change_status():
       await bot.wait_until_ready()
       statusLoop = cycle(statuses)

@@ -18,7 +18,12 @@ class Character(commands.Cog):
 
     async def cog_command_error(self, ctx, error):
         msg = None
-            
+        
+        
+        elif isinstance(error, commands.BadArgument):
+            # convert string to int failed
+            msg = "Your stats and level need to be numbers. "
+        
         if isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'char':
                 msg = ":warning: You're missing the character name in the command.\n"
@@ -86,7 +91,7 @@ class Character(commands.Cog):
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def create(self,ctx, name, level, race, cclass, bg, sStr, sDex, sCon, sInt, sWis, sCha, mItems="", consumes=""):
+    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, mItems="", consumes=""):
         characterCog = self.bot.get_cog('Character')
         roleCreationDict = {
             'Journeyfriend':[3],
@@ -1088,7 +1093,7 @@ class Character(commands.Cog):
     #TODO: stats for respec
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command(aliases=['rs'])
-    async def respec(self,ctx, name, newname, race, cclass, bg, sStr, sDex, sCon, sInt, sWis, sCha):
+    async def respec(self,ctx, name, newname, race, cclass, bg, sStr:int, sDex:int, sCon:int, sInt:int, sWis:int, sCha:int):
         characterCog = self.bot.get_cog('Character')
         author = ctx.author
         guild = ctx.guild
@@ -1509,8 +1514,8 @@ class Character(commands.Cog):
             featLevels = []
             featChoices = []
             featsChosen = []
-            if rRecord['Name'] == 'Human (Variant)':
-                featLevels.append('Human (Variant)')
+            if "Feat" in rRecord['Name']:
+                featLevels.append('Extra Feat')
 
             for c in cRecord:
                 if int(c['Level']) > 3:
@@ -2190,7 +2195,6 @@ class Character(commands.Cog):
                 for n in range(0,len(charDictTiers)):
                     charString += f"\n———**Tier {n+1} Characters:**———\n"
                     for charDict in charDictTiers[n]:
-                        totalGamesPlayed += charDict['Games'] 
                         tempCharString = charString
                         charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {charDict['Race']}, {charDict['Class']}\n"
 
@@ -3345,23 +3349,8 @@ class Character(commands.Cog):
                         
                         gq_sum += gv["GQ"]
                         
-                        guildGamesString += f"• {gk}:\n"    
-                        guildGamesString += f"-  Quests: {gv['GQ']}\n"
-
-                        # Total number of guild quests with a guild member who got rewards
-                        guildGamesString += f"-  Quests with Active Players: {gv['GQM']}\n"
-
-                        # Total number of guild quests with no guild members who got rewards
-                        guildGamesString += f"-  Quests with no Active Members: {gv['GQNM']}\n"
-                        
-                        guildGamesString += f"-  Quests with no Active DM: {gv['GQDM']}\n"
-                        
-                        
-                        guildGamesString += f"-  :sparkles: gained by Players: {gv['DM Sparkles']}\n"
-                        guildGamesString += f"-  :sparkles: gained by DMs: {gv['Player Sparkles']}\n"
-                        
-                        guildGamesString += f"-  Guild Members Gained: {gv['Joins']}\n"
-
+                        guildGamesString += f"• {gk}"    
+                        guildGamesString += f" Quests: {gv['GQ']}\n"
                         if len(guildGamesString) > (768 * gPages):
                             gPageStops.append(len(guildGamesString))
                             gPages += 1
@@ -3371,7 +3360,7 @@ class Character(commands.Cog):
                         for p in range(len(gPageStops)-1):
                             statsEmbed.add_field(name=f'Guilds - p. {p+1}', value=guildGamesString[gPageStops[p]:gPageStops[p+1]], inline=False)
                     else:
-                        statsEmbed.add_field(name='Guilds', value=guildGamesString, inline=False)
+                        statsEmbed.add_field(name=f'Guild Quests (Total: {gq_sum})', value=guildGamesString, inline=False)
 
                 if "Life" in statRecords:
                     monthStart = datetime.now().replace(day = 21).replace(month = 11).replace(year = 2020)
@@ -3563,7 +3552,10 @@ class Character(commands.Cog):
             statsBonus = rRecord['Modifiers'].replace(" ", "").split(',')
             uniqueArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
             allStatsArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
+            print("R", rRecord)
+            
             for s in statsBonus:
+                print("s", s)
                 if '/' in s:
                     statSplit = s[:len(s)-2].replace(" ", "").split('/')
                     statSplitString = ""
@@ -3613,10 +3605,12 @@ class Character(commands.Cog):
 
                 elif 'AOU' in s or 'ANY' in s:
                     try:
+                        
                         anyList = dict()
-                        anyCheck = int(s[len(s)-1])
+                        anyCheck = [int(charL) for charL in s if charL.isnumeric()][0] #int(s[len(s)-1])
+                        anyAmount = int(s[len(s)-1])
                         anyList = {charEmbedmsg.id:set()}
-                            
+                        print("anyList", anyList)
                         uniqueStatStr = ""
                         uniqueReacts = []
 
@@ -3627,7 +3621,7 @@ class Character(commands.Cog):
                             uniqueStatStr += f'{numberEmojis[u]}: {uniqueArray[u]}\n'
                             uniqueReacts.append(numberEmojis[u])
 
-                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose {anyCheck} extra stats. React below with the stat(s) you chose.", value=uniqueStatStr, inline=False)
+                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose {anyCheck} extra stats to increase by {anyAmount}. React below with the stat(s) you chose.", value=uniqueStatStr, inline=False)
                         if charEmbedmsg:
                             await charEmbedmsg.edit(embed=charEmbed)
                         else: 
@@ -3643,21 +3637,22 @@ class Character(commands.Cog):
 
                     else:
                         if tReaction.emoji == '❌':
-                            await charEmbedmsg.edit(embed=None, content=f'Point buy timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "magic item1, magic item2, [...]" "reward item1, reward item2, [...]"```')
+                            await charEmbedmsg.edit(embed=None, content=f'Point buy cancelled out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "magic item1, magic item2, [...]" "reward item1, reward item2, [...]"```')
                             await charEmbedmsg.clear_reactions()
                             self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                             return None, None 
 
                     charEmbed.clear_fields()
                     await charEmbedmsg.clear_reactions()
+                    print("Stats Array 1", statsArray)
                     if 'AOU' in s:
                         for s in anyList[charEmbedmsg.id]:
-                            statsArray[allStatsArray.index(uniqueArray[int(s[0]) - 1])] -= 1
+                            statsArray[allStatsArray.index(uniqueArray[int(s[0]) - 1])] -= anyAmount
                     else:
 
                         for s in anyList[charEmbedmsg.id]:
-                            statsArray[(int(s[0]) - 1)] -= 1
-                    
+                            statsArray[(int(s[0]) - 1)] -= anyAmount
+                    print("Stats Array 2", statsArray)
             return statsArray, charEmbedmsg
 
     async def chooseSubclass(self, ctx, subclassesList, charClass, charEmbed, charEmbedmsg):
@@ -3736,7 +3731,7 @@ class Character(commands.Cog):
         spellcasting = False
         for f in featLevels:
                 charEmbed.clear_fields()
-                if f != 'Human (Variant)':
+                if f != 'Extra Feat':
                     try:
                         charEmbed.add_field(name=f"Your level allows you to pick an Ability Score Improvement or a feat. Please react with 1 or 2 for your level {f} ASI/feat.", value=f"{numberEmojis[0]}: Ability Score Improvement\n{numberEmojis[1]}: Feat\n", inline=False)
                         if charEmbedmsg:
@@ -3763,7 +3758,7 @@ class Character(commands.Cog):
                     choice = int(tReaction.emoji[0])
                     await charEmbedmsg.clear_reactions()
 
-                if f == 'Human (Variant)':
+                else:
                     choice = 2
 
                 if choice == 1:

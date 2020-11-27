@@ -3,7 +3,7 @@ import random
 import asyncio
 from discord.utils import get
 from discord.ext import commands
-from bfunc import settingsRecord
+from bfunc import settingsRecord, channel_id_dic
 
 def admin_or_owner():
     async def predicate(ctx):
@@ -16,14 +16,11 @@ def admin_or_owner():
 class Misc(commands.Cog):
     def __init__ (self, bot):
     
-        self.tMessages = [776980963325771777, 776980983232331788]
-        self.system_dict = {776980963325771777: "", 776980983232331788: "F "}
         self.bot = bot
         self.current_message= None
         #0: No message search so far, 1: Message searched, but no new message made so far, 2: New message made
         self.past_message_check= 0
-        self.quest_board_channel_id = 728476108940640297 #382027190633627649 728476108940640297
-        self.category_channel_id = 728456686024523810 #382027737189056544  728456686024523810
+
 
     @commands.cooldown(1, 60, type=commands.BucketType.member)
     @commands.command()
@@ -64,19 +61,18 @@ class Misc(commands.Cog):
     
         #searches for the last message sent by the bot in case a restart was made
     #Allows it to use it to remove the last post
-    async def find_message(self):
+    async def find_message(self, channel_id):
         #block any check but the first one
         if(not self.past_message_check):
             self.past_message_check= 1
-            self.current_message = await self.bot.get_channel(self.quest_board_channel_id).history().get(author__id = self.bot.user.id)
+            self.current_message = await self.bot.get_channel(channel_id).history().get(author__id = self.bot.user.id)
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
-        #[758144721423433728, 776980983232331788] 
-        #[650482015342166036]
-        guild = self.bot.get_guild(payload.guild_id)
+        guild_id = channel_id_dic["Role Channel List"][payload.channel_id]
+        guild = self.bot.get_guild(guild_id)
 
-        if payload.message_id in self.tMessages:
+        if payload.message_id in channel_id_dic[guild_id]["Messages"].keys():
             if payload.emoji.name == "1️⃣":
                 name = 'Tier 1' 
             elif payload.emoji.name == "2️⃣":
@@ -92,7 +88,7 @@ class Misc(commands.Cog):
             else:
                 return
             
-            name = self.system_dict[payload.message_id]+name     
+            name = channel_id_dic[guild_id]["Messages"][payload.message_id]+" "+name     
             role = get(guild.roles, name = name)
             if role is not None:
                 member = guild.get_member(payload.user_id)
@@ -106,8 +102,10 @@ class Misc(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self,payload):
-        guild = self.bot.get_guild(payload.guild_id)
-        if payload.message_id in self.tMessages:
+        guild_id = channel_id_dic["Role Channel List"][payload.channel_id]
+        guild = self.bot.get_guild(guild_id)
+
+        if payload.message_id in channel_id_dic[guild_id]["Messages"].keys():
             if payload.emoji.name == "1️⃣":
                 name = 'Tier 1' 
             elif payload.emoji.name == "2️⃣":
@@ -123,7 +121,7 @@ class Misc(commands.Cog):
             else:
                 return
             
-            name = self.system_dict[payload.message_id]+name    
+            name = channel_id_dic[guild_id]["Messages"][payload.message_id]+" "+name    
             print(name)
             role = get(guild.roles, name = name)    
 
@@ -141,16 +139,16 @@ class Misc(commands.Cog):
                 print('role not found')
     
     #A function that grabs all messages in the quest board and compiles a list of availablities
-    async def generateMessageText(self):
-        tChannel = self.quest_board_channel_id
+    async def generateMessageText(self, channel_id):
+        tChannel = channel_id
         channel= self.bot.get_channel(tChannel)
         #get all game channel ids
-        game_channel_category =self.bot.get_channel(self.category_channel_id)
+        game_channel_category =self.bot.get_channel(channel_id_dic[channel.guild.id]["Game Rooms"])
         game_channel_ids = set(map(lambda c: c.id, game_channel_category.text_channels))
         build_message = "**It is DDMRW** get out there and play some games!\n"*settingsRecord['ddmrw']+ "The current status of the game channels is:\n"
         #create a dictonary to store the room/user pairs
         tierMap = {"Tier 0" : "T0", "Tier 1" : "T1", "Tier 2" : "T2", "Tier 3" : "T3", "Tier 4" : "T4", "Tier 5" : "T5"}
-        emoteMap = {"Roll20" : "<:adorabat:733763021008273588>", "Foundry" : ":dagger:"}
+        emoteMap = channel_id_dic[channel.guild.id]["Emotes"]
         channel_dm_dic = {}
         for c in game_channel_category.text_channels:
             channel_dm_dic[c.mention]= ["✅ "+c.mention+": Clear", set([])]
@@ -186,14 +184,12 @@ class Misc(commands.Cog):
         
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
-        tChannel = self.quest_board_channel_id
-
         #if in the correct channel and the message deleted was not the last QBAP
-        if(payload.channel_id==tChannel and (not self.current_message or payload.message_id != self.current_message.id)):
-            await self.find_message()
+        if(payload.channel_id in channel_id_dic["QB List"].keys() and (not self.current_message or payload.message_id != self.current_message.id)):
+            await self.find_message(payload.channel_id)
             #Since we dont know whose post was deleted we need to cover all the posts to find availablities
             #Also protects against people misposting
-            new_text = await (self.generateMessageText)()
+            new_text = await self.generateMessageText(payload.channel_id)
             #if we created the last message during current runtime we can just edit
             if(self.current_message and self.past_message_check != 1):
                 await self.current_message.edit(content=new_text)
@@ -202,19 +198,18 @@ class Misc(commands.Cog):
                 if(self.current_message):
                     await self.current_message.delete()
                 self.past_message_check = 2
-                self.current_message = await self.bot.get_channel(self.quest_board_channel_id).send(content=new_text)
+                self.current_message = await self.bot.get_channel(payload.channel_id).send(content=new_text)
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
     
-        tChannel = self.quest_board_channel_id
-        if(int(payload.data["channel_id"])==tChannel and (not self.current_message or payload.message_id != self.current_message.id)):
-            await self.find_message()
-            new_text = await (self.generateMessageText)()
+        if(payload.channel_id in channel_id_dic["QB List"].keys() and (not self.current_message or payload.message_id != self.current_message.id)):
+            await self.find_message(payload.channel_id)
+            new_text = await self.generateMessageText(payload.channel_id)
             if(self.current_message and self.past_message_check != 1):
                 #in case a message is posted without a game channel which is then edited in we need to this extra check
                 msgAfter = False
-                async for message in self.bot.get_channel(self.quest_board_channel_id).history(after=self.current_message, limit=1):
+                async for message in self.bot.get_channel(payload.channel_id).history(after=self.current_message, limit=1):
                     msgAfter = True
                 if( not msgAfter):
                     await self.current_message.edit(content=new_text)
@@ -225,18 +220,20 @@ class Misc(commands.Cog):
                 self.past_message_check = 2
                 if(self.current_message):                
                     msgAfter = False
-                    async for message in self.bot.get_channel(self.quest_board_channel_id).history(after=self.current_message, limit=1):
+                    async for message in self.bot.get_channel(payload.channel_id).history(after=self.current_message, limit=1):
                         msgAfter = True
                     if(not msgAfter):
                         await self.current_message.edit(content=new_text)
                         return
                     else:
                         await self.current_message.delete()
-                self.current_message = await self.bot.get_channel(self.quest_board_channel_id).send(content=new_text)
+                self.current_message = await self.bot.get_channel(payload.channel_id).send(content=new_text)
 
     @commands.Cog.listener()
     async def on_message(self,msg):
-        tChannel = self.quest_board_channel_id
+        if msg.guild == None: 
+            return
+        tChannel = channel_id_dic[msg.guild.id]["QB"]
         if(msg.type.value == 7):
             await msg.add_reaction('👋')
         #check if any tier boost was done and react
@@ -247,15 +244,15 @@ class Misc(commands.Cog):
             await msg.channel.send("You're welcome friend!")
         elif msg.channel.id == tChannel and msg.author.id != self.bot.user.id:
 
-            await self.find_message()
+            await self.find_message(msg.channel.id)
             server = msg.guild
             channel = msg.channel
-            game_channel_category = server.get_channel(self.category_channel_id)
+            game_channel_category = server.get_channel(channel_id_dic[server.id]["Game Rooms"])
             cMentionArray = msg.channel_mentions
             game_channel_ids = list(map(lambda c: c.id, game_channel_category.text_channels))
             for mention in cMentionArray:
                 if mention.id in game_channel_ids:
-                    new_text = await (self.generateMessageText)()
+                    new_text = await self.generateMessageText(channel.id)
                     if(self.past_message_check == 2):
                         await self.current_message.delete()
                         self.current_message = await msg.channel.send(content=new_text)

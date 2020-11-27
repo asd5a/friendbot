@@ -16,11 +16,13 @@ class Guild(commands.Cog):
 
     async def cog_command_error(self, ctx, error):
         msg = None
-
         if isinstance(error, commands.CommandNotFound):
             await ctx.channel.send(f'Sorry, the command `***{commandPrefix}{ctx.invoked_with}***` requires an additional keyword to the command or is invalid, please try again!')
             return
             
+        elif isinstance(error, commands.BadArgument):
+            # convert string to int failed
+            msg = "The gp amount needs to be a number."
         if isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'charName':
                 msg = "You're missing your character name in the command. "
@@ -31,6 +33,8 @@ class Guild(commands.Cog):
             elif error.param.name == "channelName":
                 msg = "You're missing the #channel for the guild you want to create. "
             elif error.param.name == "gpName":
+                msg = "You're missing the amount of gp you want to donate to the guild." 
+            elif error.param.name == "gpFund":
                 msg = "You're missing the amount of gp you want to donate to the guild." 
         # elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
         #     msg = "There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command. "
@@ -213,7 +217,7 @@ class Guild(commands.Cog):
                         print('Success')
 
                         guildEmbed.title = f"Guild Creation: {guildName}"
-                        guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\n6000 gp must be donated in order for the guild to officially open!\n\nAny character who is not in a guild can fund this guild using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" gp \"{guildName}\"```\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info \"{guildName}\"```\nCurrent Guild Funds: {gpNeeded} gp"
+                        guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\n6000 gp must be donated in order for the guild to officially open!\n\nAny character who is not in a guild can fund this guild using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" \"{guildName}\" gp```\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info \"{guildName}\"```\nCurrent Guild Funds: {gpNeeded} gp"
                         if guildEmbedmsg:
                             await guildEmbedmsg.clear_reactions()
                             await guildEmbedmsg.edit(embed=guildEmbed)
@@ -258,18 +262,20 @@ class Guild(commands.Cog):
             guildMembers = list(playersCollection.find({"Guild": guildRecords['Name']}))
             
             currentDate = datetime.now().strftime("%b-%y")
-            guild_stats = db.stats.find_one({"Date": currentDate, "Guild."+guildRecords['Name'] : {"$exists" : True}})
+            guild_stats = db.stats.find_one({"Date": currentDate, "Guilds."+guildRecords['Name'] : {"$exists" : True}})
             guild_life_stats = db.stats.find_one({"Life": 1})
-            
+            print("S", guild_stats)
             guild_stats_string = ""
             gv = {}
             if not guild_stats:
-                guild_data_0s = ["GQ", "GQM", "GQNM", "GQDM", "DM Sparkles", "Player Sparkles", "Joins"]
-                for data_key in guild_data_0s:
-                    gv[data_key] = 0
+                pass
             else:
                 gv = guild_stats["Guilds"][guildRecords['Name']]
              
+            guild_data_0s = ["GQ", "GQM", "GQNM", "GQDM", "DM Sparkles", "Player Sparkles", "Joins"]
+            for data_key in guild_data_0s:
+                if not data_key in gv:
+                    gv[data_key] = 0
             guild_stats_string += f"  Quests: {gv['GQ']}\n"
 
             # Total number of guild quests with a guild member who got rewards
@@ -290,12 +296,13 @@ class Guild(commands.Cog):
             guild_life_stats_string = ""
             gv = {}
             if (not "Guilds" in guild_life_stats) or (not guildRecords["Name"] in guild_life_stats["Guilds"]):
-                guild_data_0s = ["GQ", "GQM", "GQNM", "GQDM", "DM Sparkles", "Player Sparkles", "Joins"]
-                for data_key in guild_data_0s:
-                    gv[data_key] = 0
+                pass
             else:
                 gv = guild_life_stats["Guilds"][guildRecords['Name']]
-             
+            guild_data_0s = ["GQ", "GQM", "GQNM", "GQDM", "DM Sparkles", "Player Sparkles", "Joins"]
+            for data_key in guild_data_0s:
+                if not data_key in gv:
+                    gv[data_key] = 0
             guild_life_stats_string += f"  Quests: {gv['GQ']}\n"
 
             # Total number of guild quests with a guild member who got rewards
@@ -544,11 +551,11 @@ class Guild(commands.Cog):
                 await author.add_roles(guild.get_role(int(guildRecords['Role ID'])), reason=f"Joined guild {guildName}")
 
                 try:
-                    dateyear = datetime.fromtimestamp(start).strftime("%b-%y")
+                    currentDate = datetime.now().strftime("%b-%y")
                     # update all the other data entries
                     # update the DB stats
-                    statsCollection.update_one({'Date': dateyear}, {"$inc": {"Joins": 1}}, upsert=True)
-                    statsCollection.update_one({'Life': 1}, {"$inc": {"Joins": 1}}, upsert=True)
+                    db.stats.update_one({'Date': currentDate}, {"$inc": {"Joins": 1}}, upsert=True)
+                    db.stats.update_one({'Life': 1}, {"$inc": {"Joins": 1}}, upsert=True)
             
                     playersCollection = db.players
                     playersCollection.update_one({'_id': charRecords['_id']}, {"$set": {'Guild': guildRecords['Name'], 'GP':newGP, 'Guild Rank': 1}})

@@ -2,3 +2,10 @@ discord.py
 gspread
 oauth2client
 pytz
+asyncio
+itertools
+collections
+urllib
+re
+requests
+shlex

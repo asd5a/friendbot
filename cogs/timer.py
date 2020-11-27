@@ -12,7 +12,7 @@ from itertools import product
 from discord.utils import get        
 from datetime import datetime, timezone,timedelta
 from discord.ext import commands
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array
+from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, channel_id_dic
 from pymongo import UpdateOne
 from cogs.logs import generateLog
 from pymongo.errors import BulkWriteError
@@ -94,9 +94,9 @@ class Timer(commands.Cog):
         #information on how to use the command, set up here for ease of reading and repeatability
         prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1, @player2, @player3..." "quest name"```*****'
         #check if the current channel is a campaign channel
-        isCampaign = str(channel.category.id) == settingsRecord['Campaign Category ID']
+        isCampaign = str(channel.category.id) == channel_id_dic[ctx.guild.id]["Game Rooms"]
         #prevent the command if not in a proper channel (game/campaign)
-        if str(channel.category.id) != settingsRecord['Game Category ID']:
+        if channel.category.id != settingsRecord['Game Category ID']:
             #exception to the check above in case it is a testing channel
             if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
                 pass
@@ -397,7 +397,7 @@ class Timer(commands.Cog):
                     guildsListStr = ""
                     # guildCategoryID = 678381362398625802
                     # guild category channel for DnDFriends
-                    guildCategoryID = 734586911901089832 #452704598440804375
+                    guildCategoryID = 734586911901089832 #452704598440804375 734586911901089832
 
                     if (len(msg.channel_mentions) > 3):
                         await channel.send(f"The number of guilds exceeds three. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1 #guild2, #guild3```") 
@@ -1632,7 +1632,7 @@ class Timer(commands.Cog):
             # turn Tier string into tier number
             if role == "Ascended":
                 tierNum = 5
-            if role == "True":
+            elif role == "True":
                 tierNum = 4
             elif role == "Elite":
                 tierNum = 3
@@ -1647,7 +1647,7 @@ class Timer(commands.Cog):
             deathChars = []
             
             # Session Log Channel
-            logChannel = self.bot.get_channel(737076677238063125)  # 728456783466725427 737076677238063125
+            logChannel = self.bot.get_channel(728456783466725427)  # 728456783466725427 737076677238063125
             # logChannel = self.bot.get_channel(577227687962214406)
             
             # check if the game has rewards

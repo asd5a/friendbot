@@ -4,18 +4,19 @@ import re
 from discord.utils import get        
 from discord.ext import commands
 from datetime import datetime, timezone,timedelta
-from bfunc import callAPI, db, traceBack, timeConversion, calculateTreasure, roleArray,timeConversion
+from bfunc import callAPI, db, traceBack, timeConversion, calculateTreasure, roleArray,timeConversion, channel_id_dic
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
-logChannel = 73707667723806312 # 728456783466725427 73707667723806312
 
-async def generateLog(self,  num : int, sessionInfo=None, guildDBEntriesDic=None, characterDBentries=None, userDBEntriesDic=None, ):
+
+
+async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=None, characterDBentries=None, userDBEntriesDic=None, ):
     logData =db.logdata
     if sessionInfo == None:
         sessionInfo = logData.find_one({"Log ID": int(num)})
     
-    channel = self.bot.get_channel(logChannel) # 728456783466725427 737076677238063125
+    channel = self.bot.get_channel(channel_id_dic[ctx.guild.id]["Sessions"]) 
     editMessage = await channel.fetch_message(num)
 
     if not editMessage or editMessage.author != self.bot.user:
@@ -116,7 +117,7 @@ async def generateLog(self,  num : int, sessionInfo=None, guildDBEntriesDic=None
                 else:
                     player[player["Double Items"][0]]["Add"].append(player["Double Items"][1])
                 
-            player["Double"] = "Double" in userDBEntriesDic[k] and userDBEntriesDic[k]["Double"] >0
+            player["Double"] = k in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[k] and userDBEntriesDic[k]["Double"] >0
             playerDouble = player["Double"]
                 
             dmDouble = False
@@ -164,6 +165,7 @@ async def generateLog(self,  num : int, sessionInfo=None, guildDBEntriesDic=None
     #DM REWARD MATH STARTS HERE
     if("Character ID" in dm):
         charLevel = int(dm['Level'])
+        k = (dm['ID'])
         player = dm
         # calculate the tier of the DM character
         if charLevel < 5:
@@ -185,7 +187,7 @@ async def generateLog(self,  num : int, sessionInfo=None, guildDBEntriesDic=None
             guildDouble = (guild_valid and 
                             guilds[player["Guild"]]["Rewards"] and 
                             guildDBEntriesDic[player["Guild"]]["Reputation"]>20)
-            player["Double"] = "Double" in userDBEntriesDic[k] and userDBEntriesDic[k]["Double"] >0
+            player["Double"] = k in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[k] and userDBEntriesDic[k]["Double"] >0
             playerDouble = player["Double"]
             if((guild_valid and 
                 guilds[player["Guild"]]["Items"] and 
@@ -302,7 +304,6 @@ async def generateLog(self,  num : int, sessionInfo=None, guildDBEntriesDic=None
 class Log(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
-        self.logChannel = 73707667723806312 # 728456783466725427 73707667723806312
     
     @commands.group()
     async def session(self, ctx):	
@@ -349,7 +350,7 @@ class Log(commands.Cog):
         channel = self.bot.get_channel
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
-        channel = self.bot.get_channel(self.logChannel) # 728456783466725427 737076677238063125
+        channel = self.bot.get_channel(channel_id_dic[ctx.guild.id]["Sessions"]) 
         
         editMessage = await channel.fetch_message(num)
 
@@ -426,7 +427,7 @@ class Log(commands.Cog):
                                 guildDBEntriesDic[player["Guild"]]["Reputation"]>20)
                 
 
-                player["Double"] = "Double" in userDBEntriesDic[str(character["User ID"])] and userDBEntriesDic[str(character["User ID"])]["Double"] >0
+                player["Double"] = str(character["User ID"]) in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[str(character["User ID"])] and userDBEntriesDic[str(character["User ID"])]["Double"] >0
                 playerDouble = player["Double"]
                 dmDouble = False
                 
@@ -493,7 +494,6 @@ class Log(commands.Cog):
                 # for every TP tier value that was gained create the increment field
                 for k,v in treasureArray[1].items():
                     increment[k] = v
-                print("IIIIIIIIIIIIIIIIIIIIII", increment)
                 charRewards = {'_id': player["Character ID"],  
                                     "fields": {"$unset": {f"GID": 1} ,"$inc": increment, 
                                     "$set": {"Consumables": consumablesString, "Magic Items": magicItemString, "Inventory" : character["Inventory"]}}}
@@ -548,7 +548,7 @@ class Log(commands.Cog):
                 
             
              
-            player["Double"] = "Double" in userDBEntriesDic[dm["ID"]] and userDBEntriesDic[dm["ID"]]["Double"] >0
+            player["Double"] = dm["ID"] in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[dm["ID"]] and userDBEntriesDic[dm["ID"]]["Double"] >0
             playerDouble = player["Double"]
             
             dmDouble = player["DM Double"]
@@ -621,7 +621,7 @@ class Log(commands.Cog):
         noodlesGained = sparklesGained = int(hoursPlayed) // 3
         
         timerData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), playerUpdates))
-        
+        print(guildDBentries)
         players[dm["ID"]] = dm
         guildsData = []
         # if the game received rewards
@@ -630,20 +630,21 @@ class Log(commands.Cog):
             # passed in parameter, check if there were guilds involved
             if guilds != list():
                 # for every guild in the game
-                for g in guildDBentries:
+                for g in guildDBEntriesDic.values():
                     name = g["Name"]
                     # get the DB record of the guild
                     #filter player list by guild
                     gPlayers = [p for p in players.values() if "Guild" in p and p["Guild"] == name]
                     p_count = len(gPlayers) - int("Guild" in dm and dm["Guild"] == name)
-                    guilds[g["Name"]]["Player Sparkles"] = sparklesGained*p_count
-                    guilds[g["Name"]]["DM Sparkles"] = sparklesGained*int("Guild" in dm and dm["Guild"] == name)
+                    guilds[name]["Player Sparkles"] = sparklesGained*p_count
+                    guilds[name]["DM Sparkles"] = sparklesGained*int("Guild" in dm and dm["Guild"] == name)
+                    print(guilds[name])
                     if(len(gPlayers)>0):
-                        reputationCost = (20*guilds[g["Name"]]["Rewards"]+15*guilds[g["Name"]]["Items"])*guilds[g["Name"]]["Status"]
+                        reputationCost = (20*guilds[name]["Rewards"]+15*guilds[name]["Items"])*guilds[name]["Status"]
                         gain = sparklesGained*len(gPlayers) + int("Guild" in dm and dm["Guild"] == name)
                         guildsData.append(UpdateOne({"Name": name},
                                                    {"$inc": {"Games": 1, "Reputation": gain- reputationCost, "Total Reputation": gain}}))
-                                                   
+        print(guilds)                                         
         try:
             end = sessionInfo["End"]
             start = sessionInfo["Start"]
@@ -654,14 +655,18 @@ class Log(commands.Cog):
             statsIncrement ={"Games": 1, "Playtime": totalDuration, 'Players': len(players)}
             statsAddToSet = {}
             for name in [g["Name"] for g in guilds.values() if g["Status"]]:
-                statsIncrement["Guilds."+name] = 1# Track how many guild quests there were
+                print(guilds[name])
+                # Track how many guild quests there were
                 statsIncrement["Guilds."+name+".GQ"] = 1
-                statsIncrement["Guilds."+name+".Player Sparkles"] = guilds[g["Name"]]["Player Sparkles"]
-                statsIncrement["Guilds."+name+".DM Sparkles"] = guilds[g["Name"]]["DM Sparkles"]
+                statsIncrement["Guilds."+name+".GQM"] = 0
+                statsIncrement["Guilds."+name+".GQDM"] = 0
+                statsIncrement["Guilds."+name+".GQNM"] = 0
+                statsIncrement["Guilds."+name+".Player Sparkles"] = guilds[name]["Player Sparkles"]
+                statsIncrement["Guilds."+name+".DM Sparkles"] = guilds[name]["DM Sparkles"]
                 # track how many games had a guild memeber with rewards and how many have not
-                if guilds[g["Name"]]["Player Sparkles"] > 0: 
+                if guilds[name]["Player Sparkles"] > 0: 
                     statsIncrement["Guilds."+name+".GQM"] = 1
-                elif guilds[g["Name"]]["DM Sparkles"] > 0:
+                elif guilds[name]["DM Sparkles"] > 0:
                     statsIncrement["Guilds."+name+".GQDM"] = 1
                 else:
                     statsIncrement["Guilds."+name+".GQNM"] = 1
@@ -728,6 +733,7 @@ class Log(commands.Cog):
             print('Success')
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
+        noodleString = ""
         if dmUser:
             dmRoleNames = [r.name for r in dmUser.roles]
             # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
@@ -774,7 +780,7 @@ class Log(commands.Cog):
         channel = self.bot.get_channel
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
-        channel = self.bot.get_channel(self.logChannel) # 728456783466725427 737076677238063125
+        channel = self.bot.get_channel(channel_id_dic[ctx.guild.id]["Sessions"]) 
         
         editMessage = await channel.fetch_message(num)
 
@@ -896,7 +902,7 @@ class Log(commands.Cog):
                         await ctx.channel.send(err_message)
                     else:
                         await ctx.channel.send("Session updated.")
-                        await generateLog(self, num)
+                        await generateLog(self, ctx, num)
             else:
                 await ctx.channel.send("You do not have the permissions to perform this change to the session.")
         else:
@@ -921,17 +927,17 @@ class Log(commands.Cog):
             except BulkWriteError as bwe:
                 print(e)
             await ctx.channel.send("Session updated.")
-            await generateLog(self, num)
+            await generateLog(self, ctx, num)
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
                         
           
             
     @session.command()
-    async def optout(self, ctx, num):
+    async def optout(self, ctx, num :int):
         await self.opt(ctx, num, False)
     @session.command()
-    async def optin(self, ctx, num):
+    async def optin(self, ctx, num : int):
         await self.opt(ctx, num, True)
     
     # allows DMs to opt in or out of DDMRW
@@ -943,7 +949,7 @@ class Log(commands.Cog):
             
                 try:
                     db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"DM.DM Double": goal}})
-                    await generateLog(self, num)
+                    await generateLog(self, ctx, num)
                 except BulkWriteError as bwe:
                     print(e)
             else:
@@ -958,7 +964,7 @@ class Log(commands.Cog):
 
         # Logs channel 
         # channel = self.bot.get_channel(577227687962214406) 
-        channel = self.bot.get_channel(self.logChannel) # 728456783466725427 737076677238063125
+        channel = self.bot.get_channel(channel_id_dic[ctx.guild.id]["Sessions"]) 
 
 
         limit = 100
