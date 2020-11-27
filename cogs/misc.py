@@ -69,6 +69,8 @@ class Misc(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
+        if not payload.channel_id in channel_id_dic["Role Channel List"].keys(): 
+            return
         guild_id = channel_id_dic["Role Channel List"][payload.channel_id]
         guild = self.bot.get_guild(guild_id)
 
@@ -102,6 +104,8 @@ class Misc(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self,payload):
+        if not payload.channel_id in channel_id_dic["Role Channel List"].keys(): 
+            return
         guild_id = channel_id_dic["Role Channel List"][payload.channel_id]
         guild = self.bot.get_guild(guild_id)
 
