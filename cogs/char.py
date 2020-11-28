@@ -2521,6 +2521,7 @@ class Character(commands.Cog):
     async def reflavor(self,ctx, char, *, new_race):
         if( len(new_race) > 20 or len(new_race) <1):
             await ctx.channel.send(content=f'The new race cannot be shorter than 1 or longer than 20 characters')
+            return
 
     
         channel = ctx.channel
