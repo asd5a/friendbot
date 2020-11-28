@@ -354,6 +354,8 @@ class Log(commands.Cog):
         
         editMessage = await channel.fetch_message(num)
 
+        if sessionInfo["Status"] != "Processing":
+            await ctx.channel.send("This session has already been processed")
         if not editMessage or editMessage.author != self.bot.user:
             return ctx.channel.send("Session has no corresponding message in the log channel.")
 
@@ -785,7 +787,7 @@ class Log(commands.Cog):
         editMessage = await channel.fetch_message(num)
         if not sessionInfo:
             return ctx.channel.send("Session could not be found.")
-        if sessionInfo["State"] != "Processing":
+        if sessionInfo["Status"] != "Processing":
             await ctx.channel.send("This session has already been processed")
         if not editMessage or editMessage.author != self.bot.user:
             return ctx.channel.send("Session has no corresponding message in the log channel.")
