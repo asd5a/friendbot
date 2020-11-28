@@ -437,7 +437,7 @@ class Guild(commands.Cog):
                 else:
                     await guildEmbedmsg.clear_reactions()
                     if tReaction.emoji == '❌':
-                        await guildEmbedmsg.edit(embed=None, content=f"Shop cancelled. Try again using the following command:\n```yaml\n{commandPrefix}tp buy```")
+                        await guildEmbedmsg.edit(embed=None, content=f"Shop cancelled. Try again using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" \"guild name\" gp```")
                         await guildEmbedmsg.clear_reactions()
                         return
 

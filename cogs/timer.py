@@ -1866,7 +1866,7 @@ class Timer(commands.Cog):
                 else:
                     print('Success')
                 print(dbEntry)
-                await generateLog(self, dbEntry["Log ID"], sessionInfo = dbEntry)
+                await generateLog(self, ctx, dbEntry["Log ID"], sessionInfo = dbEntry)
             
             
             # enable the starting timer commands

@@ -130,12 +130,12 @@ class Campaign(commands.Cog):
                     await campaignEmbedmsg.edit(embed=campaignEmbed)
                 else: 
                     campaignEmbedmsg = await channel.send(embed=campaignEmbed)
-
         return
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @campaign.command()
     async def add(self,ctx, user, campaignName):
+        print("ssssss", ctx)
         channel = ctx.channel
         author = ctx.author
         campaignEmbed = discord.Embed()
@@ -228,6 +228,7 @@ class Campaign(commands.Cog):
 
         await user[0].remove_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} remove campaign member from {campaignRecords['Name']}")
         return
+    
     @campaign.group(aliases=['t'])
     async def timer(self, ctx):	
         print(datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p"))
@@ -241,7 +242,9 @@ class Campaign(commands.Cog):
         else:
             await ctx.invoke(helpCommand, pageString='timer')
 
-
+    def startsWithCheck(self, message, target):
+        return any([message.content.startswith(f"{commandPrefix}{x} {y} {target}") for x,y in [("c", "t"), ("campaign", "t"), ("c", "timer"), ("campaign", "timer")]])
+        
     """
     This is the command meant to setup a timer and allowing people to sign up. Only one of these can be active at a time in a single channel
     The command gets passed in a list of players as a single entry userList
@@ -353,9 +356,12 @@ class Campaign(commands.Cog):
         timerCommands = ['signup', 'cancel', 'start', 'add', 'remove']
       
         timerCombined = []
+        
+        
         # pair up each command group alias with a command and store it in the list
         for x in product(timerAlias,timerCommands):
             timerCombined.append(f"{commandPrefix}campaign {x[0]} {x[1]}")
+            timerCombined.append(f"{commandPrefix}c {x[0]} {x[1]}")
         
         """
         This is the heart of the command, this section runs continuously until the start command is used to change the looping variable
@@ -376,7 +382,7 @@ class Campaign(commands.Cog):
             The signup command has different behaviors if the signup is from the DM, a player or campaign player
             
             """
-            if msg.content.startswith(f"{commandPrefix}campaign timer signup") or msg.content.startswith(f"{commandPrefix}campaign t signup"):
+            if self.startsWithCheck(msg, "signup"):
                 # if the message author is the one who started the timer, call signup with the special DM moniker
                 # the character is extracted from the message in the signup command 
                 # special behavior:
@@ -393,7 +399,7 @@ class Campaign(commands.Cog):
                 print(signedPlayers)
 
             # similar issues arise as mentioned above about wrongful calls
-            elif (msg.content.startswith(f"{commandPrefix}campaign timer add ") or msg.content.startswith(f"{commandPrefix}campaign t add ")):
+            elif self.startsWithCheck(msg, "add"):
                 if await self.permissionCheck(msg, author):
                     # this simply checks the message for the user that is being added, the Member object is returned
                     addUser = await ctx.invoke(self.timer.get_command('add'), msg=msg, prep=True)
@@ -411,7 +417,7 @@ class Campaign(commands.Cog):
 
             # same issues arise again
             
-            elif (msg.content.startswith(f"{commandPrefix}campaign timer remove ") or msg.content.startswith(f"{commandPrefix}campaign t remove ")) :
+            elif self.startsWithCheck(msg, "remove"):
                 if await self.permissionCheck(msg, author):
                     # this simply checks the message for the user that is being added, the Member object is returned
                     removeUser = await ctx.invoke(self.timer.get_command('remove'), msg=msg, prep=True)
@@ -431,14 +437,14 @@ class Campaign(commands.Cog):
                         await channel.send('You cannot remove yourself from the timer.')
 
             #the command that starts the timer, it does so by allowing the code to move past the loop
-            elif (msg.content == f"{commandPrefix}campaign timer start" or msg.content == f"{commandPrefix}campaign t start"):
+            elif self.startsWithCheck(msg, "start"):
                 if await self.permissionCheck(msg, author):
                     if len(signedPlayers["Players"].keys()) == 0:
                         await channel.send(f'There are no players signed up! Players, use the following command to sign up to the quest with your character before the DM starts the timer:\n```yaml\n{commandPrefix}campaign timer signup```') 
                     else:
                         timerStarted = True
             #the command that cancels the timer, it does so by ending the command all together                              
-            elif (msg.content == f"{commandPrefix}campaign timer cancel" or msg.content == f"{commandPrefix}campaign t cancel"):
+            elif self.startsWithCheck(msg, "cancel"):
                 if await self.permissionCheck(msg, author):
                     await channel.send(f'Timer cancelled! If you would like to prep a new quest, use the following command:\n```yaml\n{commandPrefix}campaign timer prep```') 
                     # allow the call of this command again
@@ -967,6 +973,7 @@ class Campaign(commands.Cog):
         #create a list of all command an alias combinations
         for x in product(timerAlias,timerCommands):
             timerCombined.append(f"{commandPrefix}campaign  campaign {x[0]} {x[1]}")
+            timerCombined.append(f"{commandPrefix}c {x[0]} {x[1]}")
         
         #repeat this entire chunk until the stop command is given
         while not timerStopped:
@@ -977,14 +984,14 @@ class Campaign(commands.Cog):
                 # this is the command used to stop the timer
                 # it invokes the stop command with the required information, explanations for the parameters can be found in the documentation
                 # the 'end' alias could be removed for minimal efficiancy increases
-                if (msg.content == f"{commandPrefix}campaign timer stop" or msg.content == f"{commandPrefix}campaign timer end" or msg.content == f"{commandPrefix}campaign t stop" or msg.content == f"{commandPrefix}campaign t end"):
+                if self.startsWithCheck(msg, "stop") or self.startsWithCheck(msg, "end"):
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
                         await ctx.invoke(self.timer.get_command('stop'), start=startTimes, role=role, game=game, datestart=datestart, dmChar=dmChar)
                         return
 
                 # this behaves just like add above, but skips the ambiguity check of addme since only the author of the message could be added
-                elif (msg.content.startswith(f"{commandPrefix}campaign timer addme ") or msg.content.startswith(f"{commandPrefix}campaign t addme ")) and '@player' not in msg.content and (msg.content != f'{commandPrefix}campaign timer addme' or msg.content != f'{commandPrefix}campaign t addme'):
+                elif self.startsWithCheck(msg, "addme") and '@player' not in msg.content:
                     # if the message author is the one who started the timer, call signup with the special DM moniker
                 # the character is extracted from the message in the signup command 
                 # special behavior:
@@ -992,7 +999,7 @@ class Campaign(commands.Cog):
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 # this invokes the add command, since we do not pass prep = True through, the special addme command will be invoked by add
                 # @player is a protection from people copying the command
-                elif (msg.content.startswith(f"{commandPrefix}campaign timer add ") or msg.content.startswith(f"{commandPrefix}campaign t add ")) and '@player' not in msg.content:
+                elif self.startsWithCheck(msg, "add") and '@player' not in msg.content:
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
                         # update the startTimes with the new added player
@@ -1000,10 +1007,10 @@ class Campaign(commands.Cog):
                         # update the msg with the new stamp
                         stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 # this invokes the remove command, since we do not pass prep = True through, the special removeme command will be invoked by remove
-                elif msg.content == f"{commandPrefix}campaign timer removeme" or msg.content == f"{commandPrefix}campaign t removeme":
+                elif self.startsWithCheck(msg, "removeme"):
                     startTimes = await ctx.invoke(self.timer.get_command('removeme'), start=startTimes, role=role, user=msg.author)
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
-                elif (msg.content.startswith(f"{commandPrefix}campaign timer remove ") or msg.content.startswith(f"{commandPrefix}campaign t remove ")): 
+                elif self.startsWithCheck(msg, "remove"):
                     if await self.permissionCheck(msg, author): 
                         startTimes = await ctx.invoke(self.timer.get_command('remove'), msg=msg, start=startTimes, role=role)
                         stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)

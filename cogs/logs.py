@@ -706,7 +706,7 @@ class Log(commands.Cog):
                 guildsCollection.bulk_write(guildsData)
             del players[dm["ID"]]
             
-            await  generateLog(ctx, num, sessionInfo=sessionInfo, userDBEntriesDic=userDBEntriesDic, guildDBEntriesDic=guildDBEntriesDic, characterDBentries=characterDBentries)
+            await  generateLog(self, ctx, num, sessionInfo=sessionInfo, userDBEntriesDic=userDBEntriesDic, guildDBEntriesDic=guildDBEntriesDic, characterDBentries=characterDBentries)
             
             del players[dm["ID"]]
             game = sessionInfo["Game"]
@@ -783,7 +783,10 @@ class Log(commands.Cog):
         channel = self.bot.get_channel(channel_id_dic[ctx.guild.id]["Sessions"]) 
         
         editMessage = await channel.fetch_message(num)
-
+        if not sessionInfo:
+            return ctx.channel.send("Session could not be found.")
+        if sessionInfo["State"] != "Processing":
+            await ctx.channel.send("This session has already been processed")
         if not editMessage or editMessage.author != self.bot.user:
             return ctx.channel.send("Session has no corresponding message in the log channel.")
 
@@ -852,59 +855,62 @@ class Log(commands.Cog):
     async def denyGuild(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Status", False, 0)
     @session.command()
-    async def permitGuild(self, ctx,  num : int, *, guilds):
+    async def approveGuild(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Status", True, 0)
         
     @session.command()
     async def denyRewards(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Rewards", False, 0)
     @session.command()
-    async def permitRewards(self, ctx,  num : int, *, guilds):
+    async def approveRewards(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Rewards", True, 3)
         
     @session.command()
     async def denyItems(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Items", False, 0)
     @session.command()
-    async def permitItems(self, ctx,  num : int, *, guilds):
+    async def approveItems(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Items", True, 3)
         
     async def guildPermission(self, ctx, num : int, target, goal, min_members):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or "Mod Friend" in [r.name for r in ctx.author.roles]):
-            # if the game received rewards
-                if sessionInfo["Role"] != "": 
-                    players = sessionInfo["Players"]
-                    players[sessionInfo["DM"]["ID"]] = sessionInfo["DM"]
-                    guilds = sessionInfo["Guilds"]
-                    guild_dic = {}
-                    for g in guilds.values():
-                        guild_dic[g["Mention"]] = g
-                    err_message = ""
-                    for guildChannel in ctx.message.channel_mentions:
-                        m = guildChannel.mention
-                        # filter player list by guild
-                        gPlayers = [p for p in players.values() if "Guild" in p and guilds[p["Guild"]]["Mention"] == m]
-                        if(len(gPlayers) >= min_members):
-                            print(guilds)
-                            if guildChannel.mention in guild_dic:
-                                try:
-                                    db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Guilds."+guild_dic[m]["Name"]+"."+target: goal}})
-                                except BulkWriteError as bwe:
-                                    print(e)
+            if( sessionInfo["Status"] == "Processing"):
+                if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or "Mod Friend" in [r.name for r in ctx.author.roles]):
+                # if the game received rewards
+                    if sessionInfo["Role"] != "": 
+                        players = sessionInfo["Players"]
+                        players[sessionInfo["DM"]["ID"]] = sessionInfo["DM"]
+                        guilds = sessionInfo["Guilds"]
+                        guild_dic = {}
+                        for g in guilds.values():
+                            guild_dic[g["Mention"]] = g
+                        err_message = ""
+                        for guildChannel in ctx.message.channel_mentions:
+                            m = guildChannel.mention
+                            # filter player list by guild
+                            gPlayers = [p for p in players.values() if "Guild" in p and guilds[p["Guild"]]["Mention"] == m]
+                            if(len(gPlayers) >= min_members):
+                                print(guilds)
+                                if guildChannel.mention in guild_dic:
+                                    try:
+                                        db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Guilds."+guild_dic[m]["Name"]+"."+target: goal}})
+                                    except BulkWriteError as bwe:
+                                        print(e)
+                                else:
+                                    err_message += m +" not found in game.\n"
                             else:
-                                err_message += m +" not found in game.\n"
+                                err_message += "Not enough members to apply this change for "+ m +"\n"
+                        if err_message != "":
+                            await ctx.channel.send(err_message)
                         else:
-                            err_message += "Not enough members to apply this change for "+ m +"\n"
-                    if err_message != "":
-                        await ctx.channel.send(err_message)
-                    else:
-                        await ctx.channel.send("Session updated.")
-                        await generateLog(self, ctx, num)
+                            await ctx.channel.send("Session updated.")
+                            await generateLog(self, ctx, num)
+                else:
+                    await ctx.channel.send("You do not have the permissions to perform this change to the session.")
             else:
-                await ctx.channel.send("You do not have the permissions to perform this change to the session.")
+                await ctx.channel.send("This session has already been processed")
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
      
@@ -915,19 +921,22 @@ class Log(commands.Cog):
         
     @commands.has_any_role('Mod Friend', 'Admins')
     @session.command()
-    async def permitDDMRW(self, ctx,  num : int):
+    async def approveDDMRW(self, ctx,  num : int):
         await self.session_set(ctx, num, "DDMRW", True)
         
     async def session_set(self, ctx, num : int, target, goal):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            try:
-                db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {target: goal}})
-            except BulkWriteError as bwe:
-                print(e)
-            await ctx.channel.send("Session updated.")
-            await generateLog(self, ctx, num)
+            if( sessionInfo["Status"] == "Processing"):
+                try:
+                    db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {target: goal}})
+                except BulkWriteError as bwe:
+                    print(e)
+                await ctx.channel.send("Session updated.")
+                await generateLog(self, ctx, num)
+            else:
+                await ctx.channel.send("This session has already been processed")
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
                         
@@ -945,15 +954,17 @@ class Log(commands.Cog):
         logData =db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or "Mod Friend" in [r.name for r in ctx.author.roles] and sessionInfo["DDMRW"]):
-            
-                try:
-                    db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"DM.DM Double": goal}})
-                    await generateLog(self, ctx, num)
-                except BulkWriteError as bwe:
-                    print(e)
+            if( sessionInfo["Status"] == "Processing"):
+                if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or "Mod Friend" in [r.name for r in ctx.author.roles] and sessionInfo["DDMRW"]):
+                    try:
+                        db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"DM.DM Double": goal}})
+                        await generateLog(self, ctx, num)
+                    except BulkWriteError as bwe:
+                        print(e)
+                else:
+                    await ctx.channel.send("You were not the DM of that session or it was not DDMRW.")
             else:
-                await ctx.channel.send("You were not the DM of that session or it was not DDMRW.")
+                await ctx.channel.send("This session has already been processed")
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
             
