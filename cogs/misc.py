@@ -21,6 +21,24 @@ class Misc(commands.Cog):
         #0: No message search so far, 1: Message searched, but no new message made so far, 2: New message made
         self.past_message_check= 0
 
+    
+
+    #@commands.cooldown(1, float('inf'), type=commands.BucketType.member)
+    @commands.command()
+    async def hohoho(self,ctx):
+        channel = ctx.channel
+        outcomes = ["Lump of Coal", "Clockwork Dog", "Cloak of Billowing",
+                    "Prosthetic Arm", "Arcanloth's Music Box", "Barking Box",
+                    "Thermal Cube", "Wand of Smiles", "Lock of Trickery", 
+                    "Pipe of Remembrance", "Wand of Pyrotechnics", "Talking Doll",
+                    "Tankard of Plenty", "Orb of Gonging", "Crown of the Forest",
+                    "Pot of Awakening", "Enchanted Three-Dragon Ante Set",
+                    "Propeller Helm", "Heward's Handy Spice Pouch",
+                    "Potion of Cold Resistance"]
+        selection = random.randrange(20) 
+        
+        await channel.send(content=f"The 20-sided bag of Father Nogmus landed on a {selection+1}!"+"\n"+f"{ctx.author.display_name} reaches into the bag and finds: "+f"`{outcomes[selection]}`")
+
 
     @commands.cooldown(1, 60, type=commands.BucketType.member)
     @commands.command()
@@ -59,7 +77,7 @@ class Misc(commands.Cog):
         await channel.send(content=message.author.display_name + ":\n" +  uwuMessage)
         await ctx.message.delete()
     
-        #searches for the last message sent by the bot in case a restart was made
+    #searches for the last message sent by the bot in case a restart was made
     #Allows it to use it to remove the last post
     async def find_message(self, channel_id):
         #block any check but the first one

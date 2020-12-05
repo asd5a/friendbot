@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime,timedelta
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import roleArray, calculateTreasure, timeConversion 
+from bfunc import roleArray, calculateTreasure, timeConversion, db
 
 class Apps(commands.Cog):
     def __init__ (self, bot):
@@ -82,7 +82,6 @@ class Apps(commands.Cog):
 
             if 'approve' in mMessage.content:
                 # Session Channel
-                sessionChannel = self.bot.get_channel(382045698931294208)
                 await botMsg.edit(embed=botEmbed, content=f"{appNum}. {appMember.mention} #{appHash} - **Approved**")
                 await botMsg.clear_reactions()
                 await mMessage.delete()
@@ -91,16 +90,16 @@ class Apps(commands.Cog):
                     kidRole = get(guild.roles, name = 'Under-18 Friendling')
                     await appMember.add_roles(kidRole, reason="Approved application - the user is under 18.")
                 
-                limit = 100
                 playedGame = False
-                async for message in sessionChannel.history(limit=limit, oldest_first=False):
-                    if appMember.mentioned_in(message):
-                        playedGame = True
-                        juniorRole = get(guild.roles, name = 'Junior Friend')
+                if db.users.find_one({"User ID" : str(appMember.id)}):
+                    playedGame = True
+                    juniorRole = get(guild.roles, name = 'Junior Friend')
 
-                        await appMember.add_roles(juniorRole, reason=f"Approved application - the user has played at least one quest. I have checked the last {limit} session logs.")
-                        break
-
+                    await appMember.add_roles(juniorRole, reason=f"Approved application - the user has played at least one quest. I have checked the last {limit} session logs.")
+                    break
+                
+                newRole = get(guild.roles, name = 'Roll20 Tier 0')
+                newRole = get(guild.roles, name = 'Roll20 Tier 1')
                 newRole = get(guild.roles, name = 'D&D Friend')
                 await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
 

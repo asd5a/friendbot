@@ -53,11 +53,9 @@ class ItemTables(commands.Cog):
         author = ctx.author
         commandName = ctx.command.name
         commandUpper = commandName.upper() 
-
-        if author.id == 194049802143662080:
-            userName = 'Sir'
-        else:
-            userName = author.display_name
+        
+        
+        userName = author.display_name
 
         colour = randint(0, 0xffffff)
 
@@ -248,13 +246,15 @@ class ItemTables(commands.Cog):
     @commands.command()
     async def mit(self,ctx, *, queryString=""):
         itemTable = self.bot.get_cog('ItemTables')
-        await itemTable.itemTableFunc(tierArray, tpArray, sheet, ctx, queryString)
+        tierArray = [0,1,2,3,4]
+        
+        await itemTable.itemTableFunc(tierArray, tpArray, ctx, queryString)
 
     @commands.cooldown(1, 10, type=commands.BucketType.member)
     @commands.command()
     async def rit(self, ctx, *, queryString=""):
         itemTable = self.bot.get_cog('ItemTables')
-        await itemTable.itemTableFunc(ritTierArray, ritSubArray, ritSheet, ctx, queryString)
+        await itemTable.itemTableFunc(ritTierArray, ritSubArray, ctx, queryString)
     
 
 

@@ -101,11 +101,13 @@ class Character(commands.Cog):
             'Journeyfriend':[3],
             'Elite Friend':[3],
             'True Friend':[3],
+            'Ascended Friend':[3],
             'Good Noodle':[4],
             'Elite Noodle':[4,5],
             'True Noodle':[4,5,6],
             'Ascended Noodle':[4,5,6,7],
             'Immortal Noodle':[4,5,6,7,8],
+            'Nega Noodle':[4,5,6,7,8,9],
             'Friend Fanatic': [11,10,9],
             'Guild Fanatic':[11,10,9]
         }
@@ -140,7 +142,7 @@ class Character(commands.Cog):
           'Magic Items': 'None',
           'Consumables': 'None',
           'Feats': 'None',
-          'Inventory': 'None',
+          'Inventory': {},
           'Games': 0
         }
 
@@ -173,7 +175,16 @@ class Character(commands.Cog):
 
 
         lvl = int(level)
-
+        tierNum = 5
+        # calculate the tier of the rewards
+        if lvl < 5:
+            tierNum = 1
+        elif lvl < 11:
+            tierNum = 2
+        elif lvl < 17:
+            tierNum = 3
+        elif lvl < 20:
+            tierNum = 4
         # Provides an error message at the end. If there are more than one, it will join msg.
         msg = ""
 
@@ -214,11 +225,11 @@ class Character(commands.Cog):
         roleSet = set(roleSet)
 
         # If roles are present, add base levels + 1 for extra levels for these special roles.
-        if ("Nitro Booster" in roles) and lvl < 11:
+        if ("Nitro Booster" in roles):
             roleSet = roleSet.union(set(map(lambda x: x+1,roleSet.copy())))
 
-        if ("Bean Friend" in roles) and lvl < 11:
-            roleSet = roleSet.union(set(map(lambda x: x+1,roleSet.copy())))
+        if ("Bean Friend" in roles):
+            roleSet = roleSet.union(set(map(lambda x: x+2,roleSet.copy())))
           
         if lvl not in roleSet:
             msg += f":warning: You cannot create a character of **{lvl}**! You do not have the correct role!\n"
@@ -382,9 +393,7 @@ class Character(commands.Cog):
 
         rewardItems = consumes.strip().split(',')
         allRewardItemsString = []
-        if lvl <= 3 and rewardItems != [''] and ('Nitro Booster' not in roles and 'Bean Friend' not in roles):
-            msg += f"• Your role does not allow you to create a character with reward items. Please try again."
-        elif rewardItems != ['']:
+        if rewardItems != ['']:
             for r in rewardItems:
                 if "spell scroll" in r.lower():
                     if "spell scroll" == r.lower().strip():
@@ -393,8 +402,8 @@ class Character(commands.Cog):
                         
                     spellItem = r.lower().replace("spell scroll", "").replace('(', '').replace(')', '')
                     sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem) 
-
-                    if sRecord["Level"] > 3:
+                    
+                    if (sRecord["Level"] >= 3 and tierNum < 2) or sRecord["Level"] > 3:
                         msg += f"""The spell scroll {sRecord['Name']} cannot be a reward item because the level is too high.\n"""
                         break
 
@@ -403,9 +412,9 @@ class Character(commands.Cog):
                     else:
                         sTier = 1
 
-                    reRecord = {"Name": f"Spell Scroll ({sRecord['Name']})", "Consumable": True, "Magic Item": True, "Tier": sTier, "Minor/Major" : "Minor"}
+                    reRecord = {"Name": f"Spell Scroll ({sRecord['Name']})", "Type": "Consumables",  "Tier": sTier, "Minor/Major" : "Minor"}
                 else:
-                    reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r) 
+                    reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r, tier = tierNum) 
 
                 if charEmbedmsg == "Fail":
                     return
@@ -420,6 +429,7 @@ class Character(commands.Cog):
             tier2Count = 0
             rewardConsumables = []
             rewardMagics = []
+            rewardInv = []
             tier1Rewards = []
 
             if 'Good Noodle' in roles:
@@ -438,12 +448,20 @@ class Character(commands.Cog):
                 tier1CountMNC = 1
                 tier1Count = 2
                 tier2Count = 1
+            elif 'Nega Noodle' in roles:
+                tier1CountMNC = 1
+                tier1Count = 2
+                tier2Count = 2
 
             if 'Nitro Booster' in roles:
                 tier1CountMNC += 1
 
             if 'Bean Friend' in roles:
-                tier1CountMNC += 1
+                tier1CountMNC += 2
+                if tierNum > 1:
+                    tier1Count += 2
+                else:
+                    tier2Count += 2
 
             startt1MNC = tier1CountMNC
             startt1 = tier1Count
@@ -455,27 +473,32 @@ class Character(commands.Cog):
                     msg += ":warning: One or more of these reward items cannot be acquired at Level " + str(lvl) + ".\n"
                     break
 
-                if item['Minor/Major'] == 'Minor' and 'Consumable' not in item and tier1CountMNC > 0:
+                if item['Minor/Major'] == 'Minor' and item["Type"] == 'Magic Items':
                     tier1CountMNC -= 1
                     rewardMagics.append(item)
                 elif int(item['Tier']) == 2: 
                     tier2Count -= 1
-                    if 'Consumable' not in item:
+                    if item["Type"] == 'Consumables':
+                      rewardConsumables.append(item)
+                    elif item["Type"] == 'Magic Items':
                       rewardMagics.append(item)
                     else:
-                        rewardConsumables.append(item)
+                        rewardInv.append(item)
                 elif int(item['Tier']) == 1:
                     tier1Rewards.append(item)
+                print("TTT", tier2Count)
             for item in tier1Rewards:
                 if tier1Count > 0 and tier2Count <= 0:
                     tier1Count -= 1
                 else:
                     tier2Count -= 1
 
-                if 'Consumable' not in item:
+                if item["Type"] == 'Consumables':
+                    rewardConsumables.append(item)
+                elif item["Type"] == 'Magic Items':
                     rewardMagics.append(item)
                 else:
-                    rewardConsumables.append(item)
+                    rewardInv.append(item)
 
 
             if tier1CountMNC < 0 or tier1Count < 0 or tier2Count < 0:
@@ -491,6 +514,11 @@ class Character(commands.Cog):
                         charDict['Magic Items'] += ', ' + r['Name']
                     else:
                         charDict['Magic Items'] = r['Name']
+                for r in rewardInv:
+                    if r["Name"] in charDict['Inventory'].keys():
+                        charDict['Inventory'][r['Name']] +=1
+                    else:
+                        charDict['Inventory'][r['Name']] =1
                       
         # ██████╗░░█████╗░░█████╗░███████╗░░░  ░█████╗░██╗░░░░░░█████╗░░██████╗░██████╗
         # ██╔══██╗██╔══██╗██╔══██╗██╔════╝░░░  ██╔══██╗██║░░░░░██╔══██╗██╔════╝██╔════╝
@@ -573,8 +601,6 @@ class Character(commands.Cog):
                 return sameMessage and ((r.emoji in alphaEmojis[:alphaIndex]) or (str(r.emoji) == '❌')) and u == author
 
             if 'Starting Equipment' in cRecord[0]['Class'] and msg == "":
-                if charDict['Inventory'] == "None":
-                    charDict['Inventory'] = {}
                 startEquipmentLength = 0
                 if not charEmbedmsg:
                     charEmbedmsg = await channel.send(embed=charEmbed)
@@ -875,7 +901,9 @@ class Character(commands.Cog):
                         totalPoints += ((s - 13) * 2) + 5
                     else:
                         totalPoints += (s - 8)
-
+                        
+                if any([s < 8 for s in statsArray]):
+                    msg += f":warning: You have at least one stat below the minumum 8.\n"
                 if totalPoints != 27:
                     msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation.\n"
 
@@ -2227,7 +2255,7 @@ class Character(commands.Cog):
             if "Campaigns" in userRecords:
                 campaignString = ""
                 for u, v in userRecords['Campaigns'].items():
-                    campaignString += f"• {u} : {v} Hour(s)\n"
+                    campaignString += f"• {u} : {timeConversion(v)}\n"
 
                 charEmbed.add_field(name='Campaigns', value=campaignString, inline=False)
             
@@ -3005,6 +3033,10 @@ class Character(commands.Cog):
                 if 'Journeyfriend' not in roles and 'Junior Friend' in roles and newCharLevel > 4:
                     roleName = 'Journeyfriend' 
                     roleRemoveStr = 'Junior Friend'
+                    roleAddStr = 'Roll20 Tier 2'
+                    roleAdd = get(guild.roles, name = roleRemoveStr)
+                    await author.add_roles(roleAdd, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
+                    
                     levelRole = get(guild.roles, name = roleName)
                     roleRemove = get(guild.roles, name = roleRemoveStr)
                     await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 5!")
@@ -3012,6 +3044,10 @@ class Character(commands.Cog):
                 if 'Elite Friend' not in roles and 'Journeyfriend' in roles and newCharLevel > 10:
                     roleName = 'Elite Friend'
                     roleRemoveStr = 'Journeyfriend'
+                    roleAddStr = 'Roll20 Tier 3'
+                    roleAdd = get(guild.roles, name = roleRemoveStr)
+                    await author.add_roles(roleAdd, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
+                    
                     levelRole = get(guild.roles, name = roleName)
                     roleRemove = get(guild.roles, name = roleRemoveStr)
                     await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 11!")
@@ -3019,6 +3055,10 @@ class Character(commands.Cog):
                 if 'True Friend' not in roles and 'Elite Friend' in roles and newCharLevel > 16:
                     roleName = 'True Friend'
                     roleRemoveStr = 'Elite Friend'
+                    roleAddStr = 'Roll20 Tier 4'
+                    roleAdd = get(guild.roles, name = roleRemoveStr)
+                    await author.add_roles(roleAdd, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
+                    
                     levelRole = get(guild.roles, name = roleName)
                     roleRemove = get(guild.roles, name = roleRemoveStr)
                     await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 17!")
@@ -3026,6 +3066,10 @@ class Character(commands.Cog):
                 if 'Ascended Friend' not in roles and 'True Friend' in roles and newCharLevel > 19:
                     roleName = 'Ascended Friend'
                     roleRemoveStr = 'True Friend'
+                    roleAddStr = 'Roll20 Tier 5'
+                    roleAdd = get(guild.roles, name = roleRemoveStr)
+                    await author.add_roles(roleAdd, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
+                    
                     levelRole = get(guild.roles, name = roleName)
                     roleRemove = get(guild.roles, name = roleRemoveStr)
                     await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
@@ -3077,7 +3121,7 @@ class Character(commands.Cog):
             charID = charRecords['_id']
             charRecordMagicItems = charRecords['Magic Items'].split(', ')
             if len(attuned) >= attuneLength:
-                await channel.send(f"The maximum number of magic items you can attune to is three! You cannot attune to any more items!")
+                await channel.send(f"The maximum number of magic items you can attune to is {attuneLength}! You cannot attune to any more items!")
                 return
 
             def apiEmbedCheck(r, u):
@@ -3740,7 +3784,7 @@ class Character(commands.Cog):
 
         return subclass, charEmbedmsg
 
-    async def chooseFeat (self, ctx, race, charClass, cRecord, featLevels, charEmbed,  charEmbedmsg, charStats, charFeats):
+    async def chooseFeat(self, ctx, race, charClass, cRecord, featLevels, charEmbed,  charEmbedmsg, charStats, charFeats):
         statNames = ['STR','DEX','CON','INT','WIS','CHA']
         author = ctx.author
         channel = ctx.channel

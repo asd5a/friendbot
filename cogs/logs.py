@@ -354,8 +354,15 @@ class Log(commands.Cog):
         
         editMessage = await channel.fetch_message(num)
 
-        if sessionInfo["Status"] != "Processing":
-            await ctx.channel.send("This session has already been processed")
+        if not sessionInfo:
+            return ctx.channel.send("Session could not be found.")
+            
+        # if sessionInfo["Status"] != "Processing":
+            # await ctx.channel.send("This session has already been processed")
+            
+        # if ctx.author.id == int(sessionInfo["DM"]["ID"]):
+            # await ctx.channel.send("You cannot approve your own log.")
+            # return
         if not editMessage or editMessage.author != self.bot.user:
             return ctx.channel.send("Session has no corresponding message in the log channel.")
 
@@ -426,6 +433,7 @@ class Log(commands.Cog):
                                 guilds[player["Guild"]]["Status"])
                 guildDouble = (guild_valid and 
                                 guilds[player["Guild"]]["Rewards"] and 
+                                player["2xR"] and
                                 guildDBEntriesDic[player["Guild"]]["Reputation"]>20)
                 
 
@@ -438,9 +446,10 @@ class Log(commands.Cog):
                 
                 if((guild_valid and 
                         guilds[player["Guild"]]["Items"] and 
+                        player["2xI"] and
                         guildDBEntriesDic[player["Guild"]]["Reputation"]>15+20*guildDouble)):
-                    if player["Double Items"][0] == "Inventory":
-                        player["Inventory"].append(player["Double Items"][1])
+                    if player["Double Items"][0] == "Magic Items":
+                        player["Magic Items"].append(player["Double Items"][1])
                     else:
                         player[player["Double Items"][0]]["Add"].append(player["Double Items"][1])
                 
@@ -546,6 +555,7 @@ class Log(commands.Cog):
                                 guilds[player["Guild"]]["Status"])
             guildDouble = (guild_valid and 
                             guilds[player["Guild"]]["Rewards"] and 
+                            player["2xR"] and 
                             guildDBEntriesDic[player["Guild"]]["Reputation"]>20)
                 
             
@@ -558,6 +568,18 @@ class Log(commands.Cog):
             
             treasureArray  = calculateTreasure(charLevel, player["Character CP"] , dmTierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
                 
+                
+            if((guild_valid and 
+                    guilds[player["Guild"]]["Items"] and 
+                    player["2xI"] and
+                    guildDBEntriesDic[player["Guild"]]["Reputation"]>15+20*guildDouble)):
+                    
+                if player["Double Items"][0] == "Magic Items":
+                    player["Magic Items"].append(player["Double Items"][1])
+                else:
+                    player[player["Double Items"][0]]["Add"].append(player["Double Items"][1])
+                
+            
             # create a list of all items the character has
             consumableList = character["Consumables"].split(", ")
             consumablesString = ""
@@ -739,6 +761,13 @@ class Log(commands.Cog):
         if dmUser:
             dmRoleNames = [r.name for r in dmUser.roles]
             # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
+            if noodles >= 210:
+                if 'Immortal Noodle' not in dmRoleNames:
+                    noodleRole = get(guild.roles, name = 'Nega Noodle')
+                    await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
+                    if 'Ascended Noodle' in dmRoleNames:
+                        await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
+                    noodleString += "\n**Nega Noodle** role received! :tada:"
             if noodles >= 150:
                 if 'Immortal Noodle' not in dmRoleNames:
                     noodleRole = get(guild.roles, name = 'Immortal Noodle')
@@ -789,6 +818,8 @@ class Log(commands.Cog):
             return ctx.channel.send("Session could not be found.")
         if sessionInfo["Status"] != "Processing":
             await ctx.channel.send("This session has already been processed")
+        if ctx.msg.author.id == int(sessionInfo["DM"]["ID"]):
+            await ctx.channel.send("You cannot approve your own log.")
         if not editMessage or editMessage.author != self.bot.user:
             return ctx.channel.send("Session has no corresponding message in the log channel.")
 
@@ -873,6 +904,13 @@ class Log(commands.Cog):
     @session.command()
     async def approveItems(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Items", True, 3)
+        
+    @session.command()
+    async def denyDrive(self, ctx,  num : int, *, guilds):
+        await self.guildPermission(ctx, num, "Drive", False, 0)
+    @session.command()
+    async def approveDrive(self, ctx,  num : int, *, guilds):
+        await self.guildPermission(ctx, num, "Drive", True, 0)
         
     async def guildPermission(self, ctx, num : int, target, goal, min_members):
         logData = db.logdata

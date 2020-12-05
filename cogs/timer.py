@@ -96,7 +96,7 @@ class Timer(commands.Cog):
         #check if the current channel is a campaign channel
         isCampaign = str(channel.category.id) == channel_id_dic[ctx.guild.id]["Game Rooms"]
         #prevent the command if not in a proper channel (game/campaign)
-        if channel.category.id != settingsRecord['Game Category ID']:
+        if channel.category.id != channel_id_dic[ctx.guild.id]["Game Rooms"]:
             #exception to the check above in case it is a testing channel
             if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
                 pass
@@ -397,7 +397,7 @@ class Timer(commands.Cog):
                     guildsListStr = ""
                     # guildCategoryID = 678381362398625802
                     # guild category channel for DnDFriends
-                    guildCategoryID = 734586911901089832 #452704598440804375 734586911901089832
+                    guildCategoryID = channel_id_dic[ctx.guild.id]["Guild Rooms"]
 
                     if (len(msg.channel_mentions) > 3):
                         await channel.send(f"The number of guilds exceeds three. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1 #guild2, #guild3```") 
@@ -888,7 +888,7 @@ class Timer(commands.Cog):
                 # since this checks for multiple things, this cannot be avoided
                 for u, v in startcopy.items():
                     if 'Full Rewards' in u:
-                        totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 *6) // 60 #FIX TIME WEIRD
+                        totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 *12) // 60 #FIX TIME WEIRD
                         if totalDurationTime < 180:
                             if not resume:
                               await ctx.channel.send(content=f"You cannot award any reward items if the quest is under three hours.") 
@@ -998,7 +998,9 @@ class Timer(commands.Cog):
                     
                     rewardMajorLimit += floor((totalDurationTimeMultiplier -1) / 2)
                     rewardMinorLimit += (totalDurationTimeMultiplier -1)
-                    
+                    if dmMnc:
+                        dmMinorLimit += dmMajorLimit
+                        dmMajorLimit = 0
                     print("Major Limit", rewardMajorLimit)
                     print("Minor Limit", rewardMinorLimit)
                     print("Major Limit DM", dmMajorLimit)
@@ -1080,7 +1082,7 @@ class Timer(commands.Cog):
                                 return start, dmChar 
                             # if the item is rewarded to the DM and they are not allowed to pick a consumable
                             # and the item is neither minor nor consumable
-                            if dmMnc and rewardUser == dmChar[0] and (rewardConsumable['Minor/Major'] != 'Minor' or  rewardConsumable["Type"] == "Consumable"):
+                            if dmMnc and rewardUser == dmChar[0] and (rewardConsumable['Minor/Major'] != 'Minor' or  rewardConsumable["Type"] != "Magic Items"):
                                 if not resume:
                                     await ctx.channel.send(f"You cannot award yourself this reward item because your reward item has to be a Minor Non-Consumable.")
                                 # return unchanged parameters
@@ -1725,6 +1727,8 @@ class Timer(commands.Cog):
                     playerDBEntry["Level"] = value[1]["Level"]
                     if "Guild" in value[1]:
                         playerDBEntry["Guild"] = value[1]["Guild"]
+                        playerDBEntry["2xR"] = True
+                        playerDBEntry["2xI"] = True
                     playerDBEntry["Character CP"] = value[1]["CP"]
                     playerDBEntry["Mention"] = value[0].mention
                     playerDBEntry["Double Items"] = [randomItem["Type"], randomItem["Name"]]
@@ -1791,6 +1795,8 @@ class Timer(commands.Cog):
                 dmDBEntry["Level"] = value[1]["Level"]
                 if "Guild" in value[1]:
                     dmDBEntry["Guild"] = value[1]["Guild"]
+                    dmDBEntry["2xR"] = True
+                    dmDBEntry["2xI"] = True
                 dmDBEntry["Character CP"] = value[1]["CP"]
                 dmDBEntry["DM Double"] = settingsRecord["ddmrw"]
                 dmDBEntry["Double Items"] = [randomItem["Type"], randomItem["Name"]]
@@ -1826,11 +1832,13 @@ class Timer(commands.Cog):
                     for g in guildsList:
                         # get the DB record of the guild
                         gRecord  = guildsCollection.find_one({"Channel ID": str(g.id)})
-                        
+                        if not gRecord:
+                            continue
                         guildDBEntry = {}
                         guildDBEntry["Status"] = True
                         guildDBEntry["Rewards"] = False
                         guildDBEntry["Items"] = False
+                        guildDBEntry["Drive"] = False
                         guildDBEntry["Mention"] = g.mention
                         guildDBEntry["Name"] = gRecord["Name"]
                         
