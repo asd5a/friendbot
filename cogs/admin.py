@@ -57,11 +57,13 @@ class Admin(commands.Cog, name="Admin"):
         
         try:
             self.bot.reload_extension('cogs.'+cog)
-            print(f"{cog} has been reloaded")
+            print(f"{cog} has been reloaded.")
+            await ctx.channel.send(cog+" has been reloaded")
         except commands.ExtensionNotLoaded as e:
             try:
                 self.bot.load_extension("cogs." + cog)
-                print(f"{cog} has been added")
+                print(f"{cog} has been added.")
+                await ctx.channel.send(cog+" has been reloaded")
             except (discord.ClientException, ModuleNotFoundError):
                 print(f'Failed to load extension {cog}.')
                 traceback.print_exc()

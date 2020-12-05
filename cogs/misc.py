@@ -9,6 +9,11 @@ from cogs.admin import admin_or_owner
 class Misc(commands.Cog, name='Misc'):
     def __init__ (self, bot):
         self.bot = bot
+        
+        
+        self.tMessages = [658423423592169556, 709772460039471155]
+        self.system_dict = {658423423592169556: "Roll20 ", 709772460039471155: "Foundry "}
+        
         self.current_message= None
         #0: No message search so far, 1: Message searched, but no new message made so far, 2: New message made
         self.past_message_check= 0
@@ -115,35 +120,23 @@ class Misc(commands.Cog, name='Misc'):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self,payload):
         # Message for reaction
-        tMessage = 658423423592169556
-        guild = self.bot.get_guild(payload.guild_id)
-
-        if payload.message_id == tMessage:
-            if payload.emoji.name == "1️⃣" or payload.emoji.name == '1⃣':
+        if payload.message_id in self.tMessages:
+            if payload.emoji.name == "1️⃣":
                 name = 'Tier 1' 
-                role = get(guild.roles, name = name)
-                validRoles = ['Junior Friend', 'Journeyfriend', 'Elite Friend', 'True Friend']
-            elif payload.emoji.name == "2️⃣" or payload.emoji.name == '2⃣':
+            elif payload.emoji.name == "2️⃣":
                 name = 'Tier 2' 
-                role = get(guild.roles, name = name)
-                validRoles = ['Journeyfriend', 'Elite Friend', 'True Friend']
-            elif payload.emoji.name == "3️⃣" or payload.emoji.name == '3⃣':
+            elif payload.emoji.name == "3️⃣":
                 name = 'Tier 3' 
-                role = get(guild.roles, name = name)
-                validRoles = ['Elite Friend', 'True Friend']
-            elif payload.emoji.name == "4️⃣" or payload.emoji.name == '4⃣':
-                name = 'Tier 4' 
-                role = get(guild.roles, name = name)
-                validRoles = ['True Friend']
-            #this will allow everybody to readd their T0 role, but that should not hurt anyone
-            #by creating an additional check to limit to people that only have these roles that could be fixed
-            #but I don't quite see the reason to do so
-            elif payload.emoji.name == "0️⃣" or payload.emoji.name == '0⃣':
+            elif payload.emoji.name == "4️⃣":
+                name = 'Tier 4'
+            elif payload.emoji.name == "0️⃣":
                 name = 'Tier 0' 
-                role = get(guild.roles, name = name)
-                validRoles = ['D&D Friend']
             else:
-                role = None
+                return
+                
+                
+            name = self.system_dict[payload.message_id]+name     
+            role = get(guild.roles, name = name)
 
             if role is not None:
                 member = guild.get_member(payload.user_id)
@@ -169,39 +162,27 @@ class Misc(commands.Cog, name='Misc'):
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
         # Message for reaction
-        tMessage = 658423423592169556
 
         guild = self.bot.get_guild(payload.guild_id)
-        validRoles = []
-        if(payload.user_id == self.bot.user.id):
-            return
-        if payload.message_id == tMessage:
-            if payload.emoji.name == "1️⃣" or payload.emoji.name == '1⃣':
-                name = 'Tier 1' 
-                role = get(guild.roles, name = name)
-                validRoles = ['Junior Friend', 'Journeyfriend', 'Elite Friend', 'True Friend']
-            elif payload.emoji.name == "2️⃣" or payload.emoji.name == '2⃣':
-                name = 'Tier 2' 
-                role = get(guild.roles, name = name)
-                validRoles = ['Journeyfriend', 'Elite Friend', 'True Friend']
-            elif payload.emoji.name == "3️⃣" or payload.emoji.name == '3⃣':
-                name = 'Tier 3' 
-                role = get(guild.roles, name = name)
-                validRoles = ['Elite Friend', 'True Friend']
-            elif payload.emoji.name == "4️⃣" or payload.emoji.name == '4⃣':
-                name = 'Tier 4' 
-                role = get(guild.roles, name = name)
-                validRoles = ['True Friend']
-            #this will allow everybody to readd their T0 role, but that should not hurt anyone
-            #by creating an additional check to limit to people that only have these roles that could be fixed
-            #but I don't quite see the reason to do so
-            elif payload.emoji.name == "0️⃣" or payload.emoji.name == '0⃣':
-                name = 'Tier 0' 
-                role = get(guild.roles, name = name)
-                validRoles = ['D&D Friend']
-            else:
-                role = None
 
+        if payload.message_id in self.tMessages:
+            if payload.emoji.name == "1️⃣":
+                name = 'Tier 1' 
+            elif payload.emoji.name == "2️⃣":
+                name = 'Tier 2' 
+            elif payload.emoji.name == "3️⃣":
+                name = 'Tier 3' 
+            elif payload.emoji.name == "4️⃣":
+                name = 'Tier 4' 
+            elif payload.emoji.name == "0️⃣":
+                name = 'Tier 0' 
+            else:
+                return
+                
+                
+            name = self.system_dict[payload.message_id]+name     
+            role = get(guild.roles, name = name)
+            
             if role is not None:
                 member = guild.get_member(payload.user_id)
 
@@ -234,6 +215,9 @@ class Misc(commands.Cog, name='Misc'):
         build_message = "The current status of the game channels is:\n"
         #create a dictonary to store the room/user pairs
         tierMap = {"Tier 0" : "T0", "Tier 1" : "T1", "Tier 2" : "T2", "Tier 3" : "T3", "Tier 4" : "T4"}
+        
+        emoteMap = {"Roll20 " : "<:roll20:777767592684421130> ", "Foundry " : "<:foundry:777767632471719956>"}
+        
         channel_dm_dic = {}
         for c in game_channel_category.text_channels:
             channel_dm_dic[c.mention]= ["✅ "+c.mention+": Clear", set([])]
@@ -251,9 +235,10 @@ class Misc(commands.Cog, name='Misc'):
                         username = elem.author.nick
                     channel_dm_dic[mention.mention][0] = "❌ "+mention.mention+": "+username
                     for tierMention in elem.role_mentions:
-                        print(tierMention)
-                        if tierMention.name in tierMap:
-                            channel_dm_dic[mention.mention][1].add(tierMap[tierMention.name])
+                        name_split = tierMention.name.split(" ",1)
+                        if tierMention.name.split(" ",1)[1] in tierMap:
+                            channel_dm_dic[mention.mention][1].add(emoteMap[tierMention.name.split(" ",1)[0]]+" "+tierMap[tierMention.name.split(" ",1)[1]])
+        
         #build the message using the pairs built above
         for c in game_channel_category.text_channels:
             if(c.permissions_for(channel.guild.me).view_channel):
