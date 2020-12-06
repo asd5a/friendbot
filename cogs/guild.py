@@ -517,7 +517,9 @@ class Guild(commands.Cog):
                     gpNeeded = 600
                 elif charRecords['Level'] < 21:
                     gpNeeded = 800
-
+                
+                if "Drive" in charRecords and guildName in guildRecords['Name'] in charRecords["Drive"]:
+                    gpNeeded /= 2
 
                 if gpNeeded > charRecords['GP']:
                     await channel.send(f"***{charRecords['Name']}*** does not have the minimum {gpNeeded}gp to join ***{guildRecords['Name']}***.")

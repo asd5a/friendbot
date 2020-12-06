@@ -96,7 +96,7 @@ class Apps(commands.Cog):
                     juniorRole = get(guild.roles, name = 'Junior Friend')
 
                     await appMember.add_roles(juniorRole, reason=f"Approved application - the user has played at least one quest. I have checked the last {limit} session logs.")
-                    break
+                    
                 
                 newRole = get(guild.roles, name = 'Roll20 Tier 0')
                 newRole = get(guild.roles, name = 'Roll20 Tier 1')

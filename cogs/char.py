@@ -107,9 +107,9 @@ class Character(commands.Cog):
             'True Noodle':[4,5,6],
             'Ascended Noodle':[4,5,6,7],
             'Immortal Noodle':[4,5,6,7,8],
-            'Nega Noodle':[4,5,6,7,8,9],
-            'Friend Fanatic': [11,10,9],
-            'Guild Fanatic':[11,10,9]
+            'Nega Noodle':[4,5,6,7,8,9]
+            #'Friend Fanatic': [11,10,9],
+            #'Guild Fanatic':[11,10,9]
         }
         roles = [r.name for r in ctx.author.roles]
         author = ctx.author
@@ -120,8 +120,6 @@ class Character(commands.Cog):
         charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
         charEmbedmsg = None
         statNames = ['STR','DEX','CON','INT','WIS','CHA']
-        bankTP1 = 0
-        bankTP2 = 0
 
         charDict = {
           'User ID': str(author.id),
@@ -241,6 +239,18 @@ class Character(commands.Cog):
             maxCP = 10
         charDict['CP'] = 0
         
+        levelCP = (((lvl-5) * 10) + 16)
+        if charLevel < 5:
+            levelCP = ((lvl -1) * 4)
+            
+        cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP)*3600)
+        totalGP = cp_tp_gp_array[2]
+        bankTP = []
+        bankTP = cp_tp_gp_array[1]
+        tpBank = [0,0,0,0,0]
+        #grab the available TP of the character
+        for x in range(1,6):
+            tpBank[x-1] = (float(bankTP[f'T{x} TP']))
         
         # ███╗░░░███╗░█████╗░░██████╗░██╗░█████╗░  ██╗████████╗███████╗███╗░░░███╗  ░░░░██╗  ████████╗██████╗░
         # ████╗░████║██╔══██╗██╔════╝░██║██╔══██╗  ██║╚══██╔══╝██╔════╝████╗░████║  ░░░██╔╝  ╚══██╔══╝██╔══██╗
@@ -271,52 +281,40 @@ class Character(commands.Cog):
 
 
             def calculateMagicItems(lvl):
-                bankTP1 = 0
-                bankTP2 = 0
                 highestTier = 0
-                magicItemsCurrent = []
-                magicItemsBought = []
-
-                # Calculates T1/T2 TP that a character should have and their tie level to tier limit
-                if lvl > 1 and lvl < 6: 
-                    bankTP1 = (lvl-1) * 2 
-                    highestTier = 1
-                elif lvl > 5:
-                    bankTP1 = 8
-                    bankTP2 = (lvl-5) * 5
-                    highestTier = 2
-
-                magicItemsTier2 = []
-                isLeftoverT1 = False
-                isLeftoverT2 = False
-                buyT2 = False
-                buyT1 = False
-
-                for item in allMagicItemsString:
-                    #  See if player isn't going over tier 2 or tier 1
-                    if int(item['Tier']) > highestTier:
-                        return ":warning: One or more of these magic items cannot be acquired at Level " + str(lvl), 0, 0
+                for key, amount in bankTP.items():
+                    # second character is the tier number, hopefully never have 10 tiers.
+                    if amount > 0:
+                        highestTier = max(int(key[1], highestTier)
                         
-                    # Split T2 and T1 items.
+                magicItemsCurrent = []
+                magicItemsBought = []´
+                for item in allMagicItemsString:
+                    if int(item['Tier']) > highestTier:
+                        return ":warning: One or more of these magic items cannot be acquired at Level " + str(lvl)
                     else:
+                        haveTP = False
+                        lowestTp = 0
+                        #get the lowest tier available TP
+                        for tp in range (int(tierNum) - 1, 5):
+                            if tpBank[tp] > 0:
+                                haveTP = True
+                                lowestTP = tp + 1 
+                                break
+                        if not haveTp:
+                            charDict['Current Item'] = f'{item["Name"]} (0/{item["TP"]})'
+                          
                         costTP = int(item['TP'])
-                        if int(item['Tier']) == 2:
-                            magicItemsTier2.append(item)
-                            continue
-
-                        # Go through T1 Items and spend TP. Puts incomplete magic items as current item.
+                        tp_type = f"T{item['Tier']} TP"
+                        if bankTP[tp_type] > 0:
+                          magicItemsCurrent.append(item)                       
+                          magicItemsCurrent.append(f'{costTP - bankTP1}/{costTP}')
+                          charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
+                          isLeftoverT1= False
                         else:
-                            buyT1 = True
-                            bankTP1 = costTP - bankTP1
-                            if bankTP1 > 0:
-                              magicItemsCurrent.append(item)                       
-                              magicItemsCurrent.append(f'{costTP - bankTP1}/{costTP}')
-                              charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
-                              isLeftoverT1= False
-                            else:
-                              bankTP1 = abs(bankTP1)
-                              magicItemsBought.append(item)
-                              isLeftoverT1 = True
+                          bankTP1 = abs(bankTP1)
+                          magicItemsBought.append(item)
+                          isLeftoverT1 = True
 
 
                 # Go through T2 items
@@ -360,10 +358,10 @@ class Character(commands.Cog):
                 if not isLeftoverT2 and buyT2:
                     bankTP2 = 0
 
-                return magicItemsBought, bankTP1, bankTP2
+                return magicItemsBought
 
 
-            magicItemsBought, bankTP1, bankTP2 = calculateMagicItems(lvl)
+            magicItemsBought = calculateMagicItems(lvl)
             if isinstance(magicItemsBought, str):
                 msg += magicItemsBought
             elif magicItemsBought == list():
@@ -1244,14 +1242,6 @@ class Character(commands.Cog):
             self.bot.get_command('respec').reset_cooldown(ctx)
             return
 
-        # ███╗░░░███╗░█████╗░░██████╗░██╗░█████╗░  ██╗████████╗███████╗███╗░░░███╗  ░░░░██╗  ████████╗██████╗░
-        # ████╗░████║██╔══██╗██╔════╝░██║██╔══██╗  ██║╚══██╔══╝██╔════╝████╗░████║  ░░░██╔╝  ╚══██╔══╝██╔══██╗
-        # ██╔████╔██║███████║██║░░██╗░██║██║░░╚═╝  ██║░░░██║░░░█████╗░░██╔████╔██║  ░░██╔╝░  ░░░██║░░░██████╔╝
-        # ██║╚██╔╝██║██╔══██║██║░░╚██╗██║██║░░██╗  ██║░░░██║░░░██╔══╝░░██║╚██╔╝██║  ░██╔╝░░  ░░░██║░░░██╔═══╝░
-        # ██║░╚═╝░██║██║░░██║╚██████╔╝██║╚█████╔╝  ██║░░░██║░░░███████╗██║░╚═╝░██║  ██╔╝░░░  ░░░██║░░░██║░░░░░
-        # ╚═╝░░░░░╚═╝╚═╝░░╚═╝░╚═════╝░╚═╝░╚════╝░  ╚═╝░░░╚═╝░░░╚══════╝╚═╝░░░░░╚═╝  ╚═╝░░░░  ░░░╚═╝░░░╚═╝░░░░░
-        # Magic Item / TP
-        # Check if magic items exist, and calculates the TP cost of each magic item.
 
         allMagicItemsString = []
 
