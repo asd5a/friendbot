@@ -134,7 +134,7 @@ class Misc(commands.Cog, name='Misc'):
             else:
                 return
                 
-                
+            guild = self.bot.get_guild(382025597041246210)
             name = self.system_dict[payload.message_id]+name     
             role = get(guild.roles, name = name)
 
@@ -143,16 +143,10 @@ class Misc(commands.Cog, name='Misc'):
                 if member is not None:
                     roles = [r.name for r in member.roles]
                     channel = guild.get_channel(payload.channel_id)
-                    if any(role in roles for role in validRoles):
-                        await member.remove_roles(role)
-                        successMsg = await member.send(f"D&D Friends: :tada: {member.display_name}, I have removed the role `{name}`. You will no longer be notified for these type of games through pings.")
-                        await asyncio.sleep(15) 
-                    else:
-                        channel = guild.get_channel(payload.channel_id)
-                        errorMsg = await member.send(f"D&D Friends: ❗ {member.display_name}, You can't remove the role `{name}` because you don't have the the required roles! - ({', '.join(validRoles)})")
-                        originalMessage = await channel.fetch_message(tMessage)
-                        await originalMessage.remove_reaction(payload.emoji,member)
-                        await asyncio.sleep(15) 
+                    await member.remove_roles(role)
+                    successMsg = await member.send(f"D&D Friends: :tada: {member.display_name}, I have removed the role `{name}`. You will no longer be notified for these type of games through pings.")
+
+
 
                 else:
                     print('member not found')
@@ -180,6 +174,7 @@ class Misc(commands.Cog, name='Misc'):
                 return
                 
                 
+            guild = self.bot.get_guild(382025597041246210)
             name = self.system_dict[payload.message_id]+name     
             role = get(guild.roles, name = name)
             
@@ -190,10 +185,9 @@ class Misc(commands.Cog, name='Misc'):
                     roles = [r.name for r in member.roles]
                     channel = guild.get_channel(payload.channel_id)
 
-                    if any(role in roles for role in validRoles):    
-                        await member.add_roles(role)
-                        successMsg = await member.send(f"D&D Friends: :tada: {member.display_name}, I have added the role `{name}`. You will be notified for these type of games through pings.")
-                        await asyncio.sleep(15) 
+                    await member.add_roles(role)
+                    successMsg = await member.send(f"D&D Friends: :tada: {member.display_name}, I have added the role `{name}`. You will be notified for these type of games through pings.")
+                    await asyncio.sleep(15) 
                         
                 else:
                     print('member not found')
@@ -216,7 +210,7 @@ class Misc(commands.Cog, name='Misc'):
         #create a dictonary to store the room/user pairs
         tierMap = {"Tier 0" : "T0", "Tier 1" : "T1", "Tier 2" : "T2", "Tier 3" : "T3", "Tier 4" : "T4"}
         
-        emoteMap = {"Roll20 " : "<:roll20:777767592684421130> ", "Foundry " : "<:foundry:777767632471719956>"}
+        emoteMap = {"Roll20" : "<:roll20:777800916673363998> ", "Foundry" : "<:foundry:777767632471719956>"}
         
         channel_dm_dic = {}
         for c in game_channel_category.text_channels:
