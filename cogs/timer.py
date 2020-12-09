@@ -1654,7 +1654,7 @@ class Timer(commands.Cog):
             deathChars = []
             
             # Session Log Channel
-            logChannel = self.bot.get_channel(728456783466725427)  # 728456783466725427 737076677238063125
+            logChannel = self.bot.get_channel(channel_id_dic[ctx.guild.id]["Sessions"])  # 728456783466725427 737076677238063125
             # logChannel = self.bot.get_channel(577227687962214406)
             
             # check if the game has rewards

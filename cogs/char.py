@@ -285,10 +285,11 @@ class Character(commands.Cog):
                 for key, amount in bankTP.items():
                     # second character is the tier number, hopefully never have 10 tiers.
                     if amount > 0:
-                        highestTier = max(int(key[1], highestTier)
+                        highestTier = max(int(key[1], highestTier))
                         
                 magicItemsCurrent = []
-                magicItemsBought = []´
+                magicItemsBought = []
+                
                 for item in allMagicItemsString:
                     if int(item['Tier']) > highestTier:
                         return ":warning: One or more of these magic items cannot be acquired at Level " + str(lvl)
@@ -3393,7 +3394,7 @@ class Character(commands.Cog):
                     if dmMember is None:
                         continue
                     statsString += dmMember.mention + " - "
-                    for i in range (1,5):
+                    for i in range (1,6):
                         if f'T{i}' not in v:
                             statsString += f"T{i}: 0 | "
                         else:
