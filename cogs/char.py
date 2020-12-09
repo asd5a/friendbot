@@ -242,7 +242,6 @@ class Character(commands.Cog):
         levelCP = (((lvl-5) * 10) + 16)
         if lvl < 5:
             levelCP = ((lvl -1) * 4)
-            
         cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP)*3600)
         totalGP = cp_tp_gp_array[2]
         bankTP = []
@@ -250,7 +249,11 @@ class Character(commands.Cog):
         tpBank = [0,0,0,0,0]
         #grab the available TP of the character
         for x in range(1,6):
-            tpBank[x-1] = (float(bankTP[f'T{x} TP']))
+            if f'T{x} TP' in bankTP.keys():
+                tpBank[x-1] = (float(bankTP[f'T{x} TP']))
+        
+        bankTP1 = tpBank[0]
+        bankTP2 = tpBank[1]
         
         # ███╗░░░███╗░█████╗░░██████╗░██╗░█████╗░  ██╗████████╗███████╗███╗░░░███╗  ░░░░██╗  ████████╗██████╗░
         # ████╗░████║██╔══██╗██╔════╝░██║██╔══██╗  ██║╚══██╔══╝██╔════╝████╗░████║  ░░░██╔╝  ╚══██╔══╝██╔══██╗
@@ -872,12 +875,6 @@ class Character(commands.Cog):
 
                         charEmbed.clear_fields()
                 
-                totalGP = 0
-                if lvl > 1 and lvl < 6: 
-                    totalGP = (lvl-1) * tier_reward_dictionary[0][0]*4
-                if lvl > 5:
-                    totalGP = (lvl-5) * tier_reward_dictionary[1][0]*10 + tier_reward_dictionary[0][0]*4*4
-
                 charDict['GP'] = int(bRecord['GP']) + totalGP
         
         # ░██████╗████████╗░█████╗░████████╗░██████╗░░░  ███████╗███████╗░█████╗░████████╗░██████╗
