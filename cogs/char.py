@@ -563,7 +563,6 @@ class Character(commands.Cog):
 
                 # Check for class duplicates (ex. Paladin 1 / Paladin 2 = Paladin 3)
                 classDupe = False
-                
                 if(cRecord or cRecord==list()):
                     for c in cRecord:
                         if c['Class'] == mClass:
@@ -590,7 +589,7 @@ class Character(commands.Cog):
         elif totalLevel != lvl and len(cRecord) > 1:
             msg += ':warning: Your classes do not add up to the total level. Please double-check your multiclasses.\n'
         else:
-            cRecord = sorted(cRecord, key = lambda i: i['Level'], reverse=True) 
+            #cRecord = sorted(cRecord, key = lambda i: i['Level'], reverse=True) 
 
             # starting equipment
             def alphaEmbedCheck(r, u):
