@@ -240,7 +240,7 @@ class Character(commands.Cog):
         charDict['CP'] = 0
         
         levelCP = (((lvl-5) * 10) + 16)
-        if charLevel < 5:
+        if lvl < 5:
             levelCP = ((lvl -1) * 4)
             
         cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP)*3600)
