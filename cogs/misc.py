@@ -20,7 +20,22 @@ class Misc(commands.Cog, name='Misc'):
         self.quest_board_channel_id = 382027190633627649 #382027190633627649 728476108940640297
         self.category_channel_id = 382027737189056544 #382027737189056544  728456686024523810
 
+    @commands.command()
+    async def hohoho(self,ctx):
+        channel = ctx.channel
+        outcomes = ["Lump of Coal", "Clockwork Dog", "Cloak of Billowing",
+                    "Prosthetic Arm", "Arcanloth's Music Box", "Barking Box",
+                    "Thermal Cube", "Wand of Smiles", "Lock of Trickery", 
+                    "Pipe of Remembrance", "Wand of Pyrotechnics", "Talking Doll",
+                    "Tankard of Plenty", "Orb of Gonging", "Crown of the Forest",
+                    "Pot of Awakening", "Enchanted Three-Dragon Ante Set",
+                    "Propeller Helm", "Heward's Handy Spice Pouch",
+                    "Potion of Cold Resistance"]
+        selection = random.randrange(20) 
+        
+        await channel.send(content=f"The 20-sided bag of Father Nogmus landed on a {selection+1}!"+"\n"+f"{ctx.author.display_name} reaches into the bag and finds: "+f"`{outcomes[selection]}`")
 
+    
     #https://discordapp.com/channels/382025597041246210/432358370578530310/733403065251528795 nice comments that make it worth it <3
     @commands.cooldown(1, 60, type=commands.BucketType.member)
     @commands.has_any_role('A d m i n')
@@ -210,7 +225,7 @@ class Misc(commands.Cog, name='Misc'):
         #create a dictonary to store the room/user pairs
         tierMap = {"Tier 0" : "T0", "Tier 1" : "T1", "Tier 2" : "T2", "Tier 3" : "T3", "Tier 4" : "T4"}
         
-        emoteMap = {"Roll20" : "<:roll20:777800916673363998> ", "Foundry" : "<:foundry:777767632471719956>"}
+        emoteMap = {"Roll20" : "<:roll20:777800916673363998>", "Foundry" : "<:foundry:777767632471719956>"}
         
         channel_dm_dic = {}
         for c in game_channel_category.text_channels:
