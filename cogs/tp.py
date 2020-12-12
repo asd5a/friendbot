@@ -11,7 +11,7 @@ class Tp(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
     
-    @commands.group()
+    @commands.group(case_insensitive=True)
     async def tp(self, ctx):	
         tpCog = self.bot.get_cog('Tp')
         pass

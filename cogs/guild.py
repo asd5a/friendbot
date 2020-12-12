@@ -10,7 +10,7 @@ class Guild(commands.Cog):
         self.bot = bot
        
 
-    @commands.group(aliases=['g'])
+    @commands.group(aliases=['g'], case_insensitive=True)
     async def guild(self, ctx):	
         pass
 

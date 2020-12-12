@@ -95,7 +95,7 @@ class Character(commands.Cog):
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, mItems="", consumes=""):
+    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes=""):
         characterCog = self.bot.get_cog('Character')
         roleCreationDict = {
             'Journeyfriend':[3],
@@ -252,6 +252,7 @@ class Character(commands.Cog):
             if f'T{x} TP' in bankTP.keys():
                 tpBank[x-1] = (float(bankTP[f'T{x} TP']))
         
+        #removable
         bankTP1 = tpBank[0]
         bankTP2 = tpBank[1]
         
@@ -266,122 +267,115 @@ class Character(commands.Cog):
         magicItems = mItems.strip().split(',')
         allMagicItemsString = []
 
-        # If magic items parameter isn't blank, check each magic item to see if valid, and check for duplicates.
-        if lvl > 1 and magicItems != ['']:
-            for m in magicItems:
-                mRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'mit',m) 
-                if charEmbedmsg == "Fail":
-                    return
+        # # If magic items parameter isn't blank, check each magic item to see if valid, and check for duplicates.
+        # if lvl > 1 and magicItems != ['']:
+            # for m in magicItems:
+                # mRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'mit',m) 
+                # if charEmbedmsg == "Fail":
+                    # return
 
-                if mRecord in allMagicItemsString:
-                    msg += ':warning: You cannot spend TP on two of the same magic item.\n'
-                    break 
-                if not mRecord:
-                    msg += f":warning: **{m}** belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Magic Item Table, what tier it is, and your spelling.\n"
-                    break
-                else:
-                    allMagicItemsString.append(mRecord)
+                # if mRecord in allMagicItemsString:
+                    # msg += ':warning: You cannot spend TP on two of the same magic item.\n'
+                    # break 
+                # if not mRecord:
+                    # msg += f":warning: **{m}** belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Magic Item Table, what tier it is, and your spelling.\n"
+                    # break
+                # else:
+                    # allMagicItemsString.append(mRecord)
 
 
-            def calculateMagicItems(lvl):
-                highestTier = 0
-                for key, amount in bankTP.items():
-                    # second character is the tier number, hopefully never have 10 tiers.
-                    if amount > 0:
-                        highestTier = max(int(key[1], highestTier))
+            # def calculateMagicItems(lvl):
+                # highestTier = 0
+                # for key, amount in bankTP.items():
+                    # # second character is the tier number, hopefully never have 10 tiers.
+                    # if amount > 0:
+                        # highestTier = max(int(key[1], highestTier))
                         
-                magicItemsCurrent = []
-                magicItemsBought = []
+                # magicItemsCurrent = []
+                # magicItemsBought = []
                 
-                for item in allMagicItemsString:
-                    if int(item['Tier']) > highestTier:
-                        return ":warning: One or more of these magic items cannot be acquired at Level " + str(lvl)
-                    else:
-                        haveTP = False
-                        lowestTp = 0
-                        #get the lowest tier available TP
-                        for tp in range (int(tierNum) - 1, 5):
-                            if tpBank[tp] > 0:
-                                haveTP = True
-                                lowestTP = tp + 1 
-                                break
-                        if not haveTp:
-                            charDict['Current Item'] = f'{item["Name"]} (0/{item["TP"]})'
+                # for item in allMagicItemsString:
+                    # if int(item['Tier']) > highestTier:
+                        # return ":warning: One or more of these magic items cannot be acquired at Level " + str(lvl)
+                    # else:
+                        # haveTP = False
+                        # lowestTp = 0
+                        # # get the lowest tier available TP
+                        # for tp in range (int(tierNum) - 1, 5):
+                            # if tpBank[tp] > 0:
+                                # haveTP = True
+                                # lowestTP = tp + 1 
+                                # break
+                        # if not haveTp:
+                            # charDict['Current Item'] = f'{item["Name"]} (0/{item["TP"]})'
                           
-                        costTP = int(item['TP'])
-                        tp_type = f"T{item['Tier']} TP"
-                        if bankTP[tp_type] > 0:
-                          magicItemsCurrent.append(item)                       
-                          magicItemsCurrent.append(f'{costTP - bankTP1}/{costTP}')
-                          charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
-                          isLeftoverT1= False
-                        else:
-                          bankTP1 = abs(bankTP1)
-                          magicItemsBought.append(item)
-                          isLeftoverT1 = True
+                        # costTP = int(item['TP'])
+                        # tp_type = f"T{item['Tier']} TP"
+                        # if bankTP[tp_type] > 0:
+                          # magicItemsCurrent.append(item)                       
+                          # magicItemsCurrent.append(f'{costTP - bankTP1}/{costTP}')
+                          # charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
+                          # isLeftoverT1= False
+                        # else:
+                          # bankTP1 = abs(bankTP1)
+                          # magicItemsBought.append(item)
+                          # isLeftoverT1 = True
 
 
-                # Go through T2 items
-                for item in magicItemsTier2:
+                # # Go through T2 items
+                # for item in magicItemsTier2:
 
-                    # If there is an incomplete item from T1 TP, see if it can be completed with T2 TP
-                    if magicItemsCurrent:
-                        magicItemsCurrentItem = magicItemsCurrent[1].split('/')
-                        bankTP2 = int(magicItemsCurrentItem[1]) - int(magicItemsCurrentItem[0]) - bankTP2
-                        if bankTP2 > 0:
-                            buyT2 = True
-                            magicItemsCurrent[1] = f'{int(magicItemsCurrentItem[1]) - bankTP2}/{magicItemsCurrentItem[1]}'
-                            charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
-                            isLeftoverT2 = False
-                        else:
-                            bankTP2 = abs(bankTP2)
-                            magicItemsBought.append(magicItemsCurrent[0])
-                            magicItemsCurrent = []
-                            charDict['Current Item'] = ""
-                            isLeftoverT2 = True
+                    # # If there is an incomplete item from T1 TP, see if it can be completed with T2 TP
+                    # if magicItemsCurrent:
+                        # magicItemsCurrentItem = magicItemsCurrent[1].split('/')
+                        # bankTP2 = int(magicItemsCurrentItem[1]) - int(magicItemsCurrentItem[0]) - bankTP2
+                        # if bankTP2 > 0:
+                            # buyT2 = True
+                            # magicItemsCurrent[1] = f'{int(magicItemsCurrentItem[1]) - bankTP2}/{magicItemsCurrentItem[1]}'
+                            # charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
+                            # isLeftoverT2 = False
+                        # else:
+                            # bankTP2 = abs(bankTP2)
+                            # magicItemsBought.append(magicItemsCurrent[0])
+                            # magicItemsCurrent = []
+                            # charDict['Current Item'] = ""
+                            # isLeftoverT2 = True
 
-                    # Spend T2 TP with T2 items
-                    if bankTP2 > 0:
-                        costTP = int(item['TP'])
-                        bankTP2 = costTP - bankTP2
-                        if bankTP2 > 0:
-                          buyT2 = True
-                          magicItemsCurrent.append(item)                       
-                          magicItemsCurrent.append(f'{costTP - bankTP2}/{costTP}')
-                          charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
-                          isLeftoverT2 = False
-                        else:
-                          bankTP2 = abs(bankTP2)
-                          magicItemsBought.append(item)
-                          isLeftoverT2 = True
+                    # # Spend T2 TP with T2 items
+                    # if bankTP2 > 0:
+                        # costTP = int(item['TP'])
+                        # bankTP2 = costTP - bankTP2
+                        # if bankTP2 > 0:
+                          # buyT2 = True
+                          # magicItemsCurrent.append(item)                       
+                          # magicItemsCurrent.append(f'{costTP - bankTP2}/{costTP}')
+                          # charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
+                          # isLeftoverT2 = False
+                        # else:
+                          # bankTP2 = abs(bankTP2)
+                          # magicItemsBought.append(item)
+                          # isLeftoverT2 = True
 
                 
-                if not isLeftoverT1 and buyT1:
-                    bankTP1 = 0
+                # if not isLeftoverT1 and buyT1:
+                    # bankTP1 = 0
 
-                if not isLeftoverT2 and buyT2:
-                    bankTP2 = 0
+                # if not isLeftoverT2 and buyT2:
+                    # bankTP2 = 0
 
-                return magicItemsBought
+                # return magicItemsBought
 
 
-            magicItemsBought = calculateMagicItems(lvl)
-            if isinstance(magicItemsBought, str):
-                msg += magicItemsBought
-            elif magicItemsBought == list():
-                pass
-            else:
-                charDict['Magic Items'] = ', '.join([str(string['Name']) for string in magicItemsBought])
+            # magicItemsBought = calculateMagicItems(lvl)
+            # if isinstance(magicItemsBought, str):
+                # msg += magicItemsBought
+            # elif magicItemsBought == list():
+                # pass
+            # else:
+                # charDict['Magic Items'] = ', '.join([str(string['Name']) for string in magicItemsBought])
         
-        # Level 1 cannot buy magic items because they have 0 TP to spend.
-        elif lvl > 1 and magicItems == ['']:
-            if lvl > 1 and lvl < 6: 
-                bankTP1 = (lvl-1) * 2 
-            elif lvl > 5:
-                bankTP1 = 8
-                bankTP2 = (lvl-5) * 5
-        elif lvl == 1 and magicItems != ['']:
-            msg += '• You cannot purchase magic items at Level 1.\n'
+        # elif lvl == 1 and magicItems != ['']:
+            # msg += '• You cannot purchase magic items at Level 1.\n'
 
 
 
@@ -425,86 +419,72 @@ class Character(commands.Cog):
                     break
                 else:
                     allRewardItemsString.append(reRecord)
-
+            allRewardItemsString.sort(key=lambda x: x["Tier"])
             tier1CountMNC = 0
-            tier1Count = 0
-            tier2Count = 0
             rewardConsumables = []
             rewardMagics = []
             rewardInv = []
-            tier1Rewards = []
-
+            tierRewards = [[], [], [], [], []]
+            tierConsumableCounts = [0,0,0,0,0]
             if 'Good Noodle' in roles:
                 tier1CountMNC = 1
             elif 'Elite Noodle' in roles:
                 tier1CountMNC = 1
-                tier1Count = 1
+                tierConsumableCounts[1] = 1
             elif 'True Noodle' in roles:
                 tier1CountMNC = 1
-                tier2Count = 1
+                tierConsumableCounts[2] = 1
             elif 'Ascended Noodle' in roles:
                 tier1CountMNC = 1
-                tier1Count = 1
-                tier2Count = 1
+                tierConsumableCounts[1] = 1
+                tierConsumableCounts[2] = 1
             elif 'Immortal Noodle' in roles:
                 tier1CountMNC = 1
                 tier1Count = 2
                 tier2Count = 1
             elif 'Nega Noodle' in roles:
                 tier1CountMNC = 1
-                tier1Count = 2
-                tier2Count = 2
+                tierConsumableCounts[1] = 2
+                tierConsumableCounts[2] = 2
 
             if 'Nitro Booster' in roles:
                 tier1CountMNC += 1
 
             if 'Bean Friend' in roles:
                 tier1CountMNC += 2
-                if tierNum > 1:
-                    tier1Count += 2
-                else:
-                    tier2Count += 2
-
+                tierConsumableCounts[tierNum] += 2
+            
+            startCounts = tierConsumableCounts.copy()
             startt1MNC = tier1CountMNC
-            startt1 = tier1Count
-            startt2 = tier2Count
 
             for item in allRewardItemsString:
                 print(item['Tier'])
-                if int(item['Tier']) > 2:
+                i = item["Tier"]
+                while i <= tierNum:
+                    if tierConsumableCounts[i] > 0:
+                        tierConsumableCounts[i] -= 1
+                        break
+                    i += 1
+                if int(item['Tier']) > tierNum:
                     msg += ":warning: One or more of these reward items cannot be acquired at Level " + str(lvl) + ".\n"
                     break
 
                 if item['Minor/Major'] == 'Minor' and item["Type"] == 'Magic Items':
                     tier1CountMNC -= 1
                     rewardMagics.append(item)
-                elif int(item['Tier']) == 2: 
-                    tier2Count -= 1
-                    if item["Type"] == 'Consumables':
-                      rewardConsumables.append(item)
-                    elif item["Type"] == 'Magic Items':
-                      rewardMagics.append(item)
-                    else:
-                        rewardInv.append(item)
-                elif int(item['Tier']) == 1:
-                    tier1Rewards.append(item)
-                print("TTT", tier2Count)
-            for item in tier1Rewards:
-                if tier1Count > 0 and tier2Count <= 0:
-                    tier1Count -= 1
-                else:
-                    tier2Count -= 1
-
                 if item["Type"] == 'Consumables':
-                    rewardConsumables.append(item)
+                  rewardConsumables.append(item)
                 elif item["Type"] == 'Magic Items':
-                    rewardMagics.append(item)
+                  rewardMagics.append(item)
                 else:
                     rewardInv.append(item)
 
 
-            if tier1CountMNC < 0 or tier1Count < 0 or tier2Count < 0:
-                msg += f":warning: You do not have the right roles for these reward items. You can only choose **{startt1MNC}** Tier 1 (Non-Consumable) item(s), **{startt1}** Tier 1 (or lower) item(s), and **{startt2}** Tier 2 (or lower) item(s).\n"
+            if tier1CountMNC < 0 or any([count < 0 for count in tierConsumableCounts]):
+                msg += f":warning: You do not have the right roles for these reward items. You can only choose **{startt1MNC}** Tier 1 (Non-Consumable) item(s)"
+                for amount in startCounts:
+                    msg += f", and **{startt1}** Tier 1 (or lower) item(s)"
+                msg += "\n"
             else:
                 for r in rewardConsumables:
                     if charDict['Consumables'] != "None":
@@ -1011,12 +991,11 @@ class Character(commands.Cog):
         charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**gp**: {charDict['GP']} "
 
         charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
-        if  bankTP1 > 0:
-            charDict['T1 TP'] = bankTP1
-            charEmbed.add_field(name=':warning: Unused T1 TP', value=charDict['T1 TP'], inline=True)
-        if  bankTP2 > 0:
-            charDict['T2 TP'] = bankTP2
-            charEmbed.add_field(name=':warning: Unused T2 TP', value=charDict['T2 TP'], inline=True)
+        
+        for x in range(1,6):
+            if tpBank[x-1]>0:
+              charDict[f'T{x} TP'] = tpBank[x-1]
+              charEmbed.add_field(name=f':warning: Unused T{x} TP', value=charDict[f'T{x} TP'], inline=True)
         if charDict['Magic Items'] != 'None':
             charEmbed.add_field(name='Magic Items', value=charDict['Magic Items'], inline=False)
         if charDict['Consumables'] != 'None':
@@ -1091,15 +1070,15 @@ class Character(commands.Cog):
                 else:
                     statsRecord['Class'][char[0]][char[1]] = 1
 
-            if charDict['Race'] in statsRecord['Race']:
-                statsRecord['Race'][charDict['Race']] += 1
-            else:
-                statsRecord['Race'][charDict['Race']] = 1
+        if charDict['Race'] in statsRecord['Race']:
+            statsRecord['Race'][charDict['Race']] += 1
+        else:
+            statsRecord['Race'][charDict['Race']] = 1
 
-            if charDict['Background'] in statsRecord['Background']:
-                statsRecord['Background'][charDict['Background']] += 1
-            else:
-                statsRecord['Background'][charDict['Background']] = 1
+        if charDict['Background'] in statsRecord['Background']:
+            statsRecord['Background'][charDict['Background']] += 1
+        else:
+            statsRecord['Background'][charDict['Background']] = 1
 
         try:
             playersCollection.insert_one(charDict)
@@ -1140,44 +1119,50 @@ class Character(commands.Cog):
         charNoneKeyList = ['Magic Items', 'Inventory', 'Current Item']
 
         charRemoveKeyList = ['Image', 'Respecc', 'T1 TP', 'T2 TP', 'T3 TP', 'T4 TP', 'Attuned', 'Spellbook', 'Guild', 'Guild Rank', 'Grouped']
-
-        m_save = charDict['Magic Items'].split(", ")
-        i_save = list(charDict['Inventory'].keys())
-        check_list = m_save+i_save
         
-        searched_items = list(db.rit.find({"Name" : {"$in": check_list}}))
-        searched_items_names = []
+        guild_name = ""
         
-        for element in searched_items:
-            if "Grouped" in element:
-                searched_items_names += element["Name"]
-            else:
-                searched_items_names.append(element["Name"])
+        if "Guild" in charDict:
+            guild_name = charDict["Guild"]
         
-        m_saved_list = []
-        for m_item in m_save:
-            if m_item in searched_items_names:
-                m_saved_list.append(m_item)
+        
+        # m_save = charDict['Magic Items'].split(", ")
+        # i_save = list(charDict['Inventory'].keys())
+        # check_list = m_save+i_save
+        
+        # searched_items = list(db.rit.find({"Name" : {"$in": check_list}}))
+        # searched_items_names = []
+        
+        # for element in searched_items:
+            # if "Grouped" in element:
+                # searched_items_names += element["Name"]
+            # else:
+                # searched_items_names.append(element["Name"])
+        
+        # m_saved_list = []
+        # for m_item in m_save:
+            # if m_item in searched_items_names:
+                # m_saved_list.append(m_item)
                 
-        i_saved_list = []
-        for i_item in i_save:
-            if i_item in searched_items_names:
-                i_saved_list.append([i_item, charDict["Inventory"][i_item]])
+        # i_saved_list = []
+        # for i_item in i_save:
+            # if i_item in searched_items_names:
+                # i_saved_list.append([i_item, charDict["Inventory"][i_item]])
         
-        for c in charNoneKeyList:
-            charDict[c] = "None"
+        # for c in charNoneKeyList:
+            # charDict[c] = "None"
 
-        for c in charRemoveKeyList:
-            if c in charDict:
-                del charDict[c]
-        print("Check", check_list)
-        print("Search", searched_items_names)
+        # for c in charRemoveKeyList:
+            # if c in charDict:
+                # del charDict[c]
+        # print("Check", check_list)
+        # print("Search", searched_items_names)
         
-        charDict["Magic Items"] = ", ".join(m_saved_list) + ("None" * (len(m_saved_list) == 0))
+        # charDict["Magic Items"] = ", ".join(m_saved_list) + ("None" * (len(m_saved_list) == 0))
         charDict["Inventory"] = {}
         
-        for i_item in i_saved_list:
-            charDict["Inventory"][i_item[0]] = i_item[1]
+        # for i_item in i_saved_list:
+            # charDict["Inventory"][i_item[0]] = i_item[1]
         
         
         charID = charDict['_id']
@@ -1695,6 +1680,39 @@ class Character(commands.Cog):
 
 
         try:
+            if len(guild_name)>0:
+                guild_char = playersCollection.find_one({"User ID": str(author.id), "Guild" : guild_name})
+                if not guild_char:
+                    guildRecords = db.guilds.find_one({"Name" : guild_name})
+                    await author.remove_roles(guild.get_role(int(guildRecords['Role ID'])))
+            if "Respecc" in charDict and charDict["Respecc"] == "Transfer":
+                statsCollection = db.stats
+                statsRecord  = statsCollection.find_one({'Life': 1})
+
+                for c in classStat:
+                    char = c.split('-')
+                    if char[0] in statsRecord['Class']:
+                        statsRecord['Class'][char[0]]['Count'] += 1
+                    else:
+                        statsRecord['Class'][char[0]] = {'Count': 1}
+
+                    if len(char) > 1:
+                        if char[1] in statsRecord['Class'][char[0]]:
+                            statsRecord['Class'][char[0]][char[1]] += 1
+                        else:
+                            statsRecord['Class'][char[0]][char[1]] = 1
+
+                if charDict['Race'] in statsRecord['Race']:
+                    statsRecord['Race'][charDict['Race']] += 1
+                else:
+                    statsRecord['Race'][charDict['Race']] = 1
+
+                if charDict['Background'] in statsRecord['Background']:
+                    statsRecord['Background'][charDict['Background']] += 1
+                else:
+                    statsRecord['Background'][charDict['Background']] = 1
+                        
+                statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
             # Extra to unset
             print(charDict)
             charRemoveKeyList = {'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
@@ -1761,14 +1779,19 @@ class Character(commands.Cog):
                         deadCollection = db.dead
                         usersCollection = db.users
                         deadCollection.insert_one(charDict)
+                        
+                        if "Guild" in charDict:
+                            guild_char = playersCollection.find_one({"User ID": str(author.id), "Guild" : charDict["Guild"]})
+                            if not guild_char:
+                                guildRecords = db.guilds.find_one({"Name" : charDict["Guild"]})
+                                await author.remove_roles(guild.get_role(int(guildRecords['Role ID'])))
+                        # usersRecord = list(usersCollection.find({"User ID": charDict['User ID']}))[0]
+                        # if 'Games' not in usersRecord:
+                            # usersRecord['Games'] = charDict['Games']
+                        # else:
+                            # usersRecord['Games'] += charDict['Games']
 
-                        usersRecord = list(usersCollection.find({"User ID": charDict['User ID']}))[0]
-                        if 'Games' not in usersRecord:
-                            usersRecord['Games'] = charDict['Games']
-                        else:
-                            usersRecord['Games'] += charDict['Games']
-
-                        usersCollection.update_one({'User ID': charDict['User ID']}, {"$set": {'Games': usersRecord['Games']}}, upsert=True)
+                        # usersCollection.update_one({'User ID': charDict['User ID']}, {"$set": {'Games': usersRecord['Games']}}, upsert=True)
                         playersCollection.delete_one({'_id': charID})
                     except Exception as e:
                         print ('MONGO ERROR: ' + str(e))
@@ -1785,7 +1808,7 @@ class Character(commands.Cog):
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def death (self,ctx, char):
+    async def death(self,ctx, char):
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
@@ -1816,7 +1839,7 @@ class Character(commands.Cog):
             charID = charDict['_id']
             charLevel = charDict['Level']
             if charLevel < 5:
-                gpNeeded = 250
+                gpNeeded = 100
                 tierNum = 1
             elif charLevel < 11:
                 gpNeeded = 500
@@ -1888,6 +1911,12 @@ class Character(commands.Cog):
                                 deadCollection = db.dead
                                 deadCollection.insert_one(charDict)
                                 playersCollection.delete_one({'_id': charID})
+                                if "Guild" in charDict:
+                                    guild_char = playersCollection.find_one({"User ID": str(author.id), "Guild" : charDict["Guild"]})
+                                    if not guild_char:
+                                        guildRecords = db.guilds.find_one({"Name" : charDict["Guild"]})
+                                        await author.remove_roles(guild.get_role(int(guildRecords['Role ID'])))
+
                                 usersCollection = db.users
                                 pass
                                 
@@ -3390,7 +3419,7 @@ class Character(commands.Cog):
                     if dmMember is None:
                         continue
                     statsString += dmMember.mention + " - "
-                    for i in range (1,6):
+                    for i in range (0,6):
                         if f'T{i}' not in v:
                             statsString += f"T{i}: 0 | "
                         else:
@@ -3455,7 +3484,7 @@ class Character(commands.Cog):
                 # Number of games by total and by tier
                 statsTotalString += f"**{identity_strings[0]} Stats**\nTotal Games for the {identity_strings[1]}: {superTotal}\n" 
                 statsTotalString += f'Guild quests out of total quests: {round((gq_sum / superTotal),3) * 100}%\n'                   
-                for i in range (1,6):
+                for i in range (0,6):
                     if f'T{i}' not in statRecords:
                         statsTotalString += f"Tier {i} Games for the {identity_strings[1]}: 0\n"
                     else: 

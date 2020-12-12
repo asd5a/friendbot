@@ -20,7 +20,7 @@ class Campaign(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
        
-    @commands.group(aliases=['c'])
+    @commands.group(aliases=['c'], case_insensitive=True)
     async def campaign(self, ctx):	
         pass
 

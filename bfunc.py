@@ -494,7 +494,7 @@ def refreshKey (timeStarted):
 currentTimers = []
 
 gameCategory = ["🎲 game rooms", "🐉 campaigns", "mod friends"]
-roleArray = ['Junior', 'Journey', 'Elite', 'True', 'Ascended', '']
+roleArray = ['New', 'Junior', 'Journey', 'Elite', 'True', 'Ascended', '']
 noodleRoleArray = ['Good Noodle', 'Elite Noodle', 'True Noodle', 'Ascended Noodle', 'Immortal Noodle', 'Nega Noodle']
 # tierArray = getTiers(sheet.row_values(2))
 # tpArray = sheet.row_values(3)

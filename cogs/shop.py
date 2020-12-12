@@ -11,7 +11,7 @@ class Shop(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
     
-    @commands.group()
+    @commands.group(case_insensitive=True)
     async def shop(self, ctx):	
         shopCog = self.bot.get_cog('Shop')
         pass
@@ -920,8 +920,8 @@ class Shop(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 return
                 
-    @commands.group(aliases=['prof'])
-    async def proficiency(self, ctx):
+    @commands.group(aliases=['dt'], case_insensitive=True)
+    async def downtime(self, ctx):
         pass
         
     """"
@@ -999,7 +999,7 @@ class Shop(commands.Cog):
                     shopEmbed.description = f"***{charRecords['Name']}*** has been trained by an instructor and can learn a {purchasePossibilities} of your choice. :tada:\n\nCurrent gp: {newGP} gp\n"
                     await shopEmbedmsg.edit(embed=shopEmbed)
                     
-    @proficiency.command()
+    @downtime.command()
     async def training(self, ctx , charName):
         channel = ctx.channel
         author = ctx.author
@@ -1016,7 +1016,7 @@ class Shop(commands.Cog):
                 return
             
             # calculate the scaling cost
-            gpNeeded = 1000+ charRecords['Proficiency'] * 250
+            gpNeeded = 500+ charRecords['Proficiency'] * 250
             
             # text used to inform the user which purchase they are making
             textArray = ["1st", "2nd", "3rd", "4th", "5th"]
@@ -1024,7 +1024,7 @@ class Shop(commands.Cog):
             #call the extracted function
             await self.purchaseProficiency('Proficiency', textArray[charRecords['Proficiency']], 0, 5, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
                 
-    @proficiency.command()
+    @downtime.command(aliases=["n"])
     async def noodle(self, ctx , charName):
         channel = ctx.channel
         author = ctx.author

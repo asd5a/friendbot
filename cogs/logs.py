@@ -326,7 +326,7 @@ class Log(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
     
-    @commands.group()
+    @commands.group(case_insensitive=True)
     async def session(self, ctx):	
         pass
         

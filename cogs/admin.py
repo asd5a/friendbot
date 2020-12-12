@@ -23,7 +23,7 @@ class Admin(commands.Cog, name="Admin"):
     def __init__ (self, bot):
         self.bot = bot
     
-    @commands.group()
+    @commands.group(case_insensitive=True)
     async def react(self, ctx):	
         pass
     

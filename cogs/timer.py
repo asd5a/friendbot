@@ -22,7 +22,7 @@ class Timer(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
 
-    @commands.group(aliases=['t'])
+    @commands.group(aliases=['t'], case_insensitive=True)
     async def timer(self, ctx):	
         print(datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p"))
         pass
@@ -142,7 +142,7 @@ class Timer(commands.Cog):
             return
 
         # set up the user communication for tier selection, this is done even if norewards is selected
-        prepEmbed.add_field(name=f"React with [1-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojis[0]} New / Junior Friend (Level 1-4)\n{numberEmojis[1]} Journeyfriend (Level 5-10)\n{numberEmojis[2]} Elite Friend (Level 11-16)\n{numberEmojis[3]} True Friend (Level 17-20)\n{numberEmojis[4]} Ascended Friend (Level 20+)\n", inline=False)
+        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojis[0]} New Friend (Level 1-4)\n {numberEmojis[1]} Junior Friend (Level 1-4)\n{numberEmojis[2]} Journeyfriend (Level 5-10)\n{numberEmojis[3]} Elite Friend (Level 11-16)\n{numberEmojis[4]} True Friend (Level 17-20)\n{numberEmojis[5]} Ascended Friend (Level 20+)\n", inline=False)
         # the discord name is used for listing the owner of the timer
         prepEmbed.set_author(name=userName, icon_url=author.avatar_url)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
@@ -155,7 +155,7 @@ class Timer(commands.Cog):
                 #create the message to begin talking to the user
                 prepEmbedMsg = await channel.send(embed=prepEmbed)
                 # the emojis for the user to react with
-                for num in range(0,5): await prepEmbedMsg.add_reaction(numberEmojis[num])
+                for num in range(0,6): await prepEmbedMsg.add_reaction(numberEmojis[num])
                 await prepEmbedMsg.add_reaction('❌')
                 # get the user who reacted and what they reacted with, this has already been limited to the proper emoji's and proper user
                 tReaction, tUser = await self.bot.wait_for("reaction_add", check=startEmbedcheck, timeout=60)
@@ -180,7 +180,7 @@ class Timer(commands.Cog):
                     self.timer.get_command('prep').reset_cooldown(ctx)
                     return
                 # otherwise take the role based on which emoji the user reacted with
-                # the array is stored in bfunc and the options are 'Junior', 'Journey', 'Elite' and 'True' in this order
+                # the array is stored in bfunc and the options are 'New', 'Junior', 'Journey', 'Elite' and 'True' in this order
                 role = roleArray[int(tReaction.emoji[0]) - 1]
 
             
@@ -189,7 +189,7 @@ class Timer(commands.Cog):
         await prepEmbedMsg.clear_reactions()
         # if is not a campaign add the seleceted tier to the message title and inform the users about the possible commands (signup, add player, remove player, add guild, use guild reputation)
         if not isCampaign:
-            prepEmbed.title = f"{game} (Tier {roleArray.index(role) + 1})"
+            prepEmbed.title = f"{game} (Tier {roleArray.index(role)})"
             prepEmbed.description = f"**Signup**: {commandPrefix}timer signup \"charactername\" \"consumables\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Set guild**: {commandPrefix}timer guild #guild1, #guild2, [...]\n**Spend Reputation**: {commandPrefix}timer spend #guild"
 
         else:
@@ -557,6 +557,8 @@ class Timer(commands.Cog):
                 validLevelStart = 5
                 validLevelEnd = 10
             elif role == "Junior":
+                validLevelEnd = 4
+            elif role == "New":
                 validLevelEnd = 4
             elif role == "DM":
                 validLevelEnd = 20
@@ -1645,6 +1647,8 @@ class Timer(commands.Cog):
                 tierNum = 3
             elif role == "Journey":
                 tierNum = 2
+            elif role == "New":
+                tierNum = 0
             elif role == "":
                 # mark no reward games with a specific color
                 stopEmbed.colour = discord.Colour(0xffffff)
@@ -1907,179 +1911,179 @@ class Timer(commands.Cog):
         await ctx.channel.send(f"Timer has been reset in #{ctx.channel}")
     
     
-    """
-    This function is used to restart a timer that was interruped by an error
-    """
-    @commands.cooldown(1, float('inf'), type=commands.BucketType.channel) 
-    @timer.command()
-    #TODO: cmapaign resume timer
-    async def resume(self,ctx):
-        if not self.timer.get_command('prep').is_on_cooldown(ctx):
-            # check for messages from a bot
-            def predicate(message):
-                return message.author.bot and message.author.id == self.bot.user.id
+    # """
+    # This function is used to restart a timer that was interruped by an error
+    # """
+    # @commands.cooldown(1, float('inf'), type=commands.BucketType.channel) 
+    # @timer.command()
+    # #TODO: cmapaign resume timer
+    # async def resume(self,ctx):
+        # if not self.timer.get_command('prep').is_on_cooldown(ctx):
+            # # check for messages from a bot
+            # def predicate(message):
+                # return message.author.bot and message.author.id == self.bot.user.id
 
-            channel=ctx.channel
-            # make sure that the channel is a game channel
-            if str(channel.category).lower() not in gameCategory:
-                if "no-context" in channel.name or "secret-testing-area" or  "bot2-testing" in channel.name:
-                    pass
-                else:
-                    await channel.send('Try this command in a game room channel!')
-                    self.timer.get_command('resume').reset_cooldown(ctx)
-                    return
-            # make sure that there is no timer running right now
-            if self.timer.get_command('prep').is_on_cooldown(ctx):
-                await channel.send(f"There is already a timer that has started in this channel! If you started this timer, use the following command to stop it:\n```yaml\n{commandPrefix}timer stop```")
-                self.timer.get_command('resume').reset_cooldown(ctx)
-                return
+            # channel=ctx.channel
+            # # make sure that the channel is a game channel
+            # if str(channel.category).lower() not in gameCategory:
+                # if "no-context" in channel.name or "secret-testing-area" or  "bot2-testing" in channel.name:
+                    # pass
+                # else:
+                    # await channel.send('Try this command in a game room channel!')
+                    # self.timer.get_command('resume').reset_cooldown(ctx)
+                    # return
+            # # make sure that there is no timer running right now
+            # if self.timer.get_command('prep').is_on_cooldown(ctx):
+                # await channel.send(f"There is already a timer that has started in this channel! If you started this timer, use the following command to stop it:\n```yaml\n{commandPrefix}timer stop```")
+                # self.timer.get_command('resume').reset_cooldown(ctx)
+                # return
 
-            timerCog = self.bot.get_cog('Timer')
-            # set up the global timer tracker variable
-            global currentTimers
-            author = ctx.author
-            resumeTimes = {}
-            timerMessage = None
-            guild = ctx.guild
+            # timerCog = self.bot.get_cog('Timer')
+            # # set up the global timer tracker variable
+            # global currentTimers
+            # author = ctx.author
+            # resumeTimes = {}
+            # timerMessage = None
+            # guild = ctx.guild
             
-            # find every message by a bot in the last 200 messages in the channel
-            async for message in ctx.channel.history(limit=200).filter(predicate):
-                # if there was a message of a timer being started we need to simulate the runtime of the timer
-                # this if statement breaks after its execution so it only executes once
-                # the default ordering of the history is newest first so this assures that only the latest timer gets restarted
-                if "Starting the timer." in message.content:
-                    timerMessage = message
-                    # get the first line of the timer by splitting at the first newline and getting the first element
-                    startString = (timerMessage.content.split('\n', 1))[0]
-                    # extract the tier name, it is formated as ({Tier name} Friend)
-                    startRole = re.search('\(([^)]+)', startString)
-                    # if there was no role, then it was a no rewards game
-                    if startRole is None:
-                        startRole = ''
-                    else: 
-                        # separate the role name from 'friend'
-                        startRole = startRole.group(1).split()[0]
-                    # the game name is bolded, which in discord is done by going **x**
-                    startGame = re.search('\*\*(.*?)\*\*', startString).group(1)
-                    # get the original start time
-                    startTimerCreate = timerMessage.created_at
-                    startTime = startTimerCreate.replace(tzinfo=timezone.utc).timestamp()
-                    # establish the timer dictionary 
-                    resumeTimes = {f"{startRole} Friend Rewards":startTime}
-                    # get the start time as a formatted string
-                    datestart = startTimerCreate.replace(tzinfo=timezone.utc).astimezone(tz=pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p") 
+            # # find every message by a bot in the last 200 messages in the channel
+            # async for message in ctx.channel.history(limit=200).filter(predicate):
+                # # if there was a message of a timer being started we need to simulate the runtime of the timer
+                # # this if statement breaks after its execution so it only executes once
+                # # the default ordering of the history is newest first so this assures that only the latest timer gets restarted
+                # if "Starting the timer." in message.content:
+                    # timerMessage = message
+                    # # get the first line of the timer by splitting at the first newline and getting the first element
+                    # startString = (timerMessage.content.split('\n', 1))[0]
+                    # # extract the tier name, it is formated as ({Tier name} Friend)
+                    # startRole = re.search('\(([^)]+)', startString)
+                    # # if there was no role, then it was a no rewards game
+                    # if startRole is None:
+                        # startRole = ''
+                    # else: 
+                        # # separate the role name from 'friend'
+                        # startRole = startRole.group(1).split()[0]
+                    # # the game name is bolded, which in discord is done by going **x**
+                    # startGame = re.search('\*\*(.*?)\*\*', startString).group(1)
+                    # # get the original start time
+                    # startTimerCreate = timerMessage.created_at
+                    # startTime = startTimerCreate.replace(tzinfo=timezone.utc).timestamp()
+                    # # establish the timer dictionary 
+                    # resumeTimes = {f"{startRole} Friend Rewards":startTime}
+                    # # get the start time as a formatted string
+                    # datestart = startTimerCreate.replace(tzinfo=timezone.utc).astimezone(tz=pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p") 
                     
-                    # Search through the 10 messages before a starting timer and copy over all the fields in their embeds
-                    async for m in ctx.channel.history(before=timerMessage, limit=10):
+                    # # Search through the 10 messages before a starting timer and copy over all the fields in their embeds
+                    # async for m in ctx.channel.history(before=timerMessage, limit=10):
                         
-                        if m.embeds:
-                            commandMessage = m
-                            commandEmbed = (m.embeds[0].to_dict())
-                            commandMessage.content += commandEmbed['description']
+                        # if m.embeds:
+                            # commandMessage = m
+                            # commandEmbed = (m.embeds[0].to_dict())
+                            # commandMessage.content += commandEmbed['description']
 
-                            resumeString=[]
-                            guildsList = commandMessage.channel_mentions
-                            # take the fields from the embed fields and add them to the dictionary
-                            for f in commandEmbed['fields']:
-                                if 'DM' in f['name'] or '<@' in f['value']:
-                                    resumeString.append(f"{f['name']}={f['value']}")
-                            commandMessage.content = ', '.join(resumeString)
-                        # if the timer was started, then grab all players that were there at the beginning
-                        if m.content == f'{commandPrefix}timer start' or m.content == f'{commandPrefix}t start':
-                            playerResumeList = [m.author.id] + commandMessage.raw_mentions
-                            author = m.author
-                            break
+                            # resumeString=[]
+                            # guildsList = commandMessage.channel_mentions
+                            # # take the fields from the embed fields and add them to the dictionary
+                            # for f in commandEmbed['fields']:
+                                # if 'DM' in f['name'] or '<@' in f['value']:
+                                    # resumeString.append(f"{f['name']}={f['value']}")
+                            # commandMessage.content = ', '.join(resumeString)
+                        # # if the timer was started, then grab all players that were there at the beginning
+                        # if m.content == f'{commandPrefix}timer start' or m.content == f'{commandPrefix}t start':
+                            # playerResumeList = [m.author.id] + commandMessage.raw_mentions
+                            # author = m.author
+                            # break
 
-                    start = []
+                    # start = []
 
-                    playersCollection = db.players
-                    # if the game has rewards being given then we need to grab the consumables players are bringing with them
-                    if "norewards" not in commandMessage.content and startRole: 
-                        # userList = re.search('"([^"]*)"', commandMessage).group(1).split(',')
-                        playerInfoList = commandMessage.content.split(',')
-                        for p in range (len(playerResumeList)):
-                            pTemp = []
-                            pConsumables = ['None']
-                            pTemp.append(guild.get_member(int(playerResumeList[p])))
-                            if p == 0:
-                                pName = playerInfoList[p].split(' will receive DM rewards')[0].split('=')[1].replace("*", "")
+                    # playersCollection = db.players
+                    # # if the game has rewards being given then we need to grab the consumables players are bringing with them
+                    # if "norewards" not in commandMessage.content and startRole: 
+                        # # userList = re.search('"([^"]*)"', commandMessage).group(1).split(',')
+                        # playerInfoList = commandMessage.content.split(',')
+                        # for p in range (len(playerResumeList)):
+                            # pTemp = []
+                            # pConsumables = ['None']
+                            # pTemp.append(guild.get_member(int(playerResumeList[p])))
+                            # if p == 0:
+                                # pName = playerInfoList[p].split(' will receive DM rewards')[0].split('=')[1].replace("*", "")
                                
-                            else:
-                                pName = playerInfoList[p].split('=')[0].replace("*", "")
+                            # else:
+                                # pName = playerInfoList[p].split('=')[0].replace("*", "")
 
-                            cRecord  = list(playersCollection.find({"User ID": str(playerResumeList[p]), "Name": {"$regex": pName.strip(), '$options': 'i' }}))
+                            # cRecord  = list(playersCollection.find({"User ID": str(playerResumeList[p]), "Name": {"$regex": pName.strip(), '$options': 'i' }}))
 
-                            if p > 0:
-                                pConsumables = playerInfoList[p].split('Consumables: ')[1].split(',')
-                                pTemp += [cRecord[0],pConsumables,cRecord[0]['_id']]
-                                start.append(pTemp)
-                            else:
-                                pTemp += [cRecord[0],pConsumables,cRecord[0]['_id']] 
-                                dmChar = pTemp
-                                dmChar.append(['Junior Noodle',{"Players" : [], "DM" :  []}])
+                            # if p > 0:
+                                # pConsumables = playerInfoList[p].split('Consumables: ')[1].split(',')
+                                # pTemp += [cRecord[0],pConsumables,cRecord[0]['_id']]
+                                # start.append(pTemp)
+                            # else:
+                                # pTemp += [cRecord[0],pConsumables,cRecord[0]['_id']] 
+                                # dmChar = pTemp
+                                # dmChar.append(['Junior Noodle',{"Players" : [], "DM" :  []}])
 
-                                # find the name of which noodle role the DM has
-                                for r in dmChar[0].roles:
-                                    if 'Noodle' in r.name:
-                                        dmChar[5][0] = r.name
-                                        break
+                                # # find the name of which noodle role the DM has
+                                # for r in dmChar[0].roles:
+                                    # if 'Noodle' in r.name:
+                                        # dmChar[5][0] = r.name
+                                        # break
 
-                        print(start)
-                        resumeTimes = {f"{startRole} Friend Full Rewards:{startTime}":start} 
+                        # print(start)
+                        # resumeTimes = {f"{startRole} Friend Full Rewards:{startTime}":start} 
 
 
-                    else: 
-                        resumeTimes = {f"No Rewards:{startTime}":start}
-                    # go through every message after the timer started and reemulate the behavior
-                    # error messages and menus are blocked however
-                    async for message in ctx.channel.history(after=timerMessage):
-                        if (f"{commandPrefix}timer add " in message.content or f"{commandPrefix}t add " in message.content) and not message.author.bot:
-                            resumeTimes = await ctx.invoke(self.timer.get_command('add'), start=resumeTimes, role=startRole, msg=message, resume=True)
-                        elif  (f"{commandPrefix}timer addme" in message.content or f"{commandPrefix}t addme" in message.content) and not message.author.bot and (message.content != f'{commandPrefix}timer addme' or message.content != f'{commandPrefix}t addme'):
-                            resumeTimes = await ctx.invoke(self.timer.get_command('addme'), start=resumeTimes, role=startRole, dmChar=dmChar, msg=message, user=message.author, resume=True) 
-                        elif ((f"{commandPrefix}timer removeme" in message.content or f"{commandPrefix}timer remove " in message.content) or (f"{commandPrefix}t removeme" in message.content or f"{commandPrefix}t remove " in message.content)) and not message.author.bot: 
-                            if f"{commandPrefix}timer removeme" in message.content or f"{commandPrefix}t removeme" in message.content:
-                                resumeTimes = await ctx.invoke(self.timer.get_command('removeme'), msg=message, start=resumeTimes, role=startRole, user=message.author, resume=True)
-                            elif f"{commandPrefix}timer remove " in message.content or f"{commandPrefix}t remove " in message.content:
-                                resumeTimes = await ctx.invoke(self.timer.get_command('remove'), msg=message, start=resumeTimes, role=startRole, resume=True)
-                        elif f"{commandPrefix}timer death" in message.content or f"{commandPrefix}t death" in message.content:
-                            resumeTimes = await ctx.invoke(self.timer.get_command('death'), msg=message, start=resumeTimes, role=startRole, resume=True) 
-                        elif message.content.startswith('-') and message.author != dmChar[0]: 
-                            resumeTimes = await ctx.invoke(self.timer.get_command('deductConsumables'), msg=message, start=resumeTimes, resume=True)
-                        elif (f"{commandPrefix}timer reward" in message.content or f"{commandPrefix}t reward" in message.content) and (message.author == author):
-                            resumeTimes,dmChar = await self.reward(ctx, msg=message, start=resumeTimes, dmChar=dmChar, resume=True)
-                        elif ("Timer has been stopped!" in message.content) and message.author.bot:
-                            await channel.send("There doesn't seem to be a timer to resume here... Please start a new timer!")
-                            self.timer.get_command('resume').reset_cooldown(ctx)
-                            return
+                    # else: 
+                        # resumeTimes = {f"No Rewards:{startTime}":start}
+                    # # go through every message after the timer started and reemulate the behavior
+                    # # error messages and menus are blocked however
+                    # async for message in ctx.channel.history(after=timerMessage):
+                        # if (f"{commandPrefix}timer add " in message.content or f"{commandPrefix}t add " in message.content) and not message.author.bot:
+                            # resumeTimes = await ctx.invoke(self.timer.get_command('add'), start=resumeTimes, role=startRole, msg=message, resume=True)
+                        # elif  (f"{commandPrefix}timer addme" in message.content or f"{commandPrefix}t addme" in message.content) and not message.author.bot and (message.content != f'{commandPrefix}timer addme' or message.content != f'{commandPrefix}t addme'):
+                            # resumeTimes = await ctx.invoke(self.timer.get_command('addme'), start=resumeTimes, role=startRole, dmChar=dmChar, msg=message, user=message.author, resume=True) 
+                        # elif ((f"{commandPrefix}timer removeme" in message.content or f"{commandPrefix}timer remove " in message.content) or (f"{commandPrefix}t removeme" in message.content or f"{commandPrefix}t remove " in message.content)) and not message.author.bot: 
+                            # if f"{commandPrefix}timer removeme" in message.content or f"{commandPrefix}t removeme" in message.content:
+                                # resumeTimes = await ctx.invoke(self.timer.get_command('removeme'), msg=message, start=resumeTimes, role=startRole, user=message.author, resume=True)
+                            # elif f"{commandPrefix}timer remove " in message.content or f"{commandPrefix}t remove " in message.content:
+                                # resumeTimes = await ctx.invoke(self.timer.get_command('remove'), msg=message, start=resumeTimes, role=startRole, resume=True)
+                        # elif f"{commandPrefix}timer death" in message.content or f"{commandPrefix}t death" in message.content:
+                            # resumeTimes = await ctx.invoke(self.timer.get_command('death'), msg=message, start=resumeTimes, role=startRole, resume=True) 
+                        # elif message.content.startswith('-') and message.author != dmChar[0]: 
+                            # resumeTimes = await ctx.invoke(self.timer.get_command('deductConsumables'), msg=message, start=resumeTimes, resume=True)
+                        # elif (f"{commandPrefix}timer reward" in message.content or f"{commandPrefix}t reward" in message.content) and (message.author == author):
+                            # resumeTimes,dmChar = await self.reward(ctx, msg=message, start=resumeTimes, dmChar=dmChar, resume=True)
+                        # elif ("Timer has been stopped!" in message.content) and message.author.bot:
+                            # await channel.send("There doesn't seem to be a timer to resume here... Please start a new timer!")
+                            # self.timer.get_command('resume').reset_cooldown(ctx)
+                            # return
 
-                    break
+                    # break
 
-                    print(resumeTimes)
-            # if no message could be found within the limit or there no embed object could be found to get information from
-            if timerMessage is None or commandMessage is None:
-                await channel.send("There is no timer in the last 200 messages. Please start a new timer.")
-                self.timer.get_command('resume').reset_cooldown(ctx)
-                return
-            # inform the users that the timer was restarted
-            await channel.send(embed=None, content=f"I have resumed the timer for **{startGame}** ({startRole})." )
-            # add the timer to the tracker
-            currentTimers.append('#'+channel.name)
+                    # print(resumeTimes)
+            # # if no message could be found within the limit or there no embed object could be found to get information from
+            # if timerMessage is None or commandMessage is None:
+                # await channel.send("There is no timer in the last 200 messages. Please start a new timer.")
+                # self.timer.get_command('resume').reset_cooldown(ctx)
+                # return
+            # # inform the users that the timer was restarted
+            # await channel.send(embed=None, content=f"I have resumed the timer for **{startGame}** ({startRole})." )
+            # # add the timer to the tracker
+            # currentTimers.append('#'+channel.name)
             
-            stampEmbed = discord.Embed()
-            stampEmbed.set_footer(text=f'#{ctx.channel}\n{commandPrefix}timer help for help with the timer.')
-            stampEmbed.set_author(name=f'DM: {author.display_name}', icon_url=author.avatar_url)
-            stampEmbedmsg = None
+            # stampEmbed = discord.Embed()
+            # stampEmbed.set_footer(text=f'#{ctx.channel}\n{commandPrefix}timer help for help with the timer.')
+            # stampEmbed.set_author(name=f'DM: {author.display_name}', icon_url=author.avatar_url)
+            # stampEmbedmsg = None
 
-            # resume normal timer operations
-            await timerCog.duringTimer(ctx, datestart, startTime, resumeTimes, startRole, startGame, author, stampEmbed, stampEmbedmsg,dmChar,guildsList)
-            # enable the command again
-            self.timer.get_command('resume').reset_cooldown(ctx)
-            # after the timer finished, remove it from the tracker
-            currentTimers.remove('#'+channel.name)
-        else:
-            await ctx.channel.send(content=f"There is already a timer that has started in this channel! If you started this timer, use the following command to stop it:\n```yaml\n{commandPrefix}timer stop```")
-            return
+            # # resume normal timer operations
+            # await timerCog.duringTimer(ctx, datestart, startTime, resumeTimes, startRole, startGame, author, stampEmbed, stampEmbedmsg,dmChar,guildsList)
+            # # enable the command again
+            # self.timer.get_command('resume').reset_cooldown(ctx)
+            # # after the timer finished, remove it from the tracker
+            # currentTimers.remove('#'+channel.name)
+        # else:
+            # await ctx.channel.send(content=f"There is already a timer that has started in this channel! If you started this timer, use the following command to stop it:\n```yaml\n{commandPrefix}timer stop```")
+            # return
     
     #extracted the checks to here to generalize the changes
     async def permissionCheck(self, msg, author):

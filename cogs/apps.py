@@ -9,7 +9,7 @@ class Apps(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
     
-    @commands.group()
+    @commands.group(case_insensitive=True)
     async def app(self, ctx):	
         pass
       
@@ -90,18 +90,18 @@ class Apps(commands.Cog):
                     kidRole = get(guild.roles, name = 'Under-18 Friendling')
                     await appMember.add_roles(kidRole, reason="Approved application - the user is under 18.")
                 
-                playedGame = False
-                if db.users.find_one({"User ID" : str(appMember.id)}):
-                    playedGame = True
-                    juniorRole = get(guild.roles, name = 'Junior Friend')
+                # playedGame = False
+                # if db.users.find_one({"User ID" : str(appMember.id)}):
+                    # playedGame = True
+                    # juniorRole = get(guild.roles, name = 'Junior Friend')
 
-                    await appMember.add_roles(juniorRole, reason=f"Approved application - the user has played at least one quest. I have checked the last {limit} session logs.")
+                    # await appMember.add_roles(juniorRole, reason=f"Approved application - the user has played at least one quest. I have checked the last {limit} session logs.")
                     
                 
-                newRole = get(guild.roles, name = 'Roll20 Tier 0')
-                newRole = get(guild.roles, name = 'Roll20 Tier 1')
-                newRole = get(guild.roles, name = 'D&D Friend')
-                await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
+                # newRole = get(guild.roles, name = 'Roll20 Tier 0')
+                # newRole = get(guild.roles, name = 'Roll20 Tier 1')
+                # newRole = get(guild.roles, name = 'D&D Friend')
+                # await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
 
                 await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! The Mod team has approved your application and you have been assigned the appropriate roles.\n\nIf you have any further questions then please don't hesitate to ask in our #help-for-players channel or message a Mod Friend!")
 
