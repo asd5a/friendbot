@@ -75,6 +75,8 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
     
     if level >= 20:
         tier = 5
+    elif tier <= 0:
+        tier = 1
     #unreasonably large number as a cap
     cpThreshHoldArray = [16, 16+60, 16+60+60, 16+60+60+30, 90000000]
     # calculate how far into the current level CP the character is after the game
@@ -495,7 +497,7 @@ currentTimers = []
 
 gameCategory = ["🎲 game rooms", "🐉 campaigns", "mod friends"]
 roleArray = ['New', 'Junior', 'Journey', 'Elite', 'True', 'Ascended', '']
-noodleRoleArray = ['Good Noodle', 'Elite Noodle', 'True Noodle', 'Ascended Noodle', 'Immortal Noodle', 'Nega Noodle']
+noodleRoleArray = ['Good Noodle', 'Elite Noodle', 'True Noodle', 'Ascended Noodle', 'Immortal Noodle', 'Eternal Noodle']
 # tierArray = getTiers(sheet.row_values(2))
 # tpArray = sheet.row_values(3)
 commandPrefix = '$'

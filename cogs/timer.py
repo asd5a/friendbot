@@ -359,7 +359,7 @@ class Timer(commands.Cog):
             elif (msg.content.startswith(f"{commandPrefix}timer remove ") or msg.content.startswith(f"{commandPrefix}t remove ")) :
                 if await self.permissionCheck(msg, author):
                     # this simply checks the message for the user that is being added, the Member object is returned
-                    removeUser = await ctx.invoke(self.timer.get_command('remove'), msg=msg, prep=True)
+                    removeUser = await ctx.invoke(self.timer.get_command('remove'), msg=msg, start=playerRoster, prep=True)
                     print (removeUser)
                     if removeUser is None:
                         pass
@@ -395,8 +395,6 @@ class Timer(commands.Cog):
                 if await self.permissionCheck(msg, author):
                     guildsList = []
                     guildsListStr = ""
-                    # guildCategoryID = 678381362398625802
-                    # guild category channel for DnDFriends
                     guildCategoryID = channel_id_dic[ctx.guild.id]["Guild Rooms"]
 
                     if (len(msg.channel_mentions) > 3):
@@ -421,6 +419,7 @@ class Timer(commands.Cog):
 
             await prepEmbedMsg.delete()
             prepEmbedMsg = await channel.send(embed=prepEmbed)
+        print("GUILDS 1", guildsList)
         await ctx.invoke(self.timer.get_command('start'), userList = signedPlayers, game=game, role=role, guildsList = guildsList)
 
 
@@ -759,12 +758,6 @@ class Timer(commands.Cog):
                 if 'Noodle' in r.name:
                     dmChar[5][0] = r.name
                     break
-            #this check could also be done during prep, the current version allows for a channel to be prepped while another timer is running IF the current timer was created through resuming
-            # that seems inintentional
-            if self.timer.get_command('resume').is_on_cooldown(ctx):
-                await channel.send(f"There is already a timer that has started in this channel! If you started this timer, use the following command to stop it:\n```yaml\n{commandPrefix}timer stop```")
-                self.timer.get_command('prep').reset_cooldown(ctx)
-                return
             
             # get the current time for tracking the duration
             startTime = time.time()
@@ -825,6 +818,7 @@ class Timer(commands.Cog):
 
             stampEmbedmsg = await channel.send(embed=stampEmbed)
 
+            print("GUILDS 1", guildsList)
             # During Timer
             await timerCog.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg,dmChar,guildsList)
             
@@ -890,7 +884,7 @@ class Timer(commands.Cog):
                 # since this checks for multiple things, this cannot be avoided
                 for u, v in startcopy.items():
                     if 'Full Rewards' in u:
-                        totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 *12) // 60 #FIX TIME WEIRD
+                        totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 * 3) // 60 #FIX TIME WEIRD
                         if totalDurationTime < 180:
                             if not resume:
                               await ctx.channel.send(content=f"You cannot award any reward items if the quest is under three hours.") 
@@ -943,7 +937,7 @@ class Timer(commands.Cog):
                     dmMajorLimit = 0
                     dmMinorLimit = 1
                     
-                    if dmChar[5][0] == 'Nega Noodle':
+                    if dmChar[5][0] == 'Eternal Noodle':
                         rewardMajorLimit = 4
                         rewardMinorLimit = 8
                         dmMajorLimit = 2
@@ -1469,8 +1463,7 @@ class Timer(commands.Cog):
     @timer.command()
     async def death(self,ctx, msg, start="", role="", resume=False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
-            startTimes = await ctx.invoke(self.timer.get_command('remove'), msg=msg, start=start, role=role, resume=resume, death=True)
-            return startTimes
+            await self.removeDuringTimer(ctx, msg, start=start, role=role, resume=resume, death=True)
     
     """
     This command is used to remover players from the prep list or the running timer
@@ -1491,6 +1484,9 @@ class Timer(commands.Cog):
             if len(removeList) > 1:
                 await ctx.channel.send(content=f"I cannot remove more than one player! Please try the command with one player and check your format and spelling.")
                 return None
+            elif not removeList[0] in start:
+                await ctx.channel.send(content=f"I cannot find the player to remove in the roster.")
+                return None
             elif removeList != list():
                 removeUser = removeList[0]
                 if prep:
@@ -1501,7 +1497,6 @@ class Timer(commands.Cog):
                 if not resume:
                     await ctx.channel.send(content=f"I cannot find any mention of the user you are trying to remove. Please check your format and spelling.")
 
-            return start
             
     async def removeDuringTimer(self,ctx, msg, start=None,role="", resume=False, death=False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
@@ -1636,6 +1631,7 @@ class Timer(commands.Cog):
             tierNum = 0
             guild = ctx.guild
 
+            print("GUILDS 4", guildsList)
             stopEmbed = discord.Embed()
             
             # turn Tier string into tier number
@@ -1681,7 +1677,8 @@ class Timer(commands.Cog):
             global settingsRecord
             
             dbEntry["DDMRW"] = settingsRecord["ddmrw"]
-            
+            if tierNum < 1:
+                tierNum = 1
             rewardsCollection = db.rit
             rewardList = list(rewardsCollection.find({"Tier": tierNum}))
             
@@ -1738,6 +1735,7 @@ class Timer(commands.Cog):
                         playerDBEntry["Guild"] = value[1]["Guild"]
                         playerDBEntry["2xR"] = True
                         playerDBEntry["2xI"] = True
+                        playerDBEntry["Guild Rank"] = value[1]["Guild Rank"]
                     playerDBEntry["Character CP"] = value[1]["CP"]
                     playerDBEntry["Mention"] = value[0].mention
                     playerDBEntry["Double Items"] = [randomItem["Type"], randomItem["Name"]]
@@ -1806,6 +1804,7 @@ class Timer(commands.Cog):
                     dmDBEntry["Guild"] = value[1]["Guild"]
                     dmDBEntry["2xR"] = True
                     dmDBEntry["2xI"] = True
+                    dmDBEntry["Guild Rank"] = value[1]["Guild Rank"]
                 dmDBEntry["Character CP"] = value[1]["CP"]
                 dmDBEntry["DM Double"] = settingsRecord["ddmrw"]
                 dmDBEntry["Double Items"] = [randomItem["Type"], randomItem["Name"]]
@@ -1829,14 +1828,13 @@ class Timer(commands.Cog):
                 guildsCollection = db.guilds
                 # if a member of the guild was in the game
                 guildMember = False
-                # list of all guilds
-                guildsListStr = ""
                 # list of all guild records that need to be update, with the updates applied
                 guildsRecordsList = list()
                 
+                print("GUILDS 5", guildsList != list())
                 # passed in parameter, check if there were guilds involved
                 if guildsList != list():
-                    guildsListStr = "Guilds: "
+                    print("GUILDS 5", guildsList != list())
                     # for every guild in the game
                     for g in guildsList:
                         # get the DB record of the guild
@@ -1856,7 +1854,10 @@ class Timer(commands.Cog):
                         # if the guild exists in the DB
                 # create a list of of UpdateOne objects from the data entries for the bulk_write
                 timerData = list(map(lambda item: UpdateOne({'_id': item[3]}, {"$set": {"GID": dbEntry["Log ID"]}}), playerList))
-
+                
+                print("GUILDS 6", guildsList)
+                
+                print("GUILDS 7", dbEntry["Guilds"])
                 # try to update all the player entries
                 try:
                     playersCollection.bulk_write(timerData)
@@ -1888,7 +1889,6 @@ class Timer(commands.Cog):
             
             # enable the starting timer commands
             self.timer.get_command('prep').reset_cooldown(ctx)
-            self.timer.get_command('resume').reset_cooldown(ctx)
 
         return
 
@@ -1907,7 +1907,6 @@ class Timer(commands.Cog):
     @commands.has_any_role('Mod Friend', 'A d m i n')
     async def resetcooldown(self,ctx):
         self.timer.get_command('prep').reset_cooldown(ctx)
-        self.timer.get_command('resume').reset_cooldown(ctx)
         await ctx.channel.send(f"Timer has been reset in #{ctx.channel}")
     
     
@@ -1930,12 +1929,10 @@ class Timer(commands.Cog):
                     # pass
                 # else:
                     # await channel.send('Try this command in a game room channel!')
-                    # self.timer.get_command('resume').reset_cooldown(ctx)
                     # return
             # # make sure that there is no timer running right now
             # if self.timer.get_command('prep').is_on_cooldown(ctx):
                 # await channel.send(f"There is already a timer that has started in this channel! If you started this timer, use the following command to stop it:\n```yaml\n{commandPrefix}timer stop```")
-                # self.timer.get_command('resume').reset_cooldown(ctx)
                 # return
 
             # timerCog = self.bot.get_cog('Timer')
@@ -2054,7 +2051,6 @@ class Timer(commands.Cog):
                             # resumeTimes,dmChar = await self.reward(ctx, msg=message, start=resumeTimes, dmChar=dmChar, resume=True)
                         # elif ("Timer has been stopped!" in message.content) and message.author.bot:
                             # await channel.send("There doesn't seem to be a timer to resume here... Please start a new timer!")
-                            # self.timer.get_command('resume').reset_cooldown(ctx)
                             # return
 
                     # break
@@ -2063,7 +2059,6 @@ class Timer(commands.Cog):
             # # if no message could be found within the limit or there no embed object could be found to get information from
             # if timerMessage is None or commandMessage is None:
                 # await channel.send("There is no timer in the last 200 messages. Please start a new timer.")
-                # self.timer.get_command('resume').reset_cooldown(ctx)
                 # return
             # # inform the users that the timer was restarted
             # await channel.send(embed=None, content=f"I have resumed the timer for **{startGame}** ({startRole})." )
@@ -2078,7 +2073,6 @@ class Timer(commands.Cog):
             # # resume normal timer operations
             # await timerCog.duringTimer(ctx, datestart, startTime, resumeTimes, startRole, startGame, author, stampEmbed, stampEmbedmsg,dmChar,guildsList)
             # # enable the command again
-            # self.timer.get_command('resume').reset_cooldown(ctx)
             # # after the timer finished, remove it from the tracker
             # currentTimers.remove('#'+channel.name)
         # else:
@@ -2123,9 +2117,9 @@ class Timer(commands.Cog):
 
         #in no rewards games characters cannot die or get rewards
         if role != "":
-            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward']
+            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp']
         else:
-            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove']
+            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'stamp']
 
       
         timerCombined = []
@@ -2159,6 +2153,8 @@ class Timer(commands.Cog):
                 elif (msg.content == f"{commandPrefix}timer stop" or msg.content == f"{commandPrefix}timer end" or msg.content == f"{commandPrefix}t stop" or msg.content == f"{commandPrefix}t end"):
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
+                        
+                        print("GUILDS 3", guildsList)
                         await ctx.invoke(self.timer.get_command('stop'), start=startTimes, role=role, game=game, datestart=datestart, dmChar=dmChar, guildsList=guildsList)
                         return
 
@@ -2184,14 +2180,16 @@ class Timer(commands.Cog):
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 elif (msg.content.startswith(f"{commandPrefix}timer remove ") or msg.content.startswith(f"{commandPrefix}t remove ")): 
                     if await self.permissionCheck(msg, author): 
-                        startTimes = await ctx.invoke(self.timer.get_command('remove'), msg=msg, start=startTimes, role=role)
+                        await ctx.invoke(self.timer.get_command('remove'), msg=msg, start=startTimes, role=role)
                         stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
+                elif (msg.content.startswith(f"{commandPrefix}timer stamp") or msg.content.startswith(f"{commandPrefix}t stamp")): 
+                    stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 elif (msg.content.startswith(f"{commandPrefix}timer reward") or msg.content.startswith(f"{commandPrefix}t reward")):
                     if await self.permissionCheck(msg, author):
                         startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar)
                 elif (msg.content.startswith(f"{commandPrefix}timer death") or msg.content.startswith(f"{commandPrefix}t death")):
                     if await self.permissionCheck(msg, author):
-                        startTimes = await ctx.invoke(self.timer.get_command('death'), msg=msg, start=startTimes, role=role)
+                        await ctx.invoke(self.timer.get_command('death'), msg=msg, start=startTimes, role=role)
                         stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, dmChar=dmChar, start=startTimes, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 elif msg.content.startswith('-') and msg.author != dmChar[0]:
                     await ctx.invoke(self.timer.get_command('deductConsumables'), msg=msg, start=startTimes)

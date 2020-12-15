@@ -31,8 +31,7 @@ class Campaign(commands.Cog):
             await ctx.channel.send(f'Sorry, the command `{commandPrefix}campaign {ctx.invoked_with}` requires an additional keyword to the command or is invalid, please try again!')
             return
         if isinstance(error, commands.CommandOnCooldown):
-            msg = f"You are already preparing a timer in this channel. Please cancel the current timer and try again." 
-            await ctx.channel.send(msg)
+            msg = f"The command is on cooldown." 
         elif isinstance(error, commands.MissingAnyRole):
             await ctx.channel.send("You do not have the required permissions for this command.")
             bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
@@ -47,7 +46,8 @@ class Campaign(commands.Cog):
                 elif error.param.name == 'userList':
                     msg = "You can't prepare a timer without any players! \n"
                 else:
-                    msg = "Your command was missing an argument! "
+                    msg = "Your command is missing an argument! "
+                print("WWWWWWWWWWw")
             elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
               msg = "There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command. "
 
@@ -56,8 +56,6 @@ class Campaign(commands.Cog):
                 if ctx.command.name == "prep":
                     msg += f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, [...]"```'
                 
-                ctx.command.reset_cooldown(ctx)
-                await ctx.channel.send(content=msg)
             else:
                 ctx.command.reset_cooldown(ctx)
                 await traceBack(ctx,error)
@@ -65,14 +63,60 @@ class Campaign(commands.Cog):
             if ctx.command.name == "create":
                 msg += f"Please follow this format:\n`{commandPrefix}campaign create @rolename #channelname`.\n"
 
-
             ctx.command.reset_cooldown(ctx)
             await ctx.channel.send(msg)
         else:
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
+    @campaign.command()
+    async def info(self, ctx, channel):
+        campaignChannel = ctx.message.channel_mentions
 
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
+        if campaignChannel == list():
+            await ctx.channel.send(f"A campaign channel must be supplied")
+            return 
+        channel = campaignChannel[0]
+        
+        campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)})
+        print(campaignRecords)
+        if not campaignRecords:
+            await channel.send(f"No campaign could be found for this channel.")
+            return 
+        playerRecords = list(db.users.find({"Campaigns."+campaignRecords["Name"]: {"$exists": True}}))
+        print("Records", playerRecords)
+        playerRecords.sort(key=lambda x:not  x["Campaigns"][campaignRecords["Name"]]["Active"])
+        infoEmbed = discord.Embed()
+        infoEmbedmsg = None
+        master = None
+        master_text = ""
+        infoEmbed.title = f"Campaign Info: {campaignRecords['Name']}"
+        description_string = f"**Sessions**: {campaignRecords['Sessions']}\n**Created On**: " +datetime.fromtimestamp(campaignRecords['Creation Date']).strftime("%b-%d-%y %I:%M %p")
+        for player in playerRecords:
+            if player['User ID'] == campaignRecords["Campaign Master ID"]:
+                master = player
+            else:
+                info_string= ""
+                member = ctx.guild.get_member(int(player['User ID']))
+                member_name = "Left the Server"
+                if member:
+                    member_name = member.display_name
+                info_string += f"---Time: {timeConversion(player['Campaigns'][campaignRecords['Name']]['Time'])}\n"
+                info_string += f"---Sessions: {player['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
+                info_string += f"---Active Member: {player['Campaigns'][campaignRecords['Name']]['Active']}"
+                infoEmbed.add_field(name=f"**{member.display_name}**:", value = info_string, inline = False)
+        infoEmbed.description = description_string
+        
+        member = ctx.guild.get_member(int(master['User ID']))
+        member_name = "Left the Server"
+        if member:
+            member_name = member.display_name
+        master_text += f"---Time: {timeConversion(master['Campaigns'][campaignRecords['Name']]['Time'])}\n"
+        master_text += f"---Sessions: {master['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
+        master_text += f"---Active Member: {master['Campaigns'][campaignRecords['Name']]['Active']}"
+        infoEmbed.insert_field_at(0, name=f"**Campaign Master {member_name}**:", value = master_text, inline = False)
+        await ctx.channel.send(embed=infoEmbed)
+    
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
     @campaign.command()
     async def create(self,ctx, roleName, channelName):
         channel = ctx.channel
@@ -83,21 +127,27 @@ class Campaign(commands.Cog):
 
         campaignRole = ctx.message.role_mentions
         campaignChannel = ctx.message.channel_mentions
-        campaignName = campaignRole[0].name
 
         roles = [r.name for r in ctx.author.roles]
-
+        
         if 'Campaign Master' not in roles:
             await channel.send(f"You do not have the Campaign Master role to use this command.")
             return  
 
         if campaignRole == list() or campaignChannel == list():
-            await channel.send(f"A camapign role and campaign channel must be supplied")
+            await channel.send(f"A camapaign role and campaign channel must be supplied")
             return 
-
+        campaignName = campaignRole[0].name
+        
+        roleStr = (campaignRole[0].name.lower().replace(',', '').replace('.', '').replace(' ', '').replace('-', ''))
+        
+        campaignNameStr = (campaignChannel[0].name.replace('-', ''))
+        if campaignNameStr != roleStr:
+            await channel.send(f"The campaign name: ***{campaignName}*** does not match the campaign channel ***{campaignChannel[0].name}***. Please try the command again with the correct channel.")
+            return 
         campaignCollection = db.campaigns
         campaignRecords = campaignCollection.find_one({"Name": {"$regex": campaignName, '$options': 'i' }})
-
+        print(campaignRecords)
         if campaignRecords:
             await channel.send(f"Another campaign by this name has already been created.")
             return 
@@ -107,12 +157,15 @@ class Campaign(commands.Cog):
 
         if userRecords: 
             if 'Campaigns' not in userRecords:
-                userRecords['Campaigns'] = {campaignRole[0].name : 0 }
+                userRecords['Campaigns'] = {campaignRole[0].name : {"Time" : 0, "Sessions" : 0, "Active" : True} }
             else:
-                userRecords['Campaigns'][campaignRole[0].name] = 0
-
-
-            campaignDict = {'Name': campaignName, 'Campaign Master ID': str(author.id), 'Role ID': str(campaignRole[0].id), 'Channel ID': str(campaignChannel[0].id)}
+                userRecords['Campaigns'][campaignRole[0].name] = {"Time" : 0, "Sessions" : 0, "Active" : True}
+            campaignDict = {'Name': campaignName, 
+                            'Campaign Master ID': str(author.id), 
+                            'Role ID': str(campaignRole[0].id), 
+                            'Channel ID': str(campaignChannel[0].id),
+                            'Sessions':0,
+                            'Creation Date' : time.time()}
             await author.add_roles(campaignRole[0], reason=f"Added campaign {campaignName}")
 
             try:
@@ -132,10 +185,10 @@ class Campaign(commands.Cog):
                     campaignEmbedmsg = await channel.send(embed=campaignEmbed)
         return
 
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
     @campaign.command()
     async def add(self,ctx, user, campaignName):
-        print("ssssss", ctx)
+        print("ssssss", campaignName)
         channel = ctx.channel
         author = ctx.author
         campaignEmbed = discord.Embed()
@@ -163,7 +216,7 @@ class Campaign(commands.Cog):
         campaignRecords = campaignCollection.find_one({"Channel ID": {"$regex": f"{campaignName.id}", '$options': 'i' }})
 
         if not campaignRecords:
-            await channel.send(f"`{campaignName.mention}` doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
+            await channel.send(f"{campaignName.mention} doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
             return
 
         if campaignRecords['Campaign Master ID'] != str(author.id):
@@ -174,9 +227,11 @@ class Campaign(commands.Cog):
         userRecords = usersCollection.find_one({"User ID": str(user[0].id)})  
 
         if 'Campaigns' not in userRecords:
-            userRecords['Campaigns'] = {campaignRecords['Name'] : 0 }
+            userRecords['Campaigns'] = {campaignRecords['Name'] : {"Time" : 0, "Sessions" : 0} }
         else:
-            userRecords['Campaigns'][campaignRecords['Name']] = 0
+            if campaignRecords['Name'] not in userRecords['Campaigns']:
+                userRecords['Campaigns'][campaignRecords['Name']] = {"Time" : 0, "Sessions" : 0}
+        userRecords['Campaigns'][campaignRecords['Name']]["Active"] = True
 
         await user[0].add_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
 
@@ -197,7 +252,7 @@ class Campaign(commands.Cog):
 
         return
 
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
     @campaign.command()
     async def remove(self,ctx, user, campaignName):
         channel = ctx.channel
@@ -207,7 +262,10 @@ class Campaign(commands.Cog):
         campaignCog = self.bot.get_cog('Campaign')
         guild = ctx.message.guild
 
+        campaignName = ctx.message.channel_mentions
         user = ctx.message.mentions
+
+        usersCollection = db.users
 
         roles = [r.name for r in ctx.author.roles]
 
@@ -219,8 +277,12 @@ class Campaign(commands.Cog):
             await channel.send(f"I could not find the user you were trying to remove from the campaign. Please try again.")
             return  
 
+        if campaignName == list() or len(campaignName) > 1:
+            await channel.send(f"`I couldn't find the campaign you were trying remove from. Please try again")
+            return
+        campaignName = campaignName[0]
         campaignCollection = db.campaigns
-        campaignRecords = campaignCollection.find_one({"Name": {"$regex": campaignName, '$options': 'i' }})
+        campaignRecords = campaignCollection.find_one({"Channel ID": {"$regex": str(campaignName.id), '$options': 'i' }})
 
         if not campaignRecords:
             await channel.send(f"`{campaignName}` doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
@@ -229,8 +291,17 @@ class Campaign(commands.Cog):
         if campaignRecords['Campaign Master ID'] != str(author.id):
             await channel.send(f"You cannot remove users from this campaign because you are not the campaign master of {campaignRecords['Name']}")
             return
-
-        await user[0].remove_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} remove campaign member from {campaignRecords['Name']}")
+        try:
+            usersCollection.update_one({'User ID': str(user[0].id)}, {"$set": {f"Campaigns.{campaignRecords['Name']}.Active": False}}, upsert=True)
+        except Exception as e:
+            print ('MONGO ERROR: ' + str(e))
+            campaignEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try removing from your campaign again.")
+        else:
+            await user[0].remove_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} remove campaign member from {campaignRecords['Name']}")
+            print('Success')
+            campaignEmbed.title = f"Campaign: {campaignRecords['Name']}"
+            campaignEmbed.description = f"{author.name} has removed {user[0].mention} from **{campaignRecords['Name']}**!"
+            campaignEmbedmsg = await channel.send(embed=campaignEmbed)
         return
     @campaign.group(aliases=['t'])
     async def timer(self, ctx):	
@@ -274,7 +345,7 @@ class Campaign(commands.Cog):
         #prevent the command if not in a proper channel (game/campaign)
         if not "campaign" in channel.category.name.lower(): #!= channel_id_dic[ctx.guild.id]["Campaign Rooms"]:
             #exception to the check above in case it is a testing channel
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
+            if str(channel.id) in settingsRecord['Test Channel IDs']:
                 pass
             else: 
                 #inform the user of the correct location to use the command and how to use it
@@ -305,6 +376,8 @@ class Campaign(commands.Cog):
 
         
 
+        campaignCollection = db.campaigns
+        campaignRecords = campaignCollection.find_one({"Channel ID": f"{ctx.channel.id}"})
 
         #create the role variable for future use, default it to no role
         role = ""
@@ -319,9 +392,9 @@ class Campaign(commands.Cog):
         prepEmbed.title = f"{game} (Campaign)"
         prepEmbed.description = f"**DM Signup**: {commandPrefix}campaign timer signup \n**Player Signup**: {commandPrefix}campaign timer signup\n**Add to roster**: {commandPrefix}campaign timer add @player\n**Remove from roster**: {commandPrefix}campaign timer remove @player"
         
-        
-        #set up the special field for the DM character
+         #set up the special field for the DM character
         prepEmbed.add_field(name = f"{author.display_name} **(DM)**", value = author.mention)
+        
         
         #setup a variable to store the string showing the current roster for the game
         rosterString = ""
@@ -330,7 +403,7 @@ class Campaign(commands.Cog):
             # create a field in embed for each player and their character, they could not have signed up so the text reflects that
             # the text differs only slightly if it is a campaign
             prepEmbed.add_field(name=p.display_name, value='Has not yet signed up for the campaign.', inline=False)
-            
+        playerRoster = [author] + playerRoster
         #set up a field to inform the DM on how to start the timer or how to get help with it
         prepEmbed.set_footer(text= f"If enough players have signed up, use the following command to start the timer: `{commandPrefix}campaign timer start`\nUse the following command to see a list of timer commands: `{commandPrefix}campaign timer help`")
 
@@ -387,7 +460,7 @@ class Campaign(commands.Cog):
                 # special behavior:
                 playerChar = None
                 if msg.author in playerRoster:
-                    playerChar = await ctx.invoke(self.timer.get_command('signup'), char=None, author=msg.author, role=role) 
+                    playerChar = await ctx.invoke(self.timer.get_command('signup'), char=None, author=msg.author, role=role, campaignRecords = campaignRecords) 
                     if playerChar:
                         signedPlayers["Players"][msg.author.id] = playerChar
                         prepEmbed.set_field_at(playerRoster.index(playerChar["Member"]), name=playerChar["Member"].display_name, value= f"{playerChar['Member'].mention}", inline=False)
@@ -406,6 +479,7 @@ class Campaign(commands.Cog):
                     # this simply checks the message for the user that is being added, the Member object is returned
                     addUser = await self.addDuringPrep(ctx, msg=msg, prep=True)
                     #failure to add a user does not have an error message if no user is being added
+                    print(playerRoster)
                     if addUser is None:
                         pass
                     elif addUser not in playerRoster:
@@ -422,12 +496,13 @@ class Campaign(commands.Cog):
             elif self.startsWithCheck(msg, "remove"):
                 if await self.permissionCheck(msg, author):
                     # this simply checks the message for the user that is being added, the Member object is returned
-                    removeUser = await self.removeDuringPrep(ctx, msg=msg, prep=True)
+                    removeUser = await self.removeDuringPrep(ctx, msg=msg, start=playerRoster, prep=True)
                     print (removeUser)
+                    print(playerRoster)
                     if removeUser is None:
                         pass
                     #check if the user is not the DM
-                    elif removeUser != author:
+                    elif playerRoster.index(removeUser) != 0:
                         # remove the embed field of the player
                         prepEmbed.remove_field(playerRoster.index(removeUser))
                         # remove the player from the roster
@@ -455,7 +530,7 @@ class Campaign(commands.Cog):
             await prepEmbedMsg.delete()
             
             prepEmbedMsg = await channel.send(embed=prepEmbed)
-        await ctx.invoke(self.timer.get_command('start'), userList = signedPlayers, game=game, role=role)
+        await ctx.invoke(self.timer.get_command('start'), userList = signedPlayers, game=game, role=role, campaignRecords = campaignRecords)
 
 
     """
@@ -470,7 +545,7 @@ class Campaign(commands.Cog):
         the invoke source (ctx.invoked_with == "resume") would allow manual calls to this command
     """
     @timer.command()
-    async def signup(self,ctx, char="", author="", role="", resume=False):
+    async def signup(self,ctx, char="", author="", role="", resume=False, campaignRecords = None):
         #check if the command was called using one of the permitted other commands
         if ctx.invoked_with == 'prep' or ctx.invoked_with == "resume":
             # set up a informative error message for the user
@@ -479,12 +554,10 @@ class Campaign(commands.Cog):
             # This is only true if this is during a campaign, in that case there are no characters or consumables
             if char is None: 
                 usersCollection = db.users
-                campaignCollection = db.campaigns
-                campaignRecords = campaignCollection.find_one({"Channel ID": f"{ctx.channel.id}"})
                 print("SING", char)
                 # grab the DB records of the first user with the ID of the author
                 userRecord = list(usersCollection.find({"User ID": str(author.id)}))[0]
-                if("Campaigns" in userRecord and campaignRecords["Name"] in userRecord["Campaigns"].keys()):
+                if("Campaigns" in userRecord and campaignRecords["Name"] in userRecord["Campaigns"].keys() and userRecord["Campaigns"][campaignRecords["Name"]]["Active"]):
                     # this indicates a selection of user info that seems to never be used
                     return {"Member" : author, "DB Entry": userRecord}
                 else:
@@ -497,7 +570,7 @@ class Campaign(commands.Cog):
     this includes setting up the tracking variables of user playing times,
     """
     @timer.command()
-    async def start(self, ctx, userList="", game="", role="", guildsList = ""):
+    async def start(self, ctx, userList="", game="", role="", guildsList = "", campaignRecords = None):
         # access the list of all current timers, this list is reset on reloads and resets
         # this is used to enable the list command and as a management tool for seeing if the timers are working
         global currentTimers
@@ -549,7 +622,7 @@ class Campaign(commands.Cog):
             stampEmbedmsg = await channel.send(embed=stampEmbed)
 
             # During Timer
-            await self.duringTimer(ctx, datestart, startTime, userList, role, game, author, stampEmbed, stampEmbedmsg,dmChar)
+            await self.duringTimer(ctx, datestart, startTime, userList, role, game, author, stampEmbed, stampEmbedmsg,dmChar, campaignRecords)
             
             # allow the creation of a new timer
             self.timer.get_command('prep').reset_cooldown(ctx)
@@ -762,6 +835,9 @@ class Campaign(commands.Cog):
             if len(removeList) > 1:
                 await ctx.channel.send(content=f"I cannot remove more than one player! Please try the command with one player and check your format and spelling.")
                 return None
+            elif not removeList[0] in start:
+                await ctx.channel.send(content=f"I cannot find the player to remove in the roster.")
+                return None
             elif removeList != list():
                 return removeList[0]
             else:
@@ -840,7 +916,7 @@ class Campaign(commands.Cog):
             return embedMsg
 
     @timer.command(aliases=['end'])
-    async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList=""):
+    async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", campaignRecords = None):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
             end = time.time() + 3600 * 3
             allRewardStrings = {}
@@ -870,7 +946,7 @@ class Campaign(commands.Cog):
             playerData = []
             campaignCollection = db.campaigns
             # get the record of the campaign for the current channel
-            campaignRecord = list(campaignCollection.find({"Channel ID": str(ctx.channel.id)}))[0]
+            campaignRecord = campaignRecords
             
             # since time is tracked specifically for campaigns we extract the duration by getting the 
             for key, value in allRewardStrings.items():
@@ -889,7 +965,12 @@ class Campaign(commands.Cog):
             try:   
                 usersCollection = db.users
                 # update the DM's entry
-                usersCollection.update_one({'User ID': str(dmChar["Member"].id)}, {"$set": {campaignRecord["Name"]+" inc" : {"Games" : 1, "Campaigns."+campaignRecord["Name"]: total_duration, 'Noodles': (total_duration/3600)//3}}}, upsert=True)
+                usersCollection.update_one({'User ID': str(dmChar["Member"].id)},
+                                            {"$set": {campaignRecord["Name"]+" inc" : 
+                                                {"Games" : 1, 
+                                                 f"Campaigns.{campaignRecord['Name']}.Time": total_duration,
+                                                 f"Campaigns.{campaignRecord['Name']}.Sessions": 1,
+                                                 'Noodles': (total_duration/3600)//3}}}, upsert=True)
                 # update the player entries in bulk
                 usersData = list(map(lambda item: UpdateOne({'_id': item["DB Entry"]['_id']}, {'$set': {campaignRecord["Name"]+" inc" : item["inc"]}}, upsert=True), playerData))
                 usersCollection.bulk_write(usersData)
@@ -946,7 +1027,7 @@ class Campaign(commands.Cog):
     dmChar -> the character of the DM 
     guildsList -> the list of guilds involved with the timer
     """
-    async def duringTimer(self,ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg, dmChar):
+    async def duringTimer(self,ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg, dmChar,campaignRecords):
         # if the timer is being restarted then we create a new message with the stamp command
         if ctx.invoked_with == "resume":
             stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, embed=stampEmbed, embedMsg=stampEmbedmsg)
@@ -981,7 +1062,7 @@ class Campaign(commands.Cog):
                 if self.startsWithCheck(msg, "stop") or self.startsWithCheck(msg, "end"):
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
-                        await ctx.invoke(self.timer.get_command('stop'), start=startTimes, role=role, game=game, datestart=datestart, dmChar=dmChar)
+                        await ctx.invoke(self.timer.get_command('stop'), start=startTimes, role=role, game=game, datestart=datestart, dmChar=dmChar, campaignRecords = campaignRecords)
                         return
 
                 # this behaves just like add above, but skips the ambiguity check of addme since only the author of the message could be added
@@ -1099,6 +1180,7 @@ class Campaign(commands.Cog):
             try:
                 if len(data) > 0:
                     usersCollection.bulk_write(playersData)
+                campaignCollection.update_one({"_id": campaignRecord["_id"]}, {"$inc" : {"Sessions" : 1}})
             except Exception as e:
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")

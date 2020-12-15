@@ -8,6 +8,7 @@ from datetime import datetime, timezone,timedelta
 class Guild(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
+        self.creation_cost = 8000
        
 
     @commands.group(aliases=['g'], case_insensitive=True)
@@ -66,7 +67,7 @@ class Guild(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
 
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
     @guild.command()
     async def create(self,ctx, charName, guildName, roleName="", channelName=""):
         channel = ctx.channel
@@ -92,8 +93,11 @@ class Guild(commands.Cog):
         #see if channel + role + guildname matchup.
         roleStr = (guildRole[0].name.lower().replace(',', '').replace('.', '').replace(' ', '').replace('-', ''))
         guildNameStr = (guildName.lower().replace(',', '').replace('.', '').replace(' ', '').replace('-', ''))
+        
         guildChannelStr = (guildChannel[0].name.replace('-', ''))
-
+        print(roleStr)
+        print(guildNameStr)
+        print(guildChannelStr)
         if guildChannelStr != guildNameStr:
             await channel.send(f"The guild: ***{guildName}*** does not match the guild channel ***{guildChannel[0].name}***. Please try the command again with the correct channel.")
             return 
@@ -133,7 +137,7 @@ class Guild(commands.Cog):
 
                     charDict['GP'] -= float(gpNeeded)
 
-                    noodleRep = ["Elite Noodle (0)", "True Noodle (10)", "Ascended Noodle (20)", "Immortal Noodle (30)"]
+                    noodleRep = ["Elite Noodle (0)", "True Noodle (10)", "Ascended Noodle (20)", "Immortal Noodle (30)", "Eternal Noodle (40)"]
                     charID = charDict['_id']
                     if 'Guilds' not in userRecords: 
                         userRecords['Guilds'] = []
@@ -217,7 +221,7 @@ class Guild(commands.Cog):
                         print('Success')
 
                         guildEmbed.title = f"Guild Creation: {guildName}"
-                        guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\n6000 gp must be donated in order for the guild to officially open!\n\nAny character who is not in a guild can fund this guild using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" \"{guildName}\" gp```\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info \"{guildName}\"```\nCurrent Guild Funds: {gpNeeded} gp"
+                        guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\n{self.creation_cost} gp must be donated in order for the guild to officially open!\n\nAny character who is not in a guild can fund this guild using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" \"{guildName}\" gp```\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info \"{guildName}\"```\nCurrent Guild Funds: {gpNeeded} gp"
                         if guildEmbedmsg:
                             await guildEmbedmsg.clear_reactions()
                             await guildEmbedmsg.edit(embed=guildEmbed)
@@ -299,6 +303,7 @@ class Guild(commands.Cog):
                 pass
             else:
                 gv = guild_life_stats["Guilds"][guildRecords['Name']]
+            print(gv)
             guild_data_0s = ["GQ", "GQM", "GQNM", "GQDM", "DM Sparkles", "Player Sparkles", "Joins"]
             for data_key in guild_data_0s:
                 if not data_key in gv:
@@ -328,8 +333,8 @@ class Guild(commands.Cog):
             else:
                 guildEmbed.add_field(name="Members", value="There are no guild members currently.")
 
-            if guildRecords['Funds'] < 6000:
-                guildEmbed.add_field(name="Funds", value=f"{guildRecords['Funds']} gp / 6000 gp.\n**{6000 - guildRecords['Funds']} gp** required to open the guild!", inline=False)
+            if guildRecords['Funds'] < self.creation_cost:
+                guildEmbed.add_field(name="Funds", value=f"{guildRecords['Funds']} gp / {self.creation_cost} gp.\n**{self.creation_cost - guildRecords['Funds']} gp** required to open the guild!", inline=False)
             else:
                 guildEmbed.add_field(name="Reputation", value=f"Total Reputation: {guildRecords['Total Reputation']} :sparkles:\nBank: {guildRecords['Reputation']} :sparkles:", inline=False)
             guildEmbed.add_field(name="Monthly Stats", value=guild_stats_string, inline=False)
@@ -350,7 +355,7 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guildEmbed = discord.Embed()
         guildEmbedEmbedmsg = None
-
+        self.creation_cost = 8000
         def guildEmbedCheck(r, u):
             sameMessage = False
             if guildEmbedmsg.id == r.message.id:
@@ -363,7 +368,7 @@ class Guild(commands.Cog):
             guildRecords, guildEmbedmsg = await checkForGuild(ctx,guildName,guildEmbed) 
 
             if guildRecords:
-                if guildRecords['Funds'] >= 6000:
+                if guildRecords['Funds'] >= self.creation_cost:
                     await channel.send(f"***{guildRecords['Name']}*** is not expecting any funds. This guild has already been opened.")
                     return
 
@@ -408,18 +413,18 @@ class Guild(commands.Cog):
                 oldFundGP = guildRecords['Funds']
                 guildRecords['Funds'] += float(gpFund) 
 
-                if  (guildRecords['Funds'] >= 6000)  and (oldFundGP < 6000):
-                    refundGP = gpFund - (6000 - oldFundGP)
+                if  (guildRecords['Funds'] >= self.creation_cost)  and (oldFundGP < self.creation_cost):
+                    refundGP = gpFund - (self.creation_cost - oldFundGP)
 
                 newGP = (charRecords['GP'] - float(gpFund)) + refundGP
 
                 maxGP = guildRecords['Funds']
                 
-                if maxGP > 6000:
-                    maxGP = 6000
+                if maxGP > self.creation_cost:
+                    maxGP = self.creation_cost
 
                 guildEmbed.title = f"Fund Guild: {guildRecords['Name']}"
-                guildEmbed.description = f"Are you sure you want to fund ***{guildRecords['Name']}***?\n:warning: ***{charRecords['Name']}* will automatically join *{guildRecords['Name']}* after funding the guild.**\n\n**Current Guild Funds**: {oldFundGP}gp / 6000gp → {maxGP}gp / 6000gp \n\nCurrent gp: {charRecords['GP']} gp\nNew gp: {newGP} gp\n\n✅: Yes\n\n❌: Cancel"
+                guildEmbed.description = f"Are you sure you want to fund ***{guildRecords['Name']}***?\n:warning: ***{charRecords['Name']}* will automatically join *{guildRecords['Name']}* after funding the guild.**\n\n**Current Guild Funds**: {oldFundGP}gp / {self.creation_cost}gp → {maxGP}gp / {self.creation_cost}gp \n\nCurrent gp: {charRecords['GP']} gp\nNew gp: {newGP} gp\n\n✅: Yes\n\n❌: Cancel"
 
 
                 if guildEmbedmsg:
@@ -448,7 +453,7 @@ class Guild(commands.Cog):
                     playersCollection = db.players
                     guildsCollection = db.guilds
                     playersCollection.update_one({'_id': charRecords['_id']}, {"$set": {'Guild': guildRecords['Name'], 'GP':newGP, 'Guild Rank': 1}})
-                    if oldFundGP < 6000:
+                    if oldFundGP < self.creation_cost:
                         guildsCollection.update_one({'Name': guildRecords['Name']}, {"$set": {'Funds':guildRecords['Funds']}})
                 except Exception as e:
                     print ('MONGO ERROR: ' + str(e))
@@ -458,13 +463,13 @@ class Guild(commands.Cog):
                     guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***\n\n**Current gp**: {newGP}\n"
 
 
-                    if guildRecords['Funds'] < 6000:
-                        guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} gp.\nIf this amount puts the guild's funds over 6000 gp, the leftover is given back to the character.\n\n**Current Guild Funds**: {maxGP} gp / 6000 gp\n\n**Current gp**: {newGP}\n"
-                    elif guildRecords['Funds'] >= 6000 and oldFundGP < 6000:
+                    if guildRecords['Funds'] < self.creation_cost:
+                        guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} gp.\nIf this amount puts the guild's funds over {self.creation_cost} gp, the leftover is given back to the character.\n\n**Current Guild Funds**: {maxGP} gp / {self.creation_cost} gp\n\n**Current gp**: {newGP}\n"
+                    elif guildRecords['Funds'] >= self.creation_cost and oldFundGP < self.creation_cost:
                         guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***\n\n**Current gp**: {newGP}\n"
                         guildEmbed.description += f"Congratulations! :tada: ***{guildRecords['Name']}***  is officially open!"
                         if refundGP:
-                            guildEmbed.description += f"\n\n Because you funded the guild over 6000gp, you have been refunded {abs(refundGP)} gp"
+                            guildEmbed.description += f"\n\n Because you funded the guild over {self.creation_cost}gp, you have been refunded {abs(refundGP)} gp"
 
                     else:
                         guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***\n\n**Current gp**: {newGP}\n"
@@ -503,7 +508,7 @@ class Guild(commands.Cog):
             guildRecords, guildEmbedmsg = await checkForGuild(ctx,guildName,guildEmbed) 
 
             if guildRecords:
-                if guildRecords['Funds'] < 6000:
+                if guildRecords['Funds'] < self.creation_cost:
                     await channel.send(f"***{guildRecords['Name']}*** is not open to join. If you would like to join the guild please fund the guild with the command `{commandPrefix}guild fund.`")
                     return
 
@@ -518,7 +523,7 @@ class Guild(commands.Cog):
                 elif charRecords['Level'] < 21:
                     gpNeeded = 800
                 
-                if "Drive" in charRecords and guildName in guildRecords['Name'] in charRecords["Drive"]:
+                if "Drive" in charRecords and guildRecords['Name'] in charRecords["Drive"]:
                     gpNeeded /= 2
 
                 if gpNeeded > charRecords['GP']:
@@ -556,8 +561,8 @@ class Guild(commands.Cog):
                     currentDate = datetime.now().strftime("%b-%y")
                     # update all the other data entries
                     # update the DB stats
-                    db.stats.update_one({'Date': currentDate}, {"$inc": {"Joins": 1}}, upsert=True)
-                    db.stats.update_one({'Life': 1}, {"$inc": {"Joins": 1}}, upsert=True)
+                    db.stats.update_one({'Date': currentDate}, {"$inc": {"Guilds."+guildRecords['Name']+".Joins": 1}}, upsert=True)
+                    db.stats.update_one({'Life': 1}, {"$inc": {"Guilds."+guildRecords['Name']+".Joins": 1}}, upsert=True)
             
                     playersCollection = db.players
                     playersCollection.update_one({'_id': charRecords['_id']}, {"$set": {'Guild': guildRecords['Name'], 'GP':newGP, 'Guild Rank': 1}})
@@ -601,7 +606,7 @@ class Guild(commands.Cog):
             
             if guildRecords:
 
-                if guildRecords['Funds'] < 6000: 
+                if guildRecords['Funds'] < self.creation_cost: 
                     await channel.send(f"***{charRecords['Name']}*** cannot upgrade their guild rank because ***{charRecords['Guild']}*** is not officially open and still needs funding.")
                     return
 
@@ -610,15 +615,15 @@ class Guild(commands.Cog):
                     return
 
                 elif charRecords['Guild Rank'] == 3:
-                    if guildRecords['Total Reputation'] < 60:
+                    if guildRecords['Total Reputation'] < 30:
                         await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because their guild ***{guildRecords['Name']}*** has not unlocked their Masterwork upgrade yet.")
                         return
                 elif charRecords['Guild Rank'] == 2:
-                    if guildRecords['Total Reputation'] < 30:
+                    if guildRecords['Total Reputation'] < 15:
                         await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because their guild ***{guildRecords['Name']}*** has not unlocked their Large upgrade yet.")
                         return
                 elif charRecords['Guild Rank'] == 1:
-                    if guildRecords['Total Reputation'] < 10:
+                    if guildRecords['Total Reputation'] < 5:
                         await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because their guild ***{guildRecords['Name']}*** has not unlocked their Medium upgrade yet.")
                         return
 
@@ -716,8 +721,11 @@ class Guild(commands.Cog):
 
             playersCollection = db.players
             guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charRecords['Guild'], '$options': 'i' }}))
+            print(guildAmount)
+            print(len(guildAmount))
+            print(charRecords["Guild"])
             # If there is only one of user's character in the guild remove the role.
-            if (len(guildAmount) == 1):
+            if (len(guildAmount) <= 1):
                 await author.remove_roles(get(guild.roles, name = charRecords['Guild']), reason=f"Left guild {charRecords['Guild']}")
 
             try:

@@ -344,6 +344,55 @@ class Admin(commands.Cog, name="Admin"):
                 return False
         return True
     
+    @commands.group()
+    async def react(self, ctx):	
+        pass
+    
+    
+    #this function allows you to specify a channel and message and have the bot react with a given emote
+    #Not tested with emotes the bot might not have access to
+    @react.command()
+    @admin_or_owner()
+    async def add(self, ctx, channel: int, msg: int, emote: str):
+        ch = ctx.guild.get_channel(channel)
+        message = await ch.fetch_message(msg)
+        await message.add_reaction(emote)
+        await ctx.message.delete()
+    
+    @commands.command()
+    @admin_or_owner()
+    async def deleteStats(self, ctx):
+        # if(not self.doubleVerify(ctx, msg)):
+            # return
+        try:
+            count = db.stats.delete_many(
+               {}
+            )
+            db.stats.insert_one({"Life": 1, "Games": 0,  "Class":{"Artificer" : {}, "Barbarian" : {}, "Bard" : {}, "Cleric" : {}, "Druid" : {}, "Fighter" : {}, "Paladin" : {}, "Monk" : {}, "Ranger" : {}, "Rogue" : {}, "Sorcerer" : {}, "Warlock" : {}, "Wizard" : {}}, "Race" : {}, "Background" : {}, "Feat":{}, "Unique Players" : {}, "DM":{}, "Magic Items" : {}}
+            await ctx.channel.send(content=f"Successfully deleted {count.deleted_count} stat entries.")
+    
+        except Exception as e:
+            traceback.print_exc()
+    
+    
+    #Allows the sending of messages
+    @commands.command()
+    @admin_or_owner()
+    async def send(self, ctx, channel: int, *, msg: str):
+        ch = ctx.guild.get_channel(channel)
+        await ch.send(content=msg)
+
+    #this function allows you to specify a channel and message and have the bot remove its reaction with a given emote
+    #Not tested with emotes the bot might not have access to
+    @react.command()
+    @admin_or_owner()
+    async def remove(self, ctx, channel: int, msg: int, emote: str):
+        ch = ctx.guild.get_channel(channel)
+        message = await ch.fetch_message(msg)
+        await message.remove_reaction(emote, self.bot.user)
+        await ctx.message.delete()
+    
+    
     @commands.command()
     @admin_or_owner()
     async def removeItem(self, ctx, item):

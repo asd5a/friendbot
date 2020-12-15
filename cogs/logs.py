@@ -121,7 +121,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         if role != "":
             guild_valid =("Guild" in player and 
                             player["Guild"] in guilds and 
-                            guilds[player["Guild"]]["Status"])
+                            guilds[player["Guild"]]["Status"] and
+                            player["CP"]>= 3 and player['Guild Rank'] > 1)
             guildDouble = (guild_valid and 
                             guilds[player["Guild"]]["Rewards"] and 
                             player["2xR"])
@@ -183,15 +184,20 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         charLevel = int(dm['Level'])
         k = (dm['ID'])
         player = dm
+        dm_tier_num = 5
         # calculate the tier of the DM character
         if charLevel < 5:
             dmRole = 'Junior'
+            dm_tier_num = 1
         elif charLevel < 11:
             dmRole = 'Journey'
+            dm_tier_num = 2
         elif charLevel < 17:
             dmRole = 'Elite'
+            dm_tier_num = 3
         elif charLevel < 20:
             dmRole = 'True'
+            dm_tier_num = 4
         else:
             dmRole = 'Ascended'
             
@@ -200,7 +206,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         if role != "":
             guild_valid =("Guild" in player and 
                             player["Guild"] in guilds and 
-                            guilds[player["Guild"]]["Status"])
+                            guilds[player["Guild"]]["Status"] and
+                            player["CP"]>= 3 and player['Guild Rank'] > 1)
                             
             guildDouble = (guild_valid and 
                             guilds[player["Guild"]]["Rewards"] and 
@@ -219,13 +226,13 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                 else:
                     player[player["Double Items"][0]]["Add"].append(player["Double Items"][1])
             
-            dmDouble = player["DM Double"]
+            dmDouble = player["DM Double"] and sessionInfo["DDMRW"]
             
             dm_double_string += guildDouble * "Guild "
             dm_double_string += playerDouble * "Fanatic "
             dm_double_string += dmDouble * "DDMRW "
             
-            dmtreasureArray  = calculateTreasure(player["Level"], player["CP"], tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+            dmtreasureArray  = calculateTreasure(player["Level"], player["Character CP"], dm_tier_num, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
             
         
         # add the items that the DM awarded themselves to the items list
@@ -288,13 +295,13 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             # for every guild in the game
             for name, g in guilds.items():
                 
-                guildsListStr += "\n"+g["Mention"]
+                guildsListStr += "\n"+(g["Drive"]*"**Recruitment Drive** ")+g["Mention"]
                 # get the DB record of the guild
                 #filter player list by guild
                 print(players.values())
                 gPlayers = [p for p in players.values() if "Guild" in p and p["Guild"]==name]
                 if(len(gPlayers)>0): 
-                    gain = sparklesGained*len(gPlayers) + int("Guild" in dm and dm["Guild"]==name)
+                    gain = sparklesGained*len(gPlayers) + sparklesGained*int("Guild" in dm and dm["Guild"]==name)
                     guildRewardsStr += f"{g['Name']}: +{gain} :sparkles:\n"
 
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
@@ -312,7 +319,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         # if no character signed up then the character parts are excluded
         if("Character ID" in dm):
             dm_text = f"{dm['Character Name']} {', '.join(dmRewardsList)}"
-            dm_name_text = f"DM {dm_double_string}Rewards (Tier {roleArray.index(dmRole) + 1}):\n**{dmtreasureArray[0]} CP, {sum(dmtreasureArray[1].values())} TP, {dmtreasureArray[2]} GP**\n"
+            dm_name_text = f"DM {dm_double_string}Rewards (Tier {dm_tier_num}):\n**{dmtreasureArray[0]} CP, {sum(dmtreasureArray[1].values())} TP, {dmtreasureArray[2]} GP**\n"
         sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{'Gained :star:: ' + str(noodlesGained)} \n{noodleString}", name=dm_name_text)
         
         # if there are guild rewards then add a field with relevant information
@@ -465,7 +472,8 @@ class Log(commands.Cog):
             if role != "":
                 guild_valid =("Guild" in player and 
                                 player["Guild"] in guilds and 
-                                guilds[player["Guild"]]["Status"])
+                                guilds[player["Guild"]]["Status"] and
+                            player["CP"]>= 3 and player['Guild Rank'] > 1)
                 guildDouble = (guild_valid and 
                                 guilds[player["Guild"]]["Rewards"] and 
                                 player["2xR"])
@@ -542,7 +550,8 @@ class Log(commands.Cog):
                                 "Magic Items": magicItemString, 
                                 "Inventory" : character["Inventory"], 
                                 "Drive" : []}
-                for g in guilds:
+                for g in guilds.values():
+                    print("DRIVE", g)
                     if g["Drive"]:
                         player_set["Drive"].append(g["Name"])
                 
@@ -589,7 +598,8 @@ class Log(commands.Cog):
             
             guild_valid =("Guild" in player and 
                                 player["Guild"] in guilds and 
-                                guilds[player["Guild"]]["Status"])
+                                guilds[player["Guild"]]["Status"] and
+                            player["CP"]>= 3 and player['Guild Rank'] > 1)
             guildDouble = (guild_valid and 
                             guilds[player["Guild"]]["Rewards"] and 
                             player["2xR"])
@@ -672,7 +682,7 @@ class Log(commands.Cog):
                             "Inventory" : character["Inventory"], 
                             "Drive" : []}
 
-            for g in guilds:
+            for g in guilds.values():
                 if g["Drive"]:
                     player_set["Drive"].append(g["Name"])
             
@@ -696,7 +706,6 @@ class Log(commands.Cog):
         guildsData = []
         # if the game received rewards
         if role != "": 
-            guildsRecordsList = []
             # passed in parameter, check if there were guilds involved
             if guilds != list():
                 # for every guild in the game
@@ -706,12 +715,14 @@ class Log(commands.Cog):
                     #filter player list by guild
                     gPlayers = [p for p in players.values() if "Guild" in p and p["Guild"] == name]
                     p_count = len(gPlayers) - int("Guild" in dm and dm["Guild"] == name)
+                    print("Player Count", p_count)
                     guilds[name]["Player Sparkles"] = sparklesGained*p_count
-                    guilds[name]["DM Sparkles"] = sparklesGained*int("Guild" in dm and dm["Guild"] == name)
+                    print("Player Sparkles", guilds[name]["Player Sparkles"])
+                    guilds[name]["DM Sparkles"] = 2*sparklesGained*int("Guild" in dm and dm["Guild"] == name)
                     print(guilds[name])
                     if(len(gPlayers)>0):
                         reputationCost = (20*guilds[name]["Rewards"]+15*guilds[name]["Items"]+guild_drive_costs[sessionInfo["Tier"]]*guilds[name]["Drive"])*guilds[name]["Status"]
-                        gain = sparklesGained*len(gPlayers) + int("Guild" in dm and dm["Guild"] == name)
+                        gain = sparklesGained*len(gPlayers) + sparklesGained*int("Guild" in dm and dm["Guild"] == name)
                         guildsData.append(UpdateOne({"Name": name},
                                                    {"$inc": {"Games": 1, "Reputation": gain- reputationCost, "Total Reputation": gain}}))
         print(guilds)                                         
@@ -771,9 +782,10 @@ class Log(commands.Cog):
             logData.update_one({"_id": sessionInfo["_id"]}, {"$set" : {"Status": "Approved"}})
             sessionInfo["Status"]="Approved"
             
-            if guildsRecordsList != list():
+            if guildsData != list():
+                print(guildsData)
                 # do a bulk write for the guild data
-                guildsCollection.bulk_write(guildsData)
+                db.guilds.bulk_write(guildsData)
             del players[dm["ID"]]
             
             await  generateLog(self, ctx, num, sessionInfo=sessionInfo, userDBEntriesDic=userDBEntriesDic, guildDBEntriesDic=guildDBEntriesDic, characterDBentries=characterDBentries)
@@ -808,12 +820,12 @@ class Log(commands.Cog):
             dmRoleNames = [r.name for r in dmUser.roles]
             # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
             if noodles >= 210:
-                if 'Immortal Noodle' not in dmRoleNames:
-                    noodleRole = get(guild.roles, name = 'Nega Noodle')
+                if 'Eternal Noodle' not in dmRoleNames:
+                    noodleRole = get(guild.roles, name = 'Eternal Noodle')
                     await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
                     if 'Ascended Noodle' in dmRoleNames:
                         await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
-                    noodleString += "\n**Nega Noodle** role received! :tada:"
+                    noodleString += "\n**Eternal Noodle** role received! :tada:"
             if noodles >= 150:
                 if 'Immortal Noodle' not in dmRoleNames:
                     noodleRole = get(guild.roles, name = 'Immortal Noodle')
@@ -956,9 +968,9 @@ class Log(commands.Cog):
         await self.guildPermission(ctx, num, "Drive", False, 0)
     @session.command()
     async def approveDrive(self, ctx,  num : int, *, guilds):
-        await self.guildPermission(ctx, num, "Drive", True, 0)
+        await self.guildPermission(ctx, num, "Drive", True, 0, unique = True)
         
-    async def guildPermission(self, ctx, num : int, target, goal, min_members):
+    async def guildPermission(self, ctx, num : int, target, goal, min_members, unique = False):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
@@ -976,7 +988,9 @@ class Log(commands.Cog):
                         for guildChannel in ctx.message.channel_mentions:
                             m = guildChannel.mention
                             # filter player list by guild
-                            gPlayers = [p for p in players.values() if "Guild" in p and guilds[p["Guild"]]["Mention"] == m]
+                            gPlayers = [p for p in players.values() if "Guild" in p and 
+                                            guilds[p["Guild"]]["Mention"] == m
+                                            and  p["CP"]>= 3 and p['Guild Rank'] > 1]
                             if(len(gPlayers) >= min_members):
                                 print(guilds)
                                 if guildChannel.mention in guild_dic:
@@ -987,7 +1001,7 @@ class Log(commands.Cog):
                                 else:
                                     err_message += m +" not found in game.\n"
                             else:
-                                err_message += "Not enough members to apply this change for "+ m +"\n"
+                                err_message += "Not enough valid members to apply this change for "+ m +"\n"
                         if err_message != "":
                             await ctx.channel.send(err_message)
                         else:
@@ -1014,7 +1028,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( True or sessionInfo["Status"] == "Processing"):
                 try:
                     db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {target: goal}})
                 except BulkWriteError as bwe:
@@ -1061,17 +1075,17 @@ class Log(commands.Cog):
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
       
     @session.command()
-    async def optout2xR(self, ctx,  num : int, *, guilds):
+    async def optout2xR(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xR", False)
     @session.command()
-    async def optin2xR(self, ctx,  num : int, *, guilds):
+    async def optin2xR(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xR", True)
         
     @session.command()
-    async def optout2xI(self, ctx,  num : int, *, guilds):
+    async def optout2xI(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xI", False)
     @session.command()
-    async def optin2xI(self, ctx,  num : int, *, guilds):
+    async def optin2xI(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xI", True)
         
     async def userOpt(self, ctx, num : int, target, goal):

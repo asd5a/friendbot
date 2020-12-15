@@ -286,7 +286,7 @@ class Tp(commands.Cog):
                   
                 # get confirmation from the user for the purchase
                 elif not haveTP:
-                    if tpBank == [0] * 4:
+                    if tpBank == [0] * 5:
                         tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or gp?\n\n You have **no TP** and **{charRecords[f'GP']} gp**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
                     else:
                         tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or gp?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} gp**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
@@ -468,7 +468,8 @@ class Tp(commands.Cog):
                                     playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData, "$unset": {f"T{tierNum} TP":1}})
                                 else:
                                     playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData})
-                                db.stats.update_one({"Life": 1}, {"$inc" : {"Magic Items."+mRecord['Name']: 1}})
+                                if 'Complete' in newTP:
+                                    db.stats.update_one({"Life": 1}, {"$inc" : {"Magic Items."+mRecord['Name']: 1}})
                                 
                             except Exception as e:
                                 print ('MONGO ERROR: ' + str(e))

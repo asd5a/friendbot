@@ -107,7 +107,7 @@ class Character(commands.Cog):
             'True Noodle':[4,5,6],
             'Ascended Noodle':[4,5,6,7],
             'Immortal Noodle':[4,5,6,7,8],
-            'Nega Noodle':[4,5,6,7,8,9]
+            'Eternal Noodle':[4,5,6,7,8,9]
             #'Friend Fanatic': [11,10,9],
             #'Guild Fanatic':[11,10,9]
         }
@@ -227,7 +227,8 @@ class Character(commands.Cog):
             roleSet = roleSet.union(set(map(lambda x: x+1,roleSet.copy())))
 
         if ("Bean Friend" in roles):
-            roleSet = roleSet.union(set(map(lambda x: x+2,roleSet.copy())))
+            roleSet = roleSet.union(set(map(lambda x: x+1,roleSet.copy())))
+            roleSet = roleSet.union(set(map(lambda x: x+1,roleSet.copy())))
           
         if lvl not in roleSet:
             msg += f":warning: You cannot create a character of **{lvl}**! You do not have the correct role!\n"
@@ -264,6 +265,7 @@ class Character(commands.Cog):
         # ╚═╝░░░░░╚═╝╚═╝░░╚═╝░╚═════╝░╚═╝░╚════╝░  ╚═╝░░░╚═╝░░░╚══════╝╚═╝░░░░░╚═╝  ╚═╝░░░░  ░░░╚═╝░░░╚═╝░░░░░
         # Magic Item / TP
         # Check if magic items exist, and calculates the TP cost of each magic item.
+        mItems = ""
         magicItems = mItems.strip().split(',')
         allMagicItemsString = []
 
@@ -427,52 +429,56 @@ class Character(commands.Cog):
             tierRewards = [[], [], [], [], []]
             tierConsumableCounts = [0,0,0,0,0]
             if 'Good Noodle' in roles:
-                tier1CountMNC = 1
+                tierConsumableCounts[0] = 1
             elif 'Elite Noodle' in roles:
-                tier1CountMNC = 1
+                tierConsumableCounts[0] = 1
                 tierConsumableCounts[1] = 1
             elif 'True Noodle' in roles:
-                tier1CountMNC = 1
+                tierConsumableCounts[0] = 1
                 tierConsumableCounts[2] = 1
             elif 'Ascended Noodle' in roles:
-                tier1CountMNC = 1
+                tierConsumableCounts[0] = 1
                 tierConsumableCounts[1] = 1
                 tierConsumableCounts[2] = 1
             elif 'Immortal Noodle' in roles:
-                tier1CountMNC = 1
-                tier1Count = 2
-                tier2Count = 1
-            elif 'Nega Noodle' in roles:
-                tier1CountMNC = 1
+                tierConsumableCounts[0] = 1
+                tierConsumableCounts[1] = 2
+                tierConsumableCounts[2] = 1
+            elif 'Eternal Noodle' in roles:
+                tierConsumableCounts[0] = 1
                 tierConsumableCounts[1] = 2
                 tierConsumableCounts[2] = 2
 
             if 'Nitro Booster' in roles:
-                tier1CountMNC += 1
+                tierConsumableCounts[0] += 2
 
             if 'Bean Friend' in roles:
-                tier1CountMNC += 2
+                tierConsumableCounts[0] += 2
                 tierConsumableCounts[tierNum] += 2
-            
+            print("CCCCCCCCOOOOOOOOOOOOOOOUNNTS",tierConsumableCounts)
             startCounts = tierConsumableCounts.copy()
-            startt1MNC = tier1CountMNC
+            startCounts[0] = 0
+            startt1MNC = tierConsumableCounts[0]
 
             for item in allRewardItemsString:
                 print(item['Tier'])
+                
+                if item['Minor/Major'] == 'Minor' and item["Type"] == 'Magic Items':
+                    item['Tier'] -= 1
                 i = item["Tier"]
-                while i <= tierNum:
-                    if tierConsumableCounts[i] > 0:
+                print("I", i)
+                while i < len(tierConsumableCounts):
+                    if tierConsumableCounts[i] > 0 or i == len(tierConsumableCounts)-1:
                         tierConsumableCounts[i] -= 1
                         break
                     i += 1
-                if int(item['Tier']) > tierNum:
+                
+                print("counts",tierConsumableCounts)
+                print("I2", i)
+                if item["Tier"] > tierNum:
                     msg += ":warning: One or more of these reward items cannot be acquired at Level " + str(lvl) + ".\n"
                     break
-
-                if item['Minor/Major'] == 'Minor' and item["Type"] == 'Magic Items':
-                    tier1CountMNC -= 1
-                    rewardMagics.append(item)
-                if item["Type"] == 'Consumables':
+                elif item["Type"] == 'Consumables':
                   rewardConsumables.append(item)
                 elif item["Type"] == 'Magic Items':
                   rewardMagics.append(item)
@@ -482,8 +488,11 @@ class Character(commands.Cog):
 
             if tier1CountMNC < 0 or any([count < 0 for count in tierConsumableCounts]):
                 msg += f":warning: You do not have the right roles for these reward items. You can only choose **{startt1MNC}** Tier 1 (Non-Consumable) item(s)"
+                z = 0
                 for amount in startCounts:
-                    msg += f", and **{startt1}** Tier 1 (or lower) item(s)"
+                    if amount > 0:
+                        msg += f", and **{amount}** Tier {z} (or lower) item(s)"
+                    z += 1
                 msg += "\n"
             else:
                 for r in rewardConsumables:
@@ -902,6 +911,14 @@ class Character(commands.Cog):
                     featLevels.append(8)
                 if 'Rogue' in c['Class']['Name'] and int(c['Level']) > 9:
                     featLevels.append(10)
+                if int(c['Level']) > 11:
+                    featLevels.append(12)
+                if 'Fighter' in c['Class']['Name'] and int(c['Level']) > 13:
+                    featLevels.append(14)
+                if int(c['Level']) > 15:
+                    featLevels.append(16)
+                if int(c['Level']) > 18:
+                    featLevels.append(19)
 
             featsChosen, statsFeats, charEmbedmsg = await characterCog.chooseFeat(ctx, rRecord['Name'], charDict['Class'], cRecord, featLevels, charEmbed, charEmbedmsg, charDict, "")
 
@@ -1079,7 +1096,14 @@ class Character(commands.Cog):
             statsRecord['Background'][charDict['Background']] += 1
         else:
             statsRecord['Background'][charDict['Background']] = 1
-
+                
+        if featsChosen != "":
+            feat_split = featsChosen.split(", ")
+            for feat_key in feat_split:
+                if not feat_key in statsRecord['Feats']:
+                    statsRecord['Feats'][feat_key] = 1
+                else:
+                    statsRecord['Feats'][feat_key] += 1
         try:
             playersCollection.insert_one(charDict)
             statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
@@ -1116,7 +1140,7 @@ class Character(commands.Cog):
             return
 
         # Reset  values here
-        charNoneKeyList = ['Magic Items', 'Inventory', 'Current Item']
+        charNoneKeyList = ['Magic Items', 'Inventory', 'Current Item', 'Consumables']
 
         charRemoveKeyList = ['Image', 'Respecc', 'T1 TP', 'T2 TP', 'T3 TP', 'T4 TP', 'Attuned', 'Spellbook', 'Guild', 'Guild Rank', 'Grouped']
         
@@ -1124,41 +1148,41 @@ class Character(commands.Cog):
         
         if "Guild" in charDict:
             guild_name = charDict["Guild"]
+        print("GGGGGGGGGGGGGGGGGGGGGG",guild_name)
         
-        
-        # m_save = charDict['Magic Items'].split(", ")
+        m_save = charDict['Magic Items'].split(", ")
         # i_save = list(charDict['Inventory'].keys())
-        # check_list = m_save+i_save
+        check_list = m_save #+i_save
         
-        # searched_items = list(db.rit.find({"Name" : {"$in": check_list}}))
-        # searched_items_names = []
+        searched_items = list(db.rit.find({"Name" : {"$in": check_list}}))
+        searched_items_names = []
         
-        # for element in searched_items:
-            # if "Grouped" in element:
-                # searched_items_names += element["Name"]
-            # else:
-                # searched_items_names.append(element["Name"])
+        for element in searched_items:
+            if "Grouped" in element:
+                searched_items_names += element["Name"]
+            else:
+                searched_items_names.append(element["Name"])
         
-        # m_saved_list = []
-        # for m_item in m_save:
-            # if m_item in searched_items_names:
-                # m_saved_list.append(m_item)
+        m_saved_list = []
+        for m_item in m_save:
+            if m_item in searched_items_names:
+                m_saved_list.append(m_item)
                 
         # i_saved_list = []
         # for i_item in i_save:
             # if i_item in searched_items_names:
                 # i_saved_list.append([i_item, charDict["Inventory"][i_item]])
         
-        # for c in charNoneKeyList:
-            # charDict[c] = "None"
+        for c in charNoneKeyList:
+            charDict[c] = "None"
 
-        # for c in charRemoveKeyList:
-            # if c in charDict:
-                # del charDict[c]
-        # print("Check", check_list)
-        # print("Search", searched_items_names)
-        
-        # charDict["Magic Items"] = ", ".join(m_saved_list) + ("None" * (len(m_saved_list) == 0))
+        for c in charRemoveKeyList:
+            if c in charDict:
+                del charDict[c]
+        print("Check", check_list)
+        print("Search", searched_items_names)
+        name = charDict["Name"]
+        charDict["Magic Items"] = ", ".join(m_saved_list) + ("None" * (len(m_saved_list) == 0))
         charDict["Inventory"] = {}
         
         # for i_item in i_saved_list:
@@ -1189,7 +1213,7 @@ class Character(commands.Cog):
             await ctx.channel.send(msg)
             self.bot.get_command('respec').reset_cooldown(ctx) 
             return
-            
+        
         # new name should be less then 64 chars
         if len(newname) > 64:
             msg += ":warning: Your character's new name is too long! The limit is 64 characters.\n"
@@ -1680,11 +1704,17 @@ class Character(commands.Cog):
 
 
         try:
+            
+            print("GGGGGGGGGGGGGGGGGGGGGG2",guild_name)
             if len(guild_name)>0:
-                guild_char = playersCollection.find_one({"User ID": str(author.id), "Guild" : guild_name})
-                if not guild_char:
-                    guildRecords = db.guilds.find_one({"Name" : guild_name})
-                    await author.remove_roles(guild.get_role(int(guildRecords['Role ID'])))
+                guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": guild_name, '$options': 'i' }}))
+                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", guildAmount)
+                print(len(guildAmount))
+                print(guild_name)
+                # If there is only one of user's character in the guild remove the role.
+                if (len(guildAmount) <= 1):
+                    await author.remove_roles(get(guild.roles, name = guild_name), reason=f" Respecced")
+
             if "Respecc" in charDict and charDict["Respecc"] == "Transfer":
                 statsCollection = db.stats
                 statsRecord  = statsCollection.find_one({'Life': 1})
@@ -1776,23 +1806,30 @@ class Character(commands.Cog):
                     charEmbed.clear_fields()
                     try:
                         playersCollection = db.players
+                        
+                        print(list(playersCollection.find({'_id': charID})))
                         deadCollection = db.dead
                         usersCollection = db.users
-                        deadCollection.insert_one(charDict)
                         
                         if "Guild" in charDict:
-                            guild_char = playersCollection.find_one({"User ID": str(author.id), "Guild" : charDict["Guild"]})
-                            if not guild_char:
-                                guildRecords = db.guilds.find_one({"Name" : charDict["Guild"]})
-                                await author.remove_roles(guild.get_role(int(guildRecords['Role ID'])))
+                            guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charDict['Guild'], '$options': 'i' }}))
+                            print(guildAmount)
+                            print(len(guildAmount))
+                            print(charDict["Guild"])
+                            # If there is only one of user's character in the guild remove the role.
+                            if (len(guildAmount) <= 1):
+                                await author.remove_roles(get(guild.roles, name = charDict['Guild']), reason=f"Left guild {charDict['Guild']}")
+
                         # usersRecord = list(usersCollection.find({"User ID": charDict['User ID']}))[0]
                         # if 'Games' not in usersRecord:
                             # usersRecord['Games'] = charDict['Games']
                         # else:
                             # usersRecord['Games'] += charDict['Games']
-
+                        print(list(playersCollection.find({'_id': charID})))
                         # usersCollection.update_one({'User ID': charDict['User ID']}, {"$set": {'Games': usersRecord['Games']}}, upsert=True)
                         playersCollection.delete_one({'_id': charID})
+                        
+                        deadCollection.insert_one(charDict)
                     except Exception as e:
                         print ('MONGO ERROR: ' + str(e))
                         charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try retiring your character again.")
@@ -1909,15 +1946,18 @@ class Character(commands.Cog):
                             try:
                                 playersCollection = db.players
                                 deadCollection = db.dead
-                                deadCollection.insert_one(charDict)
                                 playersCollection.delete_one({'_id': charID})
-                                if "Guild" in charDict:
-                                    guild_char = playersCollection.find_one({"User ID": str(author.id), "Guild" : charDict["Guild"]})
-                                    if not guild_char:
-                                        guildRecords = db.guilds.find_one({"Name" : charDict["Guild"]})
-                                        await author.remove_roles(guild.get_role(int(guildRecords['Role ID'])))
+                                guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charDict['Guild'], '$options': 'i' }}))
+                                print("AAAAAAAAAAAAA", guildAmount)
+                                print(len(guildAmount))
+                                print(charDict["Guild"])
+                                # If there is only one of user's character in the guild remove the role.
+                                if (len(guildAmount) <= 1):
+                                    await author.remove_roles(get(guild.roles, name = charDict['Guild']), reason=f"Left guild {charDict['Guild']}")
 
                                 usersCollection = db.users
+                                
+                                deadCollection.insert_one(charDict)
                                 pass
                                 
                             except Exception as e:
@@ -2271,7 +2311,9 @@ class Character(commands.Cog):
             if "Campaigns" in userRecords:
                 campaignString = ""
                 for u, v in userRecords['Campaigns'].items():
-                    campaignString += f"• {u} : {timeConversion(v)}\n"
+                    campaignString += f"• {u} :\n----Time :{timeConversion(v['Time'])}\n"
+                    campaignString += f"----Sessions :{v['Sessions']}\n"
+                    campaignString += f"----Active Member :{v['Active']}\n"
 
                 charEmbed.add_field(name='Campaigns', value=campaignString, inline=False)
             
@@ -2942,14 +2984,7 @@ class Character(commands.Cog):
                             statsRecord['Feats'][feat_key] = 1
                         else:
                             statsRecord['Feats'][feat_key] += 1
-                
-                if charFeatsGained != "":
-                    feat_split = charFeatsGained.split(", ")
-                    for feat_key in feat_split:
-                        if not feat_key in statsRecord['Feats']:
-                            statsRecord['Feats'][feat_key] = 1
-                        else:
-                            statsRecord['Feats'][feat_key] += 1
+
                             
                 subclassCheckClass['Name'] = subclassCheckClass['Name'].split(' (')[0]
                 if subclassCheckClass['Subclass'] != "" :
@@ -3483,7 +3518,8 @@ class Character(commands.Cog):
                 
                 # Number of games by total and by tier
                 statsTotalString += f"**{identity_strings[0]} Stats**\nTotal Games for the {identity_strings[1]}: {superTotal}\n" 
-                statsTotalString += f'Guild quests out of total quests: {round((gq_sum / superTotal),3) * 100}%\n'                   
+                if superTotal > 0:
+                    statsTotalString += f'Guild quests out of total quests: {round((gq_sum / superTotal),3) * 100}%\n'                   
                 for i in range (0,6):
                     if f'T{i}' not in statRecords:
                         statsTotalString += f"Tier {i} Games for the {identity_strings[1]}: 0\n"
