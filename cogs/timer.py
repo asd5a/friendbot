@@ -12,7 +12,7 @@ from itertools import product
 from discord.utils import get        
 from datetime import datetime, timezone,timedelta
 from discord.ext import commands
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, channel_id_dic
+from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
 from pymongo import UpdateOne
 from cogs.logs import generateLog
 from pymongo.errors import BulkWriteError
@@ -39,11 +39,8 @@ class Timer(commands.Cog):
         msg = None
         if isinstance(error, commands.CommandOnCooldown):
             msg = f"You are already preparing a timer in this channel. Please cancel the current timer and try again." 
-            await ctx.channel.send(msg)
         elif isinstance(error, commands.MissingAnyRole):
-            await ctx.channel.send("You do not have the required permissions for this command.")
-            bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-            return
+            msg = "You do not have the required permissions for this command."
         else:
             if isinstance(error, commands.MissingRequiredArgument):
                 print(error.param.name)
@@ -94,9 +91,9 @@ class Timer(commands.Cog):
         #information on how to use the command, set up here for ease of reading and repeatability
         prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1, @player2, @player3..." "quest name"```*****'
         #check if the current channel is a campaign channel
-        isCampaign = str(channel.category.id) == channel_id_dic[ctx.guild.id]["Game Rooms"]
+        isCampaign = "campaign" in channel.category.name.lower()
         #prevent the command if not in a proper channel (game/campaign)
-        if channel.category.id != channel_id_dic[ctx.guild.id]["Game Rooms"]:
+        if channel.category.id != settingsRecord[str(ctx.guild.id)]["Game Rooms"]:
             #exception to the check above in case it is a testing channel
             if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
                 pass
@@ -395,7 +392,7 @@ class Timer(commands.Cog):
                 if await self.permissionCheck(msg, author):
                     guildsList = []
                     guildsListStr = ""
-                    guildCategoryID = channel_id_dic[ctx.guild.id]["Guild Rooms"]
+                    guildCategoryID = settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
 
                     if (len(msg.channel_mentions) > 3):
                         await channel.send(f"The number of guilds exceeds three. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1 #guild2, #guild3```") 
@@ -1654,7 +1651,7 @@ class Timer(commands.Cog):
             deathChars = []
             
             # Session Log Channel
-            logChannel = self.bot.get_channel(channel_id_dic[ctx.guild.id]["Sessions"])  # 728456783466725427 737076677238063125
+            logChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Sessions"])  # 728456783466725427 737076677238063125
             # logChannel = self.bot.get_channel(577227687962214406)
             
             # check if the game has rewards
@@ -1674,13 +1671,12 @@ class Timer(commands.Cog):
             dbEntry["Status"] = "Processing"
             dbEntry["Players"] = {}
             
-            global settingsRecord
-            
             dbEntry["DDMRW"] = settingsRecord["ddmrw"]
             if tierNum < 1:
                 tierNum = 1
             rewardsCollection = db.rit
-            rewardList = list(rewardsCollection.find({"Tier": tierNum}))
+            rewardList = list(rewardsCollection.find({"Tier": tierNum, "Name" : {"$regex" : "Spell Scroll"}}))
+            rewardList_lower = list(rewardsCollection.find({"Tier": max(tierNum-1, 1)}))
             
             # go through the dictionary of times and calculate the rewards of every player
             for startItemKey, startItemValue in start.items():
@@ -1723,9 +1719,23 @@ class Timer(commands.Cog):
 
                 for value in startItemValue:
                     playerDBEntry={}
-                    randomItem = random.choice(rewardList)
-                    if("Grouped" in randomItem):
-                        randomItem["Name"] = random.choice(randomItem["Name"])
+                    randomItems = [random.choice(rewardList).copy(), random.choice(rewardList_lower).copy()]
+                    playerDBEntry["Double Items"] = []
+                    print("SPEEEEEEEEEEEEEEEEEEEEEEL", randomItems)
+                    for i in randomItems:
+                        if("Grouped" in i):
+                            i["Name"] = random.choice(i["Name"])
+                        elif("Spell Scroll" in i["Name"]):
+                            print("SPEEEEEEEEEEEEEEEEEEEEEEL", i)
+                            if("Cantrip" in i["Name"]):
+                                spell_level = 0
+                            else:
+                                spell_level = [int(x) for x in i["Name"] if x.isnumeric()][0]
+                            
+                            spell_result = list(db.spells.aggregate([{ "$match": { "Level": spell_level } }, { "$sample": { "size": 1 } }]))[0]
+                            i["Name"] = f"Spell Scroll ({spell_result['Name']})"
+                        playerDBEntry["Double Items"].append([i["Type"], i["Name"]])
+                    
                     playerDBEntry.update(value[4])
                     playerDBEntry["Status"] = "Alive"* (not (value in deathChars)) + "Dead"* (value in deathChars)
                     playerDBEntry["Character ID"] = value[1]["_id"]
@@ -1738,8 +1748,7 @@ class Timer(commands.Cog):
                         playerDBEntry["Guild Rank"] = value[1]["Guild Rank"]
                     playerDBEntry["Character CP"] = value[1]["CP"]
                     playerDBEntry["Mention"] = value[0].mention
-                    playerDBEntry["Double Items"] = [randomItem["Type"], randomItem["Name"]]
-                    
+
                     playerDBEntry["CP"] = (duration// 1800) / 2
                     # add the player to the list of completed entries
                     dbEntry["Players"][f"{value[0].id}"] = playerDBEntry
@@ -1793,9 +1802,23 @@ class Timer(commands.Cog):
                     
                 value = dmChar
                 rewardList = list(rewardsCollection.find({"Tier": dm_tier_num}))
-                randomItem = random.choice(rewardList)
-                if("Grouped" in randomItem):
-                    randomItem["Name"] = random.choice(randomItem["Name"])
+                rewardList_lower = list(rewardsCollection.find({"Tier": max(dm_tier_num -1,1)}))
+                randomItems = [random.choice(rewardList), random.choice(rewardList_lower)]
+                
+                dmDBEntry["Double Items"] = []
+                
+                for i in randomItems:
+                    if("Grouped" in i):
+                        i["Name"] = random.choice(i["Name"])
+                    elif("Spell Scroll" in i["Name"]):
+                        if("Cantrip" in i["Name"]):
+                            spell_level = 0
+                        else:
+                            spell_level = [int(x) for x in i["Name"] if x.isnumeric()][0]
+                        
+                        spell_result = list(db.spells.aggregate([{ "$match": { "Level": spell_level } }, { "$sample": { "size": 1 } }]))[0]
+                        i["Name"] = f"Spell Scroll ({spell_result['Name']})"
+                    dmDBEntry["Double Items"].append([i["Type"], i["Name"]])
                 dmDBEntry.update(value[4])
                 dmDBEntry["Character ID"] = value[1]["_id"]
                 dmDBEntry["Character Name"] = value[1]["Name"]
@@ -1807,7 +1830,6 @@ class Timer(commands.Cog):
                     dmDBEntry["Guild Rank"] = value[1]["Guild Rank"]
                 dmDBEntry["Character CP"] = value[1]["CP"]
                 dmDBEntry["DM Double"] = settingsRecord["ddmrw"]
-                dmDBEntry["Double Items"] = [randomItem["Type"], randomItem["Name"]]
                 playerList.append(value)
                     
             dmDBEntry["ID"] = str(dmChar[0].id)
@@ -1831,10 +1853,8 @@ class Timer(commands.Cog):
                 # list of all guild records that need to be update, with the updates applied
                 guildsRecordsList = list()
                 
-                print("GUILDS 5", guildsList != list())
                 # passed in parameter, check if there were guilds involved
                 if guildsList != list():
-                    print("GUILDS 5", guildsList != list())
                     # for every guild in the game
                     for g in guildsList:
                         # get the DB record of the guild
@@ -1873,7 +1893,7 @@ class Timer(commands.Cog):
 
                 try:
                     # create a bulk write entry for the players
-                    usersData = list(map(lambda item: UpdateOne({'_id': item[3]}, {'$set': {'User ID':str(item[0].id) }}, upsert=True), playerList))
+                    usersData = list(map(lambda item: UpdateOne({'User ID':str(item[0].id) }, {'$set': {'User ID':str(item[0].id) }}, upsert=True), playerList))
                     usersCollection.bulk_write(usersData)
                 except BulkWriteError as bwe:
                     print(bwe.details)

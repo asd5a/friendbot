@@ -2,7 +2,7 @@ import discord
 import asyncio
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import  numberEmojis, numberEmojisMobile, commandPrefix, checkForChar, checkForGuild, noodleRoleArray, db, traceBack, alphaEmojis
+from bfunc import  numberEmojis, numberEmojisMobile, commandPrefix, checkForChar, checkForGuild, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
 from datetime import datetime, timezone,timedelta
 
 class Guild(commands.Cog):
@@ -10,7 +10,11 @@ class Guild(commands.Cog):
         self.bot = bot
         self.creation_cost = 8000
        
-
+    def is_log_channel():
+        async def predicate(ctx):
+            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
+        return commands.check(predicate)
+        
     @commands.group(aliases=['g'], case_insensitive=True)
     async def guild(self, ctx):	
         pass
@@ -21,6 +25,8 @@ class Guild(commands.Cog):
             await ctx.channel.send(f'Sorry, the command `***{commandPrefix}{ctx.invoked_with}***` requires an additional keyword to the command or is invalid, please try again!')
             return
             
+        elif isinstance(error, commands.CheckFailure):
+            msg = "This channel or user does not have permission for this command."
         elif isinstance(error, commands.BadArgument):
             # convert string to int failed
             msg = "The gp amount needs to be a number."
@@ -67,8 +73,9 @@ class Guild(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
 
-    #@commands.cooldown(1, 5, type=commands.BucketType.member)
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
     @guild.command()
+    @is_log_channel()
     async def create(self,ctx, charName, guildName, roleName="", channelName=""):
         channel = ctx.channel
         author = ctx.author
@@ -244,9 +251,14 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guildEmbed = discord.Embed()
         guildEmbedmsg = None
+        
+        guildChannel = ctx.message.channel_mentions
+        if guildChannel == list():
+            await ctx.channel.send(f"A campaign channel must be supplied")
+            return 
+        guildChannel = guildChannel[0]
 
-        guildRecords, guildEmbedmsg = await checkForGuild(ctx,guildName, guildEmbed) 
-
+        guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)})
         if guildRecords:
             guildRank = ""
             if guildRecords['Total Reputation'] > 60:
@@ -288,11 +300,11 @@ class Guild(commands.Cog):
             # Total number of guild quests with no guild members who got rewards
             guild_stats_string += f"  Guild Quests with no Active Members: {gv['GQNM']}\n"
             
-            guild_stats_string += f"   Quests with no Active DM: {gv['GQDM']}\n"
+            guild_stats_string += f"   Quests with only Active DM: {gv['GQDM']}\n"
             
             
-            guild_stats_string += f"  :sparkles: gained by Players: {gv['DM Sparkles']}\n"
-            guild_stats_string += f"  :sparkles: gained by DMs: {gv['Player Sparkles']}\n"
+            guild_stats_string += f"  :sparkles: gained by Players: {gv['Player Sparkles']}\n"
+            guild_stats_string += f"  :sparkles: gained by DMs: {gv['DM Sparkles']}\n"
             
             guild_stats_string += f"  Guild Members Gained: {gv['Joins']}\n"
             
@@ -316,11 +328,11 @@ class Guild(commands.Cog):
             # Total number of guild quests with no guild members who got rewards
             guild_life_stats_string += f"  Guild Quests with no Active Members: {gv['GQNM']}\n"
             
-            guild_life_stats_string += f"   Quests with no Active DM: {gv['GQDM']}\n"
+            guild_life_stats_string += f"   Quests with only Active DM: {gv['GQDM']}\n"
             
             
-            guild_life_stats_string += f"  :sparkles: gained by Players: {gv['DM Sparkles']}\n"
-            guild_life_stats_string += f"  :sparkles: gained by DMs: {gv['Player Sparkles']}\n"
+            guild_life_stats_string += f"  :sparkles: gained by Players: {gv['Player Sparkles']}\n"
+            guild_life_stats_string += f"  :sparkles: gained by DMs: {gv['DM Sparkles']}\n"
             
             guild_life_stats_string += f"  Guild Members Gained: {gv['Joins']}\n"
             
@@ -344,10 +356,11 @@ class Guild(commands.Cog):
             await channel.send(embed=guildEmbed)
 
         else:
-            await channel.send(f'The ***{guildName}*** guild does not exist. Check to see if it is a valid guild and check your spelling.')
+            await channel.send(f'The ***{guildChannel.mention}*** guild does not exist. Check to see if it is a valid guild and check your spelling.')
             return
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @guild.command()
     async def fund(self,ctx, charName, guildName, gpFund = 0): 
         channel = ctx.channel
@@ -365,8 +378,13 @@ class Guild(commands.Cog):
         charRecords, guildEmbedmsg = await checkForChar(ctx, charName, guildEmbed)
 
         if charRecords:
-            guildRecords, guildEmbedmsg = await checkForGuild(ctx,guildName,guildEmbed) 
+            guildChannel = ctx.message.channel_mentions
+            if guildChannel == list():
+                await ctx.channel.send(f"A campaign channel must be supplied")
+                return 
+            guildChannel = guildChannel[0]
 
+            guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)})
             if guildRecords:
                 if guildRecords['Funds'] >= self.creation_cost:
                     await channel.send(f"***{guildRecords['Name']}*** is not expecting any funds. This guild has already been opened.")
@@ -484,6 +502,7 @@ class Guild(commands.Cog):
                 return
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @guild.command()
     async def join(self,ctx, charName, guildName): 
         channel = ctx.channel
@@ -522,9 +541,10 @@ class Guild(commands.Cog):
                     gpNeeded = 600
                 elif charRecords['Level'] < 21:
                     gpNeeded = 800
-                
-                if "Drive" in charRecords and guildRecords['Name'] in charRecords["Drive"]:
+                drive = False
+                if "Drive" in charRecords and guildRecords['Name'] == charRecords["Drive"]:
                     gpNeeded /= 2
+                    drive = True
 
                 if gpNeeded > charRecords['GP']:
                     await channel.send(f"***{charRecords['Name']}*** does not have the minimum {gpNeeded}gp to join ***{guildRecords['Name']}***.")
@@ -533,7 +553,7 @@ class Guild(commands.Cog):
                 newGP = (charRecords['GP'] - float(gpNeeded)) 
                         
                 guildEmbed.title = f"Joining Guild: {guildRecords['Name']}"
-                guildEmbed.description = f"Are you sure you want to join ***{guildRecords['Name']}*** (Cost to join: {gpNeeded}gp)? \n\nCurrent gp: {charRecords['GP']} gp\nNew gp: {newGP} gp\n\n✅: Yes\n\n❌: Cancel"
+                guildEmbed.description = f"Are you sure you want to join ***{guildRecords['Name']}*** (Cost to join: {gpNeeded}gp{' (Discounted)' * drive})? \n\nCurrent gp: {charRecords['GP']} gp\nNew gp: {newGP} gp\n\n✅: Yes\n\n❌: Cancel"
 
                 if guildEmbedmsg:
                     await guildEmbedmsg.edit(embed=guildEmbed)
@@ -551,7 +571,7 @@ class Guild(commands.Cog):
                 else:
                     await guildEmbedmsg.clear_reactions()
                     if tReaction.emoji == '❌':
-                        await guildEmbedmsg.edit(embed=None, content=f"Guild canceled. Try again using the following command:\n```yaml\n{commandPrefix}guild join```")
+                        await guildEmbedmsg.edit(embed=None, content=f"Guild join canceled. Try again using the following command:\n```yaml\n{commandPrefix}guild join```")
                         await guildEmbedmsg.clear_reactions()
                         return
 
@@ -581,6 +601,7 @@ class Guild(commands.Cog):
                 return
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @guild.command()
     async def rankup(self,ctx, charName):
         channel = ctx.channel
@@ -675,6 +696,7 @@ class Guild(commands.Cog):
 
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @guild.command()
     async def leave(self,ctx, charName): 
         channel = ctx.channel

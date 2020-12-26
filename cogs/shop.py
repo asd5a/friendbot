@@ -10,8 +10,13 @@ from math import floor
 class Shop(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
-    
+    def is_log_channel():
+        async def predicate(ctx):
+            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
+        return commands.check(predicate)
+       
     @commands.group(case_insensitive=True)
+    @is_log_channel()
     async def shop(self, ctx):	
         shopCog = self.bot.get_cog('Shop')
         pass
@@ -30,6 +35,8 @@ class Shop(commands.Cog):
                 msg = "You're missing the item you want to buy/sell in the command.\n"
             elif error.param.name == "spellName":
                 msg = "You're missing the spell you want to copy in the command.\n"
+        elif isinstance(error, commands.CheckFailure):
+            msg = "This channel or user does not have permission for this command."
         elif isinstance(error, commands.BadArgument):
             print(error)
             # convert string to int failed

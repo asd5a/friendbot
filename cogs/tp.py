@@ -10,8 +10,13 @@ import traceback as traces
 class Tp(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
-    
+    def is_log_channel():
+        async def predicate(ctx):
+            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
+        return commands.check(predicate)
+       
     @commands.group(case_insensitive=True)
+    @is_log_channel()
     async def tp(self, ctx):	
         tpCog = self.bot.get_cog('Tp')
         pass
@@ -23,6 +28,8 @@ class Tp(commands.Cog):
             await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** requires an additional keyword to the command or is invalid, please try again!')
             return
             
+        elif isinstance(error, commands.CheckFailure):
+            msg = "This channel or user does not have permission for this command."
         if isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'charName':
                 msg = "You're missing your character name in the command. "
@@ -52,7 +59,8 @@ class Tp(commands.Cog):
         else:
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
-    @tp.command()
+    
+    #@tp.command()
     async def createGroup(self, ctx, table, query, group):
     
         #channel and author of the original message creating this call
@@ -245,8 +253,15 @@ class Tp(commands.Cog):
                             await channel.send(f"**{mRecord['Name']}** is a variant of the **{mRecord['Grouped']}** item and ***{charRecords['Name']}*** already owns a variant of the that item.")
                             ctx.command.reset_cooldown(ctx)
                             return 
+                character_item_list = [name.strip() for name in charRecords['Magic Items'].split(",")]
+                
+                if ("Predecessor" in mRecord and mRecord["Predecessor"] not in character_item_list):
+                    await channel.send(f"To buy **{mRecord['Name']}** you need **{mRecord['Predecessor']}** first.")
+                    ctx.command.reset_cooldown(ctx)
+                    return 
+                    
                 # check if the requested item is already in the inventory
-                if(mRecord['Name'] in [name.strip() for name in charRecords['Magic Items'].split(",")]): 
+                if(mRecord['Name'] in character_item_list or mRecord['Name'] in charRecords["Predecessor"]): 
                     await channel.send(f"You already have **{mRecord['Name']}** and cannot spend TP or gp on another one.")
                     ctx.command.reset_cooldown(ctx)
                     return 
@@ -389,6 +404,8 @@ class Tp(commands.Cog):
                         charRecords['Magic Items'] = mRecord['Name']
                     else:
                         newMagicItems = charRecords['Magic Items'].split(', ')
+                        if ("Predecessor" in mRecord):
+                            newMagicItems.remove(mRecord["Predecessor"])
                         newMagicItems.append(mRecord['Name'])
                         newMagicItems.sort()
                         charRecords['Magic Items'] = ', '.join(newMagicItems)
@@ -615,7 +632,7 @@ class Tp(commands.Cog):
         tpCog = self.bot.get_cog('Tp')
 
 
-        if tierNum not in ('1','2','3','4') and tierNum.lower() not in [r.lower() for r in roleArray]:
+        if tierNum not in ('1','2','3','4', '5') and tierNum.lower() not in [r.lower() for r in roleArray]:
             await channel.send(f"**{tierNum}** is not a valid tier. Please try again with **1**, **2**, **3**, or **4**. Alternatively, type **Junior**, **Journey**, **Elite**, or **True**.")
             ctx.command.reset_cooldown(ctx)
             return

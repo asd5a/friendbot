@@ -68,15 +68,17 @@ class Admin(commands.Cog, name="Admin"):
         
     @commands.command()
     async def startDDMRW(self, ctx):
-        global settingsRecord
-        settingsRecord["ddmrw"] = True
-        await ctx.channel.send("Let the games begin!")
+        if "Mod Friend" in [r.name for r in ctx.author.roles]:
+            global settingsRecord
+            settingsRecord["ddmrw"] = True
+            await ctx.channel.send("Let the games begin!")
 
     @commands.command()
     async def endDDMRW(self, ctx):
-        global settingsRecord
-        settingsRecord["ddmrw"] = False        
-        await ctx.channel.send("Until next month!")
+        if "Mod Friend" in [r.name for r in ctx.author.roles]:
+            global settingsRecord
+            settingsRecord["ddmrw"] = False        
+            await ctx.channel.send("Until next month!")
     
     
     @commands.command()
@@ -182,7 +184,7 @@ class Admin(commands.Cog, name="Admin"):
             count = db.players.delete_many(
                {}
             )
-            await msg.edit(content=f"Successfully deleted {count.deletedCount} characters.")
+            await msg.edit(content=f"Successfully deleted {count.deleted_count} characters.")
     
         except Exception as e:
             traceback.print_exc()
@@ -361,6 +363,40 @@ class Admin(commands.Cog, name="Admin"):
     
     @commands.command()
     @admin_or_owner()
+    async def makeItClean(self, ctx):
+        msg = ctx.channel.send("Are you sure you want to delete basically everything?\n No: ❌\n Yes: ✅")
+        author = ctx.author
+        
+        if(not self.doubleVerify(ctx, msg)):
+            return
+        try:
+            obj = db.players.delete_many(
+               {}
+            )
+            obj2 = db.campaigns.delete_many(
+               {}
+            )
+            obj3 = db.guilds.delete_many(
+               {}
+            )
+            obj4 = db.users.delete_many(
+               {}
+            )
+            obj5 = db.dead.delete_many(
+               {}
+            )
+            obj6 = db.logdata.delete_many(
+               {}
+            )
+            count = obj.deleted_count + obj2.deleted_count + obj3.deleted_count + obj4.deleted_count +obj5.deleted_count + obj6.deleted_count
+            
+            await msg.edit(content=f"Successfully deleted {count} entries.")
+    
+        except Exception as e:
+            traceback.print_exc()
+    
+    @commands.command()
+    @admin_or_owner()
     async def deleteStats(self, ctx):
         # if(not self.doubleVerify(ctx, msg)):
             # return
@@ -368,13 +404,55 @@ class Admin(commands.Cog, name="Admin"):
             count = db.stats.delete_many(
                {}
             )
-            db.stats.insert_one({"Life": 1, "Games": 0,  "Class":{"Artificer" : {}, "Barbarian" : {}, "Bard" : {}, "Cleric" : {}, "Druid" : {}, "Fighter" : {}, "Paladin" : {}, "Monk" : {}, "Ranger" : {}, "Rogue" : {}, "Sorcerer" : {}, "Warlock" : {}, "Wizard" : {}}, "Race" : {}, "Background" : {}, "Feat":{}, "Unique Players" : {}, "DM":{}, "Magic Items" : {}}
+            db.stats.insert_one({"Life": 1, "Games": 0,  "Class":{}, "Race" : {}, "Background" : {}, "Feats":{}, "Unique Players" : [], "DM":{}, "Magic Items" : {}})
             await ctx.channel.send(content=f"Successfully deleted {count.deleted_count} stat entries.")
     
         except Exception as e:
             traceback.print_exc()
     
+    @commands.command()
+    @admin_or_owner()
+    async def updateSettings(self, ctx):
+        try:
+            settingsRecord.update(list(db.settings.find())[0])
+            await ctx.channel.send(content=f"Settings have been updated from the DB.")
     
+        except Exception as e:
+            traceback.print_exc()
+    
+    @commands.command()
+    @admin_or_owner()
+    async def uploadSettings(self, ctx):
+        try:
+            settings = {
+            "ddmrw" : False,
+            "Test Channel IDs" : ["663454980140695553", "577611798442803205", "697974883140894780", "698220733259841656"],
+            "QB List" : {"781021043778781195" : "382025597041246210", "728476108940640297" : "259732415319244800"},
+            "Role Channel List" : {"777046003832193034" : "382025597041246210", "781360717101400084" : "259732415319244800"},
+                    "382025597041246210": 
+                    {"Sessions" : 737076677238063125, "QB" : 781021043778781195, 
+                        "CB" : 382027251618938880,
+                        "Player Logs" : 788158884329422848 ,
+                        "Game Rooms" : 575798293913796619, 
+                        "Guild Rooms" :452704598440804375,
+                        "Campaign Rooms" : 698784680488730666, 
+                        "Messages" : {"777051070110498846": "Roll20"," 777051209299132456": "Foundry"},
+                        "Emotes" : {"Roll20" : "<:roll20:777767592684421130>" , "Foundry": "<:foundry:777767632471719956>"}}, 
+                  "259732415319244800" : 
+                    {"Sessions" : 728456783466725427, "QB" : 728476108940640297, 
+                        "CB" : 781360342483075113,
+                        "Player Logs" : 728729922205647019 ,
+                        "Game Rooms" : 728456686024523810, 
+                        "Guild Rooms" : 734586911901089832,
+                        "Campaign Rooms" : 734276389322096700, 
+                        "Messages" : {"781360780162760765": "Roll20", "781360787854852106": "Foundry"},
+                        "Emotes" : {"Roll20" : "<:adorabat:733763021008273588>" , "Foundry": "🗡️"}}}
+
+            db.settings.insert_one(settings)
+            await ctx.channel.send(content=f"Settings have been updated in the DB.")
+    
+        except Exception as e:
+            traceback.print_exc()
     #Allows the sending of messages
     @commands.command()
     @admin_or_owner()

@@ -28,16 +28,17 @@ class Reward(commands.Cog):
         seconds_per_unit = { "m": 60, "h": 3600 }
         lowerTimeString = timeString.lower()
 
-        if tier not in ('1','2','3','4') and tier.lower() not in [r.lower() for r in roleArray]:
-            await channel.send(f"`{tier}` is not a valid tier. Please try again with 1, 2, 3, or 4 or Junior, Journey, Elite, or True.")
+        if tier not in ('0','1','2','3','4', '5') and tier.lower() not in [r.lower() for r in roleArray]:
+            await channel.send(f"`{tier}` is not a valid tier. Please try again with 0, 1, 2, 3, 4, 5 or New, Junior, Journey, Elite, True or Ascended.")
             return
 
         tierName = ""
         if tier.isdigit():
-            tierName = roleArray[int(tier)-1]
+            tierName = roleArray[int(tier)]
+            tier = tierName
         else:
             tierName = tier.capitalize()
-
+        print(tierName)
         l = list((re.findall('.*?[hm]', lowerTimeString)))
         totalTime = 0
         for timeItem in l:
@@ -50,12 +51,16 @@ class Reward(commands.Cog):
         cp = ((totalTime) // 1800) / 2
         tier = tier.lower()
         t = 0
-        if tier == 'journey':
+        if tier == 'junior':
+          t = 0
+        elif tier == "journey":
           t = 1
         elif tier == "elite":
           t = 2
         elif tier == "true":
           t = 3
+        elif tier == "ascended":
+          t = 4
         
         gp = cp* tier_reward_dictionary[t][0]
         tp = cp* tier_reward_dictionary[t][1]

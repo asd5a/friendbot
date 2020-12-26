@@ -10,12 +10,17 @@ from math import floor
 from datetime import datetime, timezone, timedelta 
 from discord.ext import commands
 from urllib.parse import urlparse 
-from bfunc import numberEmojis, alphaEmojis, commandPrefix, left,right,back, db, callAPI, checkForChar, timeConversion, traceBack, tier_reward_dictionary, cp_bound_array, calculateTreasure
+from bfunc import numberEmojis, alphaEmojis, commandPrefix, left,right,back, db, callAPI, checkForChar, timeConversion, traceBack, tier_reward_dictionary, cp_bound_array, calculateTreasure, settingsRecord
 
 class Character(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
-
+        
+    def is_log_channel():
+        async def predicate(ctx):
+            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
+        return commands.check(predicate)
+        
     async def cog_command_error(self, ctx, error):
         msg = None
         
@@ -24,6 +29,8 @@ class Character(commands.Cog):
             # convert string to int failed
             msg = "Your stats and level need to be numbers. "
         
+        elif isinstance(error, commands.CheckFailure):
+            msg = "This channel or user does not have permission for this command."
         elif isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'char':
                 msg = ":warning: You're missing the character name in the command.\n"
@@ -92,7 +99,7 @@ class Character(commands.Cog):
             await traceBack(ctx,error)
 
 
-
+    @is_log_channel()
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
     async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes=""):
@@ -141,6 +148,7 @@ class Character(commands.Cog):
           'Consumables': 'None',
           'Feats': 'None',
           'Inventory': {},
+          'Predecessor': [],
           'Games': 0
         }
 
@@ -1122,6 +1130,7 @@ class Character(commands.Cog):
 
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @is_log_channel()
     @commands.command(aliases=['rs'])
     async def respec(self,ctx, name, newname, race, cclass, bg, sStr:int, sDex:int, sCon:int, sInt:int, sWis:int, sCha:int):
         characterCog = self.bot.get_cog('Character')
@@ -1142,7 +1151,7 @@ class Character(commands.Cog):
         # Reset  values here
         charNoneKeyList = ['Magic Items', 'Inventory', 'Current Item', 'Consumables']
 
-        charRemoveKeyList = ['Image', 'Respecc', 'T1 TP', 'T2 TP', 'T3 TP', 'T4 TP', 'Attuned', 'Spellbook', 'Guild', 'Guild Rank', 'Grouped']
+        charRemoveKeyList = ['Predecessor','Image', 'Respecc', 'T1 TP', 'T2 TP', 'T3 TP', 'T4 TP', 'Attuned', 'Spellbook', 'Guild', 'Guild Rank', 'Grouped']
         
         guild_name = ""
         
@@ -1187,7 +1196,7 @@ class Character(commands.Cog):
         
         # for i_item in i_saved_list:
             # charDict["Inventory"][i_item[0]] = i_item[1]
-        
+        charDict["Predecessor"]= []
         
         charID = charDict['_id']
         charDict['STR'] = int(sStr)
@@ -1747,6 +1756,7 @@ class Character(commands.Cog):
             print(charDict)
             charRemoveKeyList = {'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
             playersCollection.update_one({'_id': charID}, {"$set": charDict, "$unset": charRemoveKeyList }, upsert=True)
+            
         except Exception as e:
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
@@ -1761,6 +1771,7 @@ class Character(commands.Cog):
         self.bot.get_command('respec').reset_cooldown(ctx)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @is_log_channel()
     @commands.command()
     async def retire(self,ctx, char):
         channel = ctx.channel
@@ -1844,6 +1855,7 @@ class Character(commands.Cog):
         self.bot.get_command('retire').reset_cooldown(ctx)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @is_log_channel()
     @commands.command()
     async def death(self,ctx, char):
         channel = ctx.channel
@@ -2001,6 +2013,7 @@ class Character(commands.Cog):
 
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @commands.command(aliases=['bag','inv'])
     async def inventory(self,ctx, char):
         channel = ctx.channel
@@ -2237,6 +2250,7 @@ class Character(commands.Cog):
             self.bot.get_command('inv').reset_cooldown(ctx)
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @commands.command()
     async def user(self,ctx):
         channel = ctx.channel
@@ -2311,9 +2325,9 @@ class Character(commands.Cog):
             if "Campaigns" in userRecords:
                 campaignString = ""
                 for u, v in userRecords['Campaigns'].items():
-                    campaignString += f"• {u} :\n----Time :{timeConversion(v['Time'])}\n"
-                    campaignString += f"----Sessions :{v['Sessions']}\n"
-                    campaignString += f"----Active Member :{v['Active']}\n"
+                    campaignString += f"• {u} :\n----Time: {timeConversion(v['Time'])}\n"
+                    campaignString += f"----Sessions: {v['Sessions']}\n"
+                    campaignString += f"----Active Member: {v['Active']}\n"
 
                 charEmbed.add_field(name='Campaigns', value=campaignString, inline=False)
             
@@ -2367,11 +2381,14 @@ class Character(commands.Cog):
 
 
         else:
-            await channel.send(f'You will need to play at least one session with a character before you can view your user stats.')
+            
+            usersData = db.users.insert_one({'User ID': author.id, 'Games' : 0})  
+            await channel.send(f'A user profile has been created.')
             return
             
            
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @commands.command(aliases=['i', 'char'])
     async def info(self,ctx, char):
         channel = ctx.channel
@@ -2567,6 +2584,7 @@ class Character(commands.Cog):
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @commands.command(aliases=['img'])
+    @is_log_channel()
     async def image(self,ctx, char, url):
 
         channel = ctx.channel
@@ -2603,6 +2621,7 @@ class Character(commands.Cog):
                 await ctx.channel.send(content=f'I have updated the image for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @commands.command(aliases=['r5'])
     async def reflavor(self,ctx, char, *, new_race):
         if( len(new_race) > 20 or len(new_race) <1):
@@ -2635,6 +2654,7 @@ class Character(commands.Cog):
 
     
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @is_log_channel()
     @commands.command(aliases=['lvl', 'lvlup', 'lv'])
     async def levelup(self,ctx, char):
         channel = ctx.channel
@@ -3140,6 +3160,7 @@ class Character(commands.Cog):
         self.bot.get_command('levelup').reset_cooldown(ctx)
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @commands.command(aliases=['att'])
     async def attune(self,ctx, char, m):
         channel = ctx.channel
@@ -3285,6 +3306,7 @@ class Character(commands.Cog):
                 await channel.send(f"You successfully attuned to **{mRecord['Name']}**!")
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @commands.command(aliases=['uatt', 'unatt'])
     async def unattune(self,ctx, char, m):
         channel = ctx.channel
@@ -3398,6 +3420,7 @@ class Character(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     async def stats(self,ctx):                
         statsCollection = db.stats
         currentDate = datetime.now().strftime("%b-%y")
@@ -3472,7 +3495,7 @@ class Character(commands.Cog):
 
 
 
-                gq_sum = 0
+                gq_sum = statRecords["GQ Total"]
                 
                 # Games By Guild
                 if "Guilds" in statRecords:
@@ -3484,8 +3507,6 @@ class Character(commands.Cog):
                         for data_key in guild_data_0s:
                             if not data_key in gv:
                                 gv[data_key] = 0
-                        
-                        gq_sum += gv["GQ"]
                         
                         guildGamesString += f"• {gk}"    
                         guildGamesString += f" Quests: {gv['GQ']}\n"
@@ -3499,9 +3520,11 @@ class Character(commands.Cog):
                             statsEmbed.add_field(name=f'Guilds - p. {p+1}', value=guildGamesString[gPageStops[p]:gPageStops[p+1]], inline=False)
                     else:
                         statsEmbed.add_field(name=f'Guild Quests (Total: {gq_sum})', value=guildGamesString, inline=False)
-
+                if "Campaigns" in statRecords:
+                    statsEmbed.add_field(name=f'Campaigns', value=f"Sessions: {statRecords['Campaigns']}", inline=False)
+                
                 if "Life" in statRecords:
-                    monthStart = datetime.now().replace(day = 21).replace(month = 11).replace(year = 2020)
+                    monthStart = datetime.now().replace(day = 25).replace(month = 12).replace(year = 2020)
                 else:
                     monthStart = datetime.now().replace(day = 1)
                 
@@ -3550,7 +3573,8 @@ class Character(commands.Cog):
                 if len(charString) > (768 * cPages):
                     cPageStops.append(len(charString))
                     cPages += 1
-
+            if not charString:
+                charString = "No stats yet."
             if cPages > 1:
                 for p in range(len(cPageStops)-1):
                     statsEmbed.add_field(name=f"Character Class Stats (Lifetime) p. {p+1}", value=charString[cPageStops[p]:cPageStops[p+1]], inline=False)  
@@ -3571,6 +3595,8 @@ class Character(commands.Cog):
 
             rPageStops.append(len(raceString))
 
+            if not raceString:
+                raceString = "No stats yet."
             if rPages > 1:
                 for p in range(len(rPageStops)-1):
                     statsEmbed.add_field(name=f"Character Race Stats (Lifetime) p. {p+1}", value=raceString[rPageStops[p]:rPageStops[p+1]], inline=False)  
@@ -3591,7 +3617,8 @@ class Character(commands.Cog):
                     bPages += 1
 
             bPageStops.append(len(bgString))
-
+            if not bgString:
+                bgString = "No stats yet."
             if bPages > 1:
                 for p in range(len(bPageStops)-1):
                     statsEmbed.add_field(name=f"Character Background Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
@@ -3612,6 +3639,8 @@ class Character(commands.Cog):
 
             bPageStops.append(len(bgString))
 
+            if not bgString:
+                bgString = "No stats yet."
             if bPages > 1:
                 for p in range(len(bPageStops)-1):
                     statsEmbed.add_field(name=f"Character Feats Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
@@ -3632,6 +3661,8 @@ class Character(commands.Cog):
 
             bPageStops.append(len(bgString))
 
+            if not bgString:
+                bgString = "No stats yet."
             if bPages > 1:
                 for p in range(len(bPageStops)-1):
                     statsEmbed.add_field(name=f"Character Magic Items Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  

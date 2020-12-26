@@ -3,7 +3,7 @@ import random
 import asyncio
 from discord.utils import get
 from discord.ext import commands
-from bfunc import settingsRecord, channel_id_dic
+from bfunc import settingsRecord, settingsRecord
 
 def admin_or_owner():
     async def predicate(ctx):
@@ -24,20 +24,20 @@ class Misc(commands.Cog):
     
 
     #@commands.cooldown(1, float('inf'), type=commands.BucketType.member)
-    @commands.command()
-    async def hohoho(self,ctx):
-        channel = ctx.channel
-        outcomes = ["Lump of Coal", "Clockwork Dog", "Cloak of Billowing",
-                    "Prosthetic Arm", "Arcanloth's Music Box", "Barking Box",
-                    "Thermal Cube", "Wand of Smiles", "Lock of Trickery", 
-                    "Pipe of Remembrance", "Wand of Pyrotechnics", "Talking Doll",
-                    "Tankard of Plenty", "Orb of Gonging", "Crown of the Forest",
-                    "Pot of Awakening", "Enchanted Three-Dragon Ante Set",
-                    "Propeller Helm", "Heward's Handy Spice Pouch",
-                    "Potion of Cold Resistance"]
-        selection = random.randrange(20) 
+    # @commands.command()
+    # async def hohoho(self,ctx):
+        # channel = ctx.channel
+        # outcomes = ["Lump of Coal", "Clockwork Dog", "Cloak of Billowing",
+                    # "Prosthetic Arm", "Arcanloth's Music Box", "Barking Box",
+                    # "Thermal Cube", "Wand of Smiles", "Lock of Trickery", 
+                    # "Pipe of Remembrance", "Wand of Pyrotechnics", "Talking Doll",
+                    # "Tankard of Plenty", "Orb of Gonging", "Crown of the Forest",
+                    # "Pot of Awakening", "Enchanted Three-Dragon Ante Set",
+                    # "Propeller Helm", "Heward's Handy Spice Pouch",
+                    # "Potion of Cold Resistance"]
+        # selection = random.randrange(20) 
         
-        await channel.send(content=f"The 20-sided bag of Father Nogmus landed on a {selection+1}!"+"\n"+f"{ctx.author.display_name} reaches into the bag and finds: "+f"`{outcomes[selection]}`")
+        # await channel.send(content=f"The 20-sided bag of Father Nogmus landed on a {selection+1}!"+"\n"+f"{ctx.author.display_name} reaches into the bag and finds: "+f"`{outcomes[selection]}`")
 
 
     @commands.cooldown(1, 60, type=commands.BucketType.member)
@@ -87,12 +87,12 @@ class Misc(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
-        if not payload.channel_id in channel_id_dic["Role Channel List"].keys(): 
+        if not str(payload.channel_id) in settingsRecord["Role Channel List"].keys(): 
             return
-        guild_id = channel_id_dic["Role Channel List"][payload.channel_id]
-        guild = self.bot.get_guild(guild_id)
+        guild_id = settingsRecord["Role Channel List"][str(payload.channel_id)]
+        guild = self.bot.get_guild(int(guild_id))
 
-        if payload.message_id in channel_id_dic[guild_id]["Messages"].keys():
+        if str(payload.message_id) in settingsRecord[guild_id]["Messages"].keys():
             if payload.emoji.name == "1️⃣":
                 name = 'Tier 1' 
             elif payload.emoji.name == "2️⃣":
@@ -108,7 +108,7 @@ class Misc(commands.Cog):
             else:
                 return
             
-            name = channel_id_dic[guild_id]["Messages"][payload.message_id]+" "+name     
+            name = settingsRecord[guild_id]["Messages"][str(payload.message_id)]+" "+name     
             role = get(guild.roles, name = name)
             if role is not None:
                 member = guild.get_member(payload.user_id)
@@ -122,12 +122,12 @@ class Misc(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self,payload):
-        if not payload.channel_id in channel_id_dic["Role Channel List"].keys(): 
+        if not str(payload.channel_id) in settingsRecord["Role Channel List"].keys(): 
             return
-        guild_id = channel_id_dic["Role Channel List"][payload.channel_id]
+        guild_id = settingsRecord["Role Channel List"][str(payload.channel_id)]
         guild = self.bot.get_guild(guild_id)
 
-        if payload.message_id in channel_id_dic[guild_id]["Messages"].keys():
+        if str(payload.message_id) in settingsRecord[guild_id]["Messages"].keys():
             if payload.emoji.name == "1️⃣":
                 name = 'Tier 1' 
             elif payload.emoji.name == "2️⃣":
@@ -143,7 +143,7 @@ class Misc(commands.Cog):
             else:
                 return
             
-            name = channel_id_dic[guild_id]["Messages"][payload.message_id]+" "+name    
+            name = settingsRecord[guild_id]["Messages"][str(payload.message_id)]+" "+name    
             print(name)
             role = get(guild.roles, name = name)    
 
@@ -165,12 +165,12 @@ class Misc(commands.Cog):
         tChannel = channel_id
         channel= self.bot.get_channel(tChannel)
         #get all game channel ids
-        game_channel_category =self.bot.get_channel(channel_id_dic[channel.guild.id]["Game Rooms"])
+        game_channel_category =self.bot.get_channel(settingsRecord[str(channel.guild.id)]["Game Rooms"])
         game_channel_ids = set(map(lambda c: c.id, game_channel_category.text_channels))
         build_message = "**It is DDMRW** get out there and play some games!\n"*settingsRecord['ddmrw']+ "The current status of the game channels is:\n"
         #create a dictonary to store the room/user pairs
         tierMap = {"Tier 0" : "T0", "Tier 1" : "T1", "Tier 2" : "T2", "Tier 3" : "T3", "Tier 4" : "T4", "Tier 5" : "T5"}
-        emoteMap = channel_id_dic[channel.guild.id]["Emotes"]
+        emoteMap = settingsRecord[str(channel.guild.id)]["Emotes"]
         channel_dm_dic = {}
         for c in game_channel_category.text_channels:
             channel_dm_dic[c.mention]= ["✅ "+c.mention+": Clear", set([])]
@@ -207,7 +207,7 @@ class Misc(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
         #if in the correct channel and the message deleted was not the last QBAP
-        if(payload.channel_id in channel_id_dic["QB List"].keys() and (not self.current_message or payload.message_id != self.current_message.id)):
+        if(str(payload.channel_id) in settingsRecord["QB List"].keys() and (not self.current_message or payload.message_id != self.current_message.id)):
             await self.find_message(payload.channel_id)
             #Since we dont know whose post was deleted we need to cover all the posts to find availablities
             #Also protects against people misposting
@@ -225,7 +225,7 @@ class Misc(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
     
-        if(payload.channel_id in channel_id_dic["QB List"].keys() and (not self.current_message or payload.message_id != self.current_message.id)):
+        if(str(payload.channel_id) in settingsRecord["QB List"].keys() and (not self.current_message or payload.message_id != self.current_message.id)):
             await self.find_message(payload.channel_id)
             new_text = await self.generateMessageText(payload.channel_id)
             if(self.current_message and self.past_message_check != 1):
@@ -255,7 +255,7 @@ class Misc(commands.Cog):
     async def on_message(self,msg):
         if msg.guild == None: 
             return
-        tChannel = channel_id_dic[msg.guild.id]["QB"]
+        tChannel = settingsRecord[str(msg.guild.id)]["QB"]
         if(msg.type.value == 7):
             await msg.add_reaction('👋')
         #check if any tier boost was done and react
@@ -269,7 +269,7 @@ class Misc(commands.Cog):
             await self.find_message(msg.channel.id)
             server = msg.guild
             channel = msg.channel
-            game_channel_category = server.get_channel(channel_id_dic[server.id]["Game Rooms"])
+            game_channel_category = server.get_channel(settingsRecord[str(server.id)]["Game Rooms"])
             cMentionArray = msg.channel_mentions
             game_channel_ids = list(map(lambda c: c.id, game_channel_category.text_channels))
             for mention in cMentionArray:
