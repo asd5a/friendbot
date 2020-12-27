@@ -2731,7 +2731,7 @@ class Character(commands.Cog):
                 
 
             elif cpSplit < cp_bound_array[tierNum-1][0]:
-                await channel.send(f'***{charName}*** is not ready to level up. They currently have **{cpSplit}/{cp_bound_array[tierNum][1]}** CP.')
+                await channel.send(f'***{charName}*** is not ready to level up. They currently have **{cpSplit}/{cp_bound_array[tierNum-1][1]}** CP.')
                 self.bot.get_command('levelup').reset_cooldown(ctx)
                 return
             else:
