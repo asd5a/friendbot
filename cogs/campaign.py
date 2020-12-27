@@ -23,7 +23,10 @@ class Campaign(commands.Cog):
     @commands.group(aliases=['c'], case_insensitive=True)
     async def campaign(self, ctx):	
         pass
-
+    def is_log_channel():
+            async def predicate(ctx):
+                return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"])
+            return commands.check(predicate)
     async def cog_command_error(self, ctx, error):
         msg = None
 
@@ -83,6 +86,7 @@ class Campaign(commands.Cog):
             return 
         playerRecords = list(db.users.find({"Campaigns."+campaignRecords["Name"]: {"$exists": True}}))
         print("Records", playerRecords)
+        print("Records", [x["Campaigns"][campaignRecords["Name"]] for x in playerRecords])
         playerRecords.sort(key=lambda x:not  x["Campaigns"][campaignRecords["Name"]]["Active"])
         infoEmbed = discord.Embed()
         infoEmbedmsg = None
@@ -369,14 +373,25 @@ class Campaign(commands.Cog):
             self.timer.get_command('prep').reset_cooldown(ctx)
             return 
 
+        
+
         # create a list of all expected players for the game so far, including the user who will always be the first 
         # element creating an invariant of the DM being the first element
         playerRoster = ctx.message.mentions
-
+        
+        
         
 
         campaignCollection = db.campaigns
         campaignRecords = campaignCollection.find_one({"Channel ID": f"{ctx.channel.id}"})
+
+        usersCollection = db.users
+        dmRecord = list(usersCollection.find({"User ID": str(author.id)}))[0]
+        if not "Campaigns" in dmRecord or not campaignRecords["Name"] in dmRecord["Campaigns"] or not dmRecord["Campaigns"][campaignRecords["Name"]]["Active"]:
+            await channel.send(f"You are not on the campaign roster.")
+            self.timer.get_command('prep').reset_cooldown(ctx)
+            return 
+
 
         #create the role variable for future use, default it to no role
         role = ""
@@ -414,8 +429,6 @@ class Campaign(commands.Cog):
         # currently this starts with a dummy initial entry for the DM to enable later users of these entries in the code
         # this entry will be overwritten if the DM signs up with a game
         # the DM entry will always be the front entry, this property is maintained by the code
-        usersCollection = db.users
-        dmRecord = list(usersCollection.find({"User ID": str(author.id)}))[0]
         
         signedPlayers = {"Players" : {}, "DM" : {"Member" : author, "DB Entry": dmRecord}}
         #set up a variable for the current state of the timer
@@ -810,6 +823,7 @@ class Campaign(commands.Cog):
             else:
                 user_dic["State"] = "Removed"
                 user_dic["Duration"] += endTime - user_dic["Latest Join"] 
+                print("DDDDDDDDDDDD", user_dic["Duration"])
                 if not resume:
                     await ctx.channel.send(content=f"***{user}***, you have been removed from the timer.")
 
@@ -939,7 +953,7 @@ class Campaign(commands.Cog):
             logChannel = ctx.channel
             stopEmbed.clear_fields()
             stopEmbed.set_footer(text=stopEmbed.Empty)
-            stopEmbed.description = f"Date: {datestart}\nPut your summary here."
+            stopEmbed.description = f"**{game}**\nDate: {datestart}\nPut your summary here."
 
             playerData = []
             campaignCollection = db.campaigns
@@ -1135,25 +1149,31 @@ class Campaign(commands.Cog):
         sessionLogEmbed = editMessage.embeds[0]
 
         if "✅" not in sessionLogEmbed.footer.text:
-            summaryIndex = sessionLogEmbed.description.find('Put your summary here.')
+            summaryIndex = max(sessionLogEmbed.description.find('\nSummary: '),sessionLogEmbed.description.find('Put your summary here.'))
+            print(summaryIndex)
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex] + "\nSummary: " + editString+"\n"
         else:
             sessionLogEmbed.description += "\n" + editString+"\n"
-
-        await editMessage.edit(embed=sessionLogEmbed)
-        delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
+        try:
+            await editMessage.edit(embed=sessionLogEmbed)
+        except Exception as e:
+            delMessage = await ctx.channel.send(content=f"Your session log caused an error with Discord, most likely from length.")
+        try:
+            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
+        except Exception as e:
+            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
         await asyncio.sleep(20) 
         await delMessage.delete()
         await ctx.message.delete() 
         
     @commands.has_any_role('Mod Friend', 'Admins')
     @campaign.command()
-    async def approve(self, ctx, num : int, channel_standin):
-    
-        if ctx.message.channel_mentions == list() or len(ctx.message.channel_mentions) > 1:
-            await ctx.channel.send('I could not find the channel ')
+    async def approve(self, ctx, num : int):
+        channel = ctx.channel
+        if not (ctx.message.channel_mentions == list()):
+            channel = ctx.message.channel_mentions[0] 
         
-        channel = ctx.message.channel_mentions[0] 
+        
         
 
         if not "campaign" in str(channel.category.name).lower():
@@ -1223,8 +1243,8 @@ class Campaign(commands.Cog):
                 db.stats.update_one({"Life": 1}, {"$inc" : {"Campaigns" : 1}})
                 desc = sessionLogEmbed.description
                 print(desc)
-                date_find = re.search("^Date: (.*?) ", desc)
-                print(date_find)
+                date_find = re.search("Date: (.*?) ", desc)
+                print("DATAEEEEEEEEEEEEEEE",date_find)
                 if date_find:
                     month_year_splits = date_find[1].split("-")
                     print(f"{month_year_splits[0]}-{month_year_splits[2]}")
@@ -1241,12 +1261,11 @@ class Campaign(commands.Cog):
             
     @commands.has_any_role('Mod Friend', 'Admins')
     @campaign.command()
-    async def deny(self, ctx, num : int, channel_standin):
+    async def deny(self, ctx, num : int):
     
-        if ctx.message.channel_mentions == list() or len(ctx.message.channel_mentions) > 1:
-            await ctx.channel.send('I could not find the channel ')
-        
-        channel = ctx.message.channel_mentions[0] 
+        channel = ctx.channel
+        if not (ctx.message.channel_mentions == list()):
+            channel = ctx.message.channel_mentions[0] 
         
 
         if not "campaign" in str(channel.category.name).lower():

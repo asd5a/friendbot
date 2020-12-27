@@ -524,8 +524,14 @@ class Guild(commands.Cog):
                 await channel.send(f"***{charRecords['Name']}*** cannot join any guilds because they belong to the guild ***{charRecords['Guild']}***.")
                 return
 
-            guildRecords, guildEmbedmsg = await checkForGuild(ctx,guildName,guildEmbed) 
+            guildChannel = ctx.message.channel_mentions
+            if guildChannel == list():
+                await ctx.channel.send(f"A campaign channel must be supplied")
+                return 
+            guildChannel = guildChannel[0]
 
+            guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)})
+            
             if guildRecords:
                 if guildRecords['Funds'] < self.creation_cost:
                     await channel.send(f"***{guildRecords['Name']}*** is not open to join. If you would like to join the guild please fund the guild with the command `{commandPrefix}guild fund.`")

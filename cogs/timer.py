@@ -1675,7 +1675,7 @@ class Timer(commands.Cog):
             if tierNum < 1:
                 tierNum = 1
             rewardsCollection = db.rit
-            rewardList = list(rewardsCollection.find({"Tier": tierNum, "Name" : {"$regex" : "Spell Scroll"}}))
+            rewardList = list(rewardsCollection.find({"Tier": tierNum}))
             rewardList_lower = list(rewardsCollection.find({"Tier": max(tierNum-1, 1)}))
             
             # go through the dictionary of times and calculate the rewards of every player

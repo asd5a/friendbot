@@ -337,7 +337,9 @@ class Log(commands.Cog):
         self.bot = bot
     def is_log_channel():
         async def predicate(ctx):
-            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"]
+            return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"] or
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"])
         return commands.check(predicate)
     @commands.group(case_insensitive=True)
     @is_log_channel()
@@ -743,7 +745,10 @@ class Log(commands.Cog):
                     guildsData.append(UpdateOne({"Name": name},
                                                {"$inc": {"Games": 1, "Reputation": gain- reputationCost, "Total Reputation": gain}}))
         print(guilds)   
-        print("LLLLLLLLLLLLLLLLLLLLLLLL\n", guildsData)         
+        print("LLLLLLLLLLLLLLLLLLLLLLLL\n", guildsData) 
+        
+        del players[dm["ID"]]
+        
         try:
             end = sessionInfo["End"]
             start = sessionInfo["Start"]
@@ -751,7 +756,7 @@ class Log(commands.Cog):
             totalDuration = end - start
             
             # get the stats for the month and create an entry if it doesnt exist yet
-            statsIncrement ={"Games": 1, "Playtime": totalDuration, 'Players': len(players)}
+            statsIncrement ={"Games": 1, "Playtime": totalDuration, 'Players': len(players.keys())}
             statsAddToSet = {}
             for name in [g["Name"] for g in guilds.values() if g["Status"]]:
                 print(guilds[name])
@@ -774,7 +779,7 @@ class Log(commands.Cog):
             # increment or create the stat entry for the DM of the game
             statsIncrement[f"DM.{dm['ID']}.T{tierNum}"] = 1
             statsIncrement[f"T{tierNum}"] = 1
-            statsIncrement[f"GQ Total"] = 1
+            statsIncrement[f"GQ Total"] = int(any ([g["Status"] for g in guilds.values()]))
             
             
             # track a list of unique players
@@ -805,7 +810,6 @@ class Log(commands.Cog):
                 print(guildsData)
                 # do a bulk write for the guild data
                 db.guilds.bulk_write(guildsData)
-            del players[dm["ID"]]
             
             await  generateLog(self, ctx, num, sessionInfo=sessionInfo, userDBEntriesDic=userDBEntriesDic, guildDBEntriesDic=guildDBEntriesDic, characterDBentries=characterDBentries)
             
@@ -834,6 +838,7 @@ class Log(commands.Cog):
             print('Success')
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
+        noodles += noodlesGained
         noodleString = ""
         if dmUser:
             dmRoleNames = [r.name for r in dmUser.roles]

@@ -364,10 +364,10 @@ class Admin(commands.Cog, name="Admin"):
     @commands.command()
     @admin_or_owner()
     async def makeItClean(self, ctx):
-        msg = ctx.channel.send("Are you sure you want to delete basically everything?\n No: ❌\n Yes: ✅")
+        msg = await ctx.channel.send("Are you sure you want to delete basically everything?\n No: ❌\n Yes: ✅")
         author = ctx.author
         
-        if(not self.doubleVerify(ctx, msg)):
+        if( not await self.doubleVerify(ctx, msg)):
             return
         try:
             obj = db.players.delete_many(

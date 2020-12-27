@@ -2276,7 +2276,7 @@ class Character(commands.Cog):
             pages = 1
             pageStops = [0]
             charString = ""
-            charDictTiers = [[],[],[],[]]
+            charDictTiers = [[],[],[],[],[]]
             if charRecords:
                 charRecords = sorted(charRecords, key=lambda k: k['Name']) 
 
@@ -2288,8 +2288,10 @@ class Character(commands.Cog):
                         charDictTiers[1].append(c)
                     elif c["Level"] < 17:
                         charDictTiers[2].append(c)
-                    else:
+                    elif c["Level"] < 20:
                         charDictTiers[3].append(c)
+                    else:
+                        charDictTiers[4].append(c)
 
                 charEmbed.set_author(name=author, icon_url=author.avatar_url)
                 charEmbed.title = f"{author.display_name}" 
@@ -2316,11 +2318,14 @@ class Character(commands.Cog):
 
             if 'Games' in userRecords:
                 totalGamesPlayed += userRecords['Games']
+            if 'Double' in userRecords and userRecords["Double"]>0:
+                charEmbed.add_field(name="Double Reward", inline=False, value=f"""Your next **{userRecords["Double"]}** games will have double rewards.""")
+
 
             if "Guilds" in userRecords:
                 guildNoodles = "• "
                 guildNoodles += "\n• ".join(userRecords["Guilds"])
-                charEmbed.add_field(name="Guilds", value=f"""You have created **{len(userRecords["Guilds"])}** guilds:\n {guildNoodles}""")
+                charEmbed.add_field(name="Guilds",  inline=False, value=f"""You have created **{len(userRecords["Guilds"])}** guilds:\n {guildNoodles}""")
 
             if "Campaigns" in userRecords:
                 campaignString = ""
@@ -2336,8 +2341,8 @@ class Character(commands.Cog):
                 charEmbed.description = f"Total One-shots Played: {totalGamesPlayed}\nNoodles: {userRecords['Noodles']}\n"
             else:
                 charEmbed.description = f"Total One-shots Played: {totalGamesPlayed}\nNoodles: 0 (Try hosting sessions to receive Noodles!)\n"
-
-            charEmbed.description += f"Total Number of Characters: {len(charRecords)}\nTier 1: {len(charDictTiers[0])}\nTier 2: {len(charDictTiers[1])}\nTier 3: {len(charDictTiers[2])}\nTier 4: {len(charDictTiers[3])}"
+        
+            charEmbed.description += f"Total Number of Characters: {len(charRecords)}\nTier 1: {len(charDictTiers[0])}\nTier 2: {len(charDictTiers[1])}\nTier 3: {len(charDictTiers[2])}\nTier 4: {len(charDictTiers[3])}\nTier 5: {len(charDictTiers[4])}"
 
             userEmbedList = [charEmbed]
             page = 0
@@ -2382,7 +2387,7 @@ class Character(commands.Cog):
 
         else:
             
-            usersData = db.users.insert_one({'User ID': author.id, 'Games' : 0})  
+            usersData = db.users.insert_one({'User ID': str(author.id), 'Games' : 0})  
             await channel.send(f'A user profile has been created.')
             return
             
