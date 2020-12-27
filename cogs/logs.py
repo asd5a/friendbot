@@ -396,12 +396,12 @@ class Log(commands.Cog):
             
         if not editMessage:
             return ctx.channel.send("Log could not be found.")
-        # if sessionInfo["Status"] != "Processing":
-            # await ctx.channel.send("This session has already been processed")
+        if sessionInfo["Status"] != "Processing":
+            await ctx.channel.send("This session has already been processed")
             
-        # if ctx.author.id == int(sessionInfo["DM"]["ID"]):
-            # await ctx.channel.send("You cannot approve your own log.")
-            # return
+        if ctx.author.id == int(sessionInfo["DM"]["ID"]):
+            await ctx.channel.send("You cannot approve your own log.")
+            return
         if not editMessage or editMessage.author != self.bot.user:
             return ctx.channel.send("Session has no corresponding message in the log channel.")
 

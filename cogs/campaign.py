@@ -527,7 +527,7 @@ class Campaign(commands.Cog):
             #the command that starts the timer, it does so by allowing the code to move past the loop
             elif self.startsWithCheck(msg, "start"):
                 if await self.permissionCheck(msg, author):
-                    if len(signedPlayers["Players"].keys()) == 0-1:
+                    if len(signedPlayers["Players"].keys()) == 0:
                         await channel.send(f'There are no players signed up! Players, use the following command to sign up to the quest with your character before the DM starts the timer:\n```yaml\n{commandPrefix}campaign timer signup```') 
                     else:
                         timerStarted = True
@@ -1148,7 +1148,7 @@ class Campaign(commands.Cog):
 
         sessionLogEmbed = editMessage.embeds[0]
 
-        if "✅" not in sessionLogEmbed.footer.text:
+        if not ("✅" in sessionLogEmbed.footer.text or "❌" in sessionLogEmbed.footer.text):
             summaryIndex = max(sessionLogEmbed.description.find('\nSummary: '),sessionLogEmbed.description.find('Put your summary here.'))
             print(summaryIndex)
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex] + "\nSummary: " + editString+"\n"
@@ -1216,9 +1216,9 @@ class Campaign(commands.Cog):
                 # since there is no character to update we block the charData
                 charData.append(logItems[0].strip())
             
-            # if ctx.author.id == int(dmID):
-                # await ctx.channel.send("You cannot approve your own log.")
-                # return
+            if ctx.author.id == int(dmID):
+                await ctx.channel.send("You cannot approve your own log.")
+                return
             print(charData)
             usersCollection = db.users
             userRecordsList = list(usersCollection.find({"User ID" : {"$in": charData }}))
