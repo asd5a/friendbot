@@ -827,6 +827,7 @@ class Log(commands.Cog):
             if(c):
                 await c.send(f"Your session log for **{game}** has been approved."+dm_text)
             #logData.delete_one({"Log ID": num})
+            await ctx.channel.send("The session has been approved.")
             
         except BulkWriteError as bwe:
             print(bwe.details)
@@ -961,6 +962,7 @@ class Log(commands.Cog):
             #logData.delete_one({"Log ID": num})
             sessionLogEmbed.set_footer(text=f"Game ID: {num}\n❌ Log Denied! Characters have been cleared.")
             await editMessage.edit(embed=sessionLogEmbed)
+            await ctx.channel.send("The session has been denied.")
         except BulkWriteError as bwe:
             print(bwe.details)
             charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
