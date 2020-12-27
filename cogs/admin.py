@@ -27,6 +27,10 @@ class Admin(commands.Cog, name="Admin"):
     async def react(self, ctx):	
         pass
     
+    def is_log_channel():
+        async def predicate(ctx):
+            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
+        return commands.check(predicate)
     
     @react.command()
     @admin_or_owner()
@@ -140,6 +144,8 @@ class Admin(commands.Cog, name="Admin"):
     
         except Exception as e:
             traceback.print_exc()        
+      
+    
     
     @commands.command()
     @admin_or_owner()

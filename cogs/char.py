@@ -98,7 +98,31 @@ class Character(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
 
-
+    @commands.command()
+    @commands.cooldown(1, 60, type=commands.BucketType.user)
+    @is_log_channel()
+    async def printRaces(self, ctx):
+        try:
+            items = list(db.races.find(
+               {},
+            ))
+            
+            out = f"All Races:\n"
+            
+            items.sort(key = lambda x: x["Name"])
+            for i in items:
+                out += f"- {i['Name']}\n"
+            length = len(out)
+            while(length>2000):
+                x = out[:2000]
+                x = x.rsplit("\n", 1)[0]
+                await ctx.channel.send(content=x)
+                out = out[len(x):]
+                length -= len(x)
+            await ctx.channel.send(content=out)
+    
+        except Exception as e:
+            traceback.print_exc()   
     @is_log_channel()
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
