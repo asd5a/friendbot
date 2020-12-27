@@ -650,7 +650,7 @@ class Tp(commands.Cog):
             if tierNum.isdigit():
                 role = int(tierNum)
             else:
-                role = roleArray.index(tierNum.capitalize()) + 1
+                role = roleArray.index(tierNum.capitalize())
 
             if f"T{role} TP" not in charRecords:
                 await channel.send(f"You do not have T{role} TP to abandon.")
