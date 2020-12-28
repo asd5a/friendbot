@@ -35,6 +35,8 @@ class Campaign(commands.Cog):
             return
         if isinstance(error, commands.CommandOnCooldown):
             msg = f"The command is on cooldown." 
+        elif isinstance(error, discord.NotFound):
+            msg = "The session log could not be found."
         elif isinstance(error, commands.MissingAnyRole):
             await ctx.channel.send("You do not have the required permissions for this command.")
             return

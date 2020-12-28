@@ -354,6 +354,8 @@ class Log(commands.Cog):
         elif isinstance(error, commands.BadArgument):
             # convert string to int failed
             msg = "Your session ID was an incorrect format."
+        elif isinstance(error, discord.NotFound):
+            msg = "The session log could not be found."
         else:
             if isinstance(error, commands.MissingRequiredArgument):
                 msg = "Your command was missing an argument! "
@@ -393,6 +395,8 @@ class Log(commands.Cog):
         channel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Sessions"]) 
         
         editMessage = await channel.fetch_message(num)
+            
+            
 
         if not sessionInfo:
             return ctx.channel.send("Session could not be found.")
