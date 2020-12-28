@@ -111,49 +111,38 @@ async def help(ctx, *, pageString=''):
         page = 5
     elif 'timer1' in pageString or 'timer' in pageString:
         page = 3
-    elif 'itemtable' in pageString:
-        page = 6
     elif 'shop' in pageString:
-        page = 7
+        page = 6
     elif 'tp' in pageString:
-        page = 8
+        page = 7
     elif 'guild' in pageString:
+        page = 8
+    elif 'campaign' in pageString:
         page = 9
 
 
 # MAIN HELP MENU ($help)
 
-# THIS WILL NEED TO HAVE TWO OPTIONS: ONE FOR PLAYERS AND ONE FOR DMs.
-
-
-
-
-
-# PLAYER HELP MENU ($help player)
-
-#helpList missing helpEmbedGen, helpEmbedTimerThree, and helpEmbedCampaign
-#helpList Menu should be helpEmbedMenuPlayer?
-#helpList needs to remove helpEmbedShop
 
     helpList = [helpEmbedMenu, helpEmbedGen, helpEmbedChar, helpEmbedTimerOne, helpEmbedTimerTwo, helpEmbedTimerThree, helpEmbedShop, helpEmbedTp, helpEmbedGuild, helpEmbedCampaign]
 
-    helpEmbedMenu.title = 'Bot Friend Player Commands - Table of Contents'
+    helpEmbedMenu.title = 'Bot Friend Commands - Table of Contents'
     helpEmbedMenu.description = 'Please react to the group of commands you would like to see and gain more knowledge about.'
-    helpEmbedMenu.add_field(name=f"1️⃣ General Commands\n{commandPrefix}help player gen", value="Various commands which don't fit into any other section.", inline=False)
-    helpEmbedMenu.add_field(name=f"2️⃣ Character Commands\n{commandPrefix}help player char", value="How to manage your character(s).", inline=False)
-    helpEmbedMenu.add_field(name=f"3️⃣ Pre-Quest Timer Commands\n{commandPrefix}help player timer1", value="How to sign up to a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"4️⃣ Running Timer Commands\n{commandPrefix}help player timer2", value="How to do various things while participating in a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"5️⃣ Post-Quest Timer Commands\n{commandPrefix}help player timer3", value="How to opt out of Guild Boons after a quest.", inline=False)
-    helpEmbedMenu.add_field(name=f"6️⃣ Shop Commands\n{commandPrefix}help player shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
-    helpEmbedMenu.add_field(name=f"7️⃣ TP Commands\n{commandPrefix}help player tp", value="How to spend TP to acquire magic items.", inline=False)
-    helpEmbedMenu.add_field(name=f"8️⃣ Guild Commands\n{commandPrefix}help player guild", value="How to be a member of a guild or manage one.", inline=False)
-    helpEmbedMenu.add_field(name=f"9️⃣ Campaign Commands\n{commandPrefix}help player campaign", value="How to participate in a campaign session for a campaign in which you are a player.", inline=False)
+    helpEmbedMenu.add_field(name=f"1️⃣ General Commands\n{commandPrefix}help gen", value="Various commands which don't fit into any other section.", inline=False)
+    helpEmbedMenu.add_field(name=f"2️⃣ Character Commands\n{commandPrefix}help char", value="How to manage your character(s).", inline=False)
+    helpEmbedMenu.add_field(name=f"3️⃣ Pre-Quest Timer Commands\n{commandPrefix}help timer1", value="How to prepare and sign up to a timer for a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"4️⃣ Running Timer Commands\n{commandPrefix}help timer2", value="How to do various things while hosting or participating in a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"5️⃣ Post-Quest Timer Commands\n{commandPrefix}help timer3", value="How to do various things after the completion of a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"6️⃣ Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
+    helpEmbedMenu.add_field(name=f"7️⃣ TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
+    helpEmbedMenu.add_field(name=f"8️⃣ Guild Commands\n{commandPrefix}help guild", value="How to be a member of a guild or manage one.", inline=False)
+    helpEmbedMenu.add_field(name=f"9️⃣ Campaign Commands\n{commandPrefix}help campaign", value="How to create, host, and participate in a campaign.", inline=False)
 
 
 
 # DM HELP MENU ($help dm)
 
-# Unsure about helpEmbedMenuDM. Unsure if this list can have the same names as above.
+# THIS HELP MENU WOULD ONLY BE NECESSARY IF WE COULD SPLIT UP THE HELP MENU IN TWO BRANCHES: ONE FOR PLAYERS AND ONE FOR DMs.
 #    helpList = [helpEmbedMenuDM, helpEmbedTimerOne, helpEmbedTimerTwo, helpEmbedTimerThree, helpEmbedCampaign]
 
 #    helpEmbedMenu.title = 'Bot Friend DM Commands - Table of Contents'
@@ -165,7 +154,7 @@ async def help(ctx, *, pageString=''):
 
 
 
-# GENERAL COMMANDS ($help player general)
+# GENERAL COMMANDS ($help general)
 
     helpEmbedGen.title = 'General Commands'
 
@@ -181,7 +170,7 @@ async def help(ctx, *, pageString=''):
 
 
 
-# CHARACTER COMMANDS MENU ($help player char)
+# CHARACTER COMMANDS MENU ($help char)
 
     helpEmbedChar.title = 'Character Commands'
 
@@ -212,38 +201,89 @@ async def help(ctx, *, pageString=''):
     helpEmbedChar.add_field(name=f'▫️ Death Options\n{commandPrefix}death "character name"', value=f"Decide the fate of your character who died during a quest.", inline=False)
 
 
-# PRE-QUEST TIMER COMMANDS MENU ($help player timer1)
+# PRE-QUEST TIMER COMMANDS MENU ($help timer1)
 
-    helpEmbedTimerOne.title = f"Pre-Quest Timer Commands (Player)\n{commandPrefix}timer, {commandPrefix}t"
+# PLAYER COMMANDS
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Signing Up\n{commandPrefix}timer signup "character name" "consumable1, consumable2, [...]"', value="Sign up to a prepared timer with your character and their consumables but only if you have been selected to join the one-shot and were mentioned when the timer was prepared.", inline=False)
+    helpEmbedTimerOne.title = f"Pre-Quest Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
+
+    helpEmbedTimerOne.add_field(name=f'▫️ Signing Up (Player)\n{commandPrefix}timer signup "character name" "consumable1, consumable2, [...]"', value="Sign up to a prepared timer with your character and their consumables but only if you have been selected to join the one-shot and were mentioned when the timer was prepared.", inline=False)
+
+# DM COMMANDS
+
+    helpEmbedTimerOne.add_field(name=f'▫️ Preparing the Timer (DM)\n{commandPrefix}timer prep "@player1, @player2, [...]" questname', value="Prepare a timer with a list of players so they can sign up with their characters.", inline=False)
+
+    helpEmbedTimerOne.add_field(name=f'▫️ Adding Players to the Roster (DM)\n{commandPrefix}timer add @player', value="Add a player to the roster after you have already prepared the timer so they can sign up.", inline=False)
+
+    helpEmbedTimerOne.add_field(name=f'▫️ Removing Players from the Roster (DM)\n{commandPrefix}timer remove @player', value="Remove a player from the roster.", inline=False)
+
+    helpEmbedTimerOne.add_field(name=f'▫️ Adding Guilds (DM)\n{commandPrefix}timer guild #guild1, #guild2, #guild3', value="Add a maximum of three guilds to your quest. Each use of this command replaces the previous use.", inline=False)
+
+    helpEmbedTimerOne.add_field(name=f'▫️ Cancelling the Timer (DM)\n{commandPrefix}timer cancel', value="Cancel the prepared timer.", inline=False)
+
+    helpEmbedTimerOne.add_field(name=f'▫️ Starting the Timer (DM)\n{commandPrefix}timer start', value="Start the prepared timer.", inline=False)
 
 
+# RUNNING TIMER COMMANDS MENU ($help timer2)
 
-# RUNNING TIMER COMMANDS MENU ($help player timer2)
+# PLAYER COMMANDS
 
-    helpEmbedTimerTwo.title = f"Running Timer Commands (Player)\n{commandPrefix}timer, {commandPrefix}t"
+    helpEmbedTimerTwo.title = f"Running Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Yourself\n{commandPrefix}timer addme "character name" "consumable1, consumable2, [...]"', value="Request permission to join a one-shot with your character and their consumables after it has already been started. This only functions if there is a spot for the player and the DM must approve the request.", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Yourself (Player)\n{commandPrefix}timer addme "character name" "consumable1, consumable2, [...]"', value="Request permission to join a one-shot with your character and their consumables after it has already been started. This only functions if there is a spot for the player and the DM must approve the request.", inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Using Items\n- item', value="Use one of the consumables that your character brought into the one-shot or any mundane item in their inventory. This will permanently remove the consumable or item from their inventory.", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Using Items (Player)\n- item', value="Use one of the consumables that your character brought into the one-shot or any mundane item in their inventory. This will permanently remove the consumable or item from their inventory.", inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Removing Yourself\n{commandPrefix}timer removeme', value="Remove yourself from the running timer.", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Removing Yourself (Player)\n{commandPrefix}timer removeme', value="Remove yourself from the running timer.", inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Checking the Timestamp\n{commandPrefix}timer removeme', value="Refresh the running timer’s information box.", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Checking the Timestamp (Player)\n{commandPrefix}timer removeme', value="Refresh the running timer’s information box.", inline=False)
+
+# DM COMMANDS
+
+    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Players During a Quest (DM)\n{commandPrefix}timer add @player "character name" "consumable1, consumable2, [...]"', value="Add a player to the running timer with their character and consumables.", inline=False)
+
+    helpEmbedTimerTwo.add_field(name=f'▫️ Removing Players During a Quest (DM)\n{commandPrefix}timer remove @player', value="Remove a player from the running timer.", inline=False)
+
+    helpEmbedTimerTwo.add_field(name=f'▫️ Awarding Reward Items (DM)\n{commandPrefix}timer reward @player "reward item1, reward item2, [...]"', value="Award one or more reward items from the **Reward Item Table** to a player.", inline=False)
+
+    helpEmbedTimerTwo.add_field(name=f'▫️ Character Death (DM)\n{commandPrefix}timer death @player', value="Remove a player (and their character) from the timer if their character dies during the quest.", inline=False)
+
+    helpEmbedTimerTwo.add_field(name=f'▫️ Stopping the Timer (DM)\n{commandPrefix}timer stop', value="Stop the running timer which creates the session log for it.", inline=False)
 
 
-# POST-QUEST TIMER COMMANDS MENU ($help player timer3)
+# POST-QUEST TIMER COMMANDS MENU ($help timer3)
 
-    helpEmbedTimerThree.title = f"Post-Quest Timer Commands (Player)\n{commandPrefix}timer, {commandPrefix}t"
+# PLAYER COMMANDS
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Rewards\n{commandPrefix}session optout2xR gameID', value="Opt out of the 2x Rewards Guild Boon whenever it is activated. You are automatically opted into it whenever it is used.", inline=False)
+    helpEmbedTimerThree.title = f"Post-Quest Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Rewards\n{commandPrefix}session optin2xR gameID', value="Opt into the 2x Rewards Guild Boon if you previously opted out of it.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Rewards (Player)\n{commandPrefix}session optout2xR gameID', value="Opt out of the 2x Rewards Guild Boon whenever it is activated. You are automatically opted into it whenever it is used.", inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Items\n{commandPrefix}session optout2xI gameID', value="Opt out of the 2x Items Guild Boon whenever it is activated. You are automatically opted into it whenever it is used.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Rewards (Player)\n{commandPrefix}session optin2xR gameID', value="Opt into the 2x Rewards Guild Boon if you previously opted out of it.", inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items\n{commandPrefix}session optin2xI gameID', value="Opt into the 2x Items Guild Boon when the guild that your character is a member of activates it in a quest that you are participating in with that character. You are automatically opted into 2x Items whenever it is used.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Items (Player)\n{commandPrefix}session optout2xI gameID', value="Opt out of the 2x Items Guild Boon whenever it is activated. You are automatically opted into it whenever it is used.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items (Player)\n{commandPrefix}session optin2xI gameID', value="Opt into the 2x Items Guild Boon when the guild that your character is a member of activates it in a quest that you are participating in with that character. You are automatically opted into 2x Items whenever it is used.", inline=False)
+
+# DM COMMANDS
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)\n{commandPrefix}session log questID summary', value="Submit a session log summary for the running timer which you just stopped. See #hosting-a-one-shot or the Bot Friend DM Commands Guide for more information.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)\n{commandPrefix}approveRewards gameID #guild-channel', value="Enable the 2x Rewards Guild Boon for a guild quest which you host.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Rewards (DM)\n{commandPrefix}session denyRewards gameID #guild-channel', value="Disable the 2x Rewards Guild Boon for a guild quest which you host.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Items (DM)\n{commandPrefix}approveItems gameID #guild-channel', value="Enable the 2x Items Guild Boon for a guild quest which you host.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Items (DM)\n{commandPrefix}session denyItems gameID #guild-channel', value="Disable the 2x Items Guild Boon for a guild quest which you host.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Approve Recruitment Drive (DM)\n{commandPrefix}approveDrive gameID #guild-channel', value="Enable the Recruitment Drive Guild Boon for a guild quest which you host.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Deny Recruitment Drive (DM)\n{commandPrefix}session denyDrive gameID #guild-channel', value="Disable the Recruitment Drive Guild Boon for a guild quest which you host.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of DDMRW (DM)\n{commandPrefix}session ddmrw optout gameID', value="Opt out of Double DM Rewards Weekend (DDMRW) and not to receive Double DM Rewards for a quest which host during DDMRW. Any quest which ends during DDMRW will automatically have Double DM Rewards applied to it so you will have to opt out of it by default.", inline=False)
+
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into DDMRW\n{commandPrefix}session ddmrw optin gameID', value="Opt into DDMRW if you previously opted out of it.", inline=False)
 
 
 # ITEM TABLE COMMANDS MENU ($help itemtable)
@@ -256,7 +296,7 @@ async def help(ctx, *, pageString=''):
 #    helpEmbedItems.add_field(name=f'▫️ Random Reward Item\n{commandPrefix}rit random', value=f"Display a random reward item based on the tier and sub-tier you selected.", inline=False)
 
 
-# SHOP COMMANDS MENU ($help player shop)
+# SHOP COMMANDS MENU ($help shop)
 
     helpEmbedShop.title = 'Shop Commands'
 
@@ -275,7 +315,7 @@ async def help(ctx, *, pageString=''):
     helpEmbedShop.add_field(name=f'▫️ Downtime Noodle Training\n{commandPrefix}downtime noodle "character name"\n[{commandPrefix}dt noodle]', value="Have your character learn more languages or gain proficiency in more tools (or a skill later on) but only if you have a Noodle role.", inline=False)
 
 
-# TP COMMANDS MENU ($help player tp)
+# TP COMMANDS MENU ($help tp)
 
     helpEmbedTp.title = 'TP Commands'
 
@@ -286,7 +326,7 @@ async def help(ctx, *, pageString=''):
     helpEmbedTp.add_field(name=f'▫️ Abandoning Leftover TP\n{commandPrefix}tp abandon "character name" tier', value="Abandon your character’s leftover TP in the tier of your choice.", inline=False)
 
 
-# GUILD COMMANDS MENU ($help player guild)
+# GUILD COMMANDS MENU ($help guild)
 
     helpEmbedGuild.title = 'Guild Commands'
 
@@ -303,106 +343,43 @@ async def help(ctx, *, pageString=''):
     helpEmbedGuild.add_field(name=f'▫️ Funding a Guild\n{commandPrefix}guild fund "character name" "guild name" GP', value="Fund and join a newly-created guild which still requires funding with your character. The minimum amount of GP that you must fund is equal to the joining fee of your character’s tier.", inline=False)
 
 
-# CAMPAIGN COMMANDS MENU ($help player campaign)
+# CAMPAIGN COMMANDS MENU ($help campaign)
 
-    helpEmbedCampaign.title = f"Campaign Commands (Player)\n{commandPrefix}c"
+# PLAYER CAMPAIGN COMMANDS
 
-    helpEmbedCampaign.add_field(name=f'▫️ Viewing a Campaign’s Information\n{commandPrefix}campaign info #campaign-channel', value="View a campaign’s DM (Campaign Master), the number of sessions that the campaign has run, its active and inactive roster, the number of sessions that each player has participated in, and the hours that each player has accumulated.", inline=False)
-
-    helpEmbedCampaign.add_field(name=f'▫️ Signing Up\n{commandPrefix}campaign timer signup', value="Sign up to a prepared timer but only if you have been selected to join the campaign session and were mentioned when the timer was prepared.", inline=False)
-
-    helpEmbedCampaign.add_field(name=f'▫️ Adding Yourself\n{commandPrefix}campaign timer addme', value="Request permission to join the campaign session after it has already been started. The DM must approve the request.", inline=False)
-
-    helpEmbedCampaign.add_field(name=f'▫️ Removing Yourself\n{commandPrefix}campaign timer removeme', value="Remove yourself from the running timer.", inline=False)
-
-    helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp\n{commandPrefix}timer removeme', value="Refresh the running timer’s information box.", inline=False)
-
-
-
-# DM COMMANDS MENU
-
-
-# PRE-QUEST TIMER COMMANDS ($help dm timer1)
-
-    helpEmbedTimerOne.title = 'Pre-Quest Timer Commands (DM)'
-
-    helpEmbedTimerOne.add_field(name=f'▫️ Preparing the Timer\n{commandPrefix}timer prep "@player1, @player2, [...]" questname', value="Prepare a timer with a list of players so they can sign up with their characters.", inline=False)
-
-    helpEmbedTimerOne.add_field(name=f'▫️ Adding Players to the Roster\n{commandPrefix}timer add @player', value="Add a player to the roster after you have already prepared the timer so they can sign up.", inline=False)
-
-    helpEmbedTimerOne.add_field(name=f'▫️ Removing Players from the Roster\n{commandPrefix}timer remove @player', value="Remove a player from the roster.", inline=False)
-
-    helpEmbedTimerOne.add_field(name=f'▫️ Adding Guilds\n{commandPrefix}timer guild #guild1, #guild2, #guild3', value="Add a maximum of three guilds to your quest. Each use of this command replaces the previous use.", inline=False)
-
-    helpEmbedTimerOne.add_field(name=f'▫️ Cancelling the Timer\n{commandPrefix}timer cancel', value="Cancel the prepared timer.", inline=False)
-
-    helpEmbedTimerOne.add_field(name=f'▫️ Starting the Timer\n{commandPrefix}timer start', value="Start the prepared timer.", inline=False)
-
-
-# RUNNING TIMER COMMANDS ($help dm timer2)
-
-    helpEmbedTimerTwo.title = 'Running Timer Commands (DM)'
-
-    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Players During a Quest\n{commandPrefix}timer add @player "character name" "consumable1, consumable2, [...]"', value="Add a player to the running timer with their character and consumables.", inline=False)
-
-    helpEmbedTimerTwo.add_field(name=f'▫️ Removing Players During a Quest\n{commandPrefix}timer remove @player', value="Remove a player from the running timer.", inline=False)
-
-    helpEmbedTimerTwo.add_field(name=f'▫️ Awarding Reward Items\n{commandPrefix}timer reward @player "reward item1, reward item2, [...]"', value="Award one or more reward items from the **Reward Item Table** to a player.", inline=False)
-
-    helpEmbedTimerTwo.add_field(name=f'▫️ Character Death\n{commandPrefix}timer death @player', value="Remove a player (and their character) from the timer if their character dies during the quest.", inline=False)
-
-    helpEmbedTimerTwo.add_field(name=f'▫️ Stopping the Timer\n{commandPrefix}timer stop', value="Stop the running timer which creates the session log for it.", inline=False)
-
-
-
-# POST-QUEST TIMER COMMANDS ($help dm timer3)
-
-    helpEmbedTimerThree.title = 'Post-Quest Timer Commands (DM)'
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log\n{commandPrefix}session log questID summary', value="Submit a session log summary for the running timer which you just stopped. See #hosting-a-one-shot or the Bot Friend DM Commands Guide for more information.", inline=False)
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards\n{commandPrefix}approveRewards gameID #guild-channel', value="Enable the 2x Rewards Guild Boon for a guild quest which you host.", inline=False)
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Rewards\n{commandPrefix}session denyRewards gameID #guild-channel', value="Disable the 2x Rewards Guild Boon for a guild quest which you host.", inline=False)
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Items\n{commandPrefix}approveItems gameID #guild-channel', value="Enable the 2x Items Guild Boon for a guild quest which you host.", inline=False)
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Items\n{commandPrefix}session denyItems gameID #guild-channel', value="Disable the 2x Items Guild Boon for a guild quest which you host.", inline=False)
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Recruitment Drive\n{commandPrefix}approveDrive gameID #guild-channel', value="Enable the Recruitment Drive Guild Boon for a guild quest which you host.", inline=False)
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Recruitment Drive\n{commandPrefix}session denyDrive gameID #guild-channel', value="Disable the Recruitment Drive Guild Boon for a guild quest which you host.", inline=False)
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of DDMRW\n{commandPrefix}session ddmrw optout gameID', value="Opt out of Double DM Rewards Weekend (DDMRW) and not to receive Double DM Rewards for a quest which host during DDMRW. Any quest which ends during DDMRW will automatically have Double DM Rewards applied to it so you will have to opt out of it by default.", inline=False)
-
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into DDMRW\n{commandPrefix}session ddmrw optin gameID', value="Opt into DDMRW if you previously opted out of it.", inline=False)
-
-
-# CAMPAIGN COMMANDS MENU ($help dm campaign)
-
-    helpEmbedCampaign.title = f"Campaign Commands (Player)\n{commandPrefix}c"
+    helpEmbedCampaign.title = f"Campaign Commands\n{commandPrefix}c"
 
     helpEmbedCampaign.add_field(name=f'▫️ Viewing a Campaign’s Information\n{commandPrefix}campaign info #campaign-channel', value="View a campaign’s DM (Campaign Master), the number of sessions that the campaign has run, its active and inactive roster, the number of sessions that each player has participated in, and the hours that each player has accumulated.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Creating a Campaign\n{commandPrefix}campaign create @campaignrole #campaign-channel', value="Create a campaign if you have the Campaign Master role and the campaign channel has been created.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Signing Up (Player)\n{commandPrefix}campaign timer signup', value="Sign up to a prepared timer but only if you have been selected to join the campaign session and were mentioned when the timer was prepared.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Adding Players to a Campaign Roster\n{commandPrefix}campaign add @player #campaign-channel', value="Add a player to your campaign roster.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Adding Yourself (Player)\n{commandPrefix}campaign timer addme', value="Request permission to join the campaign session after it has already been started. The DM must approve the request.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Removing Players from a Campaign Roster\n{commandPrefix}campaign remove @player #campaign-channel', value="Remove yourself from the running timer.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Removing Yourself (Player)\n{commandPrefix}campaign timer removeme', value="Remove yourself from the running timer.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Preparing the Timer\n{commandPrefix}campaign timer prep "@player1, @player2,#player3, [...]" sessionname', value="Prepare a timer with a list of players who will be participating in the session. If no session name is given, it defaults to the name of the channel. Any member of a campaign can use this command (as well all subsequent commands) to host a campaign session.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp (Player)\n{commandPrefix}timer removeme', value="Refresh the running timer’s information box.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Adding Players During a Session\n{commandPrefix}campaign timer add @player', value="Add a player to the roster after you have already prepared the timer so they can sign up or add them to the running timer.", inline=False)
+# DM CAMPAIGN COMMANDS
 
-    helpEmbedCampaign.add_field(name=f'▫️ Removing Players During a Session\n{commandPrefix}campaign timer remove @player', value="Remove a player from the roster after you have already prepared the timer so they can sign up or remove them from the running timer.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Creating a Campaign (DM)\n{commandPrefix}campaign create @campaignrole #campaign-channel', value="Create a campaign if you have the Campaign Master role and the campaign channel has been created.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Cancelling the Timer\n{commandPrefix}campaign timer cancel', value="Cancel the prepared timer.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Adding Players to a Campaign Roster (DM)\n{commandPrefix}campaign add @player #campaign-channel', value="Add a player to your campaign roster.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Starting the Timer\n{commandPrefix}campaign timer start', value="Start the prepared timer.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Removing Players from a Campaign Roster (DM)\n{commandPrefix}campaign remove @player #campaign-channel', value="Remove yourself from the running timer.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Stopping the Timer\n{commandPrefix}campaign timer stop', value="Stop the running timer which creates a session log for it.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Preparing the Timer (DM)\n{commandPrefix}campaign timer prep "@player1, @player2,#player3, [...]" sessionname', value="Prepare a timer with a list of players who will be participating in the session. If no session name is given, it defaults to the name of the channel. Any member of a campaign can use this command (as well all subsequent commands) to host a campaign session.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Submitting a Campaign Log\n{commandPrefix}campaign log gameID summary ', value="Submit a campaign log summary for the running timer which you just stopped. See #campaign-rules or the Bot Friend DM Commands Guide for more information.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Adding Players During a Session (DM)\n{commandPrefix}campaign timer add @player', value="Add a player to the roster after you have already prepared the timer so they can sign up or add them to the running timer.", inline=False)
+
+    helpEmbedCampaign.add_field(name=f'▫️ Removing Players During a Session (DM)\n{commandPrefix}campaign timer remove @player', value="Remove a player from the roster after you have already prepared the timer so they can sign up or remove them from the running timer.", inline=False)
+
+    helpEmbedCampaign.add_field(name=f'▫️ Cancelling the Timer (DM)\n{commandPrefix}campaign timer cancel', value="Cancel the prepared timer.", inline=False)
+
+    helpEmbedCampaign.add_field(name=f'▫️ Starting the Timer (DM)\n{commandPrefix}campaign timer start', value="Start the prepared timer.", inline=False)
+
+    helpEmbedCampaign.add_field(name=f'▫️ Stopping the Timer (DM)\n{commandPrefix}campaign timer stop', value="Stop the running timer which creates a session log for it.", inline=False)
+
+    helpEmbedCampaign.add_field(name=f'▫️ Submitting a Campaign Log (DM)\n{commandPrefix}campaign log gameID summary ', value="Submit a campaign log summary for the running timer which you just stopped. See #campaign-rules or the Bot Friend DM Commands Guide for more information.", inline=False)
 
 
 
