@@ -29,7 +29,7 @@ class Reward(commands.Cog):
         lowerTimeString = timeString.lower()
 
         if tier not in ('0','1','2','3','4', '5') and tier.lower() not in [r.lower() for r in roleArray]:
-            await channel.send(f"`{tier}` is not a valid tier. Please try again with 0, 1, 2, 3, 4, 5 or New, Junior, Journey, Elite, True or Ascended.")
+            await channel.send(f"**{tier}** is not a valid tier. Please try again with **New** or **0**, **Junior** or **1**, **Journey** or **2**, **Elite** or **3**, **True** or **4**, or **Ascended** or **5**.")
             return
 
         tierName = ""
