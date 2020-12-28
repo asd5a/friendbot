@@ -781,7 +781,7 @@ class Campaign(commands.Cog):
                 return None
             # if there was no player added
             elif addList == list():
-                await ctx.channel.send(content=f"GHOST CHECK THIS IN THE ADDDURINGTIMER FUNCTION")
+                await ctx.channel.send(content=f"You forgot to mention a player! Please try the command again and ping the player.")
                 return None
             else:
                 # get the first ( and only ) mentioned user 

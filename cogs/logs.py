@@ -351,6 +351,9 @@ class Log(commands.Cog):
 
         if isinstance(error, commands.MissingAnyRole):
             msg = "You do not have the required permissions for this command."
+        elif isinstance(error, commands.BadArgument):
+            # convert string to int failed
+            msg = "Your session ID was an incorrect format."
         else:
             if isinstance(error, commands.MissingRequiredArgument):
                 msg = "Your command was missing an argument! "

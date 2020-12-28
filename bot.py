@@ -89,29 +89,36 @@ async def help(ctx, *, pageString=''):
         return (r.emoji in numberEmojis[:numPages]) and u == ctx.author and sameMessage
 
     helpEmbedMenu = discord.Embed()
+    helpEmbedGen = discord.Embed()
     helpEmbedChar = discord.Embed()
     helpEmbedItems = discord.Embed() 
     helpEmbedTimerOne = discord.Embed()
     helpEmbedTimerTwo = discord.Embed()
+    helpEmbedTimerThree = discord.Embed()
     helpEmbedShop = discord.Embed()
     helpEmbedTp = discord.Embed()
     helpEmbedGuild = discord.Embed()
+    helpEmbedCampaign = discord.Embed()
 
     page = 0
-    if 'char' in pageString or 'character' in pageString:
+    if 'general' in pageString:
         page = 1
-    elif 'timer2' in pageString:
-        page = 3
-    elif 'timer1' in pageString or 'timer' in pageString:
+    elif 'char' in pageString:
         page = 2
-    elif 'itemtable' in pageString:
+    elif 'timer2' in pageString:
         page = 4
-    elif 'shop' in pageString:
+    elif 'timer3' in pageString:
         page = 5
-    elif 'tp' in pageString:
+    elif 'timer1' in pageString or 'timer' in pageString:
+        page = 3
+    elif 'itemtable' in pageString:
         page = 6
-    elif 'guild' in pageString:
+    elif 'shop' in pageString:
         page = 7
+    elif 'tp' in pageString:
+        page = 8
+    elif 'guild' in pageString:
+        page = 9
 
 
 # MAIN HELP MENU ($help)
@@ -128,19 +135,19 @@ async def help(ctx, *, pageString=''):
 #helpList Menu should be helpEmbedMenuPlayer?
 #helpList needs to remove helpEmbedShop
 
-    helpList = [helpEmbedMenu, helpEmbedChar, helpEmbedTimerOne, helpEmbedTimerTwo, helpEmbedItems, helpEmbedShop, helpEmbedTp, helpEmbedGuild]
+    helpList = [helpEmbedMenu, helpEmbedGen, helpEmbedChar, helpEmbedTimerOne, helpEmbedTimerTwo, helpEmbedTimerThree, helpEmbedShop, helpEmbedTp, helpEmbedGuild, helpEmbedCampaign]
 
     helpEmbedMenu.title = 'Bot Friend Player Commands - Table of Contents'
     helpEmbedMenu.description = 'Please react to the group of commands you would like to see and gain more knowledge about.'
-    helpEmbedMenu.add_field(name=f"? General Commands\n{commandPrefix}help player gen", value="Various commands which don't fit into any other section.", inline=False)
-    helpEmbedMenu.add_field(name=f"1️⃣ Character Commands\n{commandPrefix}help player char", value="How to manage your character(s).", inline=False)
-    helpEmbedMenu.add_field(name=f"2️⃣ Pre-Quest Timer Commands\n{commandPrefix}help player timer1", value="How to sign up to a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"3️⃣ Running Timer Commands\n{commandPrefix}help player timer2", value="How to do various things while participating in a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"4️⃣ Post-Quest Timer Commands\n{commandPrefix}help player timer3", value="How to opt out of Guild Boons after a quest.", inline=False)
-    helpEmbedMenu.add_field(name=f"5️⃣ Shop Commands\n{commandPrefix}help player shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
-    helpEmbedMenu.add_field(name=f"6️⃣ TP Commands\n{commandPrefix}help player tp", value="How to spend TP to acquire magic items.", inline=False)
-    helpEmbedMenu.add_field(name=f"7️⃣ Guild Commands\n{commandPrefix}help player guild", value="How to be a member of a guild or manage one.", inline=False)
-    helpEmbedMenu.add_field(name=f"? Campaign Commands\n{commandPrefix}help player campaign", value="How to participate in a campaign session for a campaign in which you are a player.", inline=False)
+    helpEmbedMenu.add_field(name=f"1️⃣ General Commands\n{commandPrefix}help player gen", value="Various commands which don't fit into any other section.", inline=False)
+    helpEmbedMenu.add_field(name=f"2️⃣ Character Commands\n{commandPrefix}help player char", value="How to manage your character(s).", inline=False)
+    helpEmbedMenu.add_field(name=f"3️⃣ Pre-Quest Timer Commands\n{commandPrefix}help player timer1", value="How to sign up to a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"4️⃣ Running Timer Commands\n{commandPrefix}help player timer2", value="How to do various things while participating in a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"5️⃣ Post-Quest Timer Commands\n{commandPrefix}help player timer3", value="How to opt out of Guild Boons after a quest.", inline=False)
+    helpEmbedMenu.add_field(name=f"6️⃣ Shop Commands\n{commandPrefix}help player shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
+    helpEmbedMenu.add_field(name=f"7️⃣ TP Commands\n{commandPrefix}help player tp", value="How to spend TP to acquire magic items.", inline=False)
+    helpEmbedMenu.add_field(name=f"8️⃣ Guild Commands\n{commandPrefix}help player guild", value="How to be a member of a guild or manage one.", inline=False)
+    helpEmbedMenu.add_field(name=f"9️⃣ Campaign Commands\n{commandPrefix}help player campaign", value="How to participate in a campaign session for a campaign in which you are a player.", inline=False)
 
 
 
@@ -239,7 +246,7 @@ async def help(ctx, *, pageString=''):
     helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items\n{commandPrefix}session optin2xI gameID', value="Opt into the 2x Items Guild Boon when the guild that your character is a member of activates it in a quest that you are participating in with that character. You are automatically opted into 2x Items whenever it is used.", inline=False)
 
 
-# ITEM TABLE CCOMMANDS MENU ($help itemtable)
+# ITEM TABLE COMMANDS MENU ($help itemtable)
 
 ############### THIS IS OBSOLETE UNTIL YOU MAKE A NEW SYSTEM.
 

@@ -534,7 +534,7 @@ class Guild(commands.Cog):
             
             if guildRecords:
                 if guildRecords['Funds'] < self.creation_cost:
-                    await channel.send(f'***{guildRecords['Name']}*** is not open and requires funding. If you would like to fund and join the guild, use the following command:\n```yaml\n{commandPrefix}guild fund "character name" #guild-channel GP```')
+                    await channel.send(f'***{guildRecords["Name"]}*** is not open and requires funding. If you would like to fund and join the guild, use the following command:\n```yaml\n{commandPrefix}guild fund "character name" #guild-channel GP```')
                     return
 
                 gpNeeded = 0
@@ -577,7 +577,7 @@ class Guild(commands.Cog):
                 else:
                     await guildEmbedmsg.clear_reactions()
                     if tReaction.emoji == '❌':
-                        await guildEmbedmsg.edit(embed=None, content=f"Guild join cancelled. Try again using the following command:\n```yaml\n{commandPrefix}guild join "character name" #guild-channel```")
+                        await guildEmbedmsg.edit(embed=None, content=f"Guild join cancelled. Try again using the following command:\n```yaml\n{commandPrefix}guild join \"character name\" #guild-channel```")
                         await guildEmbedmsg.clear_reactions()
                         return
 
