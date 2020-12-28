@@ -1013,7 +1013,7 @@ class Log(commands.Cog):
                         guilds = sessionInfo["Guilds"]
                         print("Drives", [g["Drive"] for g in guilds.values()])
                         if unique and ((len(ctx.message.channel_mentions) > 1) or any([g["Drive"] for g in guilds.values()])):
-                            await ctx.channel.send("Only one guild can have a drive active on a quest")
+                            await ctx.channel.send("The Recruitment Drive Guild Boon can only be used on by one guild per guild quest.")
                             return
                         guild_dic = {}
                         for g in guilds.values():
@@ -1035,7 +1035,7 @@ class Log(commands.Cog):
                                 else:
                                     err_message += m +" not found in game.\n"
                             else:
-                                err_message += "Not enough valid members to apply this change for "+ m +"\n"
+                                err_message += "There needs to be a minimum of three guild members from "+ m +"\n in order to activate its Guild Boons."
                         if err_message != "":
                             await ctx.channel.send(err_message)
                         else:
