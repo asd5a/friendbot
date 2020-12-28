@@ -114,7 +114,7 @@ class Misc(commands.Cog):
                 member = guild.get_member(payload.user_id)
                 if member is not None:
                     await member.remove_roles(role)
-                    successMsg = await member.send(f":tada: ***{member.display_name}***, I have removed the ***{name}*** role from you! You will no longer be pinged for quests of this tier. React to the same emoji if you would like to be pinged for quests of this tier again!")
+                    successMsg = await member.send(f":tada: ***{member.display_name}***, I have removed the ***{name}*** role from you! You will no longer be pinged for quests of this tier. React with the same emoji if you would like to be pinged for quests of this tier again!")
                 else:
                     print('member not found')
             else:
@@ -152,7 +152,7 @@ class Misc(commands.Cog):
 
                 if member is not None:
                     await member.add_roles(role)
-                    successMsg = await member.send(f":tada: ***{member.display_name}***, I have given you the ***{name}*** role! You will be pinged for quests of this tier. React to the same emoji if you would not like to be pinged for quests of this tier!")
+                    successMsg = await member.send(f":tada: ***{member.display_name}***, I have given you the ***{name}*** role! You will be pinged for quests of this tier. React to the same emoji if you no longer want to be pinged for quests of this tier!")
 
                         
                 else:
@@ -167,7 +167,7 @@ class Misc(commands.Cog):
         #get all game channel ids
         game_channel_category =self.bot.get_channel(settingsRecord[str(channel.guild.id)]["Game Rooms"])
         game_channel_ids = set(map(lambda c: c.id, game_channel_category.text_channels))
-        build_message = "**It is DDMRW** get out there and play some games!\n"*settingsRecord['ddmrw']+ "The current status of the game channels is:\n"
+        build_message = "**It is Double DM Rewards Weekend (DDMRW)!** Get out there and host some one-shots!\n"*settingsRecord['ddmrw']+ "The current status of the game channels is:\n"
         #create a dictonary to store the room/user pairs
         tierMap = {"Tier 0" : "T0", "Tier 1" : "T1", "Tier 2" : "T2", "Tier 3" : "T3", "Tier 4" : "T4", "Tier 5" : "T5"}
         emoteMap = settingsRecord[str(channel.guild.id)]["Emotes"]

@@ -262,7 +262,7 @@ class Tp(commands.Cog):
                     
                 # check if the requested item is already in the inventory
                 if(mRecord['Name'] in character_item_list or mRecord['Name'] in charRecords["Predecessor"]): 
-                    await channel.send(f"You already have **{mRecord['Name']}** and cannot spend TP or gp on another one.")
+                    await channel.send(f"You already have **{mRecord['Name']}** and cannot spend TP or GP on another one.")
                     ctx.command.reset_cooldown(ctx)
                     return 
                 
@@ -295,22 +295,22 @@ class Tp(commands.Cog):
                 
                 # if the user doesnt have the resources for the purchases, inform them and cancel
                 if not haveTP and float(charRecords['GP']) < gpNeeded:
-                    await channel.send(f"You do not have enough Tier {tierNum} TP or gp to acquire **{mRecord['Name']}**!")
+                    await channel.send(f"You do not have enough Tier {tierNum} TP or GP to acquire **{mRecord['Name']}**!")
                     ctx.command.reset_cooldown(ctx)
                     return
                   
                 # get confirmation from the user for the purchase
                 elif not haveTP:
                     if tpBank == [0] * 5:
-                        tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or gp?\n\n You have **no TP** and **{charRecords[f'GP']} gp**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
+                        tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or GP?\n\n You have **no TP** and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} GP (gold pieces)\n\n❌: Cancel"                 
                     else:
-                        tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or gp?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} gp**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
+                        tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
 
                 elif float(charRecords['GP']) < gpNeeded:
-                    tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or gp?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} gp**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: ~~{mRecord['GP']} gp (gold pieces)~~ You do not have enough gp.\n\n❌: Cancel"                 
+                    tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: ~~{mRecord['GP']} GP (gold pieces)~~ You do not have enough GP.\n\n❌: Cancel"                 
 
                 else:
-                    tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or gp?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} gp**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
+                    tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: {mRecord['GP']} GP (gold pieces)\n\n❌: Cancel"                 
                 
                 if tpEmbedmsg:
                     await tpEmbedmsg.edit(embed=tpEmbed)
@@ -353,9 +353,9 @@ class Tp(commands.Cog):
                             refundTP = float(tpSplit[0])
                             charRecords['Current Item'] = "None"
                             #confirm with the user on the purchase
-                            tpEmbed.description = f"Are you sure you want to acquire **{mRecord['Name']}** for **{mRecord['GP']} gp**?\n\nCurrent gp: {charRecords['GP']}\nNew gp: {newGP} gp\n\nNote: you will be refunded the TP you have already spent on this item ({refundTP} TP). \n\n✅: Yes\n\n❌: Cancel"
+                            tpEmbed.description = f"Are you sure you want to acquire **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\nNote: you will be refunded the TP you have already spent on this item ({refundTP} TP). \n\n✅: Yes\n\n❌: Cancel"
                         else:
-                            tpEmbed.description = f"Are you sure you want to acquire **{mRecord['Name']}** for **{mRecord['GP']} gp**?\n\nCurrent gp: {charRecords['GP']}\nNew gp: {newGP} gp\n\n✅: Yes\n\n❌: Cancel"
+                            tpEmbed.description = f"Are you sure you want to acquire **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\n✅: Yes\n\n❌: Cancel"
 
                     # If user decides to buy item with TP:
                     elif tReaction.emoji == '1️⃣':
@@ -499,9 +499,9 @@ class Tp(commands.Cog):
                                         tpEmbed.description = f"You have put TP towards **{mRecord['Name']}** but still need to spend more TP in order to complete it!\n\nCurrent progress: {newTP}\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n"
                                 elif newGP:
                                     if refundTP:
-                                        tpEmbed.description = f"You have acquired **{mRecord['Name']}** for {mRecord['GP']} gp! :tada:\n\nCurrent gp: {newGP}\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP'] + refundTP} (refunded {refundTP})"
+                                        tpEmbed.description = f"You have acquired **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP'] + refundTP} (refunded {refundTP})"
                                     else:
-                                        tpEmbed.description = f"You have acquired **{mRecord['Name']}** for {mRecord['GP']} gp! :tada:\n\nCurrent gp: {newGP}\n"
+                                        tpEmbed.description = f"You have acquired **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n"
                                 await tpEmbedmsg.edit(embed=tpEmbed)
                                 ctx.command.reset_cooldown(ctx)
 
@@ -633,7 +633,7 @@ class Tp(commands.Cog):
 
 
         if tierNum not in ('1','2','3','4', '5') and tierNum.lower() not in [r.lower() for r in roleArray]:
-            await channel.send(f"**{tierNum}** is not a valid tier. Please try again with **1**, **2**, **3**, or **4**. Alternatively, type **Junior**, **Journey**, **Elite**, or **True**.")
+            await channel.send(f"**{tierNum}** is not a valid tier. Please try again with **Junior** or **1**, **Journey** or **2**, **Elite** or **3**, **True** or **4**, or **Ascended** or **5**.")
             ctx.command.reset_cooldown(ctx)
             return
 

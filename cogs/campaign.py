@@ -44,26 +44,26 @@ class Campaign(commands.Cog):
                 if error.param.name == "roleName":
                     msg = "You're missing the @role for the campaign you want to create"
                 elif error.param.name == "channelName":
-                    msg = "You're missing the #channel for the campaign you want to create. "
+                    msg = "You're missing the #channel for the campaign you want to create."
                 elif error.param.name == 'userList':
                     msg = "You can't prepare a timer without any players! \n"
                 else:
-                    msg = "Your command is missing an argument! "
+                    msg = "Your command is missing an argument!"
                 print("WWWWWWWWWWw")
             elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
-              msg = "There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command. "
+              msg = "There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command."
 
             
             if msg:
                 if ctx.command.name == "prep":
-                    msg += f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, [...]"```'
+                    msg += f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, @player3, [...]" sessionname```'
                 
             else:
                 ctx.command.reset_cooldown(ctx)
                 await traceBack(ctx,error)
         if msg:
             if ctx.command.name == "create":
-                msg += f"Please follow this format:\n`{commandPrefix}campaign create @rolename #channelname`.\n"
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}campaign create @rolename #channel-name```"
 
             ctx.command.reset_cooldown(ctx)
             await ctx.channel.send(msg)
@@ -75,7 +75,7 @@ class Campaign(commands.Cog):
         campaignChannel = ctx.message.channel_mentions
 
         if campaignChannel == list():
-            await ctx.channel.send(f"A campaign channel must be supplied")
+            await ctx.channel.send(f"You must provide a campaign channel.")
             return 
         channel = campaignChannel[0]
         
@@ -204,14 +204,14 @@ class Campaign(commands.Cog):
         roles = [r.name for r in ctx.author.roles]
 
         if 'Campaign Master' not in roles:
-            await channel.send(f"You do not have the Campaign Master role to use this command.")
+            await channel.send(f"You do not have the Campaign Master role and cannot use this command.")
             return  
 
         if user == list() or len(user) > 1:
             await channel.send(f"I could not find the user you were trying to add to the campaign. Please try again.")
             return  
         if campaignName == list() or len(campaignName) > 1:
-            await channel.send(f"`I couldn't find the campaign you were trying add to. Please try again")
+            await channel.send(f"I couldn't find the campaign you were trying add to. Please try again.")
             return
         
         campaignName = campaignName[0]  
