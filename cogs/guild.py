@@ -55,17 +55,17 @@ class Guild(commands.Cog):
 
         if msg:
             if ctx.command.name == "info":
-                msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild info \"guild name\"```\n"
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild info #guild-channel```\n"
             elif ctx.command.name == "join":
-                msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild join \"character name\" \"guild name\"```\n"
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild join \"character name\" #guild-channel```\n"
             elif ctx.command.name == "leave":
                 msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild leave \"character name\"```\n"
             elif ctx.command.name == "rep":
                 msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild rep \"character name\" sparkles```\n"
             elif ctx.command.name == "create":
-                msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild create \"character name\" \"guild name\" @rolename #channelname```\n"
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild create \"character name\" \"guild name\" @rolename #channel-name```\n"
             elif ctx.command.name == "fund":
-                msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild fund \"character name\" \"guild name\" GP```\n"
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}guild fund \"character name\" #guild-channel GP```\n"
 
             ctx.command.reset_cooldown(ctx)
             await ctx.channel.send(msg)
@@ -460,7 +460,7 @@ class Guild(commands.Cog):
                 else:
                     await guildEmbedmsg.clear_reactions()
                     if tReaction.emoji == '❌':
-                        await guildEmbedmsg.edit(embed=None, content=f"Shop cancelled. Try again using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" \"guild name\" GP```")
+                        await guildEmbedmsg.edit(embed=None, content=f"Shop cancelled. Try again using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" #guild-channel GP```")
                         await guildEmbedmsg.clear_reactions()
                         return
 
