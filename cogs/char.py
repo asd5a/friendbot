@@ -604,6 +604,7 @@ class Character(commands.Cog):
                 cRecord.append({'Class':singleClass, 'Level':lvl, 'Subclass': 'None'})
             else:
                 cRecord = None
+                broke.append(cclass)
 
         charDict['Class'] = ""
         if not mLevel and '/' in cclass:
@@ -951,7 +952,8 @@ class Character(commands.Cog):
                     featLevels.append(16)
                 if int(c['Level']) > 18:
                     featLevels.append(19)
-
+            print("RRECORD", rRecord)
+            print("CRECORD", cRecord)
             featsChosen, statsFeats, charEmbedmsg = await characterCog.chooseFeat(ctx, rRecord['Name'], charDict['Class'], cRecord, featLevels, charEmbed, charEmbedmsg, charDict, "")
 
             if not featsChosen and not statsFeats and not charEmbedmsg:
@@ -4087,7 +4089,7 @@ class Character(commands.Cog):
                                         if c['Class']['Name'] in featsList or c['Subclass'] in featsList:
                                             meetsRestriction = True
                                     else:
-                                        if c['Name'] in featsList or c['Subclass'] in featsList:
+                                        if c['Class']['Name'] in featsList or c['Subclass'] in featsList:
                                             meetsRestriction = True
                                             
                             if 'Stat Restriction' in feat:

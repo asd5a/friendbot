@@ -9,7 +9,7 @@ class Mod(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
 
-    @commands.has_any_role('Mod Friend', 'Admins', 'Trial Mod Friend')
+    @commands.has_any_role('Mod Friend', 'A d m i n')
     @commands.group(aliases=['m'])
     async def mod(self, ctx):	
         pass

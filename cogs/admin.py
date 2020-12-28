@@ -8,7 +8,7 @@ import sys
 import traceback
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, callAPI, traceBack, settingsRecord
+from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar
 
 
 def admin_or_owner():
@@ -147,6 +147,29 @@ class Admin(commands.Cog, name="Admin"):
       
     
     
+    @commands.command()
+    @admin_or_owner()
+    async def removeImage(self, ctx, charName):
+        charEmbed = discord.Embed()
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
+        channel = ctx.channel
+        if not cRecord:
+            await channel.send(content=f'I was not able to find the character ***"{charName}"***!')
+            return False
+
+        if charEmbedmsg:
+            await charEmbedmsg.delete()
+            
+        try:
+            db.players.update(
+               {"Name": cRecord["Name"], "User ID": cRecord["User ID"]},
+                {"$unset" : {"Image": 1}}
+            )
+            await channel.send(content=f"Successfully deleted the image.")
+    
+        except Exception as e:
+            traceback.print_exc()
+            
     @commands.command()
     @admin_or_owner()
     async def ritRework(self, ctx):
