@@ -3562,15 +3562,14 @@ class Character(commands.Cog):
                     if dmMember is None:
                         continue
                     statsString += dmMember.mention + " - "
+                    totalGames = 0
                     for i in range (0,6):
                         if f'T{i}' not in v:
                             statsString += f"T{i}: 0 | "
                         else:
                             statsString += f"T{i}: {v[f'T{i}']} | " 
-                    totalGames = 0
-                    for vk, vv in v.items():
-                        totalGames += vv
-                    
+                            totalGames += v[f'T{i}']
+                   
                     # Total Number of Games per DM
                     statsString += f"Total: {totalGames}\n"
 
@@ -3627,7 +3626,7 @@ class Character(commands.Cog):
                 # Number of games by total and by tier
                 statsTotalString += f"**{identity_strings[0]} Stats**\nTotal Games for the {identity_strings[1]}: {superTotal}\n" 
                 if superTotal > 0:
-                    statsTotalString += f'Guild quests out of total quests: {round((gq_sum / superTotal),3) * 100}%\n'                   
+                    statsTotalString += f'Guild quests out of total quests: {round((gq_sum / superTotal)* 100,2) }%\n'                   
                 for i in range (0,6):
                     if f'T{i}' not in statRecords:
                         statsTotalString += f"Tier {i} Games for the {identity_strings[1]}: 0\n"
