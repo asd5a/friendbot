@@ -180,7 +180,7 @@ class Timer(commands.Cog):
                     return
                 # otherwise take the role based on which emoji the user reacted with
                 # the array is stored in bfunc and the options are 'New', 'Junior', 'Journey', 'Elite' and 'True' in this order
-                role = roleArray[int(tReaction.emoji[0]) - 1]
+                role = roleArray[int(tReaction.emoji[0])]
 
             
         #clear the embed message
