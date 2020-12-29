@@ -230,7 +230,9 @@ class Campaign(commands.Cog):
 
         usersCollection = db.users
         userRecords = usersCollection.find_one({"User ID": str(user[0].id)})  
-
+        if not userRecords:
+            await channel.send(f" {user[0].display_name} needs to establish a user entry first using $user in a log channel.")
+            return
         if 'Campaigns' not in userRecords:
             userRecords['Campaigns'] = {campaignRecords['Name'] : {"Time" : 0, "Sessions" : 0} }
         else:
@@ -974,7 +976,7 @@ class Campaign(commands.Cog):
                     v["inc"] = {"Campaigns."+campaignRecord["Name"]+".Time" :tempTime,
                     "Campaigns."+campaignRecord["Name"]+".Sessions" :1}
                     playerData.append(v)
-                    stopEmbed.add_field(name=key, value=temp, inline=False)
+                stopEmbed.add_field(name=key, value=temp, inline=False)
             stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\n", inline=False)
 
             try:   
@@ -997,12 +999,34 @@ class Campaign(commands.Cog):
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
             else:
                 print('Success')  
-
+                stopEmbed.set_footer(text=f"Placeholder, if this remains remember the wise words DO NOT PANIC and get a towel.")
                 session_msg = await ctx.channel.send(embed=stopEmbed)
+                
+                modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
+                modEmbed = discord.Embed()
+                modEmbed.description = f"""A campaign session log was just posted for {ctx.channel.mention}.
 
+DM: {dmChar["Member"].mention} 
+Game ID: {session_msg.id}
+Link: {session_msg.jump_url}
+
+React with :pencil: if you messaged the DM to fix something in their summary.
+React with :yes: if you have approved the log.
+React with :x: if you have denied the log.
+React with :classical_building: if you have denied one of the guilds.
+
+Reminder: do not deny any logs until we have spoken about it as a team."""
+
+                modMessage = await modChannel.send(embed=modEmbed)
+                for e in ["📝", "✅", "❌", "🏛️"]:
+                    await modMessage.add_reaction(e)
+                print('Success')  
                 stopEmbed.set_footer(text=f"Game ID: {session_msg.id}")
                 
+                print('Success')  
                 await session_msg.edit(embed=stopEmbed)
+                
+                print('Success')  
 
             # enable the starting timer commands
             self.timer.get_command('prep').reset_cooldown(ctx)
@@ -1176,7 +1200,6 @@ class Campaign(commands.Cog):
             channel = ctx.message.channel_mentions[0] 
         
         
-        
 
         if not "campaign" in str(channel.category.name).lower():
             if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
@@ -1206,17 +1229,17 @@ class Campaign(commands.Cog):
                 for i in "\<>@#&!:":
                     log.value = log.value.replace(i, "")
                 
-                logItems = log.value.split(' | ')
+                logItems = log.value.split('\n')
 
                 if "DM" in log.name:
-                    for i in "*DM":
-                        logItems[0] = logItems[0].replace(i, "")
                     dmID = logItems[0].strip()
                     charData.append(dmID)
+                    continue
                 
                 # if no character was listed then there will be 2 entries
                 # since there is no character to update we block the charData
-                charData.append(logItems[0].strip())
+                for idText in logItems:
+                    charData.append(idText.strip())
             
             if ctx.author.id == int(dmID):
                 await ctx.channel.send("You cannot approve your own log.")
@@ -1236,6 +1259,7 @@ class Campaign(commands.Cog):
                     data.append({'_id': charDict['_id'], "fields": {"$inc": charRewards, "$unset": {f'{campaignRecord["Name"]} inc': 1} }})
 
             playersData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), data))
+            
 
             print(playersData)
             try:
@@ -1330,6 +1354,8 @@ class Campaign(commands.Cog):
                 await editMessage.edit(embed=sessionLogEmbed)
         else:
             await ctx.channel.send('Log has already been processed! ')
+            
+    
 def setup(bot):
     bot.add_cog(Campaign(bot))
 

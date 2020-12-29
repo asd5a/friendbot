@@ -168,6 +168,26 @@ class Admin(commands.Cog, name="Admin"):
             await channel.send(content=f"Successfully deleted the image.")
     
         except Exception as e:
+            traceback.print_exc()@commands.command()
+    @admin_or_owner()
+    async def removeCharacter(self, ctx, charName):
+        charEmbed = discord.Embed()
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
+        channel = ctx.channel
+        if not cRecord:
+            await channel.send(content=f'I was not able to find the character ***"{charName}"***!')
+            return False
+
+        if charEmbedmsg:
+            await charEmbedmsg.delete()
+            
+        try:
+            db.players.remove_one(
+               {"Name": cRecord["Name"], "User ID": cRecord["User ID"]}
+            )
+            await channel.send(content=f"Successfully deleted the {cRecord['Name']}.")
+    
+        except Exception as e:
             traceback.print_exc()
             
     @commands.command()

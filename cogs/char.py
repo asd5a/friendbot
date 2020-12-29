@@ -126,7 +126,7 @@ class Character(commands.Cog):
     @is_log_channel()
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes=""):
+    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes="", campaignName = None, timeTransfer = None):
         characterCog = self.bot.get_cog('Character')
         roleCreationDict = {
             'Journeyfriend':[3],
@@ -205,21 +205,11 @@ class Character(commands.Cog):
 
 
         lvl = int(level)
-        tierNum = 5
-        # calculate the tier of the rewards
-        if lvl < 5:
-            tierNum = 1
-        elif lvl < 11:
-            tierNum = 2
-        elif lvl < 17:
-            tierNum = 3
-        elif lvl < 20:
-            tierNum = 4
         # Provides an error message at the end. If there are more than one, it will join msg.
         msg = ""
 
         
-        # Name should be less then 50 chars
+        # Name should be less then 65 chars
         if len(name) > 64:
             msg += ":warning: Your character's name is too long! The limit is 64 characters.\n"
 
@@ -270,12 +260,60 @@ class Character(commands.Cog):
             maxCP = 4
         else:
             maxCP = 10
-        charDict['CP'] = 0
+        cp = 0
+        cpTransfered = 0
+        campaignTransferSuccess = False
+        print("C Name", campaignName)
+        print("C Time", timeTransfer)
+        if campaignName:
+            campaignChannels = ctx.message.channel_mentions
+            if len(campaignChannels) > 1 or campaignChannels == list():
+                msg += f":warning: I could not find which campaign channel you want!\n"
+            else:
+                userRecords = db.users.find_one({"User ID" : str(author.id)})
+                campaignFind = False
+                if not userRecords:
+                    msg += f":warning: I could not find you in the database!\n"
+                elif "Campaigns" not in userRecords.keys():
+                    pass
+                else:
+                    for key in userRecords["Campaigns"].keys():
+                        if key.lower() == (campaignChannels[0].name.replace('-', '')):
+                            campaignFind = True
+                            campaignKey = key
+                            break
+                    if not campaignFind:
+                        msg += f":warning: I could not find {campaignChannels[0].mention} in your records!\n"
+                    else:
+                        def convert_to_seconds(s):
+                            return int(s[:-1]) * seconds_per_unit[s[-1]]
+
+                        seconds_per_unit = { "m": 60, "h": 3600 }
+                        lowerTimeString = timeTransfer.lower()
+                        l = list((re.findall('.*?[hm]', lowerTimeString)))
+                        totalTime = 0
+                        for timeItem in l:
+                            totalTime += convert_to_seconds(timeItem)
+                        if userRecords["Campaigns"][campaignKey]["Time"]< 3600*4 or totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
+                            msg += f":warning: You do not have enough hours to transfer from {campaignChannels[0].mention}!\n"
+                        else:
+                            cp = ((totalTime) // 1800) / 2
+                            cpTransfered = cp
+                            while(cp >= maxCP and lvl <20):
+                                cp -= maxCP
+                                lvl += 1
+                                if lvl > 4:
+                                    maxCP = 10
+                            campaignTransferSuccess = True
+                            charDict["Level"] = lvl
+                            
+        print(msg)
+        charDict['CP'] = cp
         
         levelCP = (((lvl-5) * 10) + 16)
         if lvl < 5:
             levelCP = ((lvl -1) * 4)
-        cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP)*3600)
+        cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP+cp)*3600)
         totalGP = cp_tp_gp_array[2]
         bankTP = []
         bankTP = cp_tp_gp_array[1]
@@ -285,9 +323,16 @@ class Character(commands.Cog):
             if f'T{x} TP' in bankTP.keys():
                 tpBank[x-1] = (float(bankTP[f'T{x} TP']))
         
-        #removable
-        bankTP1 = tpBank[0]
-        bankTP2 = tpBank[1]
+        tierNum = 5
+        # calculate the tier of the rewards
+        if lvl < 5:
+            tierNum = 1
+        elif lvl < 11:
+            tierNum = 2
+        elif lvl < 17:
+            tierNum = 3
+        elif lvl < 20:
+            tierNum = 4
         
         # ███╗░░░███╗░█████╗░░██████╗░██╗░█████╗░  ██╗████████╗███████╗███╗░░░███╗  ░░░░██╗  ████████╗██████╗░
         # ████╗░████║██╔══██╗██╔════╝░██║██╔══██╗  ██║╚══██╔══╝██╔════╝████╗░████║  ░░░██╔╝  ╚══██╔══╝██╔══██╗
@@ -1140,6 +1185,10 @@ class Character(commands.Cog):
                     statsRecord['Feats'][feat_key] += 1
         try:
             playersCollection.insert_one(charDict)
+            if campaignTransferSuccess:
+                target = f"Campaigns.{campaignKey}.Time"
+                print("TTTTTTTTTT", target)
+                db.users.update_one({"User ID": str(author.id)}, {"$inc" : {target: -cpTransfered *3600}})
             statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
         except Exception as e:
             print ('MONGO ERROR: ' + str(e))

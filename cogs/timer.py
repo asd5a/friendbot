@@ -63,6 +63,8 @@ class Timer(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 await traceBack(ctx,error)
 
+
+    
     """
     This is the command meant to setup a timer and allowing people to sign up. Only one of these can be active at a time in a single channel
     The command gets passed in a list of players as a single entry userList
@@ -74,12 +76,12 @@ class Timer(commands.Cog):
     async def prep(self, ctx, userList, *, game):
         #this checks that only the author's response with one of the Tier emojis allows Tier selection
         #the response is limited to only the embed message
-        
+        numberEmojisExtra = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣']
         def startEmbedcheck(r, u):
             sameMessage = False
             if  prepEmbedMsg.id == r.message.id:
                 sameMessage = True
-            return (r.emoji in numberEmojis[:6] or str(r.emoji) == '❌') and u == author and sameMessage
+            return (r.emoji in numberEmojisExtra[:6] or str(r.emoji) == '❌') and u == author and sameMessage
         #simplifying access to various variables
         channel = ctx.channel
         author = ctx.author
@@ -139,7 +141,7 @@ class Timer(commands.Cog):
             return
 
         # set up the user communication for tier selection, this is done even if norewards is selected
-        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojis[0]} New Friend (Level 1-4)\n {numberEmojis[1]} Junior Friend (Level 1-4)\n{numberEmojis[2]} Journeyfriend (Level 5-10)\n{numberEmojis[3]} Elite Friend (Level 11-16)\n{numberEmojis[4]} True Friend (Level 17-20)\n{numberEmojis[5]} Ascended Friend (Level 20+)\n", inline=False)
+        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojisExtra[0]} New Friend (Level 1-4)\n {numberEmojisExtra[1]} Junior Friend (Level 1-4)\n{numberEmojisExtra[2]} Journeyfriend (Level 5-10)\n{numberEmojisExtra[3]} Elite Friend (Level 11-16)\n{numberEmojisExtra[4]} True Friend (Level 17-20)\n{numberEmojisExtra[5]} Ascended Friend (Level 20+)\n", inline=False)
         # the discord name is used for listing the owner of the timer
         prepEmbed.set_author(name=userName, icon_url=author.avatar_url)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
@@ -152,7 +154,7 @@ class Timer(commands.Cog):
                 #create the message to begin talking to the user
                 prepEmbedMsg = await channel.send(embed=prepEmbed)
                 # the emojis for the user to react with
-                for num in range(0,6): await prepEmbedMsg.add_reaction(numberEmojis[num])
+                for num in range(0,6): await prepEmbedMsg.add_reaction(numberEmojisExtra[num])
                 await prepEmbedMsg.add_reaction('❌')
                 # get the user who reacted and what they reacted with, this has already been limited to the proper emoji's and proper user
                 tReaction, tUser = await self.bot.wait_for("reaction_add", check=startEmbedcheck, timeout=60)
@@ -1631,6 +1633,8 @@ class Timer(commands.Cog):
             print("GUILDS 4", guildsList)
             stopEmbed = discord.Embed()
             
+            stopEmbed.set_footer(text=f"Placeholder, if this remains remember the wise words DO NOT PANIC and get a towel.")
+            
             # turn Tier string into tier number
             if role == "Ascended":
                 tierNum = 5
@@ -1661,6 +1665,24 @@ class Timer(commands.Cog):
                 
                 sessionMessage = await logChannel.send(embed=stopEmbed)
                 stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
+                modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
+                modEmbed = discord.Embed()
+                modEmbed.description = f"""A campaign session log was just posted for {ctx.channel.mention}.
+
+DM: {dmChar["Member"].mention} 
+Game ID: {session_msg.id}
+Link: {session_msg.jump_url}
+
+React with :pencil: if you messaged the DM to fix something in their summary.
+React with ✅ if you have approved the log.
+React with :x: if you have denied the log.
+React with :classical_building: if you have denied one of the guilds.
+
+Reminder: do not deny any logs until we have spoken about it as a team."""
+
+                modMessage = await modChannel.send(embed=modEmbed)
+                for e in ["📝", "✅", "❌", "🏛️"]:
+                    await modMessage.add_reaction(e)
             dbEntry = {}
             dbEntry["Log ID"] = sessionMessage.id
             dbEntry["Role"] = role
