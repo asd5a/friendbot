@@ -106,20 +106,25 @@ class Character(commands.Cog):
             items = list(db.races.find(
                {},
             ))
-            
-            out = f"All Races:\n"
+            raceEmbed = discord.Embed()
+            raceEmbed.title = f"All Valid Races:\n"
             
             items.sort(key = lambda x: x["Name"])
-            for i in items:
-                out += f"- {i['Name']}\n"
-            length = len(out)
-            while(length>2000):
-                x = out[:2000]
-                x = x.rsplit("\n", 1)[0]
-                await ctx.channel.send(content=x)
-                out = out[len(x):]
-                length -= len(x)
-            await ctx.channel.send(content=out)
+            character = ""
+            out_strings = []
+            collector_string = ""
+            for race in items:
+                race = race["Name"]
+                if race[0] == character:
+                    collector_string += f"{race}\n"
+                else:
+                    if collector_string:
+                        out_strings.append(collector_string)
+                    collector_string = f"{race}\n"
+                    character = race[0]
+            for i in out_strings:
+                raceEmbed.add_field(name=i[0], value= i, inline = True)
+            await ctx.channel.send(embed=raceEmbed)
     
         except Exception as e:
             traceback.print_exc()   
@@ -3704,7 +3709,7 @@ class Character(commands.Cog):
                     statsEmbed.add_field(name=f"Character Background Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
             else:
                 statsEmbed.add_field(name="Character Background Stats (Lifetime)", value=bgString, inline=False)  
-        # Lifetime background Stats
+        # Lifetime Feats Stats
         elif tReaction.emoji == alphaEmojis[5]:
             bPages = 1
             bPageStops = [0]
@@ -3726,7 +3731,7 @@ class Character(commands.Cog):
                     statsEmbed.add_field(name=f"Character Feats Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
             else:
                 statsEmbed.add_field(name="Character Feats Stats (Lifetime)", value=bgString, inline=False)  
-        # Lifetime background Stats
+        # Lifetime Magic Items Stats
         elif tReaction.emoji == alphaEmojis[6]:
             bPages = 1
             bPageStops = [0]
@@ -3751,7 +3756,58 @@ class Character(commands.Cog):
 
         await statsEmbedmsg.clear_reactions()
         await statsEmbedmsg.edit(embed=statsEmbed)
-        # await ctx.channel.send(embed=statsEmbed)
+        
+    @commands.command()
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    async def fanatic(self,ctx):                
+        statsCollection = db.stats
+        currentDate = datetime.now().strftime("%b-%y")
+        statRecords = statsCollection.find_one({"Date": currentDate})
+        guild=ctx.guild
+        channel = ctx.channel
+
+        statsEmbed = discord.Embed()
+        statsEmbedmsg = None
+        statsEmbed.title = f'Fanatic Competition' 
+
+        friendString = ""
+        guildString = ""
+        author = ctx.author
+
+        
+        if statRecords is None:
+            statsEmbed.add_field(name="Fanatic Stats", value="There have been 0 valid games played this month. Check back later!", inline=False)
+        else:
+            friend_list = []
+            guild_list = []
+            
+            dm_dictionary = statRecords['DM']
+            # Iterate through each DM and track tiers + total
+            for k,v in dm_dictionary.items():
+                dmMember = guild.get_member(int(k))
+                if dmMember is None:
+                    continue
+                if "Friend" in v:
+                    friend_list.append({"Member": dmMember, "Count": v["Friend"]})
+                if "Guilds" in v:
+                    guild_list.append({"Member": dmMember, "Count": sum([c for c in v["Guilds"].values()])})
+                print(guild_list)
+            friend_list.sort(key = lambda x: -x["Count"])
+            
+            guild_list.sort(key = lambda x: -x["Count"])
+            
+            for f in friend_list:
+                friendString += f"{f['Member'].mention} - {f['Count']} Points\n"
+            for g in guild_list:
+                print(g)
+                guildString += f"{g['Member'].mention} - {g['Count']} Points\n"
+            if friendString:
+                statsEmbed.add_field(name=f"Friend Fanatic", value=friendString, inline=True) 
+            if guildString: 
+                statsEmbed.add_field(name=f"Guild Fanatic", value=guildString, inline=True)  
+                
+        await ctx.channel.send(embed=statsEmbed)
 
     async def calcHP (self, ctx, classes, charDict, lvl):
         # classes = sorted(classes, key = lambda i: i['Hit Die Max'],reverse=True) 

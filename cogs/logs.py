@@ -749,8 +749,9 @@ class Log(commands.Cog):
                     reputationCost = (20*guilds[name]["Rewards"]+10*guilds[name]["Items"]+guild_drive_costs[sessionInfo["Tier"]]*guilds[name]["Drive"])*guilds[name]["Status"]
                     if(len(gPlayers)>0):
                         gain = sparklesGained*len(gPlayers) + sparklesGained*int("Guild" in dm and dm["Guild"] == name)
-                    guildsData.append(UpdateOne({"Name": name},
-                                               {"$inc": {"Games": 1, "Reputation": gain- reputationCost, "Total Reputation": gain}}))
+                    if guilds[name]["Status"]:
+                        guildsData.append(UpdateOne({"Name": name},
+                                                   {"$inc": {"Games": 1, "Reputation": gain- reputationCost, "Total Reputation": gain}}))
         print(guilds)   
         print("LLLLLLLLLLLLLLLLLLLLLLLL\n", guildsData) 
         
@@ -787,6 +788,13 @@ class Log(commands.Cog):
             statsIncrement[f"DM.{dm['ID']}.T{tierNum}"] = 1
             statsIncrement[f"T{tierNum}"] = 1
             statsIncrement[f"GQ Total"] = int(any ([g["Status"] for g in guilds.values()]))
+            if totalDuration > 10800: #3 hours
+                if (tierNum in [0, 1]):
+                    statsIncrement[f"DM.{dm['ID']}.Friend"] = 1
+                if (len(guildsData)>0):
+                    for g in guildDBEntriesDic.values():
+                        if guilds[g["Name"]]["Status"]:
+                            statsIncrement[f"DM.{dm['ID']}.Guilds.{g['Name']}"] = 1
             
             
             # track a list of unique players
