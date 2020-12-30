@@ -1834,7 +1834,7 @@ class Character(commands.Cog):
                     statsRecord['Background'][charDict['Background']] = 1
                         
                 statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
-                await levelCheck(ctx, charDict["Level"])
+                await self.levelCheck(ctx, charDict["Level"])
             # Extra to unset
             print(charDict)
             charRemoveKeyList = {'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
@@ -3178,7 +3178,7 @@ class Character(commands.Cog):
                 else:
                     print("Success")
 
-                roleName = await levelCheck(ctx, newCharLevel)
+                roleName = await self.levelCheck(ctx, newCharLevel)
                 levelUpEmbed.clear_fields()
                 await levelUpEmbedmsg.edit(content=f":arrow_up:   __**L E V E L   U P!**__\n\n:warning:   **Don't forget to spend your TP!** Use the following command to spend your TP:\n```yaml\n$tp buy \"{charName}\" \"magic item\"```", embed=levelUpEmbed)
 

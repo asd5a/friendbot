@@ -1017,7 +1017,7 @@ React with :x: if you have denied the log.
 Reminder: do not deny any logs until we have spoken about it as a team."""
 
                 modMessage = await modChannel.send(embed=modEmbed)
-                for e in ["📝", "✅", "❌", "🏛️"]:
+                for e in ["📝", "✅", "❌"]:
                     await modMessage.add_reaction(e)
                 print('Success')  
                 stopEmbed.set_footer(text=f"Game ID: {session_msg.id}")
