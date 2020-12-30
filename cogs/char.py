@@ -1194,7 +1194,7 @@ class Character(commands.Cog):
                 target = f"Campaigns.{campaignKey}.Time"
                 print("TTTTTTTTTT", target)
                 db.users.update_one({"User ID": str(author.id)}, {"$inc" : {target: -cpTransfered *3600}})
-                await self.levelCheck(ctx, charDict["Level"])
+                await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
             
         except Exception as e:
@@ -1834,7 +1834,7 @@ class Character(commands.Cog):
                     statsRecord['Background'][charDict['Background']] = 1
                         
                 statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
-                await self.levelCheck(ctx, charDict["Level"])
+                await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             # Extra to unset
             print(charDict)
             charRemoveKeyList = {'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
@@ -2786,6 +2786,7 @@ class Character(commands.Cog):
                 return
             else:
                 cRecords, levelUpEmbed, levelUpEmbedmsg = await callAPI(ctx, levelUpEmbed, levelUpEmbedmsg,'classes')
+                print("CCCCCCc", cRecords)
                 classRecords = sorted(cRecords, key=lambda k: k['Name']) 
                 leftCP = cpSplit - cp_bound_array[tierNum-1][0]
                 newCharLevel = charLevel  + 1
@@ -3178,7 +3179,7 @@ class Character(commands.Cog):
                 else:
                     print("Success")
 
-                roleName = await self.levelCheck(ctx, newCharLevel)
+                roleName = await self.levelCheck(ctx, newCharLevel, charName)
                 levelUpEmbed.clear_fields()
                 await levelUpEmbedmsg.edit(content=f":arrow_up:   __**L E V E L   U P!**__\n\n:warning:   **Don't forget to spend your TP!** Use the following command to spend your TP:\n```yaml\n$tp buy \"{charName}\" \"magic item\"```", embed=levelUpEmbed)
 
@@ -3192,13 +3193,14 @@ class Character(commands.Cog):
                     await levelUpEmbedmsg.add_reaction('🍾')
 
         self.bot.get_command('levelup').reset_cooldown(ctx)
-    async def levelCheck(self, ctx, level):
+    async def levelCheck(self, ctx, level, charName):
         author = ctx.author
         roles = [r.name for r in author.roles]
+        guild = ctx.guild
         roleName = ""
         if 'Junior Friend' not in roles and 'New Friend' in roles and level > 1:
-            roleName = 'Journeyfriend' 
-            roleRemoveStr = 'Junior Friend'
+            roleName = 'Junior Friend' 
+            roleRemoveStr = 'New Friend'
             levelRole = get(guild.roles, name = roleName)
             roleRemove = get(guild.roles, name = roleRemoveStr)
             await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 5!")
@@ -4173,15 +4175,15 @@ class Character(commands.Cog):
                             if 'Race Unavailable' in feat:
                                 if race not in feat['Race Unavailable']:
                                     meetsRestriction = True
-
+                            print("FFFfffff",ctx.invoked_with)
                             if 'Class Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Class Restriction'].split(', ')]
                                 for c in cRecord:
-                                    if ctx.invoked_with == "create" or ctx.invoked_with == "respec":
+                                    if ctx.invoked_with.lower() == "create" or ctx.invoked_with.lower() == "respec":
                                         if c['Class']['Name'] in featsList or c['Subclass'] in featsList:
                                             meetsRestriction = True
                                     else:
-                                        if c['Class']['Name'] in featsList or c['Subclass'] in featsList:
+                                        if c['Name'] in featsList or c['Subclass'] in featsList:
                                             meetsRestriction = True
                                             
                             if 'Stat Restriction' in feat:
