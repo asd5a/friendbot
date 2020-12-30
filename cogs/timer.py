@@ -378,7 +378,7 @@ class Timer(commands.Cog):
             #the command that starts the timer, it does so by allowing the code to move past the loop
             elif (msg.content == f"{commandPrefix}timer start" or msg.content == f"{commandPrefix}t start"):
                 if await self.permissionCheck(msg, author):
-                    if len(signedPlayers) == 1:
+                    if len(signedPlayers) == 0:
                         await channel.send(f'There are no players signed up! Players, use the following command to sign up to the quest with your character before the DM starts the timer:\n```yaml\n{commandPrefix}timer signup```') 
                     else:
                         timerStarted = True
@@ -1669,9 +1669,9 @@ class Timer(commands.Cog):
                 modEmbed = discord.Embed()
                 modEmbed.description = f"""A campaign session log was just posted for {ctx.channel.mention}.
 
-DM: {dmChar["Member"].mention} 
-Game ID: {session_msg.id}
-Link: {session_msg.jump_url}
+DM: {dmChar[0].mention} 
+Game ID: {sessionMessage.id}
+Link: {sessionMessage.jump_url}
 
 React with :pencil: if you messaged the DM to fix something in their summary.
 React with ✅ if you have approved the log.
