@@ -1011,9 +1011,8 @@ Game ID: {session_msg.id}
 Link: {session_msg.jump_url}
 
 React with :pencil: if you messaged the DM to fix something in their summary.
-React with :yes: if you have approved the log.
+React with ✅ if you have approved the log.
 React with :x: if you have denied the log.
-React with :classical_building: if you have denied one of the guilds.
 
 Reminder: do not deny any logs until we have spoken about it as a team."""
 

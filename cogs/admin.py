@@ -22,7 +22,38 @@ def admin_or_owner():
 class Admin(commands.Cog, name="Admin"):
     def __init__ (self, bot):
         self.bot = bot
-    
+    async def cog_command_error(self, ctx, error):
+        msg = None
+        
+        
+        if isinstance(error, commands.BadArgument):
+            # convert string to int failed
+            msg = "Your parameter types were off."
+        
+        elif isinstance(error, commands.CheckFailure):
+            msg = ""
+            return
+        elif isinstance(error, commands.MissingRequiredArgument):
+            msg = "You missed a parameter"
+
+        if msg:
+            
+            await ctx.channel.send(msg)
+        # bot.py handles this, so we don't get traceback called.
+        elif isinstance(error, commands.CommandOnCooldown):
+            return
+        elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
+             return
+
+        # Whenever there's an error with the parameters that bot cannot deduce
+        elif isinstance(error, commands.CommandInvokeError):
+            msg = f'The command is not working correctly. Please try again and make sure the format is correct.'
+            ctx.command.reset_cooldown(ctx)
+            await ctx.channel.send(msg)
+            await traceBack(ctx,error, False)
+        else:
+            ctx.command.reset_cooldown(ctx)
+            await traceBack(ctx,error)
     @commands.group(case_insensitive=True)
     async def react(self, ctx):	
         pass
@@ -148,7 +179,7 @@ class Admin(commands.Cog, name="Admin"):
     
     
     @commands.command()
-    @admin_or_owner()
+    @commands.has_any_role('Mod Friend', 'A d m i n')
     async def removeImage(self, ctx, charName):
         charEmbed = discord.Embed()
         cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
@@ -161,7 +192,7 @@ class Admin(commands.Cog, name="Admin"):
             await charEmbedmsg.delete()
             
         try:
-            db.players.update(
+            db.players.update_one(
                {"Name": cRecord["Name"], "User ID": cRecord["User ID"]},
                 {"$unset" : {"Image": 1}}
             )
@@ -169,7 +200,9 @@ class Admin(commands.Cog, name="Admin"):
     
         except Exception as e:
             traceback.print_exc()@commands.command()
-    @admin_or_owner()
+            
+    @commands.command()
+    @commands.has_any_role('A d m i n')
     async def removeCharacter(self, ctx, charName):
         charEmbed = discord.Embed()
         cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
@@ -182,10 +215,10 @@ class Admin(commands.Cog, name="Admin"):
             await charEmbedmsg.delete()
             
         try:
-            db.players.remove_one(
+            db.players.delete_one(
                {"Name": cRecord["Name"], "User ID": cRecord["User ID"]}
             )
-            await channel.send(content=f"Successfully deleted the {cRecord['Name']}.")
+            await channel.send(content=f"Successfully deleted {cRecord['Name']}.")
     
         except Exception as e:
             traceback.print_exc()

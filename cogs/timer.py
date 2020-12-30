@@ -40,7 +40,9 @@ class Timer(commands.Cog):
         if isinstance(error, commands.CommandOnCooldown):
             msg = f"A timer is already prepared in this channel. Please cancel the current timer and try again." 
         elif isinstance(error, commands.MissingAnyRole):
-            msg = "You do not have the required permissions for this command."
+            msg = "You do not have the required permissions for this command."        
+        elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
+             msg = "Your \" placement seems to be messed up.\n"
         else:
             if isinstance(error, commands.MissingRequiredArgument):
                 print(error.param.name)
@@ -50,8 +52,6 @@ class Timer(commands.Cog):
                     msg = "You can't prepare a timer without a game name! \n"
                 else:
                     msg = "Your command was missing an argument! "
-            elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
-              msg = ""
             
             if msg:
                 if ctx.command.name == "prep":
@@ -605,7 +605,7 @@ class Timer(commands.Cog):
                 if("Ioun Stone (Mastery)" in cRecord['Magic Items']):
                     consumableLength += 1
                 # block the command if more consumables than allowed (limit or available) are being registed
-                if len(consumablesList) > consumableLength or len(consumablesList) > len(charConsumables):
+                if len(consumablesList) > consumableLength:
                     if not resume:
                         await channel.send(content=f'You are trying to bring in too many consumables (**{len(consumablesList)}/{consumableLength}**)! The limit for your character is **{consumableLength}**.')
                     return False
@@ -1667,7 +1667,7 @@ class Timer(commands.Cog):
                 stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
                 modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
                 modEmbed = discord.Embed()
-                modEmbed.description = f"""A campaign session log was just posted for {ctx.channel.mention}.
+                modEmbed.description = f"""A one-shot session log was just posted for {ctx.channel.mention}.
 
 DM: {dmChar[0].mention} 
 Game ID: {sessionMessage.id}

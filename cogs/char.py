@@ -1194,7 +1194,9 @@ class Character(commands.Cog):
                 target = f"Campaigns.{campaignKey}.Time"
                 print("TTTTTTTTTT", target)
                 db.users.update_one({"User ID": str(author.id)}, {"$inc" : {target: -cpTransfered *3600}})
+                await levelCheck(ctx, charDict["Level"])
             statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
+            
         except Exception as e:
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
@@ -1832,6 +1834,7 @@ class Character(commands.Cog):
                     statsRecord['Background'][charDict['Background']] = 1
                         
                 statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
+                await levelCheck(ctx, charDict["Level"])
             # Extra to unset
             print(charDict)
             charRemoveKeyList = {'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
@@ -2645,16 +2648,7 @@ class Character(commands.Cog):
             charDict['HP'] += totalHPAdd * charLevel
 
             charEmbed.add_field(name='Stats', value=f":heart: {charDict['HP']} Max HP\n**STR**: {charDict['STR']} \n**DEX**: {charDict['DEX']} \n**CON**: {charDict['CON']} \n**INT**: {charDict['INT']} \n**WIS**: {charDict['WIS']} \n**CHA**: {charDict['CHA']}", inline=False)
-            if "Double Rewards Buff" in charDict:
-                drRemain = charDict['Double Rewards Buff'] + timedelta(days=3) - datetime.now()
-                if drRemain > timedelta(seconds=1):
-                    charEmbed.add_field(name='Double Rewards Buff', value=f"{drRemain.days * 24 +drRemain.seconds//3600}h : {(drRemain.seconds//60)%60}m remain", inline=False)
-
-            if "Double Items Buff" in charDict:
-                diRemain = charDict['Double Items Buff'] + timedelta(days=3) - datetime.now()
-                if diRemain > timedelta(seconds=1):
-                    charEmbed.add_field(name='Double Items Buff', value=f"{diRemain.days * 24 +diRemain.seconds//3600}h : {(diRemain.seconds//60)%60}m remain", inline=False) 
-
+            
             charEmbed.set_footer(text=footer)
 
             if 'Image' in charDict:
@@ -3184,52 +3178,7 @@ class Character(commands.Cog):
                 else:
                     print("Success")
 
-                roles = [r.name for r in author.roles]
-                roleName = ""
-                if 'Journeyfriend' not in roles and 'Junior Friend' in roles and newCharLevel > 4:
-                    roleName = 'Journeyfriend' 
-                    roleRemoveStr = 'Junior Friend'
-                    roleAddStr = 'Roll20 Tier 2'
-                    roleAdd = get(guild.roles, name = roleRemoveStr)
-                    await author.add_roles(roleAdd, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
-                    
-                    levelRole = get(guild.roles, name = roleName)
-                    roleRemove = get(guild.roles, name = roleRemoveStr)
-                    await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 5!")
-                    await author.remove_roles(roleRemove)
-                if 'Elite Friend' not in roles and 'Journeyfriend' in roles and newCharLevel > 10:
-                    roleName = 'Elite Friend'
-                    roleRemoveStr = 'Journeyfriend'
-                    roleAddStr = 'Roll20 Tier 3'
-                    roleAdd = get(guild.roles, name = roleRemoveStr)
-                    await author.add_roles(roleAdd, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
-                    
-                    levelRole = get(guild.roles, name = roleName)
-                    roleRemove = get(guild.roles, name = roleRemoveStr)
-                    await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 11!")
-                    await author.remove_roles(roleRemove)
-                if 'True Friend' not in roles and 'Elite Friend' in roles and newCharLevel > 16:
-                    roleName = 'True Friend'
-                    roleRemoveStr = 'Elite Friend'
-                    roleAddStr = 'Roll20 Tier 4'
-                    roleAdd = get(guild.roles, name = roleRemoveStr)
-                    await author.add_roles(roleAdd, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
-                    
-                    levelRole = get(guild.roles, name = roleName)
-                    roleRemove = get(guild.roles, name = roleRemoveStr)
-                    await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 17!")
-                    await author.remove_roles(roleRemove)
-                if 'Ascended Friend' not in roles and 'True Friend' in roles and newCharLevel > 19:
-                    roleName = 'Ascended Friend'
-                    roleRemoveStr = 'True Friend'
-                    roleAddStr = 'Roll20 Tier 5'
-                    roleAdd = get(guild.roles, name = roleRemoveStr)
-                    await author.add_roles(roleAdd, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
-                    
-                    levelRole = get(guild.roles, name = roleName)
-                    roleRemove = get(guild.roles, name = roleRemoveStr)
-                    await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
-                    await author.remove_roles(roleRemove)
+                roleName = await levelCheck(ctx, newCharLevel)
                 levelUpEmbed.clear_fields()
                 await levelUpEmbedmsg.edit(content=f":arrow_up:   __**L E V E L   U P!**__\n\n:warning:   **Don't forget to spend your TP!** Use the following command to spend your TP:\n```yaml\n$tp buy \"{charName}\" \"magic item\"```", embed=levelUpEmbed)
 
@@ -3243,7 +3192,45 @@ class Character(commands.Cog):
                     await levelUpEmbedmsg.add_reaction('🍾')
 
         self.bot.get_command('levelup').reset_cooldown(ctx)
-
+    async def levelCheck(self, ctx, level):
+        roles = [r.name for r in author.roles]
+        roleName = ""
+        if 'Junior Friend' not in roles and 'New Friend' in roles and level > 1:
+            roleName = 'Journeyfriend' 
+            roleRemoveStr = 'Junior Friend'
+            levelRole = get(guild.roles, name = roleName)
+            roleRemove = get(guild.roles, name = roleRemoveStr)
+            await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 5!")
+            await author.remove_roles(roleRemove)
+        if 'Journeyfriend' not in roles and 'Junior Friend' in roles and level > 4:
+            roleName = 'Journeyfriend' 
+            roleRemoveStr = 'Junior Friend'
+            levelRole = get(guild.roles, name = roleName)
+            roleRemove = get(guild.roles, name = roleRemoveStr)
+            await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 5!")
+            await author.remove_roles(roleRemove)
+        if 'Elite Friend' not in roles and 'Journeyfriend' in roles and level > 10:
+            roleName = 'Elite Friend'
+            roleRemoveStr = 'Journeyfriend'
+            levelRole = get(guild.roles, name = roleName)
+            roleRemove = get(guild.roles, name = roleRemoveStr)
+            await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 11!")
+            await author.remove_roles(roleRemove)
+        if 'True Friend' not in roles and 'Elite Friend' in roles and level > 16:
+            roleName = 'True Friend'
+            roleRemoveStr = 'Elite Friend'
+            levelRole = get(guild.roles, name = roleName)
+            roleRemove = get(guild.roles, name = roleRemoveStr)
+            await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 17!")
+            await author.remove_roles(roleRemove)
+        if 'Ascended Friend' not in roles and 'True Friend' in roles and level > 19:
+            roleName = 'Ascended Friend'
+            roleRemoveStr = 'True Friend'
+            levelRole = get(guild.roles, name = roleName)
+            roleRemove = get(guild.roles, name = roleRemoveStr)
+            await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 20!")
+            await author.remove_roles(roleRemove)
+        return roleName
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
     @commands.command(aliases=['att'])
@@ -3797,10 +3784,10 @@ class Character(commands.Cog):
             guild_list.sort(key = lambda x: -x["Count"])
             
             for f in friend_list:
-                friendString += f"{f['Member'].mention} - {f['Count']} Points\n"
+                friendString += f"{f['Member'].mention}: {f['Count']} Points\n"
             for g in guild_list:
                 print(g)
-                guildString += f"{g['Member'].mention} - {g['Count']} Points\n"
+                guildString += f"{g['Member'].mention}: {g['Count']} Points\n"
             if friendString:
                 statsEmbed.add_field(name=f"Friend Fanatic", value=friendString, inline=True) 
             if guildString: 
