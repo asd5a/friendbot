@@ -1194,7 +1194,7 @@ class Character(commands.Cog):
                 target = f"Campaigns.{campaignKey}.Time"
                 print("TTTTTTTTTT", target)
                 db.users.update_one({"User ID": str(author.id)}, {"$inc" : {target: -cpTransfered *3600}})
-                await levelCheck(ctx, charDict["Level"])
+                await self.levelCheck(ctx, charDict["Level"])
             statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
             
         except Exception as e:
@@ -3193,6 +3193,7 @@ class Character(commands.Cog):
 
         self.bot.get_command('levelup').reset_cooldown(ctx)
     async def levelCheck(self, ctx, level):
+        author = ctx.author
         roles = [r.name for r in author.roles]
         roleName = ""
         if 'Junior Friend' not in roles and 'New Friend' in roles and level > 1:
