@@ -85,8 +85,7 @@ class Character(commands.Cog):
         # bot.py handles this, so we don't get traceback called.
         elif isinstance(error, commands.CommandOnCooldown):
             return
-        elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
-             return
+        
 
         # Whenever there's an error with the parameters that bot cannot deduce
         elif isinstance(error, commands.CommandInvokeError):
@@ -2351,128 +2350,126 @@ class Character(commands.Cog):
                 sameMessage = True
             return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
 
-        if userRecords: 
-            playersCollection = db.players
-            charRecords = list(playersCollection.find({"User ID": str(author.id)}))
+        if not userRecords: 
+            userRecords = {'User ID': str(author.id), 'Games' : 0}
+            usersData = db.users.insert_one(userRecords)  
+            await channel.send(f'A user profile has been created.') 
+        playersCollection = db.players
+        charRecords = list(playersCollection.find({"User ID": str(author.id)}))
 
-            totalGamesPlayed = 0
-            pages = 1
-            pageStops = [0]
-            charString = ""
-            charDictTiers = [[],[],[],[],[]]
-            if charRecords:
-                charRecords = sorted(charRecords, key=lambda k: k['Name']) 
-
-
-                for c in charRecords:
-                    if c["Level"] < 5:
-                        charDictTiers[0].append(c)
-                    elif c["Level"] < 11:
-                        charDictTiers[1].append(c)
-                    elif c["Level"] < 17:
-                        charDictTiers[2].append(c)
-                    elif c["Level"] < 20:
-                        charDictTiers[3].append(c)
-                    else:
-                        charDictTiers[4].append(c)
-
-                charEmbed.set_author(name=author, icon_url=author.avatar_url)
-                charEmbed.title = f"{author.display_name}" 
-
-                for n in range(0,len(charDictTiers)):
-                    charString += f"\n———**Tier {n+1} Characters:**———\n"
-                    for charDict in charDictTiers[n]:
-                        tempCharString = charString
-                        char_race = charDict['Race']
-                        if "Reflavor" in charDict:
-                            char_race = f"{charDict['Reflavor']} ({char_race})"
-                        charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {charDict['Class']}\n"
-
-                        if 'Guild' in charDict:
-                            charString += f"~ Guild: *{charDict['Guild']}*\n"
-
-                        if len(charString) > (768 * pages):
-                            pageStops.append(len(tempCharString))
-                            pages += 1
-            else:
-                charString = "None"
-                
-            pageStops.append(len(charString))
-
-            if 'Games' in userRecords:
-                totalGamesPlayed += userRecords['Games']
-            if 'Double' in userRecords and userRecords["Double"]>0:
-                charEmbed.add_field(name="Double Reward", inline=False, value=f"""Your next **{userRecords["Double"]}** games will have double rewards.""")
+        totalGamesPlayed = 0
+        pages = 1
+        pageStops = [0]
+        charString = ""
+        charDictTiers = [[],[],[],[],[]]
+        if charRecords:
+            charRecords = sorted(charRecords, key=lambda k: k['Name']) 
 
 
-            if "Guilds" in userRecords:
-                guildNoodles = "• "
-                guildNoodles += "\n• ".join(userRecords["Guilds"])
-                charEmbed.add_field(name="Guilds",  inline=False, value=f"""You have created **{len(userRecords["Guilds"])}** guilds:\n {guildNoodles}""")
-
-            if "Campaigns" in userRecords:
-                campaignString = ""
-                for u, v in userRecords['Campaigns'].items():
-                    campaignString += f"• {u} :\n----Time: {timeConversion(v['Time'])}\n"
-                    campaignString += f"----Sessions: {v['Sessions']}\n"
-                    campaignString += f"----Active Member: {v['Active']}\n"
-
-                charEmbed.add_field(name='Campaigns', value=campaignString, inline=False)
-            
-
-            if 'Noodles' in userRecords:
-                charEmbed.description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: {userRecords['Noodles']}\n"
-            else:
-                charEmbed.description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: 0 (Try hosting sessions to receive Noodles!)\n"
-        
-            charEmbed.description += f"Total Number of Characters: {len(charRecords)}\nTier 1 Characters: {len(charDictTiers[0])}\nTier 2 Characters: {len(charDictTiers[1])}\nTier 3 Characters: {len(charDictTiers[2])}\nTier 4 Characters: {len(charDictTiers[3])}\nTier 5 Characters: {len(charDictTiers[4])}"
-
-            userEmbedList = [charEmbed]
-            page = 0
-            userEmbedList[0].set_footer(text=f"Page {page+1} of {pages}")
-            if pages > 1:
-                for p in range(len(pageStops)-1):
-                    if p != 0:
-                        userEmbedList.append(discord.Embed())
-                    userEmbedList[p].add_field(name=f'Characters - p. {p+1}:', value=charString[pageStops[p]:pageStops[p+1]], inline=False)
-
-            else:
-                charEmbed.add_field(name=f'Characters', value=charString, inline=False)
-
-            if not charEmbedmsg:
-                charEmbedmsg = await ctx.channel.send(embed=charEmbed)
-            else:
-                await charEmbedmsg.edit(embed=charEmbed)
-
-            while pages > 1:
-                await charEmbedmsg.add_reaction(left) 
-                await charEmbedmsg.add_reaction(right)
-                try:
-                    hReact, hUser = await self.bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
-                except asyncio.TimeoutError:
-                    await charEmbedmsg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
-                    await charEmbedmsg.clear_reactions()
-                    await charEmbedmsg.add_reaction('💤')
-                    return
+            for c in charRecords:
+                if c["Level"] < 5:
+                    charDictTiers[0].append(c)
+                elif c["Level"] < 11:
+                    charDictTiers[1].append(c)
+                elif c["Level"] < 17:
+                    charDictTiers[2].append(c)
+                elif c["Level"] < 20:
+                    charDictTiers[3].append(c)
                 else:
-                    if hReact.emoji == left:
-                        page -= 1
-                        if page < 0:
-                            page = len(userEmbedList) - 1
-                    if hReact.emoji == right:
-                        page += 1
-                        if page > len(userEmbedList) - 1:
-                            page = 0
-                    userEmbedList[page].set_footer(text=f"Page {page+1} of {pages}")
-                    await charEmbedmsg.edit(embed=userEmbedList[page]) 
-                    await charEmbedmsg.clear_reactions()
+                    charDictTiers[4].append(c)
 
+            charEmbed.set_author(name=author, icon_url=author.avatar_url)
+            charEmbed.title = f"{author.display_name}" 
+
+            for n in range(0,len(charDictTiers)):
+                charString += f"\n———**Tier {n+1} Characters:**———\n"
+                for charDict in charDictTiers[n]:
+                    tempCharString = charString
+                    char_race = charDict['Race']
+                    if "Reflavor" in charDict:
+                        char_race = f"{charDict['Reflavor']} ({char_race})"
+                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {charDict['Class']}\n"
+
+                    if 'Guild' in charDict:
+                        charString += f"~ Guild: *{charDict['Guild']}*\n"
+
+                    if len(charString) > (768 * pages):
+                        pageStops.append(len(tempCharString))
+                        pages += 1
+        else:
+            charString = "None"
+            
+        pageStops.append(len(charString))
+
+        if 'Games' in userRecords:
+            totalGamesPlayed += userRecords['Games']
+        if 'Double' in userRecords and userRecords["Double"]>0:
+            charEmbed.add_field(name="Double Reward", inline=False, value=f"""Your next **{userRecords["Double"]}** games will have double rewards.""")
+
+
+        if "Guilds" in userRecords:
+            guildNoodles = "• "
+            guildNoodles += "\n• ".join(userRecords["Guilds"])
+            charEmbed.add_field(name="Guilds",  inline=False, value=f"""You have created **{len(userRecords["Guilds"])}** guilds:\n {guildNoodles}""")
+
+        if "Campaigns" in userRecords:
+            campaignString = ""
+            for u, v in userRecords['Campaigns'].items():
+                campaignString += f"• {u} :\n----Time: {timeConversion(v['Time'])}\n"
+                campaignString += f"----Sessions: {v['Sessions']}\n"
+                campaignString += f"----Active Member: {v['Active']}\n"
+
+            charEmbed.add_field(name='Campaigns', value=campaignString, inline=False)
+        
+
+        if 'Noodles' in userRecords:
+            charEmbed.description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: {userRecords['Noodles']}\n"
+        else:
+            charEmbed.description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: 0 (Try hosting sessions to receive Noodles!)\n"
+    
+        charEmbed.description += f"Total Number of Characters: {len(charRecords)}\nTier 1 Characters: {len(charDictTiers[0])}\nTier 2 Characters: {len(charDictTiers[1])}\nTier 3 Characters: {len(charDictTiers[2])}\nTier 4 Characters: {len(charDictTiers[3])}\nTier 5 Characters: {len(charDictTiers[4])}"
+
+        userEmbedList = [charEmbed]
+        page = 0
+        userEmbedList[0].set_footer(text=f"Page {page+1} of {pages}")
+        if pages > 1:
+            for p in range(len(pageStops)-1):
+                if p != 0:
+                    userEmbedList.append(discord.Embed())
+                userEmbedList[p].add_field(name=f'Characters - p. {p+1}:', value=charString[pageStops[p]:pageStops[p+1]], inline=False)
 
         else:
+            charEmbed.add_field(name=f'Characters', value=charString, inline=False)
+
+        if not charEmbedmsg:
+            charEmbedmsg = await ctx.channel.send(embed=charEmbed)
+        else:
+            await charEmbedmsg.edit(embed=charEmbed)
+
+        while pages > 1:
+            await charEmbedmsg.add_reaction(left) 
+            await charEmbedmsg.add_reaction(right)
+            try:
+                hReact, hUser = await self.bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
+            except asyncio.TimeoutError:
+                await charEmbedmsg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
+                await charEmbedmsg.clear_reactions()
+                await charEmbedmsg.add_reaction('💤')
+                return
+            else:
+                if hReact.emoji == left:
+                    page -= 1
+                    if page < 0:
+                        page = len(userEmbedList) - 1
+                if hReact.emoji == right:
+                    page += 1
+                    if page > len(userEmbedList) - 1:
+                        page = 0
+                userEmbedList[page].set_footer(text=f"Page {page+1} of {pages}")
+                await charEmbedmsg.edit(embed=userEmbedList[page]) 
+                await charEmbedmsg.clear_reactions()
+
             
-            usersData = db.users.insert_one({'User ID': str(author.id), 'Games' : 0})  
-            await channel.send(f'A user profile has been created.')
-            return
             
            
     @commands.cooldown(1, 5, type=commands.BucketType.member)
@@ -3496,9 +3493,21 @@ class Character(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
-    async def stats(self,ctx):                
+    async def stats(self,ctx, month = None, year = None):                
         statsCollection = db.stats
         currentDate = datetime.now().strftime("%b-%y")
+        if not year:
+            year = currentDate.split("-")[1]
+        if month:
+            if month.isnumeric() and int(month)>0 and int(month) < 13:
+                currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
+                print(currentDate)
+                
+            else:
+                await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
+                ctx.command.reset_cooldown(ctx)
+                return
+                    
         statRecords = statsCollection.find_one({"Date": currentDate})
         statRecordsLife = statsCollection.find_one({"Life": 1})
         guild=ctx.guild
@@ -3749,9 +3758,20 @@ class Character(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
-    async def fanatic(self,ctx):                
+    async def fanatic(self,ctx, month = None, year = None):                
         statsCollection = db.stats
         currentDate = datetime.now().strftime("%b-%y")
+        if not year:
+            year = currentDate.split("-")[1]
+        if month:
+            if month.isnumeric() and int(month)>0 and int(month) < 13:
+                currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
+                print(currentDate)
+                
+            else:
+                await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
+                ctx.command.reset_cooldown(ctx)
+                return
         statRecords = statsCollection.find_one({"Date": currentDate})
         guild=ctx.guild
         channel = ctx.channel

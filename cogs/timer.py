@@ -141,7 +141,7 @@ class Timer(commands.Cog):
             return
 
         # set up the user communication for tier selection, this is done even if norewards is selected
-        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojisExtra[0]} New Friend (Level 1-4)\n {numberEmojisExtra[1]} Junior Friend (Level 1-4)\n{numberEmojisExtra[2]} Journeyfriend (Level 5-10)\n{numberEmojisExtra[3]} Elite Friend (Level 11-16)\n{numberEmojisExtra[4]} True Friend (Level 17-20)\n{numberEmojisExtra[5]} Ascended Friend (Level 20+)\n", inline=False)
+        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojisExtra[0]} New Friend (Level 1-4)\n {numberEmojisExtra[1]} Junior Friend (Level 1-4)\n{numberEmojisExtra[2]} Journeyfriend (Level 5-10)\n{numberEmojisExtra[3]} Elite Friend (Level 11-16)\n{numberEmojisExtra[4]} True Friend (Level 17-19)\n{numberEmojisExtra[5]} Ascended Friend (Level 17+)\n", inline=False)
         # the discord name is used for listing the owner of the timer
         prepEmbed.set_author(name=userName, icon_url=author.avatar_url)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
@@ -378,7 +378,7 @@ class Timer(commands.Cog):
             #the command that starts the timer, it does so by allowing the code to move past the loop
             elif (msg.content == f"{commandPrefix}timer start" or msg.content == f"{commandPrefix}t start"):
                 if await self.permissionCheck(msg, author):
-                    if len(signedPlayers) == 1:
+                    if len(signedPlayers) == 0:
                         await channel.send(f'There are no players signed up! Players, use the following command to sign up to the quest with your character before the DM starts the timer:\n```yaml\n{commandPrefix}timer signup```') 
                     else:
                         timerStarted = True
@@ -543,11 +543,11 @@ class Timer(commands.Cog):
             
             # set up the bounds of which level the character is allowed to be
             if role == "Ascended":
-                validLevelStart = 20
+                validLevelStart = 17
                 validLevelEnd = 20
             elif role == "True":
                 validLevelStart = 17
-                validLevelEnd = 20
+                validLevelEnd = 19
             elif role == "Elite":
                 validLevelStart = 11
                 validLevelEnd = 16
@@ -673,6 +673,9 @@ class Timer(commands.Cog):
             searchItem = searchQuery.lower().replace(' ', '')
             timeKey = ""
             removedItem = ""
+            if searchItem.startswith("+") and not resume:
+                await channel.send(f"You cannot remove reward items.")
+                return start         
             # search through all entries for the player entry of the player
             for u, v in start.items():
                 for item in v:
@@ -727,6 +730,42 @@ class Timer(commands.Cog):
                 if not resume:
                     await channel.send(f"Looks like you were trying to remove **{searchItem}** from your inventory. I could not find you on the timer to do that.")
             return start
+    
+    """
+    This command is used to remove rewarded consumables during play time
+    msg -> the msg that caused the invocation
+    start -> a dictionary of strings and player list pairs, the strings are made out of the kind of reward and the duration and the value is a list of players entries (format can be found as the return value in signup)
+    resume -> if this command has been called during the resume phase
+    """
+    async def undoConsumables(self, ctx, msg,start, dmChar, resume=False): 
+        if ctx.invoked_with == 'prep' or ctx.invoked_with == "resume":
+            channel = ctx.channel
+            # search through all entries for the player entry of the player
+            for u, v in start.items():
+                for item in v: 
+                    cList = []
+                    for i in item[2]:
+                        if i.startswith('+'):
+                            pass
+                        else:
+                            cList.append(i)
+                    item[2] = cList
+                    item[4]["Magic Items"]= []
+                    item[4]["Consumables"]["Add"] = []
+                    item[4]["Inventory"]["Add"] = []
+            
+            dmChar[4]["Magic Items"]= []
+            dmChar[4]["Consumables"]["Add"] = []
+            dmChar[4]["Inventory"]["Add"] = []
+            dmChar[5][1] = {"Players" : {"Major":[], "Minor": []}, 
+                                    "DM" : {"Major":[], "Minor": []}}
+                    
+            if not resume:
+                await channel.send(f"All reward items have been removed.")
+
+            return start
+    
+    
     """
     This command handles all the intial setup for a running timer
     this includes setting up the tracking variables of user playing times,
@@ -2159,7 +2198,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
 
         #in no rewards games characters cannot die or get rewards
         if role != "":
-            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp']
+            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp', 'undo rewards']
         else:
             timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'stamp']
 
@@ -2222,7 +2261,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 elif (msg.content.startswith(f"{commandPrefix}timer remove ") or msg.content.startswith(f"{commandPrefix}t remove ")): 
                     if await self.permissionCheck(msg, author): 
-                        await ctx.invoke(self.timer.get_command('remove'), msg=msg, start=startTimes, role=role)
+                        await self.removeDuringTimer(ctx, msg, start=startTimes, role=role)
                         stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 elif (msg.content.startswith(f"{commandPrefix}timer stamp") or msg.content.startswith(f"{commandPrefix}t stamp")): 
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
@@ -2236,7 +2275,13 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 elif msg.content.startswith('-') and msg.author != dmChar[0]:
                     await ctx.invoke(self.timer.get_command('deductConsumables'), msg=msg, start=startTimes)
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
-                
+                elif (msg.content.startswith(f"{commandPrefix}timer undo rewards") or msg.content.startswith(f"{commandPrefix}t undo rewards")):
+                    # check if the author of the message has the right permissions for this command
+                    if await self.permissionCheck(msg, author):
+                        # update the startTimes with the new added player
+                        await self.undoConsumables(ctx, msg, startTimes, dmChar)
+                        # update the msg with the new stamp
+                        stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
 
             except asyncio.TimeoutError:
                 stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)

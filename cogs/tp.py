@@ -44,6 +44,7 @@ class Tp(commands.Cog):
         elif isinstance(error, commands.CommandOnCooldown):
             return
         elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
+
              return
              
         if msg:

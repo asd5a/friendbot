@@ -52,7 +52,8 @@ async def on_command_error(ctx,error):
     
     if isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
         await ctx.channel.send("There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command. ")
-        bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+        #bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+        ctx.command.reset_cooldown(ctx)
         return
     
     elif ctx.cog is not None and ctx.cog._get_overridden_method(ctx.cog.cog_command_error) is not None:
