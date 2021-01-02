@@ -733,14 +733,15 @@ class Shop(commands.Cog):
                         await channel.send(f"***{bRecord['Name']}*** is not a {ritClass} spell that can be copied into your ritual book.")
                         ctx.command.reset_cooldown(ctx)
                         return
-
+                        
                     if "Ritual" not in bRecord:
                         await channel.send(f"***{bRecord['Name']}*** is not a ritual spell, therefore it cannot be copied into your ritual book.")
                         ctx.command.reset_cooldown(ctx)
                         return
 
+                    ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
                     if charRecords['Level'] < (int(bRecord['Level']) * 2 - 1):
-                        await channel.send(f"***{charRecords['Name']}*** is not a high enough level to copy a level {bRecord['Level']} spell, therefore it cannot be copied into your ritual book.")
+                        await channel.send(f"***{charRecords['Name']}*** is not a high enough level to copy a  {ordinal(bRecord['Level'])} level spell, therefore it cannot be copied into your ritual book.")
                         ctx.command.reset_cooldown(ctx)
                         return
                     
@@ -811,7 +812,7 @@ class Shop(commands.Cog):
                                 scrollChoice = "Free Spell"
                             elif tReaction.emoji == numberEmojis[1]:
                                 scrollChoice = "Scroll"
-
+                ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
                 fsIndex = 0
                 if ('Free Spells' in charRecords and bookChoice == "Spellbook") and scrollChoice == "Free Spell":
                     requiredSpellLevel = (int(bRecord['Level'])* 2 - 1)
@@ -825,7 +826,7 @@ class Shop(commands.Cog):
                             break
                         
                     if charRecords["Level"] < requiredSpellLevel or fsValid is False:
-                        await channel.send(f"**{bRecord['Name']}** is a level {bRecord['Level']} spell that cannot be copied into ***{charRecords['Name']}***'s spellbook! They must be level {requiredSpellLevel} or higher or you have no more free spells to copy this spell.")
+                        await channel.send(f"**{bRecord['Name']}** is a {ordinal(bRecord['Level'])} level spell that cannot be copied into ***{charRecords['Name']}***'s spellbook! They must be level {requiredSpellLevel} or higher or you have no more free spells to copy this spell.")
                         ctx.command.reset_cooldown(ctx)
                         return     
 
@@ -907,13 +908,14 @@ class Shop(commands.Cog):
                                 shopEmbed.description = f"You have copied the **{bRecord['Name']}** spell ({ordinal(bRecord['Level'])} level) into your {bookChoice} for {gpNeeded} GP!\nYou copied your last spell scroll of **{bRecord['Name']}** and it has been removed from your inventory. \n\nCurrent GP: {newGP} GP\n"
                             else:
                                 shopEmbed.description = f"You have copied the **{bRecord['Name']}** spell ({ordinal(bRecord['Level'])} level) into your {bookChoice} for {gpNeeded} GP!\nAfter copying the spell scroll of **{bRecord['Name']}** and you have {spellScrollAmount} spell scroll(s) of **{bRecord['Name']}** left. \n\nCurrent GP: {newGP} GP\n"
-
+                            
+                            ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
                             if 'Free Spells' in charRecords:
                                 fsString = ""
                                 fsIndex = 0
                                 for el in charRecords['Free Spells']:
                                     if el > 0:
-                                        fsString += f"Level {fsIndex+1}: {el} free spells\n"
+                                        fsString += f"{self.ordinal(fsIndex+1)} Level : {el} free spells\n"
                                     fsIndex += 1
 
                                 if fsString:
