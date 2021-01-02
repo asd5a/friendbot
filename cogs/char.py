@@ -795,7 +795,7 @@ class Character(commands.Cog):
 
                         elif 'Pack' not in k:
                             
-                            if tk in charDict['Inventory']:
+                            if k in charDict['Inventory']:
                                 charDict['Inventory'][k] += v
                             else:
                                 charDict['Inventory'][k] = v
