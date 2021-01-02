@@ -28,7 +28,9 @@ class Character(commands.Cog):
         if isinstance(error, commands.BadArgument):
             # convert string to int failed
             msg = "Your stats and level need to be numbers. "
-        
+        elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
+
+             return
         elif isinstance(error, commands.CheckFailure):
             msg = "This channel or user does not have permission for this command."
         elif isinstance(error, commands.MissingRequiredArgument):
@@ -114,6 +116,7 @@ class Character(commands.Cog):
             collector_string = ""
             for race in items:
                 race = race["Name"]
+                print(race)
                 if race[0] == character:
                     collector_string += f"{race}\n"
                 else:
@@ -121,7 +124,10 @@ class Character(commands.Cog):
                         out_strings.append(collector_string)
                     collector_string = f"{race}\n"
                     character = race[0]
+            if collector_string:
+                out_strings.append(collector_string)
             for i in out_strings:
+                print(i)
                 raceEmbed.add_field(name=i[0], value= i, inline = True)
             await ctx.channel.send(embed=raceEmbed)
     
@@ -1445,11 +1451,15 @@ class Character(commands.Cog):
                 cRecord.append({'Class':singleClass, 'Level':lvl, 'Subclass': 'None'})
             else:
                 cRecord = None
+                broke.append(cclass)
 
         charDict['Class'] = ""
         print(len(broke))
         if not mLevel and '/' in cclass:
             pass
+        elif len(broke)>0:
+            msg += f':warning: **{broke}** isn\'t on the list or it is banned! Check #allowed-and-banned-content and check your spelling.\n'
+        
         elif len(broke)>0:
             msg += f':warning: **{broke}** isn\'t on the list or it is banned! Check #allowed-and-banned-content and check your spelling.\n'
         elif totalLevel != lvl and len(cRecord) > 1:

@@ -476,29 +476,33 @@ class Timer(commands.Cog):
 
             else:
                 # this is a similar process to above but with the added adjustment that a player name is also included
-                if 'timer add ' in char.content or 't add ' in char.content:
-                    if 'timer add ' in char.content:
-                        charList = shlex.split(char.content.split(f'{commandPrefix}timer add ')[1].strip())
-                    elif 't add' in char.content:
-                        charList = shlex.split(char.content.split(f'{commandPrefix}t add ')[1].strip())
-                    # since two parameters are needed for 'add' we need to inform the user
-                    if len(charList) == 1:
-                        # again block repeat messages in case of a resume command, the check is different for some reason
+                try:
+                    if 'timer add ' in char.content or 't add ' in char.content:
+                        if 'timer add ' in char.content:
+                            charList = shlex.split(char.content.split(f'{commandPrefix}timer add ')[1].strip())
+                        elif 't add' in char.content:
+                            charList = shlex.split(char.content.split(f'{commandPrefix}t add ')[1].strip())
+                        # since two parameters are needed for 'add' we need to inform the user
+                        if len(charList) == 1:
+                            # again block repeat messages in case of a resume command, the check is different for some reason
+                            if not resume:
+                                await ctx.channel.send("You're missing a character name for the player you're trying to add. Please try again.")
+                            return
+                        # in this case the character name is the second parameter
+                        charName = charList[1]
+                    # this is the exact same set up as for signup, since a person is adding themselves only one parameter is expected
+                    elif ('timer addme ' in char.content or 't addme ' in char.content) and (char.content != f'{commandPrefix}timer addme ' or char.content != f'{commandPrefix}t addme '):
+                        if 'timer addme ' in char.content:
+                            charList = shlex.split(char.content.split(f'{commandPrefix}timer addme ')[1].strip())
+                        elif 't addme ' in char.content:
+                            charList = shlex.split(char.content.split(f'{commandPrefix}t addme ')[1].strip())
+                        charName = charList[0]
+                    else:
                         if not resume:
-                            await ctx.channel.send("You're missing a character name for the player you're trying to add. Please try again.")
+                            await ctx.channel.send("I wasn't able to add this character. Please check your format.")
                         return
-                    # in this case the character name is the second parameter
-                    charName = charList[1]
-                # this is the exact same set up as for signup, since a person is adding themselves only one parameter is expected
-                elif ('timer addme ' in char.content or 't addme ' in char.content) and (char.content != f'{commandPrefix}timer addme ' or char.content != f'{commandPrefix}t addme '):
-                    if 'timer addme ' in char.content:
-                        charList = shlex.split(char.content.split(f'{commandPrefix}timer addme ')[1].strip())
-                    elif 't addme ' in char.content:
-                        charList = shlex.split(char.content.split(f'{commandPrefix}t addme ')[1].strip())
-                    charName = charList[0]
-                else:
-                    if not resume:
-                        await ctx.channel.send("I wasn't able to add this character. Please check your format.")
+                except ValueError as e:
+                    await ctx.channel.send("Something was off with your character name. Did you miss a quotation mark?")
                     return
             # if the last parameter is not the character name then we know that the player registered consumables
             if charList[len(charList) - 1] != charName:
@@ -1172,16 +1176,17 @@ class Timer(commands.Cog):
                             # WEIRD
                             # query has already been adjusted to work as an appropriate name
                             # this consumable name does not include the spell level that was calculated there
-                            if 'spell scroll' in query.lower():
-                                rewardConsumable['Name'] = f"Spell Scroll ({sRecord['Name']})"
-                            
+                            blocking_list_additions[rewardConsumable['Minor/Major']].append(rewardConsumable[rewardConsumable_group_type])
+
                             # the only reward items that are non-consumable are minors
                             # non-consumables don't have the Consumable property
                             if rewardConsumable['Minor/Major'] == 'Major':
                                 awarded_majors.append(rewardConsumable['Name'])
                             else:
                                 awarded_minors.append(rewardConsumable['Name'])
-                            blocking_list_additions[rewardConsumable['Minor/Major']].append(rewardConsumable[rewardConsumable_group_type])
+                            if 'spell scroll' in query.lower():
+                                rewardConsumable['Name'] = f"Spell Scroll ({sRecord['Name']})"
+                            
                             character_add[rewardConsumable["Type"]].append(rewardConsumable["Name"])
                     
                     # update the players consumable/item list with the rewarded consumable/item respectively
