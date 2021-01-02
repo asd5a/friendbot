@@ -1988,7 +1988,7 @@ class Character(commands.Cog):
             charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
 
             if charDict['GP'] + deathDict["inc"]['GP'] < gpNeeded:
-                charEmbed.description = f"Please choose between these three options for {charDict['Name']}:\n\n1️⃣: Death - Retires your character.\n2️⃣: Survival - Forfeit rewards and survive.\n3️⃣: ~~Revival~~ - You currently have {charDict['GP'] + deathDict["inc"]['GP']} GP but need {gpNeeded} GP to be revived."
+                charEmbed.description = f"Please choose between these three options for {charDict['Name']}:\n\n1️⃣: Death - Retires your character.\n2️⃣: Survival - Forfeit rewards and survive.\n3️⃣: ~~Revival~~ - You currently have {charDict['GP'] + deathDict['inc']['GP']} GP but need {gpNeeded} GP to be revived."
             else:
                 charEmbed.description = f"Please choose between these three options for {charDict['Name']}:\n\n1️⃣: Death - Retires your character.\n2️⃣: Survival - Forfeit rewards and survive.\n3️⃣: Revival - Revives your character for {gpNeeded} GP."
             if not charEmbedmsg:
