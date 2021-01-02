@@ -481,17 +481,19 @@ class Character(commands.Cog):
                         
                     spellItem = r.lower().replace("spell scroll", "").replace('(', '').replace(')', '')
                     sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem) 
-                    
-                    if (sRecord["Level"] >= 3 and tierNum < 2) or sRecord["Level"] > 3:
-                        msg += f"""The **Spell Scroll {sRecord['Name']}** cannot be a reward item because the level of the spell scroll is too high for your character.\n"""
-                        break
-
-                    elif sRecord["Level"] == 3:
-                        sTier = 2
+                    if not sRecord:
+                        reRecord = None
                     else:
-                        sTier = 1
+                        if (sRecord["Level"] >= 3 and tierNum < 2) or sRecord["Level"] > 3:
+                            msg += f"""The **Spell Scroll {sRecord['Name']}** cannot be a reward item because the level of the spell scroll is too high for your character.\n"""
+                            break
 
-                    reRecord = {"Name": f"Spell Scroll ({sRecord['Name']})", "Type": "Consumables",  "Tier": sTier, "Minor/Major" : "Minor"}
+                        elif sRecord["Level"] == 3:
+                            sTier = 2
+                        else:
+                            sTier = 1
+
+                        reRecord = {"Name": f"Spell Scroll ({sRecord['Name']})", "Type": "Consumables",  "Tier": sTier, "Minor/Major" : "Minor"}
                 else:
                     reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r, tier = tierNum) 
 
@@ -1986,7 +1988,7 @@ class Character(commands.Cog):
             charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
 
             if charDict['GP'] + deathDict["inc"]['GP'] < gpNeeded:
-                charEmbed.description = f"Please choose between these three options for {charDict['Name']}:\n\n1️⃣: Death - Retires your character.\n2️⃣: Survival - Forfeit rewards and survive.\n3️⃣: ~~Revival~~ - You currently have {charDict['GP'] + deathDict['GP']} GP but need {gpNeeded} GP to be revived."
+                charEmbed.description = f"Please choose between these three options for {charDict['Name']}:\n\n1️⃣: Death - Retires your character.\n2️⃣: Survival - Forfeit rewards and survive.\n3️⃣: ~~Revival~~ - You currently have {charDict['GP'] + deathDict["inc"]['GP']} GP but need {gpNeeded} GP to be revived."
             else:
                 charEmbed.description = f"Please choose between these three options for {charDict['Name']}:\n\n1️⃣: Death - Retires your character.\n2️⃣: Survival - Forfeit rewards and survive.\n3️⃣: Revival - Revives your character for {gpNeeded} GP."
             if not charEmbedmsg:
