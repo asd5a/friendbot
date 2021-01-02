@@ -176,7 +176,45 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()        
       
+    @commands.command()
+    @admin_or_owner()
+    async def printRewardItems(self, ctx, tier: int):
+        try:
+            items = list(db.rit.find(
+               {"Tier": tier},
+            ))
+            
+            out = f"Reward Items in Tier {tier}:\n"
+            def alphaSort(item):
+                if "Grouped" in item:
+                    return (item['Minor/Major'], item["Grouped"])
+                else:
+                    return (item['Minor/Major'], item["Name"])
+            
+            items.sort(key = alphaSort)
+            majors = filter(lambda x: x['Minor/Major'] == "Major", items)
+            minors = filter(lambda x: x['Minor/Major'] == "Minor", items)
+            groups =  [[majors, "Majors"], [minors, "Minors"]]
+            for g in groups:
+                out += f"\n**{g[1]}**\n"
+                for i in g[0]:
+                    if "Grouped" in i:
+                        out += i["Grouped"]
+                    else:
+                        out += i["Name"]
+                    print(i)
+                    out += f"\n"
+            length = len(out)
+            while(length>2000):
+                x = out[:2000]
+                x = x.rsplit("\n", 1)[0]
+                await ctx.channel.send(content=x)
+                out = out[len(x):]
+                length -= len(x)
+            await ctx.channel.send(content=out)
     
+        except Exception as e:
+            traceback.print_exc()        
     
     @commands.command()
     @commands.has_any_role('Mod Friend', 'A d m i n')

@@ -738,7 +738,8 @@ class Character(commands.Cog):
                                 seiString += f"+ {pk} x{pv}\n"
 
                     charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength + 1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString, inline=False)
-
+                    
+                    print("AAAAAAA", charDict['Inventory'])
                     for k,v in startEquipmentItem.items():
                         if '[' in k and ']' in k:
                             iType = k.split('[')
@@ -785,17 +786,17 @@ class Character(commands.Cog):
                                     p+=1
                                 print(alphaEmojis.index(tReaction.emoji))
                                 typeEquipmentList.append(charInv[alphaEmojis.index(tReaction.emoji)]['Name'])
-                                typeCount = collections.Counter(typeEquipmentList)
-                                typeString = ""
-                                for tk, tv in typeCount.items():
-                                    print("GGGGGGGGGGG", tk, tv)
-                                    typeString += f"{tk} x{tv}\n"
-                                    if tk in charDict['Inventory']:
-                                        charDict['Inventory'][tk] += tv
-                                    else:
-                                        charDict['Inventory'][tk] = tv
-                                    
-                                    typeString += f"{tk} x{charDict['Inventory'][tk]}\n"
+                            typeCount = collections.Counter(typeEquipmentList)
+                            typeString = ""
+                            print("COUNT", typeCount)
+                            for tk, tv in typeCount.items():
+                                if tk in charDict['Inventory']:
+                                    charDict['Inventory'][tk] += tv
+                                else:
+                                    charDict['Inventory'][tk] = tv
+                                
+                                print("GGGGGGGGGGG", tk, tv, charDict['Inventory'][tk])
+                                typeString += f"{tk} x{charDict['Inventory'][tk]}\n"
 
                             charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength+1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString.replace(f"{k} x{v}\n", typeString), inline=False)
 
@@ -1579,12 +1580,18 @@ class Character(commands.Cog):
                                 typeString = ""
                                 for tk, tv in typeCount.items():
                                     typeString += f"{tk} x{tv}\n"
-                                    charDict['Inventory'][tk] = tv
+                                    if tk in charDict['Inventory']:
+                                        charDict['Inventory'][tk] += tv
+                                    else:
+                                        charDict['Inventory'][tk] = tv
 
                             charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength+1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString.replace(f"{k} x{v}\n", typeString), inline=False)
 
                         elif 'Pack' not in k:
-                            charDict['Inventory'][k] = v
+                            if k in charDict['Inventory']:
+                                charDict['Inventory'][k] += v
+                            else:
+                                charDict['Inventory'][k] = v
                     startEquipmentLength += 1
                 await charEmbedmsg.clear_reactions()
                 charEmbed.clear_fields()
@@ -2391,6 +2398,8 @@ class Character(commands.Cog):
         pageStops = [0]
         charString = ""
         charDictTiers = [[],[],[],[],[]]
+        charEmbed.set_author(name=author, icon_url=author.avatar_url)
+        charEmbed.title = f"{author.display_name}" 
         if charRecords:
             charRecords = sorted(charRecords, key=lambda k: k['Name']) 
 
@@ -2407,8 +2416,6 @@ class Character(commands.Cog):
                 else:
                     charDictTiers[4].append(c)
 
-            charEmbed.set_author(name=author, icon_url=author.avatar_url)
-            charEmbed.title = f"{author.display_name}" 
 
             for n in range(0,len(charDictTiers)):
                 charString += f"\n———**Tier {n+1} Characters:**———\n"
@@ -2661,7 +2668,7 @@ class Character(commands.Cog):
                     conValue = charDict['CON'].replace(')', '').split('(')            
 
                     if len(conValue) > 1:
-                        trueConValue = max(conValue)
+                        trueConValue = max(map(lambda x: int(x), conValue))
 
                     if '+' in conValue[1]:
                         trueConValue = int(conValue[1].replace('+', '')) + int(conValue[0])
@@ -2669,6 +2676,7 @@ class Character(commands.Cog):
                     print(trueConValue)
 
                     charDict['HP'] -= ((int(conValue[0]) - 10) // 2) * charLevel
+                    print("CON",   trueConValue, conValue)
                     charDict['HP'] += ((int(trueConValue) - 10) // 2) * charLevel
 
             charDict['HP'] += totalHPAdd * charLevel

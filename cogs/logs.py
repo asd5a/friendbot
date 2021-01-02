@@ -1,10 +1,11 @@
 import discord
 import asyncio
 import re
+import pytz
 from discord.utils import get        
 from discord.ext import commands
 from datetime import datetime, timezone,timedelta
-from bfunc import callAPI, db, traceBack, timeConversion, calculateTreasure, roleArray,timeConversion, settingsRecord
+from bfunc import callAPI, db, traceBack, timeConversion, calculateTreasure, roleArray,timeConversion, settingsRecord, timezoneVar
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
@@ -173,12 +174,11 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                 allRewardStrings[groupString] = [player]
 
 
-    datestart = datetime.fromtimestamp(start).strftime("%b-%d-%y %I:%M %p")
-    dateend = datetime.fromtimestamp(end).strftime("%b-%d-%y %I:%M %p")
+    datestart = datetime.fromtimestamp(start).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
+    dateend = datetime.fromtimestamp(end).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
     totalDuration = timeConversion(end - start)
     sessionLogEmbed.title = f"Timer: {game} [END] - {totalDuration}"
     sessionLogEmbed.description = f"Start: {datestart} CDT\nEnd: {dateend} CDT\n" 
-    
     dm_double_string = ""
     dmRewardsList = []
     #DM REWARD MATH STARTS HERE
@@ -1203,7 +1203,7 @@ class Log(commands.Cog):
         logData =db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or "Mod Friend" in [r.name for r in ctx.author.roles] and sessionInfo["DDMRW"]):
+            elif (str(ctx.author.id) == sessionInfo["DM"]["ID"] or "Mod Friend" in [r.name for r in ctx.author.roles] and sessionInfo["DDMRW"]):
                 pass
                  
             else:
@@ -1214,14 +1214,19 @@ class Log(commands.Cog):
             return
         sessionLogEmbed = editMessage.embeds[0]
 
+        if sessionInfo["Status"] == "Processing":
+            summaryIndex = sessionLogEmbed.description.find('**Summary**:')
+            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex] + editString+"\n"
+        else:
+            sessionLogEmbed.description += "\n"+editString
+        try:
+            await editMessage.edit(embed=sessionLogEmbed)
+            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
 
-        summaryIndex = sessionLogEmbed.description.find('**Summary**:')
-        sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex] + editString+"\n"
-
-
-        await editMessage.edit(embed=sessionLogEmbed)
-        delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
-
+        except Exception as e:
+            delMessage = await ctx.channel.send(content=f"Your session log caused an error with Discord, most likely from length.")
+            
+        
         await editMessage.edit(embed=sessionLogEmbed)
         await asyncio.sleep(30) 
         await delMessage.delete()

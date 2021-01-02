@@ -242,19 +242,19 @@ class ItemTables(commands.Cog):
             await mitStart.edit(embed=mitItemEmbed) 
             await mitStart.clear_reactions()
 
-    @commands.cooldown(1, 10, type=commands.BucketType.member)
-    @commands.command()
-    async def mit(self,ctx, *, queryString=""):
-        itemTable = self.bot.get_cog('ItemTables')
-        tierArray = [0,1,2,3,4]
+    # @commands.cooldown(1, 10, type=commands.BucketType.member)
+    # @commands.command()
+    # async def mit(self,ctx, *, queryString=""):
+        # itemTable = self.bot.get_cog('ItemTables')
+        # tierArray = [0,1,2,3,4]
         
-        await itemTable.itemTableFunc(tierArray, tpArray, ctx, queryString)
+        # await itemTable.itemTableFunc(tierArray, tpArray, ctx, queryString)
 
-    @commands.cooldown(1, 10, type=commands.BucketType.member)
-    @commands.command()
-    async def rit(self, ctx, *, queryString=""):
-        itemTable = self.bot.get_cog('ItemTables')
-        await itemTable.itemTableFunc(ritTierArray, ritSubArray, ctx, queryString)
+    # @commands.cooldown(1, 10, type=commands.BucketType.member)
+    # @commands.command()
+    # async def rit(self, ctx, *, queryString=""):
+        # itemTable = self.bot.get_cog('ItemTables')
+        # await itemTable.itemTableFunc(ritTierArray, ritSubArray, ctx, queryString)
     
 
 
