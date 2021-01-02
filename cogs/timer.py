@@ -1002,7 +1002,7 @@ class Timer(commands.Cog):
                         dmMinorLimit = 1
                         lowerTier = True
                         chooseOr = True
-                    elif dmChar [5][0] == 'Good Noodle':
+                    elif dmChar[5][0] == 'Good Noodle':
                         rewardMajorLimit = 1
                         rewardMinorLimit = 3
                         dmMajorLimit = 0

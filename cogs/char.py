@@ -716,7 +716,6 @@ class Character(commands.Cog):
                                 await charEmbedmsg.clear_reactions()
                                 self.bot.get_command('create').reset_cooldown(ctx)
                                 return 
-                                
                         startEquipmentItem = item[alphaEmojis.index(tReaction.emoji)]
                     else:
                         startEquipmentItem = item[0]
@@ -749,10 +748,10 @@ class Character(commands.Cog):
                             for i in range (0,int(v)):
                                 charInvString = f"Please choose from the choices below for {iType[0]} {i+1}:\n"
                                 alphaIndex = 0
+                                charInv = list(filter(lambda c: 'Yklwa' not in c['Name'] and 'Light Repeating Crossbow' not in c['Name'] and 'Double-Bladed Scimitar' not in c['Name'], charInv))
                                 for c in charInv:
-                                    if 'Yklwa' not in c['Name'] and 'Light Repeating Crossbow' not in c['Name'] and 'Double-Bladed Scimitar' not in c['Name']:
-                                        charInvString += f"{alphaEmojis[alphaIndex]}: {c['Name']}\n"
-                                        alphaIndex += 1
+                                    charInvString += f"{alphaEmojis[alphaIndex]}: {c['Name']}\n"
+                                    alphaIndex += 1
 
                                 charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength+1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=charInvString, inline=False)
                                 await charEmbedmsg.clear_reactions()
@@ -772,17 +771,35 @@ class Character(commands.Cog):
                                         await charEmbedmsg.clear_reactions()
                                         self.bot.get_command('create').reset_cooldown(ctx)
                                         return 
+                                
+                                
+                                p = 0
+                                for a in charInv:
+                                    print(p,alphaEmojis[p], a)
+                                    p+=1
+                                print(alphaEmojis.index(tReaction.emoji))
                                 typeEquipmentList.append(charInv[alphaEmojis.index(tReaction.emoji)]['Name'])
                                 typeCount = collections.Counter(typeEquipmentList)
                                 typeString = ""
                                 for tk, tv in typeCount.items():
+                                    print("GGGGGGGGGGG", tk, tv)
                                     typeString += f"{tk} x{tv}\n"
-                                    charDict['Inventory'][tk] = tv
+                                    if tk in charDict['Inventory']:
+                                        charDict['Inventory'][tk] += tv
+                                    else:
+                                        charDict['Inventory'][tk] = tv
+                                    
+                                    typeString += f"{tk} x{charDict['Inventory'][tk]}\n"
 
                             charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength+1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString.replace(f"{k} x{v}\n", typeString), inline=False)
 
                         elif 'Pack' not in k:
-                            charDict['Inventory'][k] = v
+                            
+                            if tk in charDict['Inventory']:
+                                charDict['Inventory'][k] += v
+                            else:
+                                charDict['Inventory'][k] = v
+                                
                     startEquipmentLength += 1
                 await charEmbedmsg.clear_reactions()
                 charEmbed.clear_fields()
