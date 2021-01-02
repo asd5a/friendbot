@@ -463,20 +463,21 @@ class Timer(commands.Cog):
                     # this is a valid return, since the resume and sign up code will check for this before executing further
                 return False
             #check which message caused the invocation to create different behaviors
-            if 'timer signup ' in char.content or 't signup ' in char.content:
-                #shlex allows the splitting in a way that respects the '"' in the string and splits according to white space
-                #this retrieves the character + consumable list from the command 
-                # first the command part gets removed with the first split and then the remainder gets split like arguments for the command line
-                if f'{commandPrefix}timer signup ' in char.content:
-                    charList = shlex.split(char.content.split(f'{commandPrefix}timer signup ')[1].strip())
-                elif f'{commandPrefix}t signup ' in char.content:
-                    charList = shlex.split(char.content.split(f'{commandPrefix}t signup ')[1].strip())
-                # since the character is the first parameter after the command name this will get the char name
-                charName = charList[0]
+            try:
+                if 'timer signup ' in char.content or 't signup ' in char.content:
+                    #shlex allows the splitting in a way that respects the '"' in the string and splits according to white space
+                    #this retrieves the character + consumable list from the command 
+                    # first the command part gets removed with the first split and then the remainder gets split like arguments for the command line
+                    if f'{commandPrefix}timer signup ' in char.content:
+                        charList = shlex.split(char.content.split(f'{commandPrefix}timer signup ')[1].strip())
+                    elif f'{commandPrefix}t signup ' in char.content:
+                        charList = shlex.split(char.content.split(f'{commandPrefix}t signup ')[1].strip())
+                    # since the character is the first parameter after the command name this will get the char name
+                    charName = charList[0]
 
-            else:
+                else:
                 # this is a similar process to above but with the added adjustment that a player name is also included
-                try:
+                
                     if 'timer add ' in char.content or 't add ' in char.content:
                         if 'timer add ' in char.content:
                             charList = shlex.split(char.content.split(f'{commandPrefix}timer add ')[1].strip())
@@ -501,9 +502,9 @@ class Timer(commands.Cog):
                         if not resume:
                             await ctx.channel.send("I wasn't able to add this character. Please check your format.")
                         return
-                except ValueError as e:
-                    await ctx.channel.send("Something was off with your character name. Did you miss a quotation mark?")
-                    return
+            except ValueError as e:
+                await ctx.channel.send("Something was off with your character name. Did you miss a quotation mark?")
+                return
             # if the last parameter is not the character name then we know that the player registered consumables
             if charList[len(charList) - 1] != charName:
                 # consumables are separated by ','
