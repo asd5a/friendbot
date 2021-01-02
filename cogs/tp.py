@@ -29,7 +29,7 @@ class Tp(commands.Cog):
             return
             
         elif isinstance(error, commands.CheckFailure):
-            msg = "This channel or user does not have permission for this command."
+            msg = "This channel or user does not have permission for this command. "
         if isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'charName':
                 msg = "You're missing your character name in the command. "
