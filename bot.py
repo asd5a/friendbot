@@ -247,6 +247,8 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerTwo.add_field(name=f'▫️ Awarding Reward Items (DM)\n{commandPrefix}timer reward @player "reward item1, reward item2, [...]"', value="Award one or more reward items from the **Reward Item Table** to a player.", inline=False)
 
+    helpEmbedTimerTwo.add_field(name=f'▫️ Revoking Reward Items (DM)\n{commandPrefix}timer undo rewards @player "reward item1, reward item2, [...]"', value="Revoke all reward items that you have awarded to your players and yourself.", inline=False)
+
     helpEmbedTimerTwo.add_field(name=f'▫️ Character Death (DM)\n{commandPrefix}timer death @player', value="Remove a player (and their character) from the timer if their character dies during the quest.", inline=False)
 
     helpEmbedTimerTwo.add_field(name=f'▫️ Stopping the Timer (DM)\n{commandPrefix}timer stop', value="Stop the running timer which creates the session log for it.", inline=False)
@@ -284,7 +286,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of DDMRW (DM)\n{commandPrefix}session ddmrw optout gameID', value="Opt out of Double DM Rewards Weekend (DDMRW) and not to receive Double DM Rewards for a quest which host during DDMRW. Any quest which ends during DDMRW will automatically have Double DM Rewards applied to it so you will have to opt out of it by default.", inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into DDMRW\n{commandPrefix}session ddmrw optin gameID', value="Opt into DDMRW if you previously opted out of it.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into DDMRW (DM)\n{commandPrefix}session ddmrw optin gameID', value="Opt into DDMRW if you previously opted out of it.", inline=False)
 
 
 # ITEM TABLE COMMANDS MENU ($help itemtable)
@@ -360,6 +362,11 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp (Player)\n{commandPrefix}timer removeme', value="Refresh the running timer’s information box.", inline=False)
 
+    helpEmbedCampaign.add_field(name=f'▫️ Creating a Character with a Campaign Transfer\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]" #campaign-channel XhYm', value="Create a character at a higher level than you normally can by transferring some or all of the time that you have accumulated throughout the campaign to the character during creation.", inline=False)
+
+    helpEmbedCampaign.add_field(name=f'▫️ Creating a Multiclass Character with a Campaign Transfer\n{commandPrefix}create "character name" starting level "race" "class1 final level / class2 final level / [...]" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]" #campaign-channel XhYm', value="Create a multiclass character at a higher level than you normally can by transferring some or all of the time that you have accumulated throughout the campaign to the character during creation.", inline=False)
+
+
 # DM CAMPAIGN COMMANDS
 
     helpEmbedCampaign.add_field(name=f'▫️ Creating a Campaign (DM)\n{commandPrefix}campaign create @campaignrole #campaign-channel', value="Create a campaign if you have the Campaign Master role and the campaign channel has been created.", inline=False)
@@ -398,7 +405,7 @@ async def help(ctx, *, pageString=''):
     try:
         hReact, hUser = await bot.wait_for("reaction_add", check=helpCheck, timeout=30.0)
     except asyncio.TimeoutError:
-        await helpMsg.edit(content=f"Your help menu has timed out! I'll leave this page open for you. Use the first command if you need to cycle through help menu again or use any of the other commands to view a specific help menu:\n```yaml\n{commandPrefix}help char\n{commandPrefix}help timer1\n{commandPrefix}help timer2\n{commandPrefix}help itemtable\n{commandPrefix}help shop\n{commandPrefix}help tp\n{commandPrefix}help guild```")
+        await helpMsg.edit(content=f"Your help menu has timed out! I'll leave this page open for you. Use the first command if you need to cycle through help menu again or use any of the other commands to view a specific help menu:\n```yaml\n{commandPrefix}help gen\n{commandPrefix}help char\n{commandPrefix}help timer1\n{commandPrefix}help timer2\n{commandPrefix}help timer3\n{commandPrefix}help shop\n{commandPrefix}help tp\n{commandPrefix}help guild\n{commandPrefix}help campaign```")
         await helpMsg.clear_reactions()
         await helpMsg.add_reaction('💤')
         return

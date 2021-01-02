@@ -26,7 +26,7 @@ class Guild(commands.Cog):
             return
             
         elif isinstance(error, commands.CheckFailure):
-            msg = "This channel or user does not have permission for this command."
+            msg = "This channel or user does not have permission for this command. "
         elif isinstance(error, commands.BadArgument):
             # convert string to int failed
             msg = "The GP amount needs to be a number."

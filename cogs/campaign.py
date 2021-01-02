@@ -140,7 +140,7 @@ class Campaign(commands.Cog):
             return  
 
         if campaignRole == list() or campaignChannel == list():
-            await channel.send(f"A camapaign role and campaign channel must be supplied")
+            await channel.send(f"A campaign role and campaign channel must be supplied.")
             return 
         campaignName = campaignRole[0].name
         
@@ -915,7 +915,7 @@ class Campaign(commands.Cog):
             msgAfter = False
             
             # we need separate advice strings if there are no rewards
-            stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}campaign timer addme "character name"\n# Removing Yourself\n   {commandPrefix}campaign timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}campaign timer add @player "character name"\n# Removing Players\n   {commandPrefix}campaign timer remove @player\n# Stopping the Timer\n   {commandPrefix}campaign timer stop```'
+            stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}campaign timer addme\n# Removing Yourself\n   {commandPrefix}campaign timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}campaign timer add @player\n# Removing Players\n   {commandPrefix}campaign timer remove @player\n# Stopping the Timer\n   {commandPrefix}campaign timer stop```'
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):

@@ -32,7 +32,7 @@ class Character(commands.Cog):
 
              return
         elif isinstance(error, commands.CheckFailure):
-            msg = "This channel or user does not have permission for this command."
+            msg = "This channel or user does not have permission for this command. "
         elif isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'char':
                 msg = ":warning: You're missing the character name in the command.\n"
@@ -2444,7 +2444,7 @@ class Character(commands.Cog):
         if "Campaigns" in userRecords:
             campaignString = ""
             for u, v in userRecords['Campaigns'].items():
-                campaignString += f"• {u} :\n----Time: {timeConversion(v['Time'])}\n"
+                campaignString += f"• {u}:\n----Time: {timeConversion(v['Time'])}\n"
                 campaignString += f"----Sessions: {v['Sessions']}\n"
                 campaignString += f"----Active Member: {v['Active']}\n"
 
@@ -3621,7 +3621,7 @@ class Character(commands.Cog):
                                 gv[data_key] = 0
                         
                         guildGamesString += f"• {gk}"    
-                        guildGamesString += f" Quests: {gv['GQ']}\n"
+                        guildGamesString += f": {gv['GQ']}\n"
                         if len(guildGamesString) > (768 * gPages):
                             gPageStops.append(len(guildGamesString))
                             gPages += 1

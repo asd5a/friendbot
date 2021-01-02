@@ -91,7 +91,7 @@ class Timer(commands.Cog):
         userName = author.name
         guild = ctx.guild
         #information on how to use the command, set up here for ease of reading and repeatability
-        prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1, @player2, @player3, [...]" "quest name"```*****'
+        prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1, @player2, @player3, [...]" "quest name"```'
         #check if the current channel is a campaign channel
         isCampaign = "campaign" in channel.category.name.lower()
         #prevent the command if not in a proper channel (game/campaign)
@@ -124,7 +124,7 @@ class Timer(commands.Cog):
         #check if the user mentioned themselves in the command, this is also meant to avoid having the user be listed twice in the roster below
         if author in ctx.message.mentions:
             #inform the user of the proper command syntax
-            await channel.send(f"You cannot start a timer with yourself in the player list!\n\n{prepFormat}")
+            await channel.send(f"You cannot start a timer with yourself in the player list! {prepFormat}")
             self.timer.get_command('prep').reset_cooldown(ctx)
             return 
 
@@ -186,15 +186,15 @@ class Timer(commands.Cog):
         #clear the embed message
         prepEmbed.clear_fields()
         await prepEmbedMsg.clear_reactions()
-        # if is not a campaign add the seleceted tier to the message title and inform the users about the possible commands (signup, add player, remove player, add guild, use guild reputation)
+        # if is not a campaign add the selected tier to the message title and inform the users about the possible commands (signup, add player, remove player, add guild)
         if not isCampaign:
             prepEmbed.title = f"{game} (Tier {roleArray.index(role)})"
-            prepEmbed.description = f"**Signup**: {commandPrefix}timer signup \"charactername\" \"consumables\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Set guild**: {commandPrefix}timer guild #guild1, #guild2, #guild3"
+            prepEmbed.description = f"**Signup**: {commandPrefix}timer signup \"character name\" \"consumables\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Set guild**: {commandPrefix}timer guild #guild1, #guild2, #guild3"
 
         else:
             # otherwise give an appropriate title and inform about the limited commands list (signup, add player, remove player)
             prepEmbed.title = f"{game} (Campaign)"
-            prepEmbed.description = f"**DM Signup**: {commandPrefix}timer signup \"character name\"\n**Player Signup**: {commandPrefix}timer signup\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player"
+            prepEmbed.description = f"**Signup**: {commandPrefix}timer signup\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player"
         #setup a variable to store the string showing the current roster for the game
         rosterString = ""
         #now go through the list of the user/DM and the initially given player list and build a string
@@ -585,7 +585,7 @@ class Timer(commands.Cog):
             # if the character has more cp than needed for a level up, they need to perform that level up first so we block the command
             if charLevel <20 and cpSplit >= cp_bound_array[tierNum-1][0]:
                 if not resume:
-                    await channel.send(content=f'You need to level up ***{cRecord["Name"]}*** before they can join the quest! Use the following command to level up:\n```yaml\n`{commandPrefix}levelup "character name"```')
+                    await channel.send(content=f'You need to level up ***{cRecord["Name"]}*** before they can join the quest! Use the following command to level up:\n```yaml\n{commandPrefix}levelup "character name"```')
                 return False 
 
             # handle the list of consumables only if it is not empty
@@ -1647,9 +1647,9 @@ class Timer(commands.Cog):
             
             # we need separate advice strings if there are no rewards
             if role != "":
-                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Consumables\n   - "consumable"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "rewards"\n# Stopping the Timer\n   {commandPrefix}timer stop```'
+                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - "item"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "rewards"\n# Stopping the Timer\n   {commandPrefix}timer stop```'
             else:
-                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Consumables\n   - "consumable"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "rewards"\n# Stopping the Timer\n   {commandPrefix}timer stop```'
+                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - "item"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "rewards"\n# Revoking Reward Items\n   {commandPrefix}timer undo rewards\n# Stopping the Timer\n   {commandPrefix}timer stop```'
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):
@@ -1828,13 +1828,36 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             dbEntry["Start"] = starting_time
             
             stopEmbed.title = f"Timer: {game} [END] - {totalDuration}"
-            stopEmbed.description = """Summary: [Replace this text with an optional flavor description of the quest!]
+            stopEmbed.description = """General Summary:
+• The purpose of the general summary is to give context to the pillars and guild quest guidelines.
+• This should focus on the outline of the quest and shouldn't include "fluff", banter, or inside jokes which might not be relevant to helping a Mod understand the context of your one-shot.
+• Think of it as if you had to recount your one-shot in detail to a friend who did not participate in it in any way. If you write a single sentence or an ambiguous explanation for this (as well as the the pillars or how guilds were involved), the Mod will have no context since they did not participate in the one-shot.
+• This should be detailed enough to get the point across while simultaneously giving context to how the pillars were fulfilled.
 
-**Combat**: explain how your quest fulfilled the combat pillar.
-**Exploration**: explain how your quest fulfilled the exploration pillar.
-**Social**: explain how your quest fulfilled the social pillar.
-**HSG**: the party saved Hobbits who were going to be sacrificed.
-**FoF**: the Fellowship was hired to help save the Hobbits.""" 
+**Ask yourself the following questions when determining if the party fulfilled a pillar or a guild's quest guidelines:**
+
+**Exploration**:
+• Did the party have to deal with an environmental effect such as traps, hazards, weather, lack of food/water, magical effects, etc.? If so, how did they resolve them?
+• Did the party interact with the environment and gather information from it to make informed decisions? If so, what were the clues and how did contribute to the success of their quest?
+• Did the party have to travel a certain distance or solve a puzzle or trap within a limited time frame? If so, what environmental problems did they have to face against and how did they solved them?
+• If any of these questions resulted in unsuccessful attempts then how did that negatively affect their situation at the time as well as future events?
+
+**Social**:
+• Did the party change an NPC's attitude from neutral to friendly or hostile to neutral? If so, what did they do to achieve that? Why was it important to sway that NPC's attitude in terms of the overall quest?
+• Did the party convince an NPC of something against their nature or traits (using ideals, bonds, and flaws or secrets)? Why was it important to convince them of something during the quest?
+• Did the party retrieve information from an NPC? Was the information relevant to their main objective? How did they retrieve this information?
+• If any of these questions resulted in unsuccessful attempts then what would have happened and how would that have negatively affected their situation at the time as well as future events?
+
+**Combat**:
+• Did the party have to fight any NPCs? If so, what kind of creatures did they fight?
+• Did the party have to engage in combat as a result of any unsuccessful attempts in the Exploration or Social pillars?
+• Did engaging in combat present complications for the following attempts in the Exploration or Social pillars?
+
+**Guild**:
+• How were any guilds central to the plot and setting, main objectives, core elements, and overall progression of your one-shot?
+• Which guild quest guidelines were fulfilled and how was this accomplished?
+• If the party did not fulfill the guild quest guidelines, how or why did they fail to accomplish them?
+""" 
             
             hoursPlayed = (totalDurationTime // 1800) / 2
             
