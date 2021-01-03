@@ -812,7 +812,7 @@ class Shop(commands.Cog):
                                 scrollChoice = "Free Spell"
                             elif tReaction.emoji == numberEmojis[1]:
                                 scrollChoice = "Scroll"
-                ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
+                
                 fsIndex = 0
                 if ('Free Spells' in charRecords and bookChoice == "Spellbook") and scrollChoice == "Free Spell":
                     requiredSpellLevel = (int(bRecord['Level'])* 2 - 1)
@@ -824,7 +824,7 @@ class Shop(commands.Cog):
                             fsValid = True
                             fsIndex = f + 1
                             break
-                        
+                    ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
                     if charRecords["Level"] < requiredSpellLevel or fsValid is False:
                         await channel.send(f"**{bRecord['Name']}** is a {ordinal(bRecord['Level'])} level spell that cannot be copied into ***{charRecords['Name']}***'s spellbook! They must be level {requiredSpellLevel} or higher or you have no more free spells to copy this spell.")
                         ctx.command.reset_cooldown(ctx)
@@ -915,7 +915,7 @@ class Shop(commands.Cog):
                                 fsIndex = 0
                                 for el in charRecords['Free Spells']:
                                     if el > 0:
-                                        fsString += f"{self.ordinal(fsIndex+1)} Level : {el} free spells\n"
+                                        fsString += f"{ordinal(fsIndex+1)} Level : {el} free spells\n"
                                     fsIndex += 1
 
                                 if fsString:

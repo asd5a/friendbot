@@ -1258,7 +1258,7 @@ class Character(commands.Cog):
         # Reset  values here
         charNoneKeyList = ['Magic Items', 'Inventory', 'Current Item', 'Consumables']
 
-        charRemoveKeyList = ['Predecessor','Image', 'Respecc', 'T1 TP', 'T2 TP', 'T3 TP', 'T4 TP', 'Attuned', 'Spellbook', 'Guild', 'Guild Rank', 'Grouped']
+        charRemoveKeyList = ['Predecessor','Image', 'T1 TP', 'T2 TP', 'T3 TP', 'T4 TP', 'Attuned', 'Spellbook', 'Guild', 'Guild Rank', 'Grouped']
         
         guild_name = ""
         
@@ -1333,6 +1333,13 @@ class Character(commands.Cog):
         # new name should be less then 64 chars
         if len(newname) > 64:
             msg += ":warning: Your character's new name is too long! The limit is 64 characters.\n"
+        # Reserved for regex, lets not use these for character names please
+        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|"]
+
+        for i in invalidChars:
+            if i in name:
+                msg += f":warning: Your character's name cannot contain `{i}`. Please revise your character name.\n"
+
 
         # Prevents name, level, race, class, background from being blank. Resets infinite cooldown and prompts
         if not newname:
@@ -1371,6 +1378,17 @@ class Character(commands.Cog):
         # no needed to to bankTP2 now because limit is lvl 4 to respec
         extraCp = charDict['CP']
         charLevel = charDict['Level']
+        if "Respecc" in charDict:
+            maxCP = 10
+            if charLevel < 5:
+                maxCP = 4
+            while(extraCp >= maxCP and charLevel <20):
+                extraCp -= maxCP
+                charLevel += 1
+                if charLevel > 4:
+                    maxCP = 10
+            charDict["Level"] = charLevel
+            charDict['CP'] = extraCp
         tierNum = 5
         # calculate the tier of the rewards
         if charLevel < 5:
@@ -1381,7 +1399,7 @@ class Character(commands.Cog):
             tierNum = 3
         elif charLevel < 20:
             tierNum = 4
-
+        print()
         if extraCp > cp_bound_array[tierNum-1][0] and "Respecc" not in charDict:
             msg += f":warning: {oldName} needs to level up before they can respec into a new character!"
         
@@ -1576,14 +1594,14 @@ class Character(commands.Cog):
                                         self.bot.get_command('respec').reset_cooldown(ctx)
                                         return 
                                 typeEquipmentList.append(charInv[alphaEmojis.index(tReaction.emoji)]['Name'])
-                                typeCount = collections.Counter(typeEquipmentList)
-                                typeString = ""
-                                for tk, tv in typeCount.items():
-                                    typeString += f"{tk} x{tv}\n"
-                                    if tk in charDict['Inventory']:
-                                        charDict['Inventory'][tk] += tv
-                                    else:
-                                        charDict['Inventory'][tk] = tv
+                            typeCount = collections.Counter(typeEquipmentList)
+                            typeString = ""
+                            for tk, tv in typeCount.items():
+                                typeString += f"{tk} x{tv}\n"
+                                if tk in charDict['Inventory']:
+                                    charDict['Inventory'][tk] += tv
+                                else:
+                                    charDict['Inventory'][tk] = tv
 
                             charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength+1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString.replace(f"{k} x{v}\n", typeString), inline=False)
 
@@ -1872,6 +1890,8 @@ class Character(commands.Cog):
                 await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             # Extra to unset
             print(charDict)
+            if "Respecc" in charDict:
+                del charDict["Respecc"]
             charRemoveKeyList = {'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
             playersCollection.update_one({'_id': charID}, {"$set": charDict, "$unset": charRemoveKeyList }, upsert=True)
             
