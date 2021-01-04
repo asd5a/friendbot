@@ -7,6 +7,9 @@ import json
 from oauth2client.service_account import ServiceAccountCredentials
 from secret import *
 
+intents = discord.Intents.default()
+intents.members = True
+
 def timeConversion (time):
 		hours = time//3600
 		time = time - 3600*hours
