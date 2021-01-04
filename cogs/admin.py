@@ -539,6 +539,138 @@ class Admin(commands.Cog, name="Admin"):
     
         except Exception as e:
             traceback.print_exc()
+            
+    @commands.command()
+    @admin_or_owner()
+    async def giveRewards(self, ctx, charName, user, items):
+        msg = ctx.message
+        rewardList = msg.raw_mentions
+        rewardUser = ""
+        # create an embed text object
+        charEmbed = discord.Embed()
+        charEmbedmsg = None
+        guild = ctx.guild
+        
+        # if nobody was listed, inform the user
+        if rewardList == list():
+            await ctx.channel.send(content=f"I could not find any mention of a user to hand out a reward item.") 
+            #return the unchanged parameters
+            return start,dmChar
+        else:
+            rewardUser = guild.get_member(rewardList[0])
+            cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, rewardUser, customError=True)
+            # get the first user mentioned
+            
+            # if the user getting rewards is the DM we can save time by not going through the loop
+            
+            if cRecord:
+                # list of current consumables on the character
+                charConsumableList = cRecord['Consumables'].split(', ')
+                # list of current magical items
+                charMagicList = cRecord['Magic Items'].split(', ')
+                # character level
+                charLevel = int(cRecord['Level'])
+                # since this checks for multiple things, this cannot be avoided
+                tierNum=5
+                # calculate the tier of the rewards
+                if charLevel < 5:
+                    tierNum = 1
+                elif charLevel < 11:
+                    tierNum = 2
+                elif charLevel < 17:
+                    tierNum = 3
+                elif charLevel < 20:
+                    tierNum = 4
+                        
+                consumablesList = items.split(',')
+                rewardList = {"Magic Items": [], "Consumables": [], "Inventory": []}
+                 
+                for query in consumablesList:
+                    query = query.strip()
+                    # if the player is getting a spell scoll then we need to determine which spell they are going for
+                    # we do this by searching in the spell table instead
+                    if 'spell scroll' in query.lower():
+                        # extract the spell
+                        spellItem = query.lower().replace("spell scroll", "").replace('(', '').replace(')', '')
+                        # use the callAPI function from bfunc to search the spells table in the DB for the spell being rewarded
+                        sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem)
+                        
+                        # if no spell was found then we inform the user of the failure and stop the command
+                        if not sRecord and not resume:
+                            await ctx.channel.send(f'''**{query}** belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Reward Item Table, what tier it is, and your spelling.''')
+                            return start, dmChar
+
+                        else:
+                            # Converts number to ordinal - 1:1st, 2:2nd, 3:3rd...
+                            # floor(n/10)%10!=1, this acts as an if statement to check if the number is in the teens
+                            # (n%10<4), this acts as an if statement to check if the number is below 4
+                            # n%10 get the last digit of the number
+                            # by multiplying these number together we end up with calculation that will be 0 unless both conditions have been met, otherwise it is the digit
+                            # this number x is then used as the starting point of the selection and ::4 will then select the second letter by getting the x+4 element
+                            # technically it will get more, but since the string is only 8 characters it will return 2 characters always
+                            # th, st, nd, rd are spread out by 4 characters in the string 
+                            ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
+                            # change the query to be an accurate representation
+                            query = f"Spell Scroll ({ordinal(sRecord['Level'])} Level)"
+                    
+
+                    # search for the item in the DB with the function from bfunc
+                    # this does disambiguation already so if there are multiple results for the item they will have already selected which one specifically they want
+                    rewardConsumable, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg ,'rit',query, tier=tierNum) 
+                
+                    #if no item could be found, return the unchanged parameters and inform the user
+                    if not rewardConsumable:
+                        await ctx.channel.send(f'**{query}** does not seem to be a valid reward item.')
+                        return 
+                    else:
+                       
+                        if 'spell scroll' in query.lower():
+                            rewardConsumable['Name'] = f"Spell Scroll ({sRecord['Name']})"
+                        rewardList[rewardConsumable["Type"]].append(rewardConsumable["Name"])
+                
+                #if we know they didnt have any items, we know that changes could only be additions
+                if(cRecord["Consumables"]=="None"):
+                    # turn the list of added items into the new string
+                    consumablesString = ", ".join(rewardList["Consumables"])
+                else:
+                    consumablesString = cRecord["Consumables"]+(", ".join(rewardList["Consumables"]))
+                    
+                # if the string is empty, turn it into none
+                consumablesString += "None"*(consumablesString=="")
+                
+                # magic items cannot be removed so we only care about addtions
+                # if we have no items and no additions, string is None
+                if(cRecord["Magic Items"]=="None"):
+                    # turn the list of added items into the new string
+                    magicItemString = ", ".join(rewardList["Magic Items"])
+                else:
+                    magicItemString = cRecord["Magic Items"]+(", ".join(rewardList["Magic Items"]))
+                    
+                # if the string is empty, turn it into none
+                magicItemString += "None"*(magicItemString=="")
+                    
+                
+                # increase the relevant inventory entries and create them if necessary
+                for i in rewardList["Inventory"]:
+                    if i in cRecord["Inventory"]:
+                        cRecord["Inventory"][i] += 1
+                    else:
+                        cRecord["Inventory"][i] = 1
+                
+                player_set = {"Consumables": consumablesString, 
+                                "Magic Items": magicItemString, 
+                                "Inventory" : cRecord["Inventory"]}
+                     
+                    
+            else:
+                await ctx.channel.send(content=f"I could not find {charName} in the DB.")        
+                return
+        try:
+            db.players.update_one({"_id": cRecord["_id"]}, {"$set": player_set})
+            await ctx.channel.send(content=f"Rewards items have been given.")
+    
+        except Exception as e:
+            traceback.print_exc()
     
     @commands.command()
     @admin_or_owner()

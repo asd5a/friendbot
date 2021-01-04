@@ -1389,6 +1389,7 @@ class Character(commands.Cog):
                     maxCP = 10
             charDict["Level"] = charLevel
             charDict['CP'] = extraCp
+            lvl = charLevel
         tierNum = 5
         # calculate the tier of the rewards
         if charLevel < 5:
@@ -1892,7 +1893,7 @@ class Character(commands.Cog):
             print(charDict)
             if "Respecc" in charDict:
                 del charDict["Respecc"]
-            charRemoveKeyList = {'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
+            charRemoveKeyList = {"Respecc" : 1, 'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
             playersCollection.update_one({'_id': charID}, {"$set": charDict, "$unset": charRemoveKeyList }, upsert=True)
             
         except Exception as e:
