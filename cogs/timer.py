@@ -46,18 +46,9 @@ class Timer(commands.Cog):
             return
 
         if userList != "norewards":
-            playerListTemp = ctx.message.raw_mentions
-            playerList = []
+            playerListTemp = ctx.message.mentions
+            playerList = playerListTemp
             errorList = []
-            playerListString = "**Player List:**\n"
-            for p in playerListTemp:
-                if guild.get_member(int(p)) is not None: 
-                    player = guild.get_member(int(p)).display_name
-                    playerList.append(player)
-                    playerListString += player + '\n'
-                else:
-                    errorList.append(p)
-
             if errorList: 
                 await channel.send(f"I am not able to find these users to start the timer: `{errorList}`")
                 self.timer.get_command('start').reset_cooldown(ctx)
