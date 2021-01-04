@@ -30,8 +30,9 @@ class Timer(commands.Cog):
 
         userList = userList.replace(" ", "")
 
-
-        if str(channel.category).lower() not in gameCategory or "campaign" not in str(channel.category).lower():
+        print("2" not in str(channel.category).lower())
+        if str(channel.category).lower() not in gameCategory and "campaign" not in str(channel.category).lower():
+            print(str(channel.category).lower())
             if "no-context" in channel.name or "secret-testing-area" in channel.name:
                 pass
             else: 
