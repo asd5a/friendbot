@@ -47,7 +47,7 @@ class Timer(commands.Cog):
 
         if userList != "norewards":
             playerListTemp = ctx.message.mentions
-            playerList = playerListTemp
+            playerList = [p.display_name for p in playerListTemp]
             errorList = []
             if errorList: 
                 await channel.send(f"I am not able to find these users to start the timer: `{errorList}`")
