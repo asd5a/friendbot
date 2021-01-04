@@ -239,14 +239,15 @@ class Misc(commands.Cog, name='Misc'):
             #loop in order to avoid guild channels blocking the check
             for mention in elem.channel_mentions:
                 if mention.id in game_channel_ids:
-                    username = elem.author.name
-                    if(elem.author.nick):
-                        username = elem.author.nick
-                    channel_dm_dic[mention.mention][0] = "❌ "+mention.mention+": "+username
-                    for tierMention in elem.role_mentions:
-                        name_split = tierMention.name.split(" ",1)
-                        if tierMention.name.split(" ",1)[1] in tierMap:
-                            channel_dm_dic[mention.mention][1].add(emoteMap[tierMention.name.split(" ",1)[0]]+" "+tierMap[tierMention.name.split(" ",1)[1]])
+                    try:
+                        username = elem.author.display_name
+                        channel_dm_dic[mention.mention][0] = "❌ "+mention.mention+": "+username
+                        for tierMention in elem.role_mentions:
+                            name_split = tierMention.name.split(" ",1)
+                            if tierMention.name.split(" ",1)[1] in tierMap:
+                                channel_dm_dic[mention.mention][1].add(emoteMap[tierMention.name.split(" ",1)[0]]+" "+tierMap[tierMention.name.split(" ",1)[1]])
+                        except Exception as e:
+                            print(e)
         
         #build the message using the pairs built above
         for c in game_channel_category.text_channels:

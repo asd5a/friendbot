@@ -3,9 +3,36 @@ import pytz
 import asyncio
 import time
 import re
+import decimal
 from datetime import datetime, timezone
 from discord.ext import commands
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers
+from bfunc import numberEmojis, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers
+
+def calculateTreasure(seconds, role):
+    print(seconds)
+    cp = ((seconds) // 1800) / 2
+    tp = .5 if cp == .5 else int(decimal.Decimal((cp / 2) * 2).quantize(0, rounding=decimal.ROUND_HALF_UP )) / 2
+    gp = cp * 60
+    role = role.lower()
+
+    if role == 'journey':
+      gp = cp * 120
+
+    if role == "elite":
+      tp = cp
+      gp = cp * 180
+
+    if role == "true":
+      tp = cp
+      gp = cp * 240
+
+    # refactor later
+    dcp = int(decimal.Decimal((cp / 2) * 2).quantize(0, rounding=decimal.ROUND_HALF_UP )) / 2
+    dtp = int(decimal.Decimal((tp / 2) * 2).quantize(0, rounding=decimal.ROUND_HALF_UP )) / 2
+    dgp = int(decimal.Decimal((gp / 2) * 2).quantize(0, rounding=decimal.ROUND_HALF_UP )) / 2
+
+    return [cp, tp, gp, dcp, dtp, dgp]
+
 
 class Timer(commands.Cog):
     def __init__ (self, bot):
