@@ -91,7 +91,7 @@ ritSheet = gClient.open("Magic Items Document").get_worksheet(1)
 
 # token = os.environ['TOKEN']
 currentTimers = []
-discordClient = discord.Client()
+discordClient = discord.Client(intents = intents)
 
 gameCategory = ["🎲 game rooms", "🐉 campaigns", "mod friends"]
 roleArray = ['Junior', 'Journey', 'Elite', 'True', '']
