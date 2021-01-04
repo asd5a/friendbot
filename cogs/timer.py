@@ -46,25 +46,17 @@ class Timer(commands.Cog):
             return
 
         if userList != "norewards":
-            playerListTemp = userList.split(',')
+            playerListTemp = ctx.message.raw_mentions
             playerList = []
             errorList = []
             playerListString = "**Player List:**\n"
             for p in playerListTemp:
-                if "<@" in p:
-                    userListTemp = re.findall(r'<[@!]*(.*?)>',p)
-                    for x in userListTemp:
-                        if guild.get_member(int(x)) is not None: 
-                            player = guild.get_member(int(x)).display_name
-                            playerList.append(player)
-                            playerListString += player + '\n'
-                        else:
-                            errorList.append(p)
+                if guild.get_member(int(p)) is not None: 
+                    player = guild.get_member(int(p)).display_name
+                    playerList.append(player)
+                    playerListString += player + '\n'
                 else:
-                    if guild.get_member_named(p) is not None: 
-                        playerList.append(guild.get_member_named(p).display_name)
-                    else:
-                        errorList.append(p)
+                    errorList.append(p)
 
             if errorList: 
                 await channel.send(f"I am not able to find these users to start the timer: `{errorList}`")
@@ -108,7 +100,8 @@ class Timer(commands.Cog):
                 role = roleArray[int(tReaction.emoji[0]) - 1]
 
             startTime = time.time()
-            datestart = datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%-d-%y %I:%M %p")
+            datestart = datetime.now(pytz.timezone(timezoneVar))
+            datestart = datestart.strftime("%b-%d-%y %I:%M %p")
             start = []
             print(userList)
             if userList != "norewards" and role:
@@ -500,7 +493,7 @@ class Timer(commands.Cog):
                     startTimerCreate = timerMessage.created_at
                     startTime = startTimerCreate.replace(tzinfo=timezone.utc).timestamp()
                     resumeTimes = {f"{startRole} Friend Rewards":startTime}
-                    datestart = startTimerCreate.replace(tzinfo=timezone.utc).astimezone(tz=pytz.timezone(timezoneVar)).strftime("%b-%-d-%y %I:%M %p") 
+                    datestart = startTimerCreate.replace(tzinfo=timezone.utc).astimezone(tz=pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p") 
 
                     async for m in ctx.channel.history(before=timerMessage, limit=10):
                         if "$timer start" in m.content:

@@ -95,7 +95,7 @@ roleArray = ['Junior', 'Journey', 'Elite', 'True', '']
 tierArray = getTiers(sheet.row_values(2))
 tpArray = sheet.row_values(3)
 commandPrefix = '$'
-timezoneVar = 'US/Central'
+timezoneVar = 'US/Eastern'
 
 ritTierArray = getTiers(ritSheet.row_values(2))
 ritSubArray = ritSheet.row_values(3)
