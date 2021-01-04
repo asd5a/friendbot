@@ -21,9 +21,10 @@ class Guild(commands.Cog):
         # channel = self.bot.get_channel(575798367414910976) 
         author = ctx.author
         # Message where guilds are stored.
+        guildMember = guild.get_member_named(member)
         guildsMsg = await channel.fetch_message(680997554619416726)
         # guildsMsg = await channel.fetch_message(580108097041727499)
-        guildMember = guild.get_member_named(member)
+
         commandName = ctx.command.name
 
         if guildMember is None:
