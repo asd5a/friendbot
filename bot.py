@@ -6,9 +6,11 @@ from itertools import cycle
 
 from bfunc import *
 
-bot = commands.Bot(command_prefix=commandPrefix, case_insensitive=True)
-cogs_dir = "cogs"
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix=commandPrefix, case_insensitive=True, intents = intents)
 
+cogs_dir = "cogs"
 async def change_status():
       await bot.wait_until_ready()
       statusLoop = cycle(statuses)
