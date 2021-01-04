@@ -50,7 +50,10 @@ class Admin(commands.Cog, name="Admin"):
         message = await ch.fetch_message(msg)
         await message.remove_reaction(emote, self.bot.user)
         await ctx.message.delete()
-    
+    @commands.command()
+    @admin_or_owner()
+    async def killbot(self, ctx):
+        await self.bot.logout()
     @commands.command()
     @admin_or_owner()
     async def reload(self, ctx, cog: str):
