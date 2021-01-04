@@ -246,8 +246,8 @@ class Misc(commands.Cog, name='Misc'):
                             name_split = tierMention.name.split(" ",1)
                             if tierMention.name.split(" ",1)[1] in tierMap:
                                 channel_dm_dic[mention.mention][1].add(emoteMap[tierMention.name.split(" ",1)[0]]+" "+tierMap[tierMention.name.split(" ",1)[1]])
-                        except Exception as e:
-                            print(e)
+                    except Exception as e:
+                        print(e)
         
         #build the message using the pairs built above
         for c in game_channel_category.text_channels:
