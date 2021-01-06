@@ -233,7 +233,7 @@ class Character(commands.Cog):
 
         if msg == "":
             playersCollection = db.players
-            userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": f"^{newname}$", '$options': 'i' } }))
+            userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": f"^{name}$", '$options': 'i' } }))
 
             if userRecords != list():
                 msg += f":warning: You already have a character by the name of ***{name}***! Please use a different name.\n"

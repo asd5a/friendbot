@@ -1906,7 +1906,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     dmDBEntry["2xI"] = True
                     dmDBEntry["Guild Rank"] = value[1]["Guild Rank"]
                 dmDBEntry["Character CP"] = value[1]["CP"]
-                dmDBEntry["DM Double"] = settingsRecord["ddmrw"]
+                dmDBEntry["DM Double"] = dbEntry["DDMRW"]
                 playerList.append(value)
                     
             dmDBEntry["ID"] = str(dmChar[0].id)
