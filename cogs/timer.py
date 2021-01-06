@@ -863,6 +863,7 @@ class Timer(commands.Cog):
 
             print("GUILDS 1", guildsList)
             ddmrw = settingsRecord["ddmrw"]
+            print("DD 1", ddmrw)
             # During Timer
             await timerCog.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg,dmChar,guildsList, ddmrw = ddmrw)
             
@@ -1679,6 +1680,7 @@ class Timer(commands.Cog):
             print("GUILDS 4", guildsList)
             stopEmbed = discord.Embed()
             
+            print("DD 3", ddmrw)
             stopEmbed.set_footer(text=f"Placeholder, if this remains remember the wise words DO NOT PANIC and get a towel.")
             
             # turn Tier string into tier number
@@ -2215,7 +2217,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         else:
             timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'stamp']
 
-      
+        print("DD 2", ddmrw)
         timerCombined = []
         #create a list of all command an alias combinations
         for x in product(timerAlias,timerCommands):

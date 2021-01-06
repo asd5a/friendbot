@@ -1218,8 +1218,10 @@ class Log(commands.Cog):
 
         if sessionInfo["Status"] == "Processing":
             summaryIndex = sessionLogEmbed.description.find('**Summary**:')
+            print("KKKKKKKKKKKKKKKKKKKKKKKKKKkk")
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex] + editString+"\n"
         else:
+            print("UUUUUUUUUUUUUUUUUUUUUUUUUUUu")
             sessionLogEmbed.description += "\n"+editString
         try:
             await editMessage.edit(embed=sessionLogEmbed)
