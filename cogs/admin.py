@@ -278,11 +278,11 @@ class Admin(commands.Cog, name="Admin"):
     @commands.command()
     @admin_or_owner()
     async def removeAllGID(self, ctx):
-        msg = ctx.channel.send("Are you sure you want to remove every GID entry from characters in the database?\n No: ❌\n Yes: ✅")
+        msg = await ctx.channel.send("Are you sure you want to remove every GID entry from characters in the database?\n No: ❌\n Yes: ✅")
         author = ctx.author
         
-        if(not await self.doubleVerify(ctx, msg)):
-            return
+        # if( not await self.doubleVerify(ctx, msg)):
+            # return
         try:
             db.players.update_many(
                {"GID": {"$exists": True}},
@@ -545,7 +545,7 @@ class Admin(commands.Cog, name="Admin"):
     
     @commands.command()
     @commands.has_any_role("Mod Friend")
-    async def transferish(self, ctx, charName, level : int, cp :int, user, items):
+    async def tx(self, ctx, charName, level : int, cp :int, user, items):
         msg = ctx.message
         rewardList = msg.raw_mentions
         rewardUser = ""

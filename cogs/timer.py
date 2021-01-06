@@ -678,7 +678,7 @@ class Timer(commands.Cog):
             searchItem = searchQuery.lower().replace(' ', '')
             timeKey = ""
             removedItem = ""
-            if searchItem.startswith("+") and not resume:
+            if searchItem.startswith("+") and not searchItem.startswith("++") and not resume:
                 await channel.send(f"You cannot remove reward items.")
                 return start         
             # search through all entries for the player entry of the player

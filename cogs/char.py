@@ -2551,7 +2551,7 @@ class Character(commands.Cog):
                 char_race = f"{charDict['Reflavor']} ({char_race})"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
-                nick_string = f"Goes By: {charDict['Nickname']}\n"
+                nick_string = f"Goes By: **{charDict['Nickname']}**\n"
             description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\nGames Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
                 description +=  f"Extra Training: {charDict['Proficiency']}\n"
