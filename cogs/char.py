@@ -2793,7 +2793,7 @@ class Character(commands.Cog):
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
     @commands.command(aliases=['aka'])
-    async def alias(self,ctx, char, new_name):
+    async def alias(self,ctx, char, new_name = ""):
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild

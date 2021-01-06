@@ -545,7 +545,7 @@ class Admin(commands.Cog, name="Admin"):
     
     @commands.command()
     @commands.has_any_role("Mod Friend")
-    async def tx(self, ctx, charName, level : int, cp :int, user, items):
+    async def tx(self, ctx, charName, level : int, cp :int, user, items = ""):
         msg = ctx.message
         rewardList = msg.raw_mentions
         rewardUser = ""
@@ -614,9 +614,11 @@ class Admin(commands.Cog, name="Admin"):
             elif level < 20:
                 tierNum = 4
                     
-            consumablesList = items.split(',')
+            items = items.strip()
+            consumablesList = []
+            if items != "":
+                consumablesList = items.split(',')
             rewardList = {"Magic Items": [], "Consumables": [], "Inventory": []}
-             
             for query in consumablesList:
                 query = query.strip()
                 # if the player is getting a spell scoll then we need to determine which spell they are going for
