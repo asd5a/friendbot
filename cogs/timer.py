@@ -1742,6 +1742,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             dbEntry["Players"] = {}
             
             dbEntry["DDMRW"] = settingsRecord["ddmrw"] or ddmrw
+            print("DD 4", settingsRecord["ddmrw"] or ddmrw)
             if tierNum < 1:
                 tierNum = 1
             rewardsCollection = db.rit
