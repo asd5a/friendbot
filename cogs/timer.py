@@ -862,8 +862,9 @@ class Timer(commands.Cog):
             stampEmbedmsg = await channel.send(embed=stampEmbed)
 
             print("GUILDS 1", guildsList)
+            ddmrw = settingsRecord["ddmrw"]
             # During Timer
-            await timerCog.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg,dmChar,guildsList)
+            await timerCog.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg,dmChar,guildsList, ddmrw = ddmrw)
             
             # allow the creation of a new timer
             self.timer.get_command('prep').reset_cooldown(ctx)
@@ -1667,7 +1668,7 @@ class Timer(commands.Cog):
             return embedMsg
 
     @timer.command(aliases=['end'])
-    async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList=""):
+    async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", ddmrw= False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
             end = time.time() + 3600 * 3
             allRewardStrings = {}
@@ -1738,7 +1739,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             dbEntry["Status"] = "Processing"
             dbEntry["Players"] = {}
             
-            dbEntry["DDMRW"] = settingsRecord["ddmrw"]
+            dbEntry["DDMRW"] = settingsRecord["ddmrw"] or ddmrw
             if tierNum < 1:
                 tierNum = 1
             rewardsCollection = db.rit
@@ -2196,7 +2197,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
     dmChar -> the character of the DM 
     guildsList -> the list of guilds involved with the timer
     """
-    async def duringTimer(self,ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg, dmChar, guildsList):
+    async def duringTimer(self,ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg, dmChar, guildsList, ddmrw = False):
         # if the timer is being restarted then we create a new message with the stamp command
         if ctx.invoked_with == "resume":
             stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, embed=stampEmbed, embedMsg=stampEmbedmsg)
@@ -2248,7 +2249,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     if await self.permissionCheck(msg, author):
                         
                         print("GUILDS 3", guildsList)
-                        await ctx.invoke(self.timer.get_command('stop'), start=startTimes, role=role, game=game, datestart=datestart, dmChar=dmChar, guildsList=guildsList)
+                        await ctx.invoke(self.timer.get_command('stop'), start=startTimes, role=role, game=game, datestart=datestart, dmChar=dmChar, guildsList=guildsList, ddmrw=ddmrw)
                         return
 
                 # this behaves just like add above, but skips the ambiguity check of addme since only the author of the message could be added
