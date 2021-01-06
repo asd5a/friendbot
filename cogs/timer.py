@@ -678,7 +678,7 @@ class Timer(commands.Cog):
             searchItem = searchQuery.lower().replace(' ', '')
             timeKey = ""
             removedItem = ""
-            print("GGGGGGGG", searchItem, searchItem.startswith("+") and not searchItem.startswith("++") )
+            print("GGGGGGGG", searchItem, searchItem.startswith("+") and searchItem[1].isnumeric() )
             if searchItem.startswith("+") and not searchItem[1].isnumeric() and not resume:
                 await channel.send(f"You cannot remove reward items.")
                 return start         
@@ -751,7 +751,7 @@ class Timer(commands.Cog):
                 for item in v: 
                     cList = []
                     for i in item[2]:
-                        if i.startswith('+') and not i.startswith('++'):
+                        if i.startswith('+') and not i[1].isnumeric():
                             pass
                         else:
                             cList.append(i)
@@ -1602,7 +1602,8 @@ class Timer(commands.Cog):
                             # go over every entry in the consumables list and add them appropriately
                             # reward items are indicated by a plus
                             for i in v[2]:
-                                if i.startswith('+') and not i.startswith('++'):
+                                print("AAAAAAA", i)
+                                if i.startswith('+') and not i[1].isnumeric():
                                     rList.append(i)
                                 else:
                                     cList.append(i)
