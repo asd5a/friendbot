@@ -178,7 +178,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     dateend = datetime.fromtimestamp(end).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
     totalDuration = timeConversion(end - start)
     sessionLogEmbed.title = f"Timer: {game} [END] - {totalDuration}"
-    sessionLogEmbed.description = f"Start: {datestart} CDT\nEnd: {dateend} CDT\n" 
+    sessionLogEmbed.description = f"Start: {datestart} EDT\nEnd: {dateend} EDT\n" 
     dm_double_string = ""
     dmRewardsList = []
     #DM REWARD MATH STARTS HERE
@@ -1219,7 +1219,7 @@ class Log(commands.Cog):
         if sessionInfo["Status"] == "Processing":
             summaryIndex = sessionLogEmbed.description.find('Summary:')
             print("KKKKKKKKKKKKKKKKKKKKKKKKKKkk")
-            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex] + editString+"\n"
+            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Summary:" + editString+"\n"
         else:
             print("UUUUUUUUUUUUUUUUUUUUUUUUUUUu")
             sessionLogEmbed.description += "\n"+editString
