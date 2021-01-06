@@ -233,7 +233,7 @@ class Character(commands.Cog):
 
         if msg == "":
             playersCollection = db.players
-            userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": name }))
+            userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": f"^{newname}$", '$options': 'i' } }))
 
             if userRecords != list():
                 msg += f":warning: You already have a character by the name of ***{name}***! Please use a different name.\n"
@@ -1264,7 +1264,6 @@ class Character(commands.Cog):
         
         if "Guild" in charDict:
             guild_name = charDict["Guild"]
-        print("GGGGGGGGGGGGGGGGGGGGGG",guild_name)
         
         m_save = charDict['Magic Items'].split(", ")
         # i_save = list(charDict['Inventory'].keys())
@@ -1335,7 +1334,6 @@ class Character(commands.Cog):
             msg += ":warning: Your character's new name is too long! The limit is 64 characters.\n"
         # Reserved for regex, lets not use these for character names please
         invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|"]
-
         for i in invalidChars:
             if i in name:
                 msg += f":warning: Your character's name cannot contain `{i}`. Please revise your character name.\n"
@@ -1485,7 +1483,6 @@ class Character(commands.Cog):
         elif totalLevel != lvl and len(cRecord) > 1:
             msg += ':warning: Your classes do not add up to the total level. Please double-check your multiclasses.\n'
         else:
-            cRecord = sorted(cRecord, key = lambda i: i['Level'], reverse=True) 
 
             # starting equipment
             def alphaEmbedCheck(r, u):
@@ -1861,6 +1858,10 @@ class Character(commands.Cog):
                     await author.remove_roles(get(guild.roles, name = guild_name), reason=f" Respecced")
 
             if "Respecc" in charDict and charDict["Respecc"] == "Transfer":
+                charDict["Inventory"].update(charDict["Transfer Set"]["Inventory"])
+                charDict["Magic Items"] = charDict["Transfer Set"]["Magic Items"]
+                charDict["Consumables"] = charDict["Transfer Set"]["Consumables"]
+                del charDict["Transfer Set"]
                 statsCollection = db.stats
                 statsRecord  = statsCollection.find_one({'Life': 1})
 
@@ -1893,7 +1894,7 @@ class Character(commands.Cog):
             print(charDict)
             if "Respecc" in charDict:
                 del charDict["Respecc"]
-            charRemoveKeyList = {"Respecc" : 1, 'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
+            charRemoveKeyList = {"Transfer Set" : 1, "Respecc" : 1, 'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
             playersCollection.update_one({'_id': charID}, {"$set": charDict, "$unset": charRemoveKeyList }, upsert=True)
             
         except Exception as e:
@@ -2548,7 +2549,10 @@ class Character(commands.Cog):
             char_race = charDict['Race']
             if "Reflavor" in charDict:
                 char_race = f"{charDict['Reflavor']} ({char_race})"
-            description = f"{char_race}\n{charDict['Class']}\n{charDict['Background']}\nGames Played: {charDict['Games']}\n"
+            nick_string = ""
+            if "Nickname" in charDict and charDict['Nickname'] != "":
+                nick_string = f"Goes By: {charDict['Nickname']}\n"
+            description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\nGames Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
                 description +=  f"Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
@@ -2785,7 +2789,59 @@ class Character(commands.Cog):
             else:
                 print('Success')
                 await ctx.channel.send(content=f'I have updated the race for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+    
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @commands.command(aliases=['aka'])
+    async def alias(self,ctx, char, new_name):
+        channel = ctx.channel
+        author = ctx.author
+        guild = ctx.guild
+        msg = self.name_check(new_name, author)
+        if msg:
+            await channel.send(msg)
+            return
+            
+        charEmbed = discord.Embed()
 
+        infoRecords, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+
+        if infoRecords:
+            charID = infoRecords['_id']
+            data = {
+                'Nickname': new_name
+            }
+
+            try:
+                playersCollection = db.players
+                playersCollection.update_one({'_id': charID}, {"$set": data})
+            except Exception as e:
+                print ('MONGO ERROR: ' + str(e))
+                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
+            else:
+                print('Success')
+                await ctx.channel.send(content=f'I have updated the name for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+            
+    def name_check(self, name, author):
+        msg = ""
+        # Name should be less then 65 chars
+        if len(name) > 64:
+            msg += ":warning: Your character's name is too long! The limit is 64 characters.\n"
+
+        # Reserved for regex, lets not use these for character names please
+        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|"]
+
+        for i in invalidChars:
+            if i in name:
+                msg += f":warning: Your character's name cannot contain `{i}`. Please revise your character name.\n"
+        # if msg == "":
+            # playersCollection = db.players
+            # userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": name }))
+
+            # if userRecords != list():
+                # msg += f":warning: You already have a character by the name of ***{name}***! Please use a different name.\n"
+        
+        return msg
     
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @is_log_channel()

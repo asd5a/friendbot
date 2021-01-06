@@ -1837,23 +1837,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
 
 **Ask yourself the following questions when determining if the party fulfilled a pillar or a guild's quest guidelines:**
 
-**Exploration**:
-• Did the party have to deal with an environmental effect such as traps, hazards, weather, lack of food/water, magical effects, etc.? If so, how did they resolve them?
-• Did the party interact with the environment and gather information from it to make informed decisions? If so, what were the clues and how did contribute to the success of their quest?
-• Did the party have to travel a certain distance or solve a puzzle or trap within a limited time frame? If so, what environmental problems did they have to face against and how did they solved them?
-• If any of these questions resulted in unsuccessful attempts then how did that negatively affect their situation at the time as well as future events?
-
-**Social**:
-• Did the party change an NPC's attitude from neutral to friendly or hostile to neutral? If so, what did they do to achieve that? Why was it important to sway that NPC's attitude in terms of the overall quest?
-• Did the party convince an NPC of something against their nature or traits (using ideals, bonds, and flaws or secrets)? Why was it important to convince them of something during the quest?
-• Did the party retrieve information from an NPC? Was the information relevant to their main objective? How did they retrieve this information?
-• If any of these questions resulted in unsuccessful attempts then what would have happened and how would that have negatively affected their situation at the time as well as future events?
-
-**Combat**:
-• Did the party have to fight any NPCs? If so, what kind of creatures did they fight?
-• Did the party have to engage in combat as a result of any unsuccessful attempts in the Exploration or Social pillars?
-• Did engaging in combat present complications for the following attempts in the Exploration or Social pillars?
-
 **Guild**:
 • How were any guilds central to the plot and setting, main objectives, core elements, and overall progression of your one-shot?
 • Which guild quest guidelines were fulfilled and how was this accomplished?

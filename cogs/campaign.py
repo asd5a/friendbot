@@ -957,7 +957,7 @@ class Campaign(commands.Cog):
             logChannel = ctx.channel
             stopEmbed.clear_fields()
             stopEmbed.set_footer(text=stopEmbed.Empty)
-            stopEmbed.description = f"**{game}**\nDate: {datestart}\nPut your summary here."
+            stopEmbed.description = f"**{game}**\nDate: {datestart} EDT\nPut your summary here."
 
             playerData = []
             campaignCollection = db.campaigns

@@ -125,8 +125,9 @@ class Misc(commands.Cog):
         if not str(payload.channel_id) in settingsRecord["Role Channel List"].keys(): 
             return
         guild_id = settingsRecord["Role Channel List"][str(payload.channel_id)]
-        guild = self.bot.get_guild(guild_id)
-
+        print(guild_id)
+        guild = self.bot.get_guild(int(guild_id))
+        print(guild)
         if str(payload.message_id) in settingsRecord[guild_id]["Messages"].keys():
             if payload.emoji.name == "1️⃣":
                 name = 'Tier 1' 
@@ -260,7 +261,9 @@ class Misc(commands.Cog):
             await msg.add_reaction('👋')
         #check if any tier boost was done and react
         elif(7 < msg.type.value and msg.type.value < 12):
-            await msg.add_reaction('<:boost:585637770970660876>')
+            emoji_list = ['<:boost:585637770970660876>', "🎉", "🎊", "🍾", "🥂", "<:bless:382029999500165120>"]
+            for e in emoji_list:
+                await msg.add_reaction(e)
         elif any(word in msg.content.lower() for word in ['thank', 'thanks', 'thank you', 'thx', 'gracias', 'danke', 'arigato', 'xie xie', 'merci']) and 'bot friend' in msg.content.lower():
             await msg.add_reaction('❤️')
             await msg.channel.send("You're welcome friend!")

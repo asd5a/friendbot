@@ -308,7 +308,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                     guildRewardsStr += f"{g['Name']}: +{gain} :sparkles:\n"
 
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
-        sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} CDT\n**End**: {dateend} CDT\n**Runtime**: {totalDuration}\n"+description
+        sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
         if sessionInfo["Status"] == "Approved":
             status_text = "✅ Log approved! Players have received their rewards."

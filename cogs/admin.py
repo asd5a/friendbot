@@ -6,6 +6,7 @@ from discord.utils import get
 from discord.ext import commands
 import sys
 import traceback
+from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar
@@ -280,7 +281,7 @@ class Admin(commands.Cog, name="Admin"):
         msg = ctx.channel.send("Are you sure you want to remove every GID entry from characters in the database?\n No: ❌\n Yes: ✅")
         author = ctx.author
         
-        if(not self.doubleVerify(ctx, msg)):
+        if(not await self.doubleVerify(ctx, msg)):
             return
         try:
             db.players.update_many(
@@ -540,6 +541,157 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
             
+            
+    
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def transferish(self, ctx, charName, level : int, cp :int, user, items):
+        msg = ctx.message
+        rewardList = msg.raw_mentions
+        rewardUser = ""
+        # create an embed text object
+        charEmbed = discord.Embed()
+        charEmbedmsg = None
+        guild = ctx.guild
+        
+        # if nobody was listed, inform the user
+        if rewardList == list():
+            await ctx.channel.send(content=f"I could not find any mention of a user to hand out a reward item.") 
+            #return the unchanged parameters
+            return
+        else:
+            rewardUser = rewardList[0]
+            
+            levelCP = (((level - 5) * 8) + 16)
+            if level < 5:
+                levelCP = ((level - 1) * 4)
+            cp += levelCP
+            level = 1
+            maxCP = 4
+            while(cp >= maxCP and level <20):
+                cp -= maxCP
+                level += 1
+                if level > 4:
+                  maxCP = 10
+            
+            charDict = {
+              'User ID': str(rewardUser),
+              'Name': charName,
+              'Level': level,
+              'HP': 0,
+              'Class': "Friend",
+              'Race': "Friend",
+              'Background': "D&D Friend",
+              'STR': 0,
+              'DEX': 0,
+              'CON': 0,
+              'INT': 0,
+              'WIS': 0,
+              'CHA': 0,
+              'CP' : cp,
+              'Current Item': 'None',
+              'GP': 0,
+              'Magic Items': 'None',
+              'Consumables': 'None',
+              'Feats': 'None',
+              'Inventory': {},
+              'Predecessor': [],
+              'Games': 0,
+              'Respecc' : "Transfer"
+            }
+            
+            
+            # character level
+            # since this checks for multiple things, this cannot be avoided
+            tierNum=5
+            # calculate the tier of the rewards
+            if level < 5:
+                tierNum = 1
+            elif level < 11:
+                tierNum = 2
+            elif level < 17:
+                tierNum = 3
+            elif level < 20:
+                tierNum = 4
+                    
+            consumablesList = items.split(',')
+            rewardList = {"Magic Items": [], "Consumables": [], "Inventory": []}
+             
+            for query in consumablesList:
+                query = query.strip()
+                # if the player is getting a spell scoll then we need to determine which spell they are going for
+                # we do this by searching in the spell table instead
+                if 'spell scroll' in query.lower():
+                    # extract the spell
+                    spellItem = query.lower().replace("spell scroll", "").replace('(', '').replace(')', '')
+                    # use the callAPI function from bfunc to search the spells table in the DB for the spell being rewarded
+                    sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem)
+                    
+                    # if no spell was found then we inform the user of the failure and stop the command
+                    if not sRecord:
+                        await ctx.channel.send(f'''**{query}** belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Reward Item Table, what tier it is, and your spelling.''')
+                        return 
+
+                    else:
+                        # Converts number to ordinal - 1:1st, 2:2nd, 3:3rd...
+                        # floor(n/10)%10!=1, this acts as an if statement to check if the number is in the teens
+                        # (n%10<4), this acts as an if statement to check if the number is below 4
+                        # n%10 get the last digit of the number
+                        # by multiplying these number together we end up with calculation that will be 0 unless both conditions have been met, otherwise it is the digit
+                        # this number x is then used as the starting point of the selection and ::4 will then select the second letter by getting the x+4 element
+                        # technically it will get more, but since the string is only 8 characters it will return 2 characters always
+                        # th, st, nd, rd are spread out by 4 characters in the string 
+                        ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
+                        # change the query to be an accurate representation
+                        query = f"Spell Scroll ({ordinal(sRecord['Level'])} Level)"
+                
+
+                # search for the item in the DB with the function from bfunc
+                # this does disambiguation already so if there are multiple results for the item they will have already selected which one specifically they want
+                rewardConsumable, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg ,'rit',query, tier=tierNum) 
+            
+                #if no item could be found, return the unchanged parameters and inform the user
+                if not rewardConsumable:
+                    await ctx.channel.send(f'**{query}** does not seem to be a valid reward item.')
+                    return 
+                else:
+                   
+                    if 'spell scroll' in query.lower():
+                        rewardConsumable['Name'] = f"Spell Scroll ({sRecord['Name']})"
+                    rewardList[rewardConsumable["Type"]].append(rewardConsumable["Name"])
+            
+            # turn the list of added items into the new string
+            consumablesString = ", ".join(rewardList["Consumables"])
+               
+            # if the string is empty, turn it into none
+            consumablesString += "None"*(consumablesString=="")
+            
+            # magic items cannot be removed so we only care about addtions
+            # if we have no items and no additions, string is None
+            magicItemString = ", ".join(rewardList["Magic Items"])
+
+            # if the string is empty, turn it into none
+            magicItemString += "None"*(magicItemString=="")
+                
+            
+            # increase the relevant inventory entries and create them if necessary
+            for i in rewardList["Inventory"]:
+                if i in charDict["Inventory"]:
+                    charDict["Inventory"][i] += 1
+                else:
+                    charDict["Inventory"][i] = 1
+            out = {"Magic Items":magicItemString, "Consumables":consumablesString, "Inventory":charDict["Inventory"]}
+            charDict["Transfer Set"] = out
+            print(charDict)
+        try:
+            db.players.insert_one(charDict)
+            await ctx.channel.send(content=f"Transfer Character has been created.")
+    
+        except Exception as e:
+            traceback.print_exc()
+    
+    
+    
     @commands.command()
     @admin_or_owner()
     async def giveRewards(self, ctx, charName, user, items):
@@ -561,13 +713,9 @@ class Admin(commands.Cog, name="Admin"):
             cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, rewardUser, customError=True)
             # get the first user mentioned
             
-            # if the user getting rewards is the DM we can save time by not going through the loop
+            
             
             if cRecord:
-                # list of current consumables on the character
-                charConsumableList = cRecord['Consumables'].split(', ')
-                # list of current magical items
-                charMagicList = cRecord['Magic Items'].split(', ')
                 # character level
                 charLevel = int(cRecord['Level'])
                 # since this checks for multiple things, this cannot be avoided

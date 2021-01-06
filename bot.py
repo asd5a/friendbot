@@ -102,7 +102,7 @@ async def help(ctx, *, pageString=''):
     helpEmbedCampaign = discord.Embed()
 
     page = 0
-    if 'general' in pageString:
+    if 'gen' in pageString:
         page = 1
     elif 'char' in pageString:
         page = 2

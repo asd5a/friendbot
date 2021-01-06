@@ -799,14 +799,14 @@ class Shop(commands.Cog):
                         except asyncio.TimeoutError:
                             await shopEmbedmsg.delete()
                             await channel.send(f'Shop cancelled. Try again using the same command!')
-                            ctx.command.reset_cooldown('copy')
+                            ctx.command.reset_cooldown(ctx)
                             return
                         else:
                             await shopEmbedmsg.clear_reactions()
                             if tReaction.emoji == '❌':
                                 await shopEmbedmsg.edit(embed=None, content=f"Shop cancelled. Try again using the same command!")
                                 await shopEmbedmsg.clear_reactions()
-                                ctx.command.reset_cooldown('copy')
+                                ctx.command.reset_cooldown(ctx)
                                 return
                             elif tReaction.emoji == numberEmojis[0]:
                                 scrollChoice = "Free Spell"
@@ -814,6 +814,9 @@ class Shop(commands.Cog):
                                 scrollChoice = "Scroll"
                 
                 fsIndex = 0
+                
+                ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
+                    
                 if ('Free Spells' in charRecords and bookChoice == "Spellbook") and scrollChoice == "Free Spell":
                     requiredSpellLevel = (int(bRecord['Level'])* 2 - 1)
 
@@ -824,7 +827,6 @@ class Shop(commands.Cog):
                             fsValid = True
                             fsIndex = f + 1
                             break
-                    ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
                     if charRecords["Level"] < requiredSpellLevel or fsValid is False:
                         await channel.send(f"**{bRecord['Name']}** is a {ordinal(bRecord['Level'])} level spell that cannot be copied into ***{charRecords['Name']}***'s spellbook! They must be level {requiredSpellLevel} or higher or you have no more free spells to copy this spell.")
                         ctx.command.reset_cooldown(ctx)
@@ -863,7 +865,7 @@ class Shop(commands.Cog):
                 shopEmbed.title = f"Copying a Spell: {charRecords['Name']}"
 
                 if fsIndex != 0:
-                    shopEmbed.description = f"""Are you sure you want to copy the **{bRecord['Name']}** spell? This will consume a **"Level {fsIndex}"** free spell.\n\n✅: Yes\n\n❌: Cancel"""
+                    shopEmbed.description = f"""Are you sure you want to copy the **{bRecord['Name']}** spell? This will consume a **" {ordinal(bRecord['Level'])} Level"** free spell.\n\n✅: Yes\n\n❌: Cancel"""
                 else:
                     shopEmbed.description = f"Are you sure you want to copy the **{bRecord['Name']}** spell for **{gpNeeded} GP**?\nCurrent GP: {charRecords['GP']} GP\nNew GP: {newGP} GP\n\n✅: Yes\n\n❌: Cancel"
 
@@ -909,7 +911,6 @@ class Shop(commands.Cog):
                             else:
                                 shopEmbed.description = f"You have copied the **{bRecord['Name']}** spell ({ordinal(bRecord['Level'])} level) into your {bookChoice} for {gpNeeded} GP!\nAfter copying the spell scroll of **{bRecord['Name']}** and you have {spellScrollAmount} spell scroll(s) of **{bRecord['Name']}** left. \n\nCurrent GP: {newGP} GP\n"
                             
-                            ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
                             if 'Free Spells' in charRecords:
                                 fsString = ""
                                 fsIndex = 0
