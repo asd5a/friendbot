@@ -692,7 +692,25 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
     
-    
+    @admin_or_owner()
+    @commands.command()
+    async def setNoodles(self,ctx, user, noodles: int):
+        msg = ctx.message
+        rewardList = msg.raw_mentions
+        channel = ctx.channel
+        guild = ctx.guild
+        charEmbed = discord.Embed()
+        charEmbedmsg = None
+        # if nobody was listed, inform the user
+        if rewardList == list():
+            await ctx.channel.send(content=f"I could not find any mention of a user to hand out a reward item.") 
+            #return the unchanged parameters
+            return 
+        usersCollection = db.users
+        userRecords = usersCollection.update_one({"User ID": str(rewardList[0])}, {"$set" : {"Noodles" : noodles}, "$inc" : {"Games" : 0}}, upsert= True)
+        await channel.send(f"Noodles set for <@!{rewardList[0]}>")
+        
+
     
     @commands.command()
     @admin_or_owner()
@@ -709,7 +727,7 @@ class Admin(commands.Cog, name="Admin"):
         if rewardList == list():
             await ctx.channel.send(content=f"I could not find any mention of a user to hand out a reward item.") 
             #return the unchanged parameters
-            return start,dmChar
+            return 
         else:
             rewardUser = guild.get_member(rewardList[0])
             cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, rewardUser, customError=True)
