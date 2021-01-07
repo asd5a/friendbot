@@ -1328,7 +1328,7 @@ class Character(commands.Cog):
         if len(newname) > 64:
             msg += ":warning: Your character's new name is too long! The limit is 64 characters.\n"
         # Reserved for regex, lets not use these for character names please
-        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|"]
+        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|", "(",")" ]
         for i in invalidChars:
             if i in name:
                 msg += f":warning: Your character's name cannot contain `{i}`. Please revise your character name.\n"
@@ -2824,7 +2824,7 @@ class Character(commands.Cog):
             msg += ":warning: Your character's name is too long! The limit is 64 characters.\n"
 
         # Reserved for regex, lets not use these for character names please
-        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|"]
+        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|", "(",")" ]
 
         for i in invalidChars:
             if i in name:
