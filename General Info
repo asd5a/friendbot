@@ -1,0 +1,26 @@
+Version: 2.0
+Date: 7 January 2021
+
+• bfunc.py: various functions and variables used over the bot in order to grab DB info, how to calculate rewards.
+
+• bot.py: general error handling, help menus.
+
+• admin.py: various functions to help with managing the DB and making the bot do things without having to go to the DB.
+
+• apps.py: application membership stuff.
+
+• campaign.py: all of the campaign management and campaign timer, there is a lot of overlap between timer and campaign timer but are being kept separate for now since they have very different data and output.
+
+• char.py: all character creation on the user side and the general stats function.
+
+• guild.py: all guild management (not to be confused with Discord/server "guilds", these are in-game factions).
+
+• itemtables.py: currently unusable, not been updated from Bot 1.9.
+
+• logs.py: all session log management.
+
+• misc.py: server role management system, quest board post, campaign post, bot responses and waves.
+
+• reward.py: simplified reward calculation for a command.
+
+• timer.py: all of the running timer info, currently has an issue of having been updated too often without cleanup.
