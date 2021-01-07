@@ -159,6 +159,8 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.title = 'General Commands'
 
+
+
     helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f"{commandPrefix}user", inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f"{commandPrefix}stats", inline=False)
@@ -171,37 +173,38 @@ async def help(ctx, *, pageString=''):
 
 
 
+
 # CHARACTER COMMANDS MENU ($help char)
 
     helpEmbedChar.title = 'Character Commands'
 
-    helpEmbedChar.add_field(name=f'▫️ Creating a Character\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Creating a Character', value='{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Viewing a Character\'s Information\n{commandPrefix}info "character name"\n[{commandPrefix}char, {commandPrefix}i]', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Viewing a Character\'s Information', value='{commandPrefix}info "character name"\n[{commandPrefix}char, {commandPrefix}i]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Viewing a Character\'s Inventory\n{commandPrefix}inventory "character name"\n[{commandPrefix}inv, {commandPrefix}bag]', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Viewing a Character\'s Inventory', value='{commandPrefix}inventory "character name"\n[{commandPrefix}inv, {commandPrefix}bag]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Adding an Image to a Character\n{commandPrefix}image "character name" "URL"\n[{commandPrefix}img]', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Adding an Image to a Character', value='{commandPrefix}image "character name" "URL"\n[{commandPrefix}img]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Leveling Up\n{commandPrefix}levelup "character name"\n[{commandPrefix}lvlup, {commandPrefix}lvl, {commandPrefix}lv]', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Leveling Up', value='{commandPrefix}levelup "character name"\n[{commandPrefix}lvlup, {commandPrefix}lvl, {commandPrefix}lv]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Creating a Multiclass Character\n{commandPrefix}create "character name" total level "race" "class1 level / class2 level, [...]" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Creating a Multiclass Character', value='{commandPrefix}create "character name" total level "race" "class1 level / class2 level, [...]" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Respecing a Character\n{commandPrefix}respec "character name" "new character name" "race" "class" "background" STR DEX CON INT WIS CHA', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Respecing a Character', value='{commandPrefix}respec "character name" "new character name" "race" "class" "background" STR DEX CON INT WIS CHA', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Respecing a Character into a Multiclass\n{commandPrefix}respec "character name" "new character name" "race" "class1 level / class2 level / [...]" "background" STR DEX CON INT WIS CHA', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Respecing a Character into a Multiclass', value='{commandPrefix}respec "character name" "new character name" "race" "class1 level / class2 level / class3 level / class4 level" "background" STR DEX CON INT WIS CHA', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character\'s Race\n{commandPrefix}reflavor "character name" race name\n[{commandPrefix}r5]', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character\'s Race', value='{commandPrefix}reflavor "character name" race name\n[{commandPrefix}r5]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Adding Extra Names\n{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Adding Extra Names', value='{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Retiring a Character\n{commandPrefix}retire "character name"', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Retiring a Character', value='{commandPrefix}retire "character name"', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Attuning to a Magic Item\n{commandPrefix}attune "character name" "magic item"\n[{commandPrefix}att]', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Attuning to a Magic Item', value='{commandPrefix}attune "character name" "magic item"\n[{commandPrefix}att]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Unattuning from a Magic Item\n{commandPrefix}unattune "character name" "magic item"\n[{commandPrefix}unatt, {commandPrefix}uatt]', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Unattuning from a Magic Item', value='{commandPrefix}unattune "character name" "magic item"\n[{commandPrefix}unatt, {commandPrefix}uatt]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Death Options\n{commandPrefix}death "character name"', value="\u200b", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Death Options', value='{commandPrefix}death "character name"', inline=False)
 
 
 # PRE-QUEST TIMER COMMANDS MENU ($help timer1)
@@ -210,21 +213,21 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerOne.title = f"Pre-Quest Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Signing Up (Player)\n{commandPrefix}timer signup "character name" "consumable1, consumable2, [...]"', value="\u200b", inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Signing Up (Player)', value='{commandPrefix}timer signup "character name" "consumable1, consumable2, [...]"', inline=False)
 
 # DM COMMANDS
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Preparing the Timer (DM)\n{commandPrefix}timer prep "@player1, @player2, [...]" questname', value="\u200b", inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Preparing the Timer (DM)', value='{commandPrefix}timer prep "@player1, @player2, [...]" questname', inline=False)
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Adding Players to the Roster (DM)\n{commandPrefix}timer add @player', value="\u200b", inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Adding Players to the Roster (DM)', value='{commandPrefix}timer add @player', inline=False)
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Removing Players from the Roster (DM)\n{commandPrefix}timer remove @player', value="\u200b", inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Removing Players from the Roster (DM)', value='{commandPrefix}timer remove @player', inline=False)
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Adding Guilds (DM)\n{commandPrefix}timer guild #guild1, #guild2, #guild3', value="\u200b", inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Adding Guilds (DM)', value='{commandPrefix}timer guild #guild1, #guild2, #guild3', inline=False)
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Cancelling the Timer (DM)\n{commandPrefix}timer cancel', value="\u200b", inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Cancelling the Timer (DM)', value='{commandPrefix}timer cancel', inline=False)
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Starting the Timer (DM)\n{commandPrefix}timer start', value="\u200b", inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Starting the Timer (DM)', value='{commandPrefix}timer start', inline=False)
 
 
 # RUNNING TIMER COMMANDS MENU ($help timer2)
@@ -233,27 +236,27 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerTwo.title = f"Running Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Yourself (Player)\n{commandPrefix}timer addme "character name" "consumable1, consumable2, [...]"', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Yourself (Player)', value='{commandPrefix}timer addme "character name" "consumable1, consumable2, [...]"', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Using Items (Player)\n- item', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Using Items (Player)', value='- item', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Removing Yourself (Player)\n{commandPrefix}timer removeme', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Removing Yourself (Player)', value='{commandPrefix}timer removeme', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Checking the Timestamp (Player)\n{commandPrefix}timer removeme', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Checking the Timestamp (Player)', value='{commandPrefix}timer removeme', inline=False)
 
 # DM COMMANDS
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Players During a Quest (DM)\n{commandPrefix}timer add @player "character name" "consumable1, consumable2, [...]"', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Players During a Quest (DM)', value='{commandPrefix}timer add @player "character name" "consumable1, consumable2, [...]"', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Removing Players During a Quest (DM)\n{commandPrefix}timer remove @player', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Removing Players During a Quest (DM)', value='{commandPrefix}timer remove @player', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Awarding Reward Items (DM)\n{commandPrefix}timer reward @player "reward item1, reward item2, [...]"', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Awarding Reward Items (DM)', value='{commandPrefix}timer reward @player "reward item1, reward item2, [...]"', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Revoking Reward Items (DM)\n{commandPrefix}timer undo rewards @player "reward item1, reward item2, [...]"', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Revoking Reward Items (DM)', value='{commandPrefix}timer undo rewards @player "reward item1, reward item2, [...]"', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Character Death (DM)\n{commandPrefix}timer death @player', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Character Death (DM)', value='{commandPrefix}timer death @player', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Stopping the Timer (DM)\n{commandPrefix}timer stop', value="\u200b", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Stopping the Timer (DM)', value='{commandPrefix}timer stop', inline=False)
 
 
 # POST-QUEST TIMER COMMANDS MENU ($help timer3)
@@ -262,33 +265,33 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerThree.title = f"Post-Quest Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Rewards (Player)\n{commandPrefix}session optout2xR gameID', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Rewards (Player)', value='{commandPrefix}session optout2xR gameID', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Rewards (Player)\n{commandPrefix}session optin2xR gameID', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Rewards (Player)', value='{commandPrefix}session optin2xR gameID', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Items (Player)\n{commandPrefix}session optout2xI gameID', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Items (Player)', value='{commandPrefix}session optout2xI gameID', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items (Player)\n{commandPrefix}session optin2xI gameID', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items (Player)', value='{commandPrefix}session optin2xI gameID', inline=False)
 
 # DM COMMANDS
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)\n{commandPrefix}session log questID summary', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)', value='{commandPrefix}session log questID summary', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)\n{commandPrefix}approveRewards gameID #guild-channel', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)', value='{commandPrefix}approveRewards gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Rewards (DM)\n{commandPrefix}session denyRewards gameID #guild-channel', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Rewards (DM)', value='{commandPrefix}session denyRewards gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Items (DM)\n{commandPrefix}approveItems gameID #guild-channel', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Items (DM)', value='{commandPrefix}approveItems gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Items (DM)\n{commandPrefix}session denyItems gameID #guild-channel', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Items (DM)', value='{commandPrefix}session denyItems gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Recruitment Drive (DM)\n{commandPrefix}approveDrive gameID #guild-channel', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Approve Recruitment Drive (DM)', value='{commandPrefix}approveDrive gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Recruitment Drive (DM)\n{commandPrefix}session denyDrive gameID #guild-channel', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Deny Recruitment Drive (DM)', value='{commandPrefix}session denyDrive gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of DDMRW (DM)\n{commandPrefix}session ddmrw optout gameID', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of DDMRW (DM)', value='{commandPrefix}session ddmrw optout gameID', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into DDMRW (DM)\n{commandPrefix}session ddmrw optin gameID', value="\u200b", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into DDMRW (DM)', value='{commandPrefix}session ddmrw optin gameID', inline=False)
 
 
 # ITEM TABLE COMMANDS MENU ($help itemtable)
@@ -305,47 +308,47 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedShop.title = 'Shop Commands'
 
-    helpEmbedShop.add_field(name=f'▫️ Buying a Shop Item\n{commandPrefix}shop buy "character name" "item" #', value="\u200b", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Buying a Shop Item', value='{commandPrefix}shop buy "character name" "item" #', inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Buying a Miscellaneous Item\n{commandPrefix}shop buy "character name" Miscellaneous #', value="\u200b", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Buying a Miscellaneous Item', value='{commandPrefix}shop buy "character name" Miscellaneous #', inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Selling a Mundane Item\n{commandPrefix}shop sell "character name" "item" #', value="\u200b", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Selling a Mundane Item', value='{commandPrefix}shop sell "character name" "item" #', inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Copying a Spell Scroll\n{commandPrefix}shop copy "character name" "spell name"', value="\u200b", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Copying a Spell Scroll', value='{commandPrefix}shop copy "character name" "spell name"', inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Coating a Weapon in Silver or Adamantine\n{commandPrefix}shop silver "character name" "weapon name" #\n{commandPrefix}shop adamantine', value="\u200b", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Coating a Weapon in Silver or Adamantine', value='{commandPrefix}shop silver "character name" "weapon name" #\n{commandPrefix}shop adamantine', inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Downtime Friend Training\n{commandPrefix}downtime training "character name"\n[{commandPrefix}dt training]', value="\u200b", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Downtime Friend Training', value='{commandPrefix}downtime training "character name"\n[{commandPrefix}dt training]', inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Downtime Noodle Training\n{commandPrefix}downtime noodle "character name"\n[{commandPrefix}dt noodle]', value="\u200b", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Downtime Noodle Training', value='{commandPrefix}downtime noodle "character name"\n[{commandPrefix}dt noodle]', inline=False)
 
 
 # TP COMMANDS MENU ($help tp)
 
     helpEmbedTp.title = 'TP Commands'
 
-    helpEmbedTp.add_field(name=f'▫️ Acquiring a Magic Item\n{commandPrefix}tp buy "character name" "magic item"', value="\u200b", inline=False)
+    helpEmbedTp.add_field(name=f'▫️ Acquiring a Magic Item', value='{commandPrefix}tp buy "character name" "magic item"', inline=False)
 
-    helpEmbedTp.add_field(name=f'▫️ Discarding an Incomplete Magic Item\n{commandPrefix}tp discard "character name"', value="\u200b", inline=False)
+    helpEmbedTp.add_field(name=f'▫️ Discarding an Incomplete Magic Item', value='{commandPrefix}tp discard "character name"', inline=False)
 
-    helpEmbedTp.add_field(name=f'▫️ Abandoning Leftover TP\n{commandPrefix}tp abandon "character name" tier', value="\u200b", inline=False)
+    helpEmbedTp.add_field(name=f'▫️ Abandoning Leftover TP', value='{commandPrefix}tp abandon "character name" tier', inline=False)
 
 
 # GUILD COMMANDS MENU ($help guild)
 
     helpEmbedGuild.title = 'Guild Commands'
 
-    helpEmbedGuild.add_field(name=f'▫️ Viewing a Guild’s Information\n{commandPrefix}guild info #guild-channel', value="\u200b", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Viewing a Guild’s Information', value='{commandPrefix}guild info #guild-channel', inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Joining a Guild\n{commandPrefix}guild join "character name" #guild-channel', value="\u200b", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Joining a Guild', value='{commandPrefix}guild join "character name" #guild-channel', inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Increasing Your Rank\n{commandPrefix}guild rankup "character name"', value="\u200b", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Increasing Your Rank', value='{commandPrefix}guild rankup "character name"', inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Leaving a Guild\n{commandPrefix}guild leave "character name"', value="\u200b", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Leaving a Guild', value='{commandPrefix}guild leave "character name"', inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Creating a Guild\n{commandPrefix}guild create "character name" "guild name" @guildrole #guild-channel', value="\u200b", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Creating a Guild', value='{commandPrefix}guild create "character name" "\guild name" @guildrole #guild-channel', inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Funding a Guild\n{commandPrefix}guild fund "character name" "guild name" GP', value="\u200b", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Funding a Guild', value='{commandPrefix}guild fund "character name" @guildrole GP', inline=False)
 
 
 # CAMPAIGN COMMANDS MENU ($help campaign)
@@ -354,42 +357,42 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedCampaign.title = f"Campaign Commands\n{commandPrefix}c"
 
-    helpEmbedCampaign.add_field(name=f'▫️ Viewing a Campaign’s Information\n{commandPrefix}campaign info #campaign-channel', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Viewing a Campaign’s Information', value='{commandPrefix}campaign info #campaign-channel', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Signing Up (Player)\n{commandPrefix}campaign timer signup', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Signing Up (Player)', value='{commandPrefix}campaign timer signup', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Adding Yourself (Player)\n{commandPrefix}campaign timer addme', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Adding Yourself (Player)', value='{commandPrefix}campaign timer addme', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Removing Yourself (Player)\n{commandPrefix}campaign timer removeme', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Removing Yourself (Player)', value='{commandPrefix}campaign timer removeme', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp (Player)\n{commandPrefix}timer removeme', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp (Player)', value='{commandPrefix}timer removeme', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Creating a Character with a Campaign Transfer\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]" #campaign-channel XhYm', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Creating a Character with a Campaign Transfer', value='{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]" #campaign-channel XhYm', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Creating a Multiclass Character with a Campaign Transfer\n{commandPrefix}create "character name" starting level "race" "class1 final level / class2 final level / [...]" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]" #campaign-channel XhYm', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Creating a Multiclass Character with a Campaign Transfer', value='{commandPrefix}create "character name" starting level "race" "class1 final level / class2 final level / [...]" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]" #campaign-channel XhYm', inline=False)
 
 
 # DM CAMPAIGN COMMANDS
 
-    helpEmbedCampaign.add_field(name=f'▫️ Creating a Campaign (DM)\n{commandPrefix}campaign create @campaignrole #campaign-channel', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Creating a Campaign (DM)', value='{commandPrefix}campaign create @campaignrole #campaign-channel', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Adding Players to a Campaign Roster (DM)\n{commandPrefix}campaign add @player #campaign-channel', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Adding Players to a Campaign Roster (DM)', value='{commandPrefix}campaign add @player #campaign-channel', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Removing Players from a Campaign Roster (DM)\n{commandPrefix}campaign remove @player #campaign-channel', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Removing Players from a Campaign Roster (DM)', value='{commandPrefix}campaign remove @player #campaign-channel', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Preparing the Timer (DM)\n{commandPrefix}campaign timer prep "@player1, @player2,#player3, [...]" sessionname', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Preparing the Timer (DM)', value='{commandPrefix}campaign timer prep "@player1, @player2,#player3, [...]" sessionname', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Adding Players During a Session (DM)\n{commandPrefix}campaign timer add @player', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Adding Players During a Session (DM)', value='{commandPrefix}campaign timer add @player', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Removing Players During a Session (DM)\n{commandPrefix}campaign timer remove @player', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Removing Players During a Session (DM)', value='{commandPrefix}campaign timer remove @player', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Cancelling the Timer (DM)\n{commandPrefix}campaign timer cancel', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Cancelling the Timer (DM)', value='{commandPrefix}campaign timer cancel', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Starting the Timer (DM)\n{commandPrefix}campaign timer start', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Starting the Timer (DM)', value='{commandPrefix}campaign timer start', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Stopping the Timer (DM)\n{commandPrefix}campaign timer stop', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Stopping the Timer (DM)', value='{commandPrefix}campaign timer stop', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Submitting a Campaign Log (DM)\n{commandPrefix}campaign log gameID summary ', value="\u200b", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Submitting a Campaign Log (DM)', value='{commandPrefix}campaign log gameID summary', inline=False)
 
 
 
