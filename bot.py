@@ -165,7 +165,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.add_field(name=f'▫️ Calculating Rewards\n{commandPrefix}reward XhYm tier', value="Look up the rewards that a specified amount of time would give for the specified tier.", inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu\n{commandPrefix}help', value="View the help menu which has the same information as the Bot Friend Command Guides.", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu\n{commandPrefix}help', value="View the help menu.", inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Print a List of Allowed Races\n{commandPrefix}printRaces', value="Print a list of all races which are allowed on the server in order to know exactly how to spell them for character creation.", inline=False)
 
@@ -175,23 +175,25 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedChar.title = 'Character Commands'
 
-    helpEmbedChar.add_field(name=f'▫️ Creating a Character\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"', value="Create a character with the specified parameters. See #how-to-play or the Bot Friend Player Commands Guide for more information.", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Creating a Character\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"', value="Create a character with the specified parameters.", inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Viewing a Character\'s Information\n{commandPrefix}info "character name"\n[{commandPrefix}char, {commandPrefix}i]', value="View your character's stats  and general information.", inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Viewing a Character\'s Inventory\n{commandPrefix}inventory "character name"\n[{commandPrefix}inv, {commandPrefix}bag]', value="View your character's inventory.", inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Adding an Image to a Character\n{commandPrefix}image "character name" "URL"\n[{commandPrefix}img]', value="Add an image to your character’s information page using a URL. Images must be SFW (Safe For Work).", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Adding an Image to a Character\n{commandPrefix}image "character name" "URL"\n[{commandPrefix}img]', value="Add an image to your character’s information page using a URL.", inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Leveling Up\n{commandPrefix}levelup "character name"\n[{commandPrefix}lvlup, {commandPrefix}lvl, {commandPrefix}lv]', value="Level up your character to the next level (if possible). If they gain an ASI or feat, you will be prompted to choose one during the level-up process.", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Leveling Up\n{commandPrefix}levelup "character name"\n[{commandPrefix}lvlup, {commandPrefix}lvl, {commandPrefix}lv]', value="Level up your character to the next level.", inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Creating a Multiclass Character\n{commandPrefix}create "character name" total level "race" "class1 level / class2 level, [...]" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"', value="Create a multiclass character with the specified parameters.", inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Respecing a Character\n{commandPrefix}respec "character name" "new character name" "race" "class" "background" STR DEX CON INT WIS CHA', value="Respec your character into a single class if they are under level 5 or if you are given special permission. TP and GP will be assigned to them based on the amount of CP they have and their entire inventory will be reset.", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Respecing a Character\n{commandPrefix}respec "character name" "new character name" "race" "class" "background" STR DEX CON INT WIS CHA', value="Respec your character into a single class if they are under level 5 or if you are given special permission.", inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Respecing a Character into a Multiclass\n{commandPrefix}respec "character name" "new character name" "race" "class1 level / class2 level / [...]" "background" STR DEX CON INT WIS CHA', value="Respec your character into a multiclass if they are under level 5 or if you are given special permission. TP and GP will be assigned to them based on the amount of CP they have and their entire inventory will be reset.", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Respecing a Character into a Multiclass\n{commandPrefix}respec "character name" "new character name" "race" "class1 level / class2 level / [...]" "background" STR DEX CON INT WIS CHA', value="Respec your character into a multiclass if they are under level 5 or if you are given special permission.", inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character\'s Race\n{commandPrefix}reflavor "character name" race name\n[{commandPrefix}r5]', value="Reflavor the name of your character’s race into whatever you want. The new race name must be between 1 and 20 symbols in length and must be SFW (Safe For Work).", inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character\'s Race\n{commandPrefix}reflavor "character name" race name\n[{commandPrefix}r5]', value="Reflavor the name of your character’s race into whatever you want.", inline=False)
+
+    helpEmbedChar.add_field(name=f'▫️ Adding Extra Names\n{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', value="Add surnames, nicknames, other names, or whatever your character goes by.", inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Retiring a Character\n{commandPrefix}retire "character name"', value="Retire your character. This will permanently delete them from the system and you will no longer be able to access them.", inline=False)
 
@@ -218,7 +220,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerOne.add_field(name=f'▫️ Removing Players from the Roster (DM)\n{commandPrefix}timer remove @player', value="Remove a player from the roster.", inline=False)
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Adding Guilds (DM)\n{commandPrefix}timer guild #guild1, #guild2, #guild3', value="Add a maximum of three guilds to your quest. Each use of this command replaces the previous use.", inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Adding Guilds (DM)\n{commandPrefix}timer guild #guild1, #guild2, #guild3', value="Add a maximum of three guilds to your quest.", inline=False)
 
     helpEmbedTimerOne.add_field(name=f'▫️ Cancelling the Timer (DM)\n{commandPrefix}timer cancel', value="Cancel the prepared timer.", inline=False)
 
@@ -231,9 +233,9 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerTwo.title = f"Running Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Yourself (Player)\n{commandPrefix}timer addme "character name" "consumable1, consumable2, [...]"', value="Request permission to join a one-shot with your character and their consumables after it has already been started. This only functions if there is a spot for the player and the DM must approve the request.", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Adding Yourself (Player)\n{commandPrefix}timer addme "character name" "consumable1, consumable2, [...]"', value="Request permission to join a one-shot with your character and their consumables after it has already been started.", inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Using Items (Player)\n- item', value="Use one of the consumables that your character brought into the one-shot or any mundane item in their inventory. This will permanently remove the consumable or item from their inventory.", inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Using Items (Player)\n- item', value="Use one of the consumables that your character brought into the one-shot or any mundane item in their inventory.", inline=False)
 
     helpEmbedTimerTwo.add_field(name=f'▫️ Removing Yourself (Player)\n{commandPrefix}timer removeme', value="Remove yourself from the running timer.", inline=False)
 
@@ -260,17 +262,17 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerThree.title = f"Post-Quest Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Rewards (Player)\n{commandPrefix}session optout2xR gameID', value="Opt out of the 2x Rewards Guild Boon whenever it is activated. You are automatically opted into it whenever it is used.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Rewards (Player)\n{commandPrefix}session optout2xR gameID', value="Opt out of the 2x Rewards Guild Boon whenever it is activated.", inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Rewards (Player)\n{commandPrefix}session optin2xR gameID', value="Opt into the 2x Rewards Guild Boon if you previously opted out of it.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Rewards (Player)\n{commandPrefix}session optin2xR gameID', value="Opt into the 2x Rewards Guild Boon if you previously opted of it.", inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Items (Player)\n{commandPrefix}session optout2xI gameID', value="Opt out of the 2x Items Guild Boon whenever it is activated. You are automatically opted into it whenever it is used.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Items (Player)\n{commandPrefix}session optout2xI gameID', value="Opt out of the 2x Items Guild Boon whenever it is activated.", inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items (Player)\n{commandPrefix}session optin2xI gameID', value="Opt into the 2x Items Guild Boon when the guild that your character is a member of activates it in a quest that you are participating in with that character. You are automatically opted into 2x Items whenever it is used.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items (Player)\n{commandPrefix}session optin2xI gameID', value="Opt into the 2x Items Guild Boon when the guild that your character is a member of activates it in a quest that you are participating in with that character.", inline=False)
 
 # DM COMMANDS
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)\n{commandPrefix}session log questID summary', value="Submit a session log summary for the running timer which you just stopped. See #hosting-a-one-shot or the Bot Friend DM Commands Guide for more information.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)\n{commandPrefix}session log questID summary', value="Submit a session log summary for the running timer which you just stopped.", inline=False)
 
     helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)\n{commandPrefix}approveRewards gameID #guild-channel', value="Enable the 2x Rewards Guild Boon for a guild quest which you host.", inline=False)
 
@@ -284,7 +286,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerThree.add_field(name=f'▫️ Deny Recruitment Drive (DM)\n{commandPrefix}session denyDrive gameID #guild-channel', value="Disable the Recruitment Drive Guild Boon for a guild quest which you host.", inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of DDMRW (DM)\n{commandPrefix}session ddmrw optout gameID', value="Opt out of Double DM Rewards Weekend (DDMRW) and not to receive Double DM Rewards for a quest which host during DDMRW. Any quest which ends during DDMRW will automatically have Double DM Rewards applied to it so you will have to opt out of it by default.", inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of DDMRW (DM)\n{commandPrefix}session ddmrw optout gameID', value="Opt out of Double DM Rewards Weekend (DDMRW) and not to receive Double DM Rewards for a quest which host during DDMRW.", inline=False)
 
     helpEmbedTimerThree.add_field(name=f'▫️ Opting Into DDMRW (DM)\n{commandPrefix}session ddmrw optin gameID', value="Opt into DDMRW if you previously opted out of it.", inline=False)
 
@@ -303,15 +305,15 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedShop.title = 'Shop Commands'
 
-    helpEmbedShop.add_field(name=f'▫️ Buying a Shop Item\n{commandPrefix}shop buy "character name" "item" #', value="Purchase a specified number of a single item for your character from the shop. If no number is specified then only one mundane item will be purchased. Purchasing a spell scroll uses the following format: \"Spell Scroll (spell name)\"", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Buying a Shop Item\n{commandPrefix}shop buy "character name" "item" #', value="Purchase a specified number of a single item for your character from the shop.", inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Buying a Miscellaneous Item\n{commandPrefix}shop buy "character name" Miscellaneous #', value="Spend a specified amount of your character’s GP on nothing. This simulates expenses of any kind or items which aren’t available on the **Other Item Table (OIT)**.", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Buying a Miscellaneous Item\n{commandPrefix}shop buy "character name" Miscellaneous #', value="Spend a specified amount of your character’s GP on nothing.", inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Selling a Mundane Item\n{commandPrefix}shop sell "character name" "item" #', value="Sell a specified number of a single mundane item from your character to the shop. If no number is specified then only one mundane item will be sold.", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Selling a Mundane Item\n{commandPrefix}shop sell "character name" "item" #', value="Sell a specified number of a single mundane item from your character to the shop.", inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Copying a Spell Scroll\n{commandPrefix}shop copy "character name" "spell name"', value="Copy a spell scroll into your character’s spellbook if they have access to one. See #marketplace-rules or the Bot Friend Player Commands Guide for more information.", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Copying a Spell Scroll\n{commandPrefix}shop copy "character name" "spell name"', value="Copy a spell scroll into your character’s spellbook if they have access to one.", inline=False)
 
-    helpEmbedShop.add_field(name=f'▫️ Coating a Weapon in Silver or Adamantine\n{commandPrefix}shop silver "character name" "weapon name" #\n{commandPrefix}shop adamantine', value="Coat a specified number of one of your character’s weapons in silver or adamantine. If no number is specified then only one weapon will be coated.", inline=False)
+    helpEmbedShop.add_field(name=f'▫️ Coating a Weapon in Silver or Adamantine\n{commandPrefix}shop silver "character name" "weapon name" #\n{commandPrefix}shop adamantine', value="Coat a specified number of one of your character’s weapons in silver or adamantine.", inline=False)
 
     helpEmbedShop.add_field(name=f'▫️ Downtime Friend Training\n{commandPrefix}downtime training "character name"\n[{commandPrefix}dt training]', value="Have your character learn a language or gain proficiency in a tool (or a skill later on).", inline=False)
 
@@ -322,9 +324,9 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTp.title = 'TP Commands'
 
-    helpEmbedTp.add_field(name=f'▫️ Acquiring a Magic Item\n{commandPrefix}tp buy "character name" "magic item"', value="Put your character’s TP towards a magic item or purchase it with GP. See #after-a-quest or the Bot Friend Player Commands Guide for more information.", inline=False)
+    helpEmbedTp.add_field(name=f'▫️ Acquiring a Magic Item\n{commandPrefix}tp buy "character name" "magic item"', value="Put your character’s TP towards a magic item or purchase it with GP.", inline=False)
 
-    helpEmbedTp.add_field(name=f'▫️ Discarding an Incomplete Magic Item\n{commandPrefix}tp discard "character name"', value="Discard your character’s incomplete magic item(s) that have partial TP towards them. You will permanently lose all of the TP that has been put towards the magic item(s).", inline=False)
+    helpEmbedTp.add_field(name=f'▫️ Discarding an Incomplete Magic Item\n{commandPrefix}tp discard "character name"', value="Discard your character’s incomplete magic item(s) that have partial TP towards them.", inline=False)
 
     helpEmbedTp.add_field(name=f'▫️ Abandoning Leftover TP\n{commandPrefix}tp abandon "character name" tier', value="Abandon your character’s leftover TP in the tier of your choice.", inline=False)
 
@@ -333,7 +335,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGuild.title = 'Guild Commands'
 
-    helpEmbedGuild.add_field(name=f'▫️ Viewing a Guild’s Information\n{commandPrefix}guild info #guild-channel', value="View the roster of a guild, the reputation in its bank and total, and its monthly and lifetime stats. If the guild has yet to be funded, it will instead display the amount of GP that it requires before it will be officially opened.", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Viewing a Guild’s Information\n{commandPrefix}guild info #guild-channel', value="View the roster of a guild, the reputation in its bank and total, and its monthly and lifetime stats.", inline=False)
 
     helpEmbedGuild.add_field(name=f'▫️ Joining a Guild\n{commandPrefix}guild join "character name" #guild-channel', value="Join a guild with your character.", inline=False)
 
@@ -341,9 +343,9 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGuild.add_field(name=f'▫️ Leaving a Guild\n{commandPrefix}guild leave "character name"', value="Leave a guild that your character is a member of", inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Creating a Guild\n{commandPrefix}guild create "character name" "guild name" @guildrole #guild-channel', value="Create a guild which will require funding in order to officially open. Your character will automatically join the guild as a result of creating it and will fund a minimum amount of GP equal to the joining fee of their tier.", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Creating a Guild\n{commandPrefix}guild create "character name" "guild name" @guildrole #guild-channel', value="Create a guild which will require funding in order to officially open.", inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Funding a Guild\n{commandPrefix}guild fund "character name" "guild name" GP', value="Fund and join a newly-created guild which still requires funding with your character. The minimum amount of GP that you must fund is equal to the joining fee of your character’s tier.", inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Funding a Guild\n{commandPrefix}guild fund "character name" "guild name" GP', value="Fund and join a newly-created guild which still requires funding with your character.", inline=False)
 
 
 # CAMPAIGN COMMANDS MENU ($help campaign)
@@ -375,7 +377,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedCampaign.add_field(name=f'▫️ Removing Players from a Campaign Roster (DM)\n{commandPrefix}campaign remove @player #campaign-channel', value="Remove yourself from the running timer.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Preparing the Timer (DM)\n{commandPrefix}campaign timer prep "@player1, @player2,#player3, [...]" sessionname', value="Prepare a timer with a list of players who will be participating in the session. If no session name is given, it defaults to the name of the channel. Any member of a campaign can use this command (as well all subsequent commands) to host a campaign session.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Preparing the Timer (DM)\n{commandPrefix}campaign timer prep "@player1, @player2,#player3, [...]" sessionname', value="Prepare a timer with a list of players who will be participating in the session.", inline=False)
 
     helpEmbedCampaign.add_field(name=f'▫️ Adding Players During a Session (DM)\n{commandPrefix}campaign timer add @player', value="Add a player to the roster after you have already prepared the timer so they can sign up or add them to the running timer.", inline=False)
 
@@ -387,7 +389,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedCampaign.add_field(name=f'▫️ Stopping the Timer (DM)\n{commandPrefix}campaign timer stop', value="Stop the running timer which creates a session log for it.", inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Submitting a Campaign Log (DM)\n{commandPrefix}campaign log gameID summary ', value="Submit a campaign log summary for the running timer which you just stopped. See #campaign-rules or the Bot Friend DM Commands Guide for more information.", inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Submitting a Campaign Log (DM)\n{commandPrefix}campaign log gameID summary ', value="Submit a campaign log summary for the running timer which you just stopped.", inline=False)
 
 
 

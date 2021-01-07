@@ -735,13 +735,13 @@ class Shop(commands.Cog):
                         return
                         
                     if "Ritual" not in bRecord:
-                        await channel.send(f"***{bRecord['Name']}*** is not a ritual spell, therefore it cannot be copied into your ritual book.")
+                        await channel.send(f"***{bRecord['Name']}*** is not a ritual spell and cannot be copied into your ritual book.")
                         ctx.command.reset_cooldown(ctx)
                         return
 
                     ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
                     if charRecords['Level'] < (int(bRecord['Level']) * 2 - 1):
-                        await channel.send(f"***{charRecords['Name']}*** is not a high enough level to copy a  {ordinal(bRecord['Level'])} level spell, therefore it cannot be copied into your ritual book.")
+                        await channel.send(f"***{charRecords['Name']}*** is not a high enough level to copy a {ordinal(bRecord['Level'])}-level spell and cannot copy ***{bRecord['Name']}*** into your ritual book.")
                         ctx.command.reset_cooldown(ctx)
                         return
                     
@@ -865,7 +865,7 @@ class Shop(commands.Cog):
                 shopEmbed.title = f"Copying a Spell: {charRecords['Name']}"
 
                 if fsIndex != 0:
-                    shopEmbed.description = f"""Are you sure you want to copy the **{bRecord['Name']}** spell? This will consume a **" {ordinal(bRecord['Level'])} Level"** free spell.\n\n✅: Yes\n\n❌: Cancel"""
+                    shopEmbed.description = f"""Are you sure you want to copy the **{bRecord['Name']}** spell? This will consume a {ordinal(bRecord['Level'])}-level free spell.\n\n✅: Yes\n\n❌: Cancel"""
                 else:
                     shopEmbed.description = f"Are you sure you want to copy the **{bRecord['Name']}** spell for **{gpNeeded} GP**?\nCurrent GP: {charRecords['GP']} GP\nNew GP: {newGP} GP\n\n✅: Yes\n\n❌: Cancel"
 
