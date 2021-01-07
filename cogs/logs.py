@@ -33,7 +33,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     usersCollection = db.users
 
     sessionLogEmbed = editMessage.embeds[0]
-    summaryIndex = sessionLogEmbed.description.find('Summary:')
+    summaryIndex = sessionLogEmbed.description.find('**General Summary**:')
     description = sessionLogEmbed.description[summaryIndex:]+"\n"
     
     role = sessionInfo["Role"]
@@ -102,11 +102,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                 g["Reputation"] -= 10*guilds[g["Name"]]["Items"]
             else:
                 guilds[g["Name"]]["Items"] = False
-    
-    
-    
-    
-    print(userDBEntriesDic)
     
     for k, player in players.items():
         # this indicates that the character had died
@@ -178,7 +173,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     dateend = datetime.fromtimestamp(end).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
     totalDuration = timeConversion(end - start)
     sessionLogEmbed.title = f"Timer: {game} [END] - {totalDuration}"
-    sessionLogEmbed.description = f"Start: {datestart} EDT\nEnd: {dateend} EDT\n" 
     dm_double_string = ""
     dmRewardsList = []
     #DM REWARD MATH STARTS HERE
@@ -252,7 +246,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     hoursPlayed = maximumCP
     # that is the base line of sparkles and noodles gained
     noodlesGained = sparklesGained = int(hoursPlayed) // 3
-    print("Noodles:", noodlesGained)
     # add the noodles to the record or start a record if needed
     
     #update noodle role if dm
@@ -709,8 +702,6 @@ class Log(commands.Cog):
                     player_set["Drive"] = g["Name"]
                     break
             
-            print("Drive SEEEEEEEEET", player_set)
-            
             charRewards = {'_id': player["Character ID"],  
                             "fields": {"$unset": {f"GID": 1},
                             "$inc": increment, 
@@ -726,7 +717,6 @@ class Log(commands.Cog):
         noodlesGained = sparklesGained = int(hoursPlayed) // 3
         
         timerData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), playerUpdates))
-        print(guildDBentries)
         players[dm["ID"]] = dm
         guildsData = []
         # if the game received rewards
@@ -740,11 +730,8 @@ class Log(commands.Cog):
                     #filter player list by guild
                     gPlayers = [p for p in players.values() if "Guild" in p and p["Guild"] == name]
                     p_count = len(gPlayers) - int("Guild" in dm and dm["Guild"] == name)
-                    print("Player Count", p_count)
                     guilds[name]["Player Sparkles"] = sparklesGained*p_count
-                    print("Player Sparkles", guilds[name]["Player Sparkles"])
                     guilds[name]["DM Sparkles"] = 2*sparklesGained*int("Guild" in dm and dm["Guild"] == name)
-                    print(guilds[name])
                     gain = 0
                     reputationCost = (20*guilds[name]["Rewards"]+10*guilds[name]["Items"]+guild_drive_costs[sessionInfo["Tier"]]*guilds[name]["Drive"])*guilds[name]["Status"]
                     if(len(gPlayers)>0):
@@ -752,8 +739,6 @@ class Log(commands.Cog):
                     if guilds[name]["Status"]:
                         guildsData.append(UpdateOne({"Name": name},
                                                    {"$inc": {"Games": 1, "Reputation": gain- reputationCost, "Total Reputation": gain}}))
-        print(guilds)   
-        print("LLLLLLLLLLLLLLLLLLLLLLLL\n", guildsData) 
         
         del players[dm["ID"]]
         
@@ -1217,11 +1202,9 @@ class Log(commands.Cog):
         sessionLogEmbed = editMessage.embeds[0]
 
         if sessionInfo["Status"] == "Processing":
-            summaryIndex = sessionLogEmbed.description.find('Summary:')
-            print("KKKKKKKKKKKKKKKKKKKKKKKKKKkk")
-            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Summary:" + editString+"\n"
+            summaryIndex = sessionLogEmbed.description.find('General Summary**:')
+            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"General Summary**:\n" + editString+"\n"
         else:
-            print("UUUUUUUUUUUUUUUUUUUUUUUUUUUu")
             sessionLogEmbed.description += "\n"+editString
         try:
             await editMessage.edit(embed=sessionLogEmbed)
