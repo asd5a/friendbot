@@ -159,15 +159,15 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.title = 'General Commands'
 
-    helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile\n{commandPrefix}user', value="\u200b", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f"{commandPrefix}user", inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats\n{commandPrefix}stats', value="\u200b", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f"{commandPrefix}stats", inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Calculating Rewards\n{commandPrefix}reward XhYm tier', value="\u200b", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f"{commandPrefix}reward XhYm tier", inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu\n{commandPrefix}help', value="\u200b", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f"{commandPrefix}help", inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Print a List of Allowed Races\n{commandPrefix}printRaces', value="\u200b", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Print a List of Allowed Races', value=f"{commandPrefix}printRaces", inline=False)
 
 
 
