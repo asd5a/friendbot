@@ -638,23 +638,24 @@ class Guild(commands.Cog):
                     return
 
                 if charRecords['Guild Rank'] > 3:
-                    await channel.send(f"***{charRecords['Name']}*** is already at the max rank and does not need to upgrade anymore.")
+                    await channel.send(f"***{charRecords['Name']}*** is already at the max rank and cannot increase their rank any further.")
                     return
 
                 elif charRecords['Guild Rank'] == 3:
                     if guildRecords['Total Reputation'] < 30:
-                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because their guild ***{guildRecords['Name']}*** has not unlocked their Masterwork upgrade yet.")
+                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because ***{guildRecords['Name']}*** has not unlocked their Masterwork upgrade yet.")
                         return
                 elif charRecords['Guild Rank'] == 2:
                     if guildRecords['Total Reputation'] < 15:
-                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because their guild ***{guildRecords['Name']}*** has not unlocked their Large upgrade yet.")
+                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because ***{guildRecords['Name']}*** has not unlocked their Large upgrade yet.")
                         return
                 elif charRecords['Guild Rank'] == 1:
                     if guildRecords['Total Reputation'] < 5:
-                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because their guild ***{guildRecords['Name']}*** has not unlocked their Medium upgrade yet.")
+                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because ***{guildRecords['Name']}*** has not unlocked their Medium upgrade yet.")
                         return
 
-                gpNeeded = charRecords['Guild Rank'] * 1000
+                rankCosts = [1000, 3000, 3000]
+                gpNeeded = rankCosts[charRecords['Guild Rank']-1]
                 if gpNeeded > charRecords['GP']:
                     await channel.send(f"***{charRecords['Name']}*** does not have {gpNeeded} GP in order to upgrade their guild rank.")
                     return
