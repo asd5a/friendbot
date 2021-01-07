@@ -61,7 +61,7 @@ class Character(commands.Cog):
 
         if msg:
             if ctx.command.name == "create":
-                msg += f'Please follow this format:\n```yaml\n{commandPrefix}create "name" level "race" "class" "backgound" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```\n'
+                msg += f'Please follow this format:\n```yaml\n{commandPrefix}create "name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```\n'
             elif ctx.command.name == "respec":
                 msg += f'Please follow this format:\n```yaml\n{commandPrefix}respec "name" "new name" "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```\n'
             elif ctx.command.name == "retire":
@@ -995,20 +995,17 @@ class Character(commands.Cog):
                         totalPoints += (s - 8)
                         
                 if any([s < 8 for s in statsArray]):
-                    msg += f":warning: You have at least one stat below the minumum 8.\n"
+                    msg += f":warning: You have at least one stat below the minimum of 8.\n"
                 if totalPoints != 27:
-                    msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation.\n"
+                    msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
 
         #Stats - Feats
         if msg == "":
             featLevels = []
             featChoices = []
             featsChosen = []
-            print("Reeeeeeeeee", rRecord)
             if "Feat" in rRecord:
                 featLevels.append('Extra Feat')
-                print("HEY")
-            print(featLevels)
 
             for c in cRecord:
                 if int(c['Level']) > 3:
@@ -1027,8 +1024,6 @@ class Character(commands.Cog):
                     featLevels.append(16)
                 if int(c['Level']) > 18:
                     featLevels.append(19)
-            print("RRECORD", rRecord)
-            print("CRECORD", cRecord)
             featsChosen, statsFeats, charEmbedmsg = await characterCog.chooseFeat(ctx, rRecord['Name'], charDict['Class'], cRecord, featLevels, charEmbed, charEmbedmsg, charDict, "")
 
             if not featsChosen and not statsFeats and not charEmbedmsg:

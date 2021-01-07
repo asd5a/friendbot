@@ -545,7 +545,7 @@ class Admin(commands.Cog, name="Admin"):
     
     @commands.command()
     @commands.has_any_role("Mod Friend")
-    async def tx(self, ctx, charName, level : int, cp :int, user, items = ""):
+    async def xfer(self, ctx, charName, level : int, cp :int, user, items = ""):
         msg = ctx.message
         rewardList = msg.raw_mentions
         rewardUser = ""

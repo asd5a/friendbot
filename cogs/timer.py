@@ -141,7 +141,7 @@ class Timer(commands.Cog):
             return
 
         # set up the user communication for tier selection, this is done even if norewards is selected
-        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojisExtra[0]} New Friend (Level 1-4)\n {numberEmojisExtra[1]} Junior Friend (Level 1-4)\n{numberEmojisExtra[2]} Journeyfriend (Level 5-10)\n{numberEmojisExtra[3]} Elite Friend (Level 11-16)\n{numberEmojisExtra[4]} True Friend (Level 17-19)\n{numberEmojisExtra[5]} Ascended Friend (Level 17+)\n", inline=False)
+        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojisExtra[0]} Tutorial One-shot (Level 1)\n {numberEmojisExtra[1]} Junior Friend (Level 1-4)\n{numberEmojisExtra[2]} Journeyfriend (Level 5-10)\n{numberEmojisExtra[3]} Elite Friend (Level 11-16)\n{numberEmojisExtra[4]} True Friend (Level 17-19)\n{numberEmojisExtra[5]} Ascended Friend (Level 17+)\n", inline=False)
         # the discord name is used for listing the owner of the timer
         prepEmbed.set_author(name=userName, icon_url=author.avatar_url)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
@@ -1652,9 +1652,9 @@ class Timer(commands.Cog):
             
             # we need separate advice strings if there are no rewards
             if role != "":
-                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - "item"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "rewards"\n# Stopping the Timer\n   {commandPrefix}timer stop```'
+                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - "item"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "reward item1, reward item2, [...]"\n# Stopping the Timer\n   {commandPrefix}timer stop```'
             else:
-                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - "item"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "rewards"\n# Revoking Reward Items\n   {commandPrefix}timer undo rewards\n# Stopping the Timer\n   {commandPrefix}timer stop```'
+                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - "item"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "reward item1, reward item2, [...]"\n# Revoking Reward Items\n   {commandPrefix}timer undo rewards\n# Stopping the Timer\n   {commandPrefix}timer stop```'
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):
@@ -1835,18 +1835,34 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             dbEntry["Start"] = starting_time
             
             stopEmbed.title = f"Timer: {game} [END] - {totalDuration}"
-            stopEmbed.description = """General Summary:
-• The purpose of the general summary is to give context to the pillars and guild quest guidelines.
-• This should focus on the outline of the quest and shouldn't include "fluff", banter, or inside jokes which might not be relevant to helping a Mod understand the context of your one-shot.
-• Think of it as if you had to recount your one-shot in detail to a friend who did not participate in it in any way. If you write a single sentence or an ambiguous explanation for this (as well as the the pillars or how guilds were involved), the Mod will have no context since they did not participate in the one-shot.
-• This should be detailed enough to get the point across while simultaneously giving context to how the pillars were fulfilled.
+            stopEmbed.description = """**General Summary**:
+• Give context to pillars and guild quest guidelines.
+• Focus on the outline of quest and shouldn't include "fluff".
+• Should help Mods understand context of the one-shot.
 
-**Ask yourself the following questions when determining if the party fulfilled a pillar or a guild's quest guidelines:**
+In order to help determine if the adventurers fulfilled a pillar or a guild's quest guidelines, ask yourself the following questions:
 
-**Guild**:
-• How were any guilds central to the plot and setting, main objectives, core elements, and overall progression of your one-shot?
-• Which guild quest guidelines were fulfilled and how was this accomplished?
-• If the party did not fulfill the guild quest guidelines, how or why did they fail to accomplish them?
+**Exploration**
+• Did they deal with environmental effects? How did they resolve them?
+• Did they interact the envrionment to gather info and make informed decisions? What were the clues? How did these contribute to their success?
+• Did they travel or solve a puzzle/trap within a limited time frame? What problems did they have to face? How were they solved?
+• How did any unsuccessful attempts negatively affect future events?
+
+**Social**
+• Did they change an NPC's attitude? How did they do it and why was it important?
+• Did they convince an NPC of something against their nature or traits? Why was it important?
+• Did they retrieve info from an NPC? How did they retrieve it? Was it relevant to the main objective?
+• How did any unsuccessful attempts negatively affect future events?
+
+**Combat**
+• Did they fight? What kind of creatures?
+• Did they engage in combat as a result of unsuccessful attempts in the Exploration or Social pillars?
+• Did combat present complications for future events?
+
+**Guilds**
+• How were guilds central to plot and setting, main objectives, core elements, and overall progression of your one-shot?
+• Which guidelines were fulfilled and how?
+• If guidelines were not fulfilled, how/why did the party fail?
 """ 
             
             hoursPlayed = (totalDurationTime // 1800) / 2
