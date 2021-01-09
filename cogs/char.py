@@ -116,7 +116,6 @@ class Character(commands.Cog):
             collector_string = ""
             for race in items:
                 race = race["Name"]
-                print(race)
                 if race[0] == character:
                     collector_string += f"{race}\n"
                 else:
@@ -127,7 +126,6 @@ class Character(commands.Cog):
             if collector_string:
                 out_strings.append(collector_string)
             for i in out_strings:
-                print(i)
                 raceEmbed.add_field(name=i[0], value= i, inline = True)
             await ctx.channel.send(embed=raceEmbed)
     
@@ -273,8 +271,6 @@ class Character(commands.Cog):
         cp = 0
         cpTransfered = 0
         campaignTransferSuccess = False
-        print("C Name", campaignName)
-        print("C Time", timeTransfer)
         if campaignName:
             campaignChannels = ctx.message.channel_mentions
             if len(campaignChannels) > 1 or campaignChannels == list():
@@ -317,7 +313,6 @@ class Character(commands.Cog):
                             campaignTransferSuccess = True
                             charDict["Level"] = lvl
                             
-        print(msg)
         charDict['CP'] = cp
         
         levelCP = (((lvl-5) * 10) + 16)
@@ -451,26 +446,21 @@ class Character(commands.Cog):
                 if 'Bean Friend' in roles:
                     tierConsumableCounts[0] += 2
                     tierConsumableCounts[tierNum] += 2
-                print("CCCCCCCCOOOOOOOOOOOOOOOUNNTS",tierConsumableCounts)
                 startCounts = tierConsumableCounts.copy()
                 startCounts[0] = 0
                 startt1MNC = tierConsumableCounts[0]
 
                 for item in allRewardItemsString:
-                    print(item['Tier'])
                     
                     if item['Minor/Major'] == 'Minor' and item["Type"] == 'Magic Items':
                         item['Tier'] -= 1
                     i = item["Tier"]
-                    print("I", i)
                     while i < len(tierConsumableCounts):
                         if tierConsumableCounts[i] > 0 or i == len(tierConsumableCounts)-1:
                             tierConsumableCounts[i] -= 1
                             break
                         i += 1
                     
-                    print("counts",tierConsumableCounts)
-                    print("I2", i)
                     if item["Tier"] > tierNum:
                         msg += ":warning: One or more of these reward items cannot be acquired at Level " + str(lvl) + ".\n"
                         break
@@ -535,7 +525,6 @@ class Character(commands.Cog):
             multiclassList = cclass.replace(' ', '').split('/')
             # Iterates through the multiclass list 
             
-            print("MultList ", multiclassList)
             for m in multiclassList:
                 # Separate level and class
                 mLevel = re.search('\d+', m)
@@ -646,7 +635,6 @@ class Character(commands.Cog):
 
                     charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength + 1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString, inline=False)
                     
-                    print("AAAAAAA", charDict['Inventory'])
                     for k,v in startEquipmentItem.items():
                         if '[' in k and ']' in k:
                             iType = k.split('[')
@@ -689,20 +677,16 @@ class Character(commands.Cog):
                                 
                                 p = 0
                                 for a in charInv:
-                                    print(p,alphaEmojis[p], a)
                                     p+=1
-                                print(alphaEmojis.index(tReaction.emoji))
                                 typeEquipmentList.append(charInv[alphaEmojis.index(tReaction.emoji)]['Name'])
                             typeCount = collections.Counter(typeEquipmentList)
                             typeString = ""
-                            print("COUNT", typeCount)
                             for tk, tv in typeCount.items():
                                 if tk in charDict['Inventory']:
                                     charDict['Inventory'][tk] += tv
                                 else:
                                     charDict['Inventory'][tk] = tv
                                 
-                                print("GGGGGGGGGGG", tk, tv, charDict['Inventory'][tk])
                                 typeString += f"{tk} x{charDict['Inventory'][tk]}\n"
 
                             charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength+1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString.replace(f"{k} x{v}\n", typeString), inline=False)
@@ -1129,7 +1113,6 @@ class Character(commands.Cog):
             playersCollection.insert_one(charDict)
             if campaignTransferSuccess:
                 target = f"Campaigns.{campaignKey}.Time"
-                print("TTTTTTTTTT", target)
                 db.users.update_one({"User ID": str(author.id)}, {"$inc" : {target: -cpTransfered *3600}})
                 await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
@@ -1206,8 +1189,6 @@ class Character(commands.Cog):
         for c in charRemoveKeyList:
             if c in charDict:
                 del charDict[c]
-        print("Check", check_list)
-        print("Search", searched_items_names)
         name = charDict["Name"]
         charDict["Magic Items"] = ", ".join(m_saved_list) + ("None" * (len(m_saved_list) == 0))
         charDict["Inventory"] = {}
@@ -1310,7 +1291,6 @@ class Character(commands.Cog):
             tierNum = 3
         elif charLevel < 20:
             tierNum = 4
-        print()
         if extraCp > cp_bound_array[tierNum-1][0] and "Respecc" not in charDict:
             msg += f":warning: {oldName} needs to level up before they can respec into a new character!"
         
@@ -1347,7 +1327,6 @@ class Character(commands.Cog):
             multiclassList = cclass.replace(' ', '').split('/')
             # Iterates through the multiclass list 
             
-            print("MultList ", multiclassList)
             for m in multiclassList:
                 # Separate level and class
                 mLevel = re.search('\d+', m)
@@ -1384,7 +1363,6 @@ class Character(commands.Cog):
                 broke.append(cclass)
 
         charDict['Class'] = ""
-        print(len(broke))
         if not mLevel and '/' in cclass:
             pass
         elif len(broke)>0:
@@ -1594,11 +1572,8 @@ class Character(commands.Cog):
             featLevels = []
             featChoices = []
             featsChosen = []
-            print(rRecord)
             if "Feat" in rRecord:
                 featLevels.append('Extra Feat')
-                print("HEY")
-            print(featLevels)
             for c in cRecord:
                 if int(c['Level']) > 3:
                     featLevels.append(4)
@@ -1695,7 +1670,6 @@ class Character(commands.Cog):
         charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} "
 
         charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
-        print(charDict)
         
         for key, amount in bankTP.items():
             if  amount > 0:
@@ -1733,7 +1707,6 @@ class Character(commands.Cog):
             if charEmbedmsg.id == r.message.id:
                 sameMessage = True
             return sameMessage and ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author
-        print(charEmbed)
         if not charEmbedmsg:
             charEmbedmsg = await channel.send(embed=charEmbed, content="**Double-check** your character information.\nIf this is correct, please react with one of the following:\n✅ to finish creating your character.\n❌ to cancel. ")
         else:
@@ -1759,12 +1732,8 @@ class Character(commands.Cog):
 
         try:
             
-            print("GGGGGGGGGGGGGGGGGGGGGG2",guild_name)
             if len(guild_name)>0:
                 guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": guild_name, '$options': 'i' }}))
-                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", guildAmount)
-                print(len(guildAmount))
-                print(guild_name)
                 # If there is only one of user's character in the guild remove the role.
                 if (len(guildAmount) <= 1):
                     await author.remove_roles(get(guild.roles, name = guild_name), reason=f" Respecced")
@@ -1803,7 +1772,6 @@ class Character(commands.Cog):
                 statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
                 await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             # Extra to unset
-            print(charDict)
             if "Respecc" in charDict:
                 del charDict["Respecc"]
             charRemoveKeyList = {"Transfer Set" : 1, "Respecc" : 1, 'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
@@ -1870,15 +1838,11 @@ class Character(commands.Cog):
                     try:
                         playersCollection = db.players
                         
-                        print(list(playersCollection.find({'_id': charID})))
                         deadCollection = db.dead
                         usersCollection = db.users
                         
                         if "Guild" in charDict:
                             guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charDict['Guild'], '$options': 'i' }}))
-                            print(guildAmount)
-                            print(len(guildAmount))
-                            print(charDict["Guild"])
                             # If there is only one of user's character in the guild remove the role.
                             if (len(guildAmount) <= 1):
                                 await author.remove_roles(get(guild.roles, name = charDict['Guild']), reason=f"Left guild {charDict['Guild']}")
@@ -1888,7 +1852,6 @@ class Character(commands.Cog):
                             # usersRecord['Games'] = charDict['Games']
                         # else:
                             # usersRecord['Games'] += charDict['Games']
-                        print(list(playersCollection.find({'_id': charID})))
                         # usersCollection.update_one({'User ID': charDict['User ID']}, {"$set": {'Games': usersRecord['Games']}}, upsert=True)
                         playersCollection.delete_one({'_id': charID})
                         
@@ -2012,9 +1975,6 @@ class Character(commands.Cog):
                                 deadCollection = db.dead
                                 playersCollection.delete_one({'_id': charID})
                                 guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charDict['Guild'], '$options': 'i' }}))
-                                print("AAAAAAAAAAAAA", guildAmount)
-                                print(len(guildAmount))
-                                print(charDict["Guild"])
                                 # If there is only one of user's character in the guild remove the role.
                                 if (len(guildAmount) <= 1):
                                     await author.remove_roles(get(guild.roles, name = charDict['Guild']), reason=f"Left guild {charDict['Guild']}")
@@ -2253,7 +2213,6 @@ class Character(commands.Cog):
                     else:
                         charEmbed.add_field(name=k, value=vString, inline=False)
 
-            print(len(charEmbed))        
             embedList = [discord.Embed()]
             pages = 1
 
@@ -2583,7 +2542,6 @@ class Character(commands.Cog):
                                 maxStat = statSplit[0][:-3]
                                 statSplit[0] = statSplit[0].replace(maxStat, "")
                                 maxStat = maxStat.split(" ")
-                                print(maxStatDict)
 
                             modStat = str(charDict[statSplit[0]])
                             modStat = modStat.split(' (')[0]
@@ -2610,10 +2568,8 @@ class Character(commands.Cog):
                     if '+' in conValue[1]:
                         trueConValue = int(conValue[1].replace('+', '')) + int(conValue[0])
 
-                    print(trueConValue)
 
                     charDict['HP'] -= ((int(conValue[0]) - 10) // 2) * charLevel
-                    print("CON",   trueConValue, conValue)
                     charDict['HP'] += ((int(trueConValue) - 10) // 2) * charLevel
 
             charDict['HP'] += totalHPAdd * charLevel
@@ -2809,7 +2765,6 @@ class Character(commands.Cog):
                 return
             else:
                 cRecords, levelUpEmbed, levelUpEmbedmsg = await callAPI(ctx, levelUpEmbed, levelUpEmbedmsg,'classes')
-                print("CCCCCCc", cRecords)
                 classRecords = sorted(cRecords, key=lambda k: k['Name']) 
                 leftCP = cpSplit - cp_bound_array[tierNum-1][0]
                 newCharLevel = charLevel  + 1
@@ -3305,7 +3260,6 @@ class Character(commands.Cog):
             numI = 0
 
             # Check if query is in character's Magic Item List. Limit is 8 to show if there are multiple matches.
-            print([a.split(' [')[0] for a in attuned])
             for k in charRecordMagicItems:
                 if m.lower() in k.lower():
                     if k not in [a.split(' [')[0] for a in attuned]:
@@ -3438,7 +3392,6 @@ class Character(commands.Cog):
 
             # Filter through attuned items, some attuned items have [STAT +X]; filter out those too and get raw.
             for k in charRecords['Attuned'].split(', '):
-                print(k.lower().split(' [')[0])
                 if m.lower() in k.lower().split(' [')[0]:
                     mList.append(k.lower().split(' [')[0])
                     mString += f"{numberEmojis[numI]} {k} \n"
@@ -3527,7 +3480,6 @@ class Character(commands.Cog):
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
                 currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
-                print(currentDate)
                 
             else:
                 await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
@@ -3792,7 +3744,6 @@ class Character(commands.Cog):
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
                 currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
-                print(currentDate)
                 
             else:
                 await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
@@ -3827,7 +3778,6 @@ class Character(commands.Cog):
                     friend_list.append({"Member": dmMember, "Count": v["Friend"]})
                 if "Guilds" in v:
                     guild_list.append({"Member": dmMember, "Count": sum([c for c in v["Guilds"].values()])})
-                print(guild_list)
             friend_list.sort(key = lambda x: -x["Count"])
             
             guild_list.sort(key = lambda x: -x["Count"])
@@ -3835,7 +3785,6 @@ class Character(commands.Cog):
             for f in friend_list:
                 friendString += f"{f['Member'].mention}: {f['Count']} Points\n"
             for g in guild_list:
-                print(g)
                 guildString += f"{g['Member'].mention}: {g['Count']} Points\n"
             if friendString:
                 statsEmbed.add_field(name=f"Friend Fanatic", value=friendString, inline=True) 
@@ -3879,7 +3828,6 @@ class Character(commands.Cog):
                 sameMessage = True
             if (r.emoji in uniqueReacts or r.emoji == '❌') and u == author:
                 anyList[charEmbedmsg.id].add(r.emoji)
-            print(anyList)
 
             return sameMessage and ((len(anyList[charEmbedmsg.id]) == anyCheck) or str(r.emoji) == '❌') and u == author
 
@@ -3893,11 +3841,8 @@ class Character(commands.Cog):
             statsBonus = rRecord['Modifiers'].replace(" ", "").split(',')
             uniqueArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
             allStatsArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
-            print("RIIIIIIIIIIIIIIIIIIIIIIIIi", rRecord)
-            print("SSSSSSSS", statsBonus)
             
             for s in statsBonus:
-                print("s", s)
                 if '/' in s:
                     statSplit = s[:len(s)-2].replace(" ", "").split('/')
                     statSplitString = ""
@@ -3952,7 +3897,6 @@ class Character(commands.Cog):
                         anyCheck = [int(charL) for charL in s if charL.isnumeric()][0] #int(s[len(s)-1])
                         anyAmount = int(s[len(s)-1])
                         anyList = {charEmbedmsg.id:set()}
-                        print("anyList", anyList)
                         uniqueStatStr = ""
                         uniqueReacts = []
 
@@ -3986,7 +3930,6 @@ class Character(commands.Cog):
 
                     charEmbed.clear_fields()
                     await charEmbedmsg.clear_reactions()
-                    print("Stats Array 1", statsArray)
                     if 'AOU' in s:
                         for s in anyList[charEmbedmsg.id]:
                             statsArray[allStatsArray.index(uniqueArray[int(s[0]) - 1])] += anyAmount
@@ -3994,7 +3937,6 @@ class Character(commands.Cog):
 
                         for s in anyList[charEmbedmsg.id]:
                             statsArray[(int(s[0]) - 1)] += anyAmount
-                    print("Stats Array 2", statsArray)
             return statsArray, charEmbedmsg
 
     async def chooseSubclass(self, ctx, subclassesList, charClass, charEmbed, charEmbedmsg):
@@ -4073,7 +4015,6 @@ class Character(commands.Cog):
         spellcasting = False
         for f in featLevels:
             charEmbed.clear_fields()
-            print("F ", f)
             if f != 'Extra Feat':
                 try:
                     charEmbed.add_field(name=f"Your level allows you to pick an Ability Score Improvement or a feat. Please react with 1 or 2 for your level {f} ASI/feat.", value=f"{numberEmojis[0]}: Ability Score Improvement\n{numberEmojis[1]}: Feat\n", inline=False)
@@ -4221,7 +4162,6 @@ class Character(commands.Cog):
                             if 'Race Unavailable' in feat:
                                 if race not in feat['Race Unavailable']:
                                     meetsRestriction = True
-                            print("FFFfffff",ctx.invoked_with)
                             if 'Class Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Class Restriction'].split(', ')]
                                 for c in cRecord:
