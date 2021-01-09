@@ -2240,6 +2240,10 @@ class Character(commands.Cog):
             miArray = collections.Counter(charDict['Magic Items'].split(', '))
 
             for m,v in miArray.items():
+                if "Predecessor" in charDict and m in charDict["Predecessor"]:
+                    upgrade_names = charDict['Predecessor'][m]["Names"]
+                    stage = charDict['Predecessor'][m]["Stage"]
+                    m = m + f" ({upgrade_names[stage]})"
                 if v == 1:
                     miString += f"• {m}\n"
                 else:
