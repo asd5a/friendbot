@@ -1301,8 +1301,24 @@ class Character(commands.Cog):
         cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP+extraCp)*3600)
         totalGP = cp_tp_gp_array[2]
         bankTP = cp_tp_gp_array[1]
+        # Stats - Point Buy
+        if msg == "":
+            statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
+            
+            totalPoints = 0
+            for s in statsArray:
+                if (13-s) < 0:
+                    totalPoints += ((s - 13) * 2) + 5
+                else:
+                    totalPoints += (s - 8)
+                    
+            if any([s < 8 for s in statsArray]):
+                msg += f":warning: You have at least one stat below the minimum of 8.\n"
+            if totalPoints != 27:
+                msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+            
         
-
+        
         # ██████╗░░█████╗░░█████╗░███████╗░░░  ░█████╗░██╗░░░░░░█████╗░░██████╗░██████╗
         # ██╔══██╗██╔══██╗██╔══██╗██╔════╝░░░  ██╔══██╗██║░░░░░██╔══██╗██╔════╝██╔════╝
         # ██████╔╝███████║██║░░╚═╝█████╗░░░░░  ██║░░╚═╝██║░░░░░███████║╚█████╗░╚█████╗░
@@ -1372,7 +1388,7 @@ class Character(commands.Cog):
             msg += f':warning: **{broke}** isn\'t on the list or it is banned! Check #allowed-and-banned-content and check your spelling.\n'
         elif totalLevel != lvl and len(cRecord) > 1:
             msg += ':warning: Your classes do not add up to the total level. Please double-check your multiclasses.\n'
-        else:
+        elif msg == "":
 
             # starting equipment
             def alphaEmbedCheck(r, u):
@@ -1543,6 +1559,7 @@ class Character(commands.Cog):
             charDict['GP'] = int(bRecord['GP']) + totalGP
 
 
+        
         # ░██████╗████████╗░█████╗░████████╗░██████╗░░░  ███████╗███████╗░█████╗░████████╗░██████╗
         # ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝░░░  ██╔════╝██╔════╝██╔══██╗╚══██╔══╝██╔════╝
         # ╚█████╗░░░░██║░░░███████║░░░██║░░░╚█████╗░░░░  █████╗░░█████╗░░███████║░░░██║░░░╚█████╗░
@@ -1551,20 +1568,16 @@ class Character(commands.Cog):
         # ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░░╚╝  ╚═╝░░░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░
         # Stats - Point Buy
         if msg == "":
-            statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
             statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
+            charDict["STR"] = statsArray[0]
+            charDict["DEX"] = statsArray[1]
+            charDict["CON"] = statsArray[2]
+            charDict["INT"] = statsArray[3]
+            charDict["WIS"] = statsArray[4]
+            charDict["CHA"] = statsArray[5]
+            
             if not statsArray:
                 return
-            elif statsArray:
-                totalPoints = 0
-                for s in statsArray:
-                    if (13-s) < 0:
-                        totalPoints += ((s - 13) * 2) + 5
-                    else:
-                        totalPoints += (s - 8)
-
-                if totalPoints != 27:
-                    msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation.\n"
 
 
         #Stats - Feats
