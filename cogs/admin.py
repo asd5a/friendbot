@@ -292,23 +292,7 @@ class Admin(commands.Cog, name="Admin"):
     
         except Exception as e:
             traceback.print_exc()
-    @commands.command()
-    @admin_or_owner()
-    async def removeAllP(self, ctx):
-        msg = await ctx.channel.send("Are you sure you want to remove every GID entry from characters in the database?\n No: ❌\n Yes: ✅")
-        author = ctx.author
-        
-        # if( not await self.doubleVerify(ctx, msg)):
-            # return
-        try:
-            db.players.update_many(
-               {"Predecessor" : []},
-               {"$set" : {"Predecessor" : {}}},
-            )
-            await msg.edit(content=f"Success.")
     
-        except Exception as e:
-            traceback.print_exc()
     
     @commands.command()
     @admin_or_owner()
