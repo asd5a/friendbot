@@ -182,7 +182,7 @@ class Character(commands.Cog):
           'Consumables': 'None',
           'Feats': 'None',
           'Inventory': {},
-          'Predecessor': [],
+          'Predecessor': {},
           'Games': 0
         }
 
@@ -1297,7 +1297,7 @@ class Character(commands.Cog):
         
         # for i_item in i_saved_list:
             # charDict["Inventory"][i_item[0]] = i_item[1]
-        charDict["Predecessor"]= []
+        charDict["Predecessor"]= {}
         
         charID = charDict['_id']
         charDict['STR'] = int(sStr)
@@ -3469,7 +3469,9 @@ class Character(commands.Cog):
                 await channel.send(f"You are already attuned to **{mRecord['Name']}**!")
                 return
             elif 'Attunement' in mRecord:
-                if 'Stat Bonuses' in mRecord:
+                if "Predecessor" in mRecord and 'Stat Bonuses' in mRecord["Predecessor"]:
+                    attuned.append(f"{mRecord['Name']} [{mRecord['Predecessor']['Stat Bonuses'][charRecords['Predecessor'][mRecord['Name']]['Stage']]}]")
+                elif 'Stat Bonuses' in mRecord:
                     attuned.append(f"{mRecord['Name']} [{mRecord['Stat Bonuses']}]")
                 else:
                     attuned.append(mRecord['Name'])
@@ -3581,12 +3583,13 @@ class Character(commands.Cog):
                     maxSplit = statSplit[0].split(' ')
                     if "MAX" in statSplit[0]:
                         charRecords['Max Stats'][maxSplit[1]] -= int(statSplit[1]) 
-
-                if 'Stat Bonuses' in mRecord:
-                    attuned.remove(f"{mRecord['Name']} [{mRecord['Stat Bonuses']}]") 
-                else:
-                    attuned.remove(mRecord['Name']) 
-                  
+                
+                try:
+                    index = list([a.split("[")[0].strip() for a in attuned]).index(mRecord["Name"])
+                    attuned.pop(index)
+                except Exception as e:
+                    pass
+                
                 charRecords['Attuned'] = ', '.join(attuned)
 
                 try:

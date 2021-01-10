@@ -535,8 +535,13 @@ class Timer(commands.Cog):
                     await channel.send(content=f'You cannot sign up with ***{cRecord["Name"]}*** because they are dead. Please use the following command to resolve their death:\n```yaml\n{commandPrefix}death {cRecord["Name"]}```')
                 return False 
 
+            elif 'Respecc' in cRecord:
+                # block errors on resume
+                if not resume:
+                    await channel.send(content=f'You cannot sign up with ***{cRecord["Name"]}*** because they need to respec. Please use the following command to resolve their death:\n```yaml\n{commandPrefix}respec {cRecord["Name"]} "new character name" "race" "class1 level / class2 level / class3 level / class4 level" "background" STR DEX CON INT WIS CHA```')
+                return False 
             # check if there is any record of a game in charRecords
-            if next((s for s in cRecord.keys() if 'GID' in s), None):
+            elif next((s for s in cRecord.keys() if 'GID' in s), None):
                 if not resume:
                     await channel.send(content=f'You cannot sign up with ***{cRecord["Name"]}*** because they have not received their rewards from their last quest. Please wait until the session log has been approved.')
                 return False    

@@ -292,6 +292,23 @@ class Admin(commands.Cog, name="Admin"):
     
         except Exception as e:
             traceback.print_exc()
+    @commands.command()
+    @admin_or_owner()
+    async def removeAllP(self, ctx):
+        msg = await ctx.channel.send("Are you sure you want to remove every GID entry from characters in the database?\n No: ❌\n Yes: ✅")
+        author = ctx.author
+        
+        # if( not await self.doubleVerify(ctx, msg)):
+            # return
+        try:
+            db.players.update_many(
+               {"Predecessor" : []},
+               {"$set" : {"Predecessor" : {}}},
+            )
+            await msg.edit(content=f"Success.")
+    
+        except Exception as e:
+            traceback.print_exc()
     
     @commands.command()
     @admin_or_owner()
@@ -595,7 +612,7 @@ class Admin(commands.Cog, name="Admin"):
               'Consumables': 'None',
               'Feats': 'None',
               'Inventory': {},
-              'Predecessor': [],
+              'Predecessor': {},
               'Games': 0,
               'Respecc' : "Transfer"
             }
@@ -657,7 +674,6 @@ class Admin(commands.Cog, name="Admin"):
                     await ctx.channel.send(f'**{query}** does not seem to be a valid reward item.')
                     return 
                 else:
-                   
                     if 'spell scroll' in query.lower():
                         rewardConsumable['Name'] = f"Spell Scroll ({sRecord['Name']})"
                     rewardList[rewardConsumable["Type"]].append(rewardConsumable["Name"])
