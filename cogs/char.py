@@ -116,7 +116,6 @@ class Character(commands.Cog):
             collector_string = ""
             for race in items:
                 race = race["Name"]
-                print(race)
                 if race[0] == character:
                     collector_string += f"{race}\n"
                 else:
@@ -127,7 +126,6 @@ class Character(commands.Cog):
             if collector_string:
                 out_strings.append(collector_string)
             for i in out_strings:
-                print(i)
                 raceEmbed.add_field(name=i[0], value= i, inline = True)
             await ctx.channel.send(embed=raceEmbed)
     
@@ -273,8 +271,6 @@ class Character(commands.Cog):
         cp = 0
         cpTransfered = 0
         campaignTransferSuccess = False
-        print("C Name", campaignName)
-        print("C Time", timeTransfer)
         if campaignName:
             campaignChannels = ctx.message.channel_mentions
             if len(campaignChannels) > 1 or campaignChannels == list():
@@ -317,7 +313,6 @@ class Character(commands.Cog):
                             campaignTransferSuccess = True
                             charDict["Level"] = lvl
                             
-        print(msg)
         charDict['CP'] = cp
         
         levelCP = (((lvl-5) * 10) + 16)
@@ -344,6 +339,24 @@ class Character(commands.Cog):
         elif lvl < 20:
             tierNum = 4
         
+        # Stats - Point Buy
+        if msg == "":
+            statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
+            
+            totalPoints = 0
+            for s in statsArray:
+                if (13-s) < 0:
+                    totalPoints += ((s - 13) * 2) + 5
+                else:
+                    totalPoints += (s - 8)
+                    
+            if any([s < 8 for s in statsArray]):
+                msg += f":warning: You have at least one stat below the minimum of 8.\n"
+            if totalPoints != 27:
+                msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+            
+        
+        
         # ███╗░░░███╗░█████╗░░██████╗░██╗░█████╗░  ██╗████████╗███████╗███╗░░░███╗  ░░░░██╗  ████████╗██████╗░
         # ████╗░████║██╔══██╗██╔════╝░██║██╔══██╗  ██║╚══██╔══╝██╔════╝████╗░████║  ░░░██╔╝  ╚══██╔══╝██╔══██╗
         # ██╔████╔██║███████║██║░░██╗░██║██║░░╚═╝  ██║░░░██║░░░█████╗░░██╔████╔██║  ░░██╔╝░  ░░░██║░░░██████╔╝
@@ -356,117 +369,6 @@ class Character(commands.Cog):
         magicItems = mItems.strip().split(',')
         allMagicItemsString = []
 
-        # # If magic items parameter isn't blank, check each magic item to see if valid, and check for duplicates.
-        # if lvl > 1 and magicItems != ['']:
-            # for m in magicItems:
-                # mRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'mit',m) 
-                # if charEmbedmsg == "Fail":
-                    # return
-
-                # if mRecord in allMagicItemsString:
-                    # msg += ':warning: You cannot spend TP on two of the same magic item.\n'
-                    # break 
-                # if not mRecord:
-                    # msg += f":warning: **{m}** belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Magic Item Table, what tier it is, and your spelling.\n"
-                    # break
-                # else:
-                    # allMagicItemsString.append(mRecord)
-
-
-            # def calculateMagicItems(lvl):
-                # highestTier = 0
-                # for key, amount in bankTP.items():
-                    # # second character is the tier number, hopefully never have 10 tiers.
-                    # if amount > 0:
-                        # highestTier = max(int(key[1], highestTier))
-                        
-                # magicItemsCurrent = []
-                # magicItemsBought = []
-                
-                # for item in allMagicItemsString:
-                    # if int(item['Tier']) > highestTier:
-                        # return ":warning: One or more of these magic items cannot be acquired at Level " + str(lvl)
-                    # else:
-                        # haveTP = False
-                        # lowestTp = 0
-                        # # get the lowest tier available TP
-                        # for tp in range (int(tierNum) - 1, 5):
-                            # if tpBank[tp] > 0:
-                                # haveTP = True
-                                # lowestTP = tp + 1 
-                                # break
-                        # if not haveTp:
-                            # charDict['Current Item'] = f'{item["Name"]} (0/{item["TP"]})'
-                          
-                        # costTP = int(item['TP'])
-                        # tp_type = f"T{item['Tier']} TP"
-                        # if bankTP[tp_type] > 0:
-                          # magicItemsCurrent.append(item)                       
-                          # magicItemsCurrent.append(f'{costTP - bankTP1}/{costTP}')
-                          # charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
-                          # isLeftoverT1= False
-                        # else:
-                          # bankTP1 = abs(bankTP1)
-                          # magicItemsBought.append(item)
-                          # isLeftoverT1 = True
-
-
-                # # Go through T2 items
-                # for item in magicItemsTier2:
-
-                    # # If there is an incomplete item from T1 TP, see if it can be completed with T2 TP
-                    # if magicItemsCurrent:
-                        # magicItemsCurrentItem = magicItemsCurrent[1].split('/')
-                        # bankTP2 = int(magicItemsCurrentItem[1]) - int(magicItemsCurrentItem[0]) - bankTP2
-                        # if bankTP2 > 0:
-                            # buyT2 = True
-                            # magicItemsCurrent[1] = f'{int(magicItemsCurrentItem[1]) - bankTP2}/{magicItemsCurrentItem[1]}'
-                            # charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
-                            # isLeftoverT2 = False
-                        # else:
-                            # bankTP2 = abs(bankTP2)
-                            # magicItemsBought.append(magicItemsCurrent[0])
-                            # magicItemsCurrent = []
-                            # charDict['Current Item'] = ""
-                            # isLeftoverT2 = True
-
-                    # # Spend T2 TP with T2 items
-                    # if bankTP2 > 0:
-                        # costTP = int(item['TP'])
-                        # bankTP2 = costTP - bankTP2
-                        # if bankTP2 > 0:
-                          # buyT2 = True
-                          # magicItemsCurrent.append(item)                       
-                          # magicItemsCurrent.append(f'{costTP - bankTP2}/{costTP}')
-                          # charDict['Current Item'] = f'{magicItemsCurrent[0]["Name"]} ({magicItemsCurrent[1]})'
-                          # isLeftoverT2 = False
-                        # else:
-                          # bankTP2 = abs(bankTP2)
-                          # magicItemsBought.append(item)
-                          # isLeftoverT2 = True
-
-                
-                # if not isLeftoverT1 and buyT1:
-                    # bankTP1 = 0
-
-                # if not isLeftoverT2 and buyT2:
-                    # bankTP2 = 0
-
-                # return magicItemsBought
-
-
-            # magicItemsBought = calculateMagicItems(lvl)
-            # if isinstance(magicItemsBought, str):
-                # msg += magicItemsBought
-            # elif magicItemsBought == list():
-                # pass
-            # else:
-                # charDict['Magic Items'] = ', '.join([str(string['Name']) for string in magicItemsBought])
-        
-        # elif lvl == 1 and magicItems != ['']:
-            # msg += '• You cannot purchase magic items at Level 1.\n'
-
-
 
         # ██████╗░███████╗░██╗░░░░░░░██╗░█████╗░██████╗░██████╗░  ██╗████████╗███████╗███╗░░░███╗░██████╗
         # ██╔══██╗██╔════╝░██║░░██╗░░██║██╔══██╗██╔══██╗██╔══██╗  ██║╚══██╔══╝██╔════╝████╗░████║██╔════╝
@@ -475,130 +377,125 @@ class Character(commands.Cog):
         # ██║░░██║███████╗░░╚██╔╝░╚██╔╝░██║░░██║██║░░██║██████╔╝  ██║░░░██║░░░███████╗██║░╚═╝░██║██████╔╝
         # ╚═╝░░╚═╝╚══════╝░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝╚═╝░░╚═╝╚═════╝░  ╚═╝░░░╚═╝░░░╚══════╝╚═╝░░░░░╚═╝╚═════╝░
         # Reward Items
-
-        rewardItems = consumes.strip().split(',')
-        allRewardItemsString = []
-        if rewardItems != ['']:
-            for r in rewardItems:
-                if "spell scroll" in r.lower():
-                    if "spell scroll" == r.lower().strip():
-                        msg += f"""Please be more specific with the type of spell scroll which you're purchasing. You must format spell scrolls as follows: "Spell Scroll (spell name)".\n"""
-                        break 
-                        
-                    spellItem = r.lower().replace("spell scroll", "").replace('(', '').replace(')', '')
-                    sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem) 
-                    if not sRecord:
-                        reRecord = None
-                    else:
-                        if (sRecord["Level"] >= 3 and tierNum < 2) or sRecord["Level"] > 3:
-                            msg += f"""The **Spell Scroll {sRecord['Name']}** cannot be a reward item because the level of the spell scroll is too high for your character.\n"""
-                            break
-
-                        elif sRecord["Level"] == 3:
-                            sTier = 2
+        if msg == "":
+            rewardItems = consumes.strip().split(',')
+            allRewardItemsString = []
+            if rewardItems != ['']:
+                for r in rewardItems:
+                    if "spell scroll" in r.lower():
+                        if "spell scroll" == r.lower().strip():
+                            msg += f"""Please be more specific with the type of spell scroll which you're purchasing. You must format spell scrolls as follows: "Spell Scroll (spell name)".\n"""
+                            break 
+                            
+                        spellItem = r.lower().replace("spell scroll", "").replace('(', '').replace(')', '')
+                        sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem) 
+                        if not sRecord:
+                            reRecord = None
                         else:
-                            sTier = 1
+                            if (sRecord["Level"] >= 3 and tierNum < 2) or sRecord["Level"] > 3:
+                                msg += f"""The **Spell Scroll {sRecord['Name']}** cannot be a reward item because the level of the spell scroll is too high for your character.\n"""
+                                break
 
-                        reRecord = {"Name": f"Spell Scroll ({sRecord['Name']})", "Type": "Consumables",  "Tier": sTier, "Minor/Major" : "Minor"}
-                else:
-                    reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r, tier = tierNum) 
+                            elif sRecord["Level"] == 3:
+                                sTier = 2
+                            else:
+                                sTier = 1
 
-                if charEmbedmsg == "Fail":
-                    return
-                if not reRecord:
-                    msg += f" {r} belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Reward Item Table, what tier it is, and your spelling.\n"
-                    break
-                else:
-                    allRewardItemsString.append(reRecord)
-            allRewardItemsString.sort(key=lambda x: x["Tier"])
-            tier1CountMNC = 0
-            rewardConsumables = []
-            rewardMagics = []
-            rewardInv = []
-            tierRewards = [[], [], [], [], []]
-            tierConsumableCounts = [0,0,0,0,0]
-            if 'Good Noodle' in roles:
-                tierConsumableCounts[0] = 1
-            elif 'Elite Noodle' in roles:
-                tierConsumableCounts[0] = 1
-                tierConsumableCounts[1] = 1
-            elif 'True Noodle' in roles:
-                tierConsumableCounts[0] = 1
-                tierConsumableCounts[2] = 1
-            elif 'Ascended Noodle' in roles:
-                tierConsumableCounts[0] = 1
-                tierConsumableCounts[1] = 1
-                tierConsumableCounts[2] = 1
-            elif 'Immortal Noodle' in roles:
-                tierConsumableCounts[0] = 1
-                tierConsumableCounts[1] = 2
-                tierConsumableCounts[2] = 1
-            elif 'Eternal Noodle' in roles:
-                tierConsumableCounts[0] = 1
-                tierConsumableCounts[1] = 2
-                tierConsumableCounts[2] = 2
+                            reRecord = {"Name": f"Spell Scroll ({sRecord['Name']})", "Type": "Consumables",  "Tier": sTier, "Minor/Major" : "Minor"}
+                    else:
+                        reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r, tier = tierNum) 
 
-            if 'Nitro Booster' in roles:
-                tierConsumableCounts[0] += 2
-
-            if 'Bean Friend' in roles:
-                tierConsumableCounts[0] += 2
-                tierConsumableCounts[tierNum] += 2
-            print("CCCCCCCCOOOOOOOOOOOOOOOUNNTS",tierConsumableCounts)
-            startCounts = tierConsumableCounts.copy()
-            startCounts[0] = 0
-            startt1MNC = tierConsumableCounts[0]
-
-            for item in allRewardItemsString:
-                print(item['Tier'])
-                
-                if item['Minor/Major'] == 'Minor' and item["Type"] == 'Magic Items':
-                    item['Tier'] -= 1
-                i = item["Tier"]
-                print("I", i)
-                while i < len(tierConsumableCounts):
-                    if tierConsumableCounts[i] > 0 or i == len(tierConsumableCounts)-1:
-                        tierConsumableCounts[i] -= 1
+                    if charEmbedmsg == "Fail":
+                        return
+                    if not reRecord:
+                        msg += f" {r} belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Reward Item Table, what tier it is, and your spelling.\n"
                         break
-                    i += 1
-                
-                print("counts",tierConsumableCounts)
-                print("I2", i)
-                if item["Tier"] > tierNum:
-                    msg += ":warning: One or more of these reward items cannot be acquired at Level " + str(lvl) + ".\n"
-                    break
-                elif item["Type"] == 'Consumables':
-                  rewardConsumables.append(item)
-                elif item["Type"] == 'Magic Items':
-                  rewardMagics.append(item)
+                    else:
+                        allRewardItemsString.append(reRecord)
+                allRewardItemsString.sort(key=lambda x: x["Tier"])
+                tier1CountMNC = 0
+                rewardConsumables = []
+                rewardMagics = []
+                rewardInv = []
+                tierRewards = [[], [], [], [], []]
+                tierConsumableCounts = [0,0,0,0,0]
+                if 'Good Noodle' in roles:
+                    tierConsumableCounts[0] = 1
+                elif 'Elite Noodle' in roles:
+                    tierConsumableCounts[0] = 1
+                    tierConsumableCounts[1] = 1
+                elif 'True Noodle' in roles:
+                    tierConsumableCounts[0] = 1
+                    tierConsumableCounts[2] = 1
+                elif 'Ascended Noodle' in roles:
+                    tierConsumableCounts[0] = 1
+                    tierConsumableCounts[1] = 1
+                    tierConsumableCounts[2] = 1
+                elif 'Immortal Noodle' in roles:
+                    tierConsumableCounts[0] = 1
+                    tierConsumableCounts[1] = 2
+                    tierConsumableCounts[2] = 1
+                elif 'Eternal Noodle' in roles:
+                    tierConsumableCounts[0] = 1
+                    tierConsumableCounts[1] = 2
+                    tierConsumableCounts[2] = 2
+
+                if 'Nitro Booster' in roles:
+                    tierConsumableCounts[0] += 2
+
+                if 'Bean Friend' in roles:
+                    tierConsumableCounts[0] += 2
+                    tierConsumableCounts[tierNum] += 2
+                startCounts = tierConsumableCounts.copy()
+                startCounts[0] = 0
+                startt1MNC = tierConsumableCounts[0]
+
+                for item in allRewardItemsString:
+                    
+                    if item['Minor/Major'] == 'Minor' and item["Type"] == 'Magic Items':
+                        item['Tier'] -= 1
+                    i = item["Tier"]
+                    while i < len(tierConsumableCounts):
+                        if tierConsumableCounts[i] > 0 or i == len(tierConsumableCounts)-1:
+                            tierConsumableCounts[i] -= 1
+                            break
+                        i += 1
+                    
+                    if item["Tier"] > tierNum:
+                        msg += ":warning: One or more of these reward items cannot be acquired at Level " + str(lvl) + ".\n"
+                        break
+                    elif item["Type"] == 'Consumables':
+                      rewardConsumables.append(item)
+                    elif item["Type"] == 'Magic Items':
+                      rewardMagics.append(item)
+                    else:
+                        rewardInv.append(item)
+
+
+                if tier1CountMNC < 0 or any([count < 0 for count in tierConsumableCounts]):
+                    msg += f":warning: You do not have the right roles for these reward items. You can only choose **{startt1MNC}** Tier 1 (Non-Consumable) item(s)"
+                    z = 0
+                    for amount in startCounts:
+                        if amount > 0:
+                            msg += f", and **{amount}** Tier {z} (or lower) item(s)"
+                        z += 1
+                    msg += "\n"
                 else:
-                    rewardInv.append(item)
-
-
-            if tier1CountMNC < 0 or any([count < 0 for count in tierConsumableCounts]):
-                msg += f":warning: You do not have the right roles for these reward items. You can only choose **{startt1MNC}** Tier 1 (Non-Consumable) item(s)"
-                z = 0
-                for amount in startCounts:
-                    if amount > 0:
-                        msg += f", and **{amount}** Tier {z} (or lower) item(s)"
-                    z += 1
-                msg += "\n"
-            else:
-                for r in rewardConsumables:
-                    if charDict['Consumables'] != "None":
-                        charDict['Consumables'] += ', ' + r['Name']
-                    else:
-                        charDict['Consumables'] = r['Name']
-                for r in rewardMagics:
-                    if charDict['Magic Items'] != "None":
-                        charDict['Magic Items'] += ', ' + r['Name']
-                    else:
-                        charDict['Magic Items'] = r['Name']
-                for r in rewardInv:
-                    if r["Name"] in charDict['Inventory'].keys():
-                        charDict['Inventory'][r['Name']] +=1
-                    else:
-                        charDict['Inventory'][r['Name']] =1
+                    for r in rewardConsumables:
+                        if charDict['Consumables'] != "None":
+                            charDict['Consumables'] += ', ' + r['Name']
+                        else:
+                            charDict['Consumables'] = r['Name']
+                    for r in rewardMagics:
+                        if charDict['Magic Items'] != "None":
+                            charDict['Magic Items'] += ', ' + r['Name']
+                        else:
+                            charDict['Magic Items'] = r['Name']
+                    for r in rewardInv:
+                        if r["Name"] in charDict['Inventory'].keys():
+                            charDict['Inventory'][r['Name']] +=1
+                        else:
+                            charDict['Inventory'][r['Name']] =1
                       
         # ██████╗░░█████╗░░█████╗░███████╗░░░  ░█████╗░██╗░░░░░░█████╗░░██████╗░██████╗
         # ██╔══██╗██╔══██╗██╔══██╗██╔════╝░░░  ██╔══██╗██║░░░░░██╔══██╗██╔════╝██╔════╝
@@ -628,7 +525,6 @@ class Character(commands.Cog):
             multiclassList = cclass.replace(' ', '').split('/')
             # Iterates through the multiclass list 
             
-            print("MultList ", multiclassList)
             for m in multiclassList:
                 # Separate level and class
                 mLevel = re.search('\d+', m)
@@ -670,7 +566,7 @@ class Character(commands.Cog):
             msg += f':warning: **{broke}** isn\'t on the list or it is banned! Check #allowed-and-banned-content and check your spelling.\n'
         elif totalLevel != lvl and len(cRecord) > 1:
             msg += ':warning: Your classes do not add up to the total level. Please double-check your multiclasses.\n'
-        else:
+        elif msg == "":
             #cRecord = sorted(cRecord, key = lambda i: i['Level'], reverse=True) 
 
             # starting equipment
@@ -739,7 +635,6 @@ class Character(commands.Cog):
 
                     charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength + 1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString, inline=False)
                     
-                    print("AAAAAAA", charDict['Inventory'])
                     for k,v in startEquipmentItem.items():
                         if '[' in k and ']' in k:
                             iType = k.split('[')
@@ -782,20 +677,16 @@ class Character(commands.Cog):
                                 
                                 p = 0
                                 for a in charInv:
-                                    print(p,alphaEmojis[p], a)
                                     p+=1
-                                print(alphaEmojis.index(tReaction.emoji))
                                 typeEquipmentList.append(charInv[alphaEmojis.index(tReaction.emoji)]['Name'])
                             typeCount = collections.Counter(typeEquipmentList)
                             typeString = ""
-                            print("COUNT", typeCount)
                             for tk, tv in typeCount.items():
                                 if tk in charDict['Inventory']:
                                     charDict['Inventory'][tk] += tv
                                 else:
                                     charDict['Inventory'][tk] = tv
                                 
-                                print("GGGGGGGGGGG", tk, tv, charDict['Inventory'][tk])
                                 typeString += f"{tk} x{charDict['Inventory'][tk]}\n"
 
                             charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength+1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=seiString.replace(f"{k} x{v}\n", typeString), inline=False)
@@ -981,24 +872,34 @@ class Character(commands.Cog):
         # ██████╔╝░░░██║░░░██║░░██║░░░██║░░░██████╔╝╚█║  ██║░░░░░███████╗██║░░██║░░░██║░░░██████╔╝
         # ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░░╚╝  ╚═╝░░░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░
         # Stats - Point Buy
+        # if msg == "":
+            # statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
+            # statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
+            # if not statsArray:
+                # return
+            # elif statsArray:
+                # totalPoints = 0
+                # for s in statsArray:
+                    # if (13-s) < 0:
+                        # totalPoints += ((s - 13) * 2) + 5
+                    # else:
+                        # totalPoints += (s - 8)
+                        
+                # if any([s < 8 for s in statsArray]):
+                    # msg += f":warning: You have at least one stat below the minimum of 8.\n"
+                # if totalPoints != 27:
+                    # msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
         if msg == "":
-            statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
             statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
+            charDict["STR"] = statsArray[0]
+            charDict["DEX"] = statsArray[1]
+            charDict["CON"] = statsArray[2]
+            charDict["INT"] = statsArray[3]
+            charDict["WIS"] = statsArray[4]
+            charDict["CHA"] = statsArray[5]
+            
             if not statsArray:
                 return
-            elif statsArray:
-                totalPoints = 0
-                for s in statsArray:
-                    if (13-s) < 0:
-                        totalPoints += ((s - 13) * 2) + 5
-                    else:
-                        totalPoints += (s - 8)
-                        
-                if any([s < 8 for s in statsArray]):
-                    msg += f":warning: You have at least one stat below the minimum of 8.\n"
-                if totalPoints != 27:
-                    msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
-
         #Stats - Feats
         if msg == "":
             featLevels = []
@@ -1212,7 +1113,6 @@ class Character(commands.Cog):
             playersCollection.insert_one(charDict)
             if campaignTransferSuccess:
                 target = f"Campaigns.{campaignKey}.Time"
-                print("TTTTTTTTTT", target)
                 db.users.update_one({"User ID": str(author.id)}, {"$inc" : {target: -cpTransfered *3600}})
                 await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
@@ -1289,8 +1189,6 @@ class Character(commands.Cog):
         for c in charRemoveKeyList:
             if c in charDict:
                 del charDict[c]
-        print("Check", check_list)
-        print("Search", searched_items_names)
         name = charDict["Name"]
         charDict["Magic Items"] = ", ".join(m_saved_list) + ("None" * (len(m_saved_list) == 0))
         charDict["Inventory"] = {}
@@ -1393,7 +1291,6 @@ class Character(commands.Cog):
             tierNum = 3
         elif charLevel < 20:
             tierNum = 4
-        print()
         if extraCp > cp_bound_array[tierNum-1][0] and "Respecc" not in charDict:
             msg += f":warning: {oldName} needs to level up before they can respec into a new character!"
         
@@ -1404,8 +1301,24 @@ class Character(commands.Cog):
         cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP+extraCp)*3600)
         totalGP = cp_tp_gp_array[2]
         bankTP = cp_tp_gp_array[1]
+        # Stats - Point Buy
+        if msg == "":
+            statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
+            
+            totalPoints = 0
+            for s in statsArray:
+                if (13-s) < 0:
+                    totalPoints += ((s - 13) * 2) + 5
+                else:
+                    totalPoints += (s - 8)
+                    
+            if any([s < 8 for s in statsArray]):
+                msg += f":warning: You have at least one stat below the minimum of 8.\n"
+            if totalPoints != 27:
+                msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+            
         
-
+        
         # ██████╗░░█████╗░░█████╗░███████╗░░░  ░█████╗░██╗░░░░░░█████╗░░██████╗░██████╗
         # ██╔══██╗██╔══██╗██╔══██╗██╔════╝░░░  ██╔══██╗██║░░░░░██╔══██╗██╔════╝██╔════╝
         # ██████╔╝███████║██║░░╚═╝█████╗░░░░░  ██║░░╚═╝██║░░░░░███████║╚█████╗░╚█████╗░
@@ -1430,7 +1343,6 @@ class Character(commands.Cog):
             multiclassList = cclass.replace(' ', '').split('/')
             # Iterates through the multiclass list 
             
-            print("MultList ", multiclassList)
             for m in multiclassList:
                 # Separate level and class
                 mLevel = re.search('\d+', m)
@@ -1467,7 +1379,6 @@ class Character(commands.Cog):
                 broke.append(cclass)
 
         charDict['Class'] = ""
-        print(len(broke))
         if not mLevel and '/' in cclass:
             pass
         elif len(broke)>0:
@@ -1477,7 +1388,7 @@ class Character(commands.Cog):
             msg += f':warning: **{broke}** isn\'t on the list or it is banned! Check #allowed-and-banned-content and check your spelling.\n'
         elif totalLevel != lvl and len(cRecord) > 1:
             msg += ':warning: Your classes do not add up to the total level. Please double-check your multiclasses.\n'
-        else:
+        elif msg == "":
 
             # starting equipment
             def alphaEmbedCheck(r, u):
@@ -1648,6 +1559,7 @@ class Character(commands.Cog):
             charDict['GP'] = int(bRecord['GP']) + totalGP
 
 
+        
         # ░██████╗████████╗░█████╗░████████╗░██████╗░░░  ███████╗███████╗░█████╗░████████╗░██████╗
         # ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝░░░  ██╔════╝██╔════╝██╔══██╗╚══██╔══╝██╔════╝
         # ╚█████╗░░░░██║░░░███████║░░░██║░░░╚█████╗░░░░  █████╗░░█████╗░░███████║░░░██║░░░╚█████╗░
@@ -1656,20 +1568,16 @@ class Character(commands.Cog):
         # ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░░╚╝  ╚═╝░░░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░
         # Stats - Point Buy
         if msg == "":
-            statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
             statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
+            charDict["STR"] = statsArray[0]
+            charDict["DEX"] = statsArray[1]
+            charDict["CON"] = statsArray[2]
+            charDict["INT"] = statsArray[3]
+            charDict["WIS"] = statsArray[4]
+            charDict["CHA"] = statsArray[5]
+            
             if not statsArray:
                 return
-            elif statsArray:
-                totalPoints = 0
-                for s in statsArray:
-                    if (13-s) < 0:
-                        totalPoints += ((s - 13) * 2) + 5
-                    else:
-                        totalPoints += (s - 8)
-
-                if totalPoints != 27:
-                    msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation.\n"
 
 
         #Stats - Feats
@@ -1677,11 +1585,8 @@ class Character(commands.Cog):
             featLevels = []
             featChoices = []
             featsChosen = []
-            print(rRecord)
             if "Feat" in rRecord:
                 featLevels.append('Extra Feat')
-                print("HEY")
-            print(featLevels)
             for c in cRecord:
                 if int(c['Level']) > 3:
                     featLevels.append(4)
@@ -1778,7 +1683,6 @@ class Character(commands.Cog):
         charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} "
 
         charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
-        print(charDict)
         
         for key, amount in bankTP.items():
             if  amount > 0:
@@ -1816,7 +1720,6 @@ class Character(commands.Cog):
             if charEmbedmsg.id == r.message.id:
                 sameMessage = True
             return sameMessage and ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author
-        print(charEmbed)
         if not charEmbedmsg:
             charEmbedmsg = await channel.send(embed=charEmbed, content="**Double-check** your character information.\nIf this is correct, please react with one of the following:\n✅ to finish creating your character.\n❌ to cancel. ")
         else:
@@ -1842,12 +1745,8 @@ class Character(commands.Cog):
 
         try:
             
-            print("GGGGGGGGGGGGGGGGGGGGGG2",guild_name)
             if len(guild_name)>0:
                 guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": guild_name, '$options': 'i' }}))
-                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", guildAmount)
-                print(len(guildAmount))
-                print(guild_name)
                 # If there is only one of user's character in the guild remove the role.
                 if (len(guildAmount) <= 1):
                     await author.remove_roles(get(guild.roles, name = guild_name), reason=f" Respecced")
@@ -1886,7 +1785,6 @@ class Character(commands.Cog):
                 statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
                 await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             # Extra to unset
-            print(charDict)
             if "Respecc" in charDict:
                 del charDict["Respecc"]
             charRemoveKeyList = {"Transfer Set" : 1, "Respecc" : 1, 'Image':1, 'Spellbook':1, 'Attuned':1, 'Guild':1, 'Guild Rank':1, 'Grouped':1}
@@ -1953,15 +1851,11 @@ class Character(commands.Cog):
                     try:
                         playersCollection = db.players
                         
-                        print(list(playersCollection.find({'_id': charID})))
                         deadCollection = db.dead
                         usersCollection = db.users
                         
                         if "Guild" in charDict:
                             guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charDict['Guild'], '$options': 'i' }}))
-                            print(guildAmount)
-                            print(len(guildAmount))
-                            print(charDict["Guild"])
                             # If there is only one of user's character in the guild remove the role.
                             if (len(guildAmount) <= 1):
                                 await author.remove_roles(get(guild.roles, name = charDict['Guild']), reason=f"Left guild {charDict['Guild']}")
@@ -1971,7 +1865,6 @@ class Character(commands.Cog):
                             # usersRecord['Games'] = charDict['Games']
                         # else:
                             # usersRecord['Games'] += charDict['Games']
-                        print(list(playersCollection.find({'_id': charID})))
                         # usersCollection.update_one({'User ID': charDict['User ID']}, {"$set": {'Games': usersRecord['Games']}}, upsert=True)
                         playersCollection.delete_one({'_id': charID})
                         
@@ -2095,9 +1988,6 @@ class Character(commands.Cog):
                                 deadCollection = db.dead
                                 playersCollection.delete_one({'_id': charID})
                                 guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charDict['Guild'], '$options': 'i' }}))
-                                print("AAAAAAAAAAAAA", guildAmount)
-                                print(len(guildAmount))
-                                print(charDict["Guild"])
                                 # If there is only one of user's character in the guild remove the role.
                                 if (len(guildAmount) <= 1):
                                     await author.remove_roles(get(guild.roles, name = charDict['Guild']), reason=f"Left guild {charDict['Guild']}")
@@ -2340,7 +2230,6 @@ class Character(commands.Cog):
                     else:
                         charEmbed.add_field(name=k, value=vString, inline=False)
 
-            print(len(charEmbed))        
             embedList = [discord.Embed()]
             pages = 1
 
@@ -2670,7 +2559,6 @@ class Character(commands.Cog):
                                 maxStat = statSplit[0][:-3]
                                 statSplit[0] = statSplit[0].replace(maxStat, "")
                                 maxStat = maxStat.split(" ")
-                                print(maxStatDict)
 
                             modStat = str(charDict[statSplit[0]])
                             modStat = modStat.split(' (')[0]
@@ -2697,10 +2585,8 @@ class Character(commands.Cog):
                     if '+' in conValue[1]:
                         trueConValue = int(conValue[1].replace('+', '')) + int(conValue[0])
 
-                    print(trueConValue)
 
                     charDict['HP'] -= ((int(conValue[0]) - 10) // 2) * charLevel
-                    print("CON",   trueConValue, conValue)
                     charDict['HP'] += ((int(trueConValue) - 10) // 2) * charLevel
 
             charDict['HP'] += totalHPAdd * charLevel
@@ -2896,7 +2782,6 @@ class Character(commands.Cog):
                 return
             else:
                 cRecords, levelUpEmbed, levelUpEmbedmsg = await callAPI(ctx, levelUpEmbed, levelUpEmbedmsg,'classes')
-                print("CCCCCCc", cRecords)
                 classRecords = sorted(cRecords, key=lambda k: k['Name']) 
                 leftCP = cpSplit - cp_bound_array[tierNum-1][0]
                 newCharLevel = charLevel  + 1
@@ -3392,7 +3277,6 @@ class Character(commands.Cog):
             numI = 0
 
             # Check if query is in character's Magic Item List. Limit is 8 to show if there are multiple matches.
-            print([a.split(' [')[0] for a in attuned])
             for k in charRecordMagicItems:
                 if m.lower() in k.lower():
                     if k not in [a.split(' [')[0] for a in attuned]:
@@ -3527,7 +3411,6 @@ class Character(commands.Cog):
 
             # Filter through attuned items, some attuned items have [STAT +X]; filter out those too and get raw.
             for k in charRecords['Attuned'].split(', '):
-                print(k.lower().split(' [')[0])
                 if m.lower() in k.lower().split(' [')[0]:
                     mList.append(k.lower().split(' [')[0])
                     mString += f"{numberEmojis[numI]} {k} \n"
@@ -3617,7 +3500,6 @@ class Character(commands.Cog):
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
                 currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
-                print(currentDate)
                 
             else:
                 await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
@@ -3882,7 +3764,6 @@ class Character(commands.Cog):
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
                 currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
-                print(currentDate)
                 
             else:
                 await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
@@ -3917,7 +3798,6 @@ class Character(commands.Cog):
                     friend_list.append({"Member": dmMember, "Count": v["Friend"]})
                 if "Guilds" in v:
                     guild_list.append({"Member": dmMember, "Count": sum([c for c in v["Guilds"].values()])})
-                print(guild_list)
             friend_list.sort(key = lambda x: -x["Count"])
             
             guild_list.sort(key = lambda x: -x["Count"])
@@ -3925,7 +3805,6 @@ class Character(commands.Cog):
             for f in friend_list:
                 friendString += f"{f['Member'].mention}: {f['Count']} Points\n"
             for g in guild_list:
-                print(g)
                 guildString += f"{g['Member'].mention}: {g['Count']} Points\n"
             if friendString:
                 statsEmbed.add_field(name=f"Friend Fanatic", value=friendString, inline=True) 
@@ -3969,7 +3848,6 @@ class Character(commands.Cog):
                 sameMessage = True
             if (r.emoji in uniqueReacts or r.emoji == '❌') and u == author:
                 anyList[charEmbedmsg.id].add(r.emoji)
-            print(anyList)
 
             return sameMessage and ((len(anyList[charEmbedmsg.id]) == anyCheck) or str(r.emoji) == '❌') and u == author
 
@@ -3983,11 +3861,8 @@ class Character(commands.Cog):
             statsBonus = rRecord['Modifiers'].replace(" ", "").split(',')
             uniqueArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
             allStatsArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
-            print("RIIIIIIIIIIIIIIIIIIIIIIIIi", rRecord)
-            print("SSSSSSSS", statsBonus)
             
             for s in statsBonus:
-                print("s", s)
                 if '/' in s:
                     statSplit = s[:len(s)-2].replace(" ", "").split('/')
                     statSplitString = ""
@@ -4017,22 +3892,22 @@ class Character(commands.Cog):
                     s = statSplit[int(tReaction.emoji[0]) - 1] + s[-2:]
 
                 if 'STR' in s:
-                    statsArray[0] -= int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
+                    statsArray[0] += int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
                     uniqueArray.remove('STR')
                 elif 'DEX' in s:
-                    statsArray[1] -= int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
+                    statsArray[1] += int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
                     uniqueArray.remove('DEX')
                 elif 'CON' in s:
-                    statsArray[2] -= int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
+                    statsArray[2] += int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
                     uniqueArray.remove('CON')
                 elif 'INT' in s:
-                    statsArray[3] -= int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
+                    statsArray[3] += int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
                     uniqueArray.remove('INT')
                 elif 'WIS' in s:
-                    statsArray[4] -= int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
+                    statsArray[4] += int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
                     uniqueArray.remove('WIS')
                 elif 'CHA' in s:
-                    statsArray[5] -= int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
+                    statsArray[5] += int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
                     uniqueArray.remove('CHA')
 
                 elif 'AOU' in s or 'ANY' in s:
@@ -4042,7 +3917,6 @@ class Character(commands.Cog):
                         anyCheck = [int(charL) for charL in s if charL.isnumeric()][0] #int(s[len(s)-1])
                         anyAmount = int(s[len(s)-1])
                         anyList = {charEmbedmsg.id:set()}
-                        print("anyList", anyList)
                         uniqueStatStr = ""
                         uniqueReacts = []
 
@@ -4076,15 +3950,13 @@ class Character(commands.Cog):
 
                     charEmbed.clear_fields()
                     await charEmbedmsg.clear_reactions()
-                    print("Stats Array 1", statsArray)
                     if 'AOU' in s:
                         for s in anyList[charEmbedmsg.id]:
-                            statsArray[allStatsArray.index(uniqueArray[int(s[0]) - 1])] -= anyAmount
+                            statsArray[allStatsArray.index(uniqueArray[int(s[0]) - 1])] += anyAmount
                     else:
 
                         for s in anyList[charEmbedmsg.id]:
-                            statsArray[(int(s[0]) - 1)] -= anyAmount
-                    print("Stats Array 2", statsArray)
+                            statsArray[(int(s[0]) - 1)] += anyAmount
             return statsArray, charEmbedmsg
 
     async def chooseSubclass(self, ctx, subclassesList, charClass, charEmbed, charEmbedmsg):
@@ -4163,7 +4035,6 @@ class Character(commands.Cog):
         spellcasting = False
         for f in featLevels:
             charEmbed.clear_fields()
-            print("F ", f)
             if f != 'Extra Feat':
                 try:
                     charEmbed.add_field(name=f"Your level allows you to pick an Ability Score Improvement or a feat. Please react with 1 or 2 for your level {f} ASI/feat.", value=f"{numberEmojis[0]}: Ability Score Improvement\n{numberEmojis[1]}: Feat\n", inline=False)
@@ -4311,7 +4182,6 @@ class Character(commands.Cog):
                             if 'Race Unavailable' in feat:
                                 if race not in feat['Race Unavailable']:
                                     meetsRestriction = True
-                            print("FFFfffff",ctx.invoked_with)
                             if 'Class Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Class Restriction'].split(', ')]
                                 for c in cRecord:
