@@ -935,7 +935,7 @@ class Timer(commands.Cog):
                 # since this checks for multiple things, this cannot be avoided
                 for u, v in startcopy.items():
                     if 'Full Rewards' in u:
-                        totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 * 3) // 60 #FIX TIME WEIRD
+                        totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 * 0) // 60 #Set multiplier to wanted hour shift 
                         if totalDurationTime < 180:
                             if not resume:
                               await ctx.channel.send(content=f"You cannot award any reward items if the quest is under three hours.") 
@@ -1678,7 +1678,7 @@ class Timer(commands.Cog):
     @timer.command(aliases=['end'])
     async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", ddmrw= False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
-            end = time.time() + 3600 * 3
+            end = time.time() + 3600 * 0
             allRewardStrings = {}
             treasureString = "No Rewards"
             tierNum = 0

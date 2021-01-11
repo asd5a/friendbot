@@ -353,7 +353,7 @@ class Character(commands.Cog):
             if any([s < 8 for s in statsArray]):
                 msg += f":warning: You have at least one stat below the minimum of 8.\n"
             if totalPoints != 27:
-                msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+                msg += f":warning: Your stats do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
             
         
         
@@ -504,6 +504,7 @@ class Character(commands.Cog):
         # ██║░░██║██║░░██║╚█████╔╝███████╗╚█║  ╚█████╔╝███████╗██║░░██║██████╔╝██████╔╝
         # ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚══════╝░╚╝  ░╚════╝░╚══════╝╚═╝░░╚═╝╚═════╝░╚═════╝░
         # check race
+        
         if msg == "":
             rRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'races',race)
             if charEmbedmsg == "Fail":
@@ -872,23 +873,7 @@ class Character(commands.Cog):
         # ██████╔╝░░░██║░░░██║░░██║░░░██║░░░██████╔╝╚█║  ██║░░░░░███████╗██║░░██║░░░██║░░░██████╔╝
         # ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░░╚╝  ╚═╝░░░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░
         # Stats - Point Buy
-        # if msg == "":
-            # statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
-            # statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
-            # if not statsArray:
-                # return
-            # elif statsArray:
-                # totalPoints = 0
-                # for s in statsArray:
-                    # if (13-s) < 0:
-                        # totalPoints += ((s - 13) * 2) + 5
-                    # else:
-                        # totalPoints += (s - 8)
-                        
-                # if any([s < 8 for s in statsArray]):
-                    # msg += f":warning: You have at least one stat below the minimum of 8.\n"
-                # if totalPoints != 27:
-                    # msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+        
         if msg == "":
             statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
             charDict["STR"] = statsArray[0]
@@ -1315,7 +1300,7 @@ class Character(commands.Cog):
             if any([s < 8 for s in statsArray]):
                 msg += f":warning: You have at least one stat below the minimum of 8.\n"
             if totalPoints != 27:
-                msg += f":warning: Your stats plus your race's modifers do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+                msg += f":warning: Your stats do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
             
         
         

@@ -229,7 +229,12 @@ class Tp(commands.Cog):
             if mRecord:
                 
                 # check if the requested item is already in the inventory
-                if("Predecessor" not in charRecords or mRecord['Name'] not in charRecords["Predecessor"].keys()): 
+                if("Predecessor" not in mRecord ): 
+                    await channel.send(f"**{mRecord['Name']}** is not upgradable.")
+                    ctx.command.reset_cooldown(ctx)
+                    return 
+                # check if the requested item is already in the inventory
+                elif("Predecessor" not in charRecords or mRecord['Name'] not in charRecords["Predecessor"].keys()): 
                     await channel.send(f"You do not have **{mRecord['Name']}**.")
                     ctx.command.reset_cooldown(ctx)
                     return 
@@ -505,6 +510,7 @@ class Tp(commands.Cog):
                     return
                 else:
                     await tpEmbedmsg.clear_reactions()
+                    complete = False
                     newGP = ""
                     newTP = ""
                     refundTP = 0.0
@@ -518,6 +524,7 @@ class Tp(commands.Cog):
                     elif tReaction.emoji == '2️⃣':
                         newGP = charRecords['GP'] - gpNeeded
                         #search for the item in the items currently worked towards
+                        complete = True
                         if mRecord['Name'] in charRecords['Current Item']:
                             #grab the matching item
                             currentMagicItem = re.search('\(([^)]+)', charRecords['Current Item']).group(1)
@@ -561,6 +568,8 @@ class Tp(commands.Cog):
                             charRecords['Current Item'] = ', '.join(currentMagicItems)
                         else:
                             newTP = f"({tpSplit[1]}/{tpSplit[1]}) - Complete! :tada:"
+                                
+                            complete = True
                             charRecords[f"T{tierNum} TP"] = abs(float(tpResult))
                             if currentMagicItems != list():
                                 currentMagicItems.pop(mIndex)
@@ -580,7 +589,12 @@ class Tp(commands.Cog):
                         newMagicItems.append(mRecord['Name'])
                         newMagicItems.sort()
                         charRecords['Magic Items'] = ', '.join(newMagicItems)
-
+                    if("Predecessor" not in charRecords):
+                        charRecords["Predecessor"] = {}
+                    if(complete and "Predecessor" in mRecord and mRecord["Name"] not in charRecords["Predecessor"]):
+                        print("mRecord", mRecord)
+                        print("charRecords", charRecords)
+                        charRecords["Predecessor"][mRecord["Name"]] ={"Names" : mRecord["Predecessor"]["Names"], "Stage" : 0}
                     tpEmbed.set_footer(text=tpEmbed.Empty)
                     await tpEmbedmsg.edit(embed=tpEmbed)
                     await tpEmbedmsg.add_reaction('✅')
@@ -608,12 +622,7 @@ class Tp(commands.Cog):
                                 if("Grouped" in mRecord and mRecord["Grouped"]+" : "+mRecord["Name"] not in charRecords["Grouped"]):
                                     charRecords["Grouped"].append(mRecord["Grouped"]+" : "+mRecord["Name"])
                                 
-                                if("Predecessor" not in charRecords):
-                                    charRecords["Predecessor"] = {}
-                                if('Complete' in newTP and "Predecessor" in mRecord and mRecord["Name"] not in charRecords["Predecessor"]):
-                                    print("mRecord", mRecord)
-                                    print("charRecords", charRecords)
-                                    charRecords["Predecessor"][mRecord["Name"]] ={"Names" : mRecord["Predecessor"]["Names"], "Stage" : 0}
+                                
                                 setData = {"Current Item":charRecords['Current Item'], "Magic Items":charRecords['Magic Items'], "Grouped":charRecords['Grouped'], "Predecessor":charRecords['Predecessor']}
                                 statSplit = None
                                 unsetTP = False
@@ -663,7 +672,7 @@ class Tp(commands.Cog):
                                     playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData, "$unset": {f"T{tierNum} TP":1}})
                                 else:
                                     playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData})
-                                if 'Complete' in newTP:
+                                if complete:
                                     db.stats.update_one({"Life": 1}, {"$inc" : {"Magic Items."+mRecord['Name']: 1}})
                                 
                             except Exception as e:
