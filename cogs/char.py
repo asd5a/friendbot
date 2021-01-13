@@ -1618,9 +1618,7 @@ class Character(commands.Cog):
 
                 hpRecords.append({'Level':cc['Level'], 'Subclass': cc['Subclass'], 'Name': cc['Class']['Name'], 'Hit Die Max': cc['Class']['Hit Die Max'], 'Hit Die Average':cc['Class']['Hit Die Average']})
 
-            if hpRecords:
-                charDict['HP'] = await characterCog.calcHP(ctx,hpRecords,charDict,lvl)
-
+            
             # Multiclass Requirements
             if '/' in cclass and len(cRecord) > 1:
                 for m in cRecord:
@@ -1742,6 +1740,8 @@ class Character(commands.Cog):
             if charDict[sk] > charDict['Max Stats'][sk]:
                 charDict[sk] = charDict['Max Stats'][sk]
         charEmbed.add_field(name='Stats', value=f"**STR**: {charDict['STR']} **DEX**: {charDict['DEX']} **CON**: {charDict['CON']} **INT**: {charDict['INT']} **WIS**: {charDict['WIS']} **CHA**: {charDict['CHA']}", inline=False)
+        if hpRecords:
+            charDict['HP'] = await characterCog.calcHP(ctx,hpRecords,charDict,lvl)
 
         print("charDict-----\n",charDict)    
         def charCreateCheck(r, u):
