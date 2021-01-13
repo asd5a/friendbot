@@ -278,7 +278,7 @@ class Tp(commands.Cog):
 
                 newTP = f"Complete! :tada:"
                 used_tp_text = ', '.join([f'{charRecords[tp]} {tp}' for tp in used_tp])
-                tpEmbed.description = f"Are you sure you want to upgrade **{mRecord['Name']}** for **{tpNeeded_copy} TP**?\n\nLeftover TP: {used_tp_text}\n\n✅: Yes\n\n❌: Cancel"
+                tpEmbed.description = f"Are you sure you want to upgrade **{mRecord['Name']} ({mRecord['Predecessor']['Names'][upgrade_stage]})** to **{mRecord['Name']} ({mRecord['Predecessor']['Names'][upgrade_stage +1]})** for **{tpNeeded_copy} TP**?\n\nLeftover TP: {used_tp_text}\n\n✅: Yes\n\n❌: Cancel"
 
 
                 tpEmbed.set_footer(text=tpEmbed.Empty)
