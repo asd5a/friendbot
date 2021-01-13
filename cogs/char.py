@@ -353,7 +353,7 @@ class Character(commands.Cog):
             if any([s < 8 for s in statsArray]):
                 msg += f":warning: You have at least one stat below the minimum of 8.\n"
             if totalPoints != 27:
-                msg += f":warning: Your stats do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+                msg += f":warning: Your stats do not add up to 27 using point buy ({totalPoints}/27). Remember that you must list your stats before applying racial modifiers! Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
             
         
         
@@ -2456,7 +2456,7 @@ class Character(commands.Cog):
 
             cpSplit = charDict['CP']
             if charLevel < 20 and cpSplit >= cp_bound_array[role-1][0]:
-                footer += f'\nYou need to level up! Use the following command before playing in another quest to do so:\n```yaml\n{commandPrefix}levelup "character name"```'
+                footer += f'\nYou need to level up! Use the following command before playing in another quest to do so: {commandPrefix}levelup {charDict[\'Name\']}'
 
 
             if charLevel == 4 or charLevel == 10 or charLevel == 16:

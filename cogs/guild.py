@@ -254,7 +254,7 @@ class Guild(commands.Cog):
         
         guildChannel = ctx.message.channel_mentions
         if guildChannel == list():
-            await ctx.channel.send(f"A campaign channel must be supplied")
+            await ctx.channel.send(f"You are missing the guild's role and/or guild channel.")
             return 
         guildChannel = guildChannel[0]
 
@@ -380,7 +380,7 @@ class Guild(commands.Cog):
         if charRecords:
             guildChannel = ctx.message.channel_mentions
             if guildChannel == list():
-                await ctx.channel.send(f"A campaign channel must be supplied")
+                await ctx.channel.send(f"You are missing the guild's role and/or guild channel.")
                 return 
             guildChannel = guildChannel[0]
 
@@ -526,7 +526,7 @@ class Guild(commands.Cog):
 
             guildChannel = ctx.message.channel_mentions
             if guildChannel == list():
-                await ctx.channel.send(f"A campaign channel must be supplied")
+                await ctx.channel.send(f"You are missing the guild's role and/or guild channel.")
                 return 
             guildChannel = guildChannel[0]
 

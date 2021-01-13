@@ -112,9 +112,9 @@ async def help(ctx, *, pageString=''):
         page = 5
     elif 'timer1' in pageString or 'timer' in pageString:
         page = 3
-    elif 'shop' in pageString:
-        page = 6
     elif 'tp' in pageString:
+        page = 6
+    elif 'shop' in pageString:
         page = 7
     elif 'guild' in pageString:
         page = 8
@@ -134,8 +134,8 @@ async def help(ctx, *, pageString=''):
     helpEmbedMenu.add_field(name=f"3️⃣ Pre-Quest Timer Commands\n{commandPrefix}help timer1", value="How to prepare and sign up to a timer for a one-shot.", inline=False)
     helpEmbedMenu.add_field(name=f"4️⃣ Running Timer Commands\n{commandPrefix}help timer2", value="How to do various things while hosting or participating in a one-shot.", inline=False)
     helpEmbedMenu.add_field(name=f"5️⃣ Post-Quest Timer Commands\n{commandPrefix}help timer3", value="How to do various things after the completion of a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"6️⃣ Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
-    helpEmbedMenu.add_field(name=f"7️⃣ TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
+    helpEmbedMenu.add_field(name=f"6️⃣ TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
+    helpEmbedMenu.add_field(name=f"7️⃣ Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
     helpEmbedMenu.add_field(name=f"8️⃣ Guild Commands\n{commandPrefix}help guild", value="How to be a member of a guild or manage one.", inline=False)
     helpEmbedMenu.add_field(name=f"9️⃣ Campaign Commands\n{commandPrefix}help campaign", value="How to create, host, and participate in a campaign.", inline=False)
 
@@ -304,6 +304,19 @@ async def help(ctx, *, pageString=''):
 #    helpEmbedItems.add_field(name=f'▫️ Random Reward Item\n{commandPrefix}rit random', value=f"Display a random reward item based on the tier and sub-tier you selected.", inline=False)
 
 
+# TP COMMANDS MENU ($help tp)
+
+    helpEmbedTp.title = 'TP Commands'
+
+    helpEmbedTp.add_field(name=f'▫️ Acquiring a Magic Item', value=f'{commandPrefix}tp buy "character name" "magic item"', inline=False)
+
+    helpEmbedTp.add_field(name=f'▫️ Discarding an Incomplete Magic Item', value=f'{commandPrefix}tp discard "character name"', inline=False)
+
+    helpEmbedTp.add_field(name=f'▫️ Abandoning Leftover TP', value=f'{commandPrefix}tp abandon "character name" tier', inline=False)
+
+    helpEmbedTp.add_field(name=f'▫️ Upgrading a Vestige of Divergence or Arm of the Betrayer', value=f'{commandPrefix}tp upgrade "character name" "item name"', inline=False)
+
+
 # SHOP COMMANDS MENU ($help shop)
 
     helpEmbedShop.title = 'Shop Commands'
@@ -321,17 +334,6 @@ async def help(ctx, *, pageString=''):
     helpEmbedShop.add_field(name=f'▫️ Downtime Friend Training', value=f'{commandPrefix}downtime training "character name"\n[{commandPrefix}dt training]', inline=False)
 
     helpEmbedShop.add_field(name=f'▫️ Downtime Noodle Training', value=f'{commandPrefix}downtime noodle "character name"\n[{commandPrefix}dt noodle]', inline=False)
-
-
-# TP COMMANDS MENU ($help tp)
-
-    helpEmbedTp.title = 'TP Commands'
-
-    helpEmbedTp.add_field(name=f'▫️ Acquiring a Magic Item', value=f'{commandPrefix}tp buy "character name" "magic item"', inline=False)
-
-    helpEmbedTp.add_field(name=f'▫️ Discarding an Incomplete Magic Item', value=f'{commandPrefix}tp discard "character name"', inline=False)
-
-    helpEmbedTp.add_field(name=f'▫️ Abandoning Leftover TP', value=f'{commandPrefix}tp abandon "character name" tier', inline=False)
 
 
 # GUILD COMMANDS MENU ($help guild)
