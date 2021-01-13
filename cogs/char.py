@@ -1611,7 +1611,7 @@ class Character(commands.Cog):
                 if cc['Class']['Name'] == "Wizard":
                     charDict['Free Spells'] = [6,0,0,0,0,0,0,0,0]
                     fsIndex = 0
-                    for i in range (2, int(cc['Level']) + 1 ):
+                    for i in range (2, min(int(cc['Level']), 17) + 1 ):
                         if i % 2 != 0:
                             fsIndex += 1
                         charDict['Free Spells'][fsIndex] += 2
