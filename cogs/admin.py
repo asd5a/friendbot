@@ -692,7 +692,7 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
     
-    @admin_or_owner()
+    @commands.has_any_role("Mod Friend")
     @commands.command()
     async def setNoodles(self,ctx, user, noodles: int):
         msg = ctx.message
