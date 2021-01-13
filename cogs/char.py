@@ -1766,7 +1766,13 @@ class Character(commands.Cog):
                     statsRecord['Background'][charDict['Background']] += 1
                 else:
                     statsRecord['Background'][charDict['Background']] = 1
-                        
+                if featsChosen != "":
+                    feat_split = featsChosen.split(", ")
+                    for feat_key in feat_split:
+                        if not feat_key in statsRecord['Feats']:
+                            statsRecord['Feats'][feat_key] = 1
+                        else:
+                            statsRecord['Feats'][feat_key] += 1
                 statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
                 await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             # Extra to unset
