@@ -255,14 +255,17 @@ class Tp(commands.Cog):
                       tpBank[x-1] = (float(charRecords[f'T{x} TP']))
                       tpBankString += f"{tpBank[x-1]} T{x} TP, " 
                 tpNeeded = float(mRecord['Predecessor']["Costs"][upgrade_stage])
+                print("tpNeeded", tpNeeded)
                 tpNeeded_copy = tpNeeded
                 used_tp = []
                 for tp in range (int(tierNum) - 1, 5):
                     if tpBank[tp] > 0 and tpNeeded > 0:
                         tp += 1
+                        print("TP", tp)
                         tp_reduction = min(charRecords[f"T{tp} TP"],  tpNeeded)
+                        print("tp_reduction", tp_reduction)
                         charRecords[f"T{tp} TP"] -= tp_reduction
-                        tpNeeded -= charRecords[f"T{tp} TP"]
+                        tpNeeded -= tp_reduction
                         used_tp.append(f"T{tp} TP")
 
                 # display the cost of the item to the user
