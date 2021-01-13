@@ -112,9 +112,9 @@ async def help(ctx, *, pageString=''):
         page = 5
     elif 'timer1' in pageString or 'timer' in pageString:
         page = 3
-    elif 'shop' in pageString:
-        page = 6
     elif 'tp' in pageString:
+        page = 6
+    elif 'shop' in pageString:
         page = 7
     elif 'guild' in pageString:
         page = 8
