@@ -2450,7 +2450,7 @@ class Character(commands.Cog):
 
             cpSplit = charDict['CP']
             if charLevel < 20 and cpSplit >= cp_bound_array[role-1][0]:
-                footer += f'\nYou need to level up! Use the following command before playing in another quest to do so:\n```yaml\n{commandPrefix}levelup "character name"```'
+                footer += f'\nYou need to level up! Use the following command before playing in another quest to do so: {commandPrefix}levelup {charDict[\'Name\']}'
 
 
             if charLevel == 4 or charLevel == 10 or charLevel == 16:

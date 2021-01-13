@@ -567,7 +567,7 @@ class Tp(commands.Cog):
                             currentMagicItems[mIndex] = f"{mRecord['Name']} ({newTP})"
                             charRecords['Current Item'] = ', '.join(currentMagicItems)
                         else:
-                            newTP = f"({tpSplit[1]}/{tpSplit[1]}) - Complete! :tada:"
+                            newTP = f"{tpSplit[1]}/{tpSplit[1]} - Complete! :tada:"
                                 
                             complete = True
                             charRecords[f"T{tierNum} TP"] = abs(float(tpResult))
