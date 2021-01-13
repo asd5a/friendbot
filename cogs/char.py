@@ -1611,10 +1611,10 @@ class Character(commands.Cog):
                 if cc['Class']['Name'] == "Wizard":
                     charDict['Free Spells'] = [6,0,0,0,0,0,0,0,0]
                     fsIndex = 0
-                    for i in range (2, min(int(cc['Level']), 17) + 1 ):
+                    for i in range (2, int(cc['Level']) + 1 ):
                         if i % 2 != 0:
                             fsIndex += 1
-                        charDict['Free Spells'][fsIndex] += 2
+                        charDict['Free Spells'][min(fsIndex, 8)] += 2
 
                 hpRecords.append({'Level':cc['Level'], 'Subclass': cc['Subclass'], 'Name': cc['Class']['Name'], 'Hit Die Max': cc['Class']['Hit Die Max'], 'Hit Die Average':cc['Class']['Hit Die Average']})
 
