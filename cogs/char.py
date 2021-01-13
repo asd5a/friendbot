@@ -1678,8 +1678,7 @@ class Character(commands.Cog):
         if charDict['Consumables'] != 'None':
             charEmbed.add_field(name='Consumables', value=charDict['Consumables'], inline=False)
         charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=True)
-        charEmbed.add_field(name='Stats', value=f"**STR**: {charDict['STR']} **DEX**: {charDict['DEX']} **CON**: {charDict['CON']} **INT**: {charDict['INT']} **WIS**: {charDict['WIS']} **CHA**: {charDict['CHA']}", inline=False)
-
+        
         if 'Wizard' in charDict['Class']:
             charEmbed.add_field(name='Spellbook (Wizard)', value=f"At 1st level, you have a spellbook containing six 1st-level Wizard spells of your choice (+2 free spells for each wizard level). Please use the `{commandPrefix}shop copy` command. **{charDict['Free Spells']} Free Spells Available**", inline=False)
 
@@ -1699,7 +1698,52 @@ class Character(commands.Cog):
                 charDictInvString += f"• {k} x{v}\n"
             charEmbed.add_field(name='Starting Equipment', value=charDictInvString, inline=False)
             charEmbed.set_footer(text= charEmbed.Empty)
+        if 'Max Stats' not in charDict:
+            charDict['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
         
+        charClass = charDict["Class"]
+        subclasses = []
+        if '/' in charClass:
+            tempClassList = charClass.split(' / ')
+            for t in tempClassList:
+                temp = t.split(' ')
+                tempSub = ""
+                if '(' and ')' in t:
+                    tempSub = t[t.find("(")+1:t.find(")")]
+
+                subclasses.append({'Name':temp[0], 'Subclass':tempSub, 'Level':int(temp[1])})
+        else:
+            tempSub = ""
+            if '(' and ')' in charClass:
+                tempSub = charClass[charClass.find("(")+1:charClass.find(")")]
+            subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':charLevel})
+        #Special stat bonuses (Barbarian cap / giant soul sorc)
+        specialCollection = db.special
+        specialRecords = list(specialCollection.find())
+        specialStatStr = ""
+        for s in specialRecords:
+            if 'Bonus Level' in s:
+                for c in subclasses:
+                    print("c-----\n",c)
+                    print("s-----\n",s)
+                    if s['Bonus Level'] >= c['Level'] and s['Name'] in f"{c['Name']} ({c['Subclass']})":
+                        if 'MAX' in s['Stat Bonuses']:
+                            statSplit = s['Stat Bonuses'].split('MAX ')[1].split(', ')
+                            for stat in statSplit:
+                                maxSplit = stat.split(' +')
+                                charDict[maxSplit[0]] += int(maxSplit[1])
+                                charDict['Max Stats'][maxSplit[0]] += int(maxSplit[1]) 
+
+                            specialStatStr = f"Level {s['Bonus Level']} {c['Name']} stat bonus unlocked! {s['Stat Bonuses']}"
+
+
+        maxStatStr = ""
+        for sk in charDict['Max Stats'].keys():
+            if charDict[sk] > charDict['Max Stats'][sk]:
+                charDict[sk] = charDict['Max Stats'][sk]
+        charEmbed.add_field(name='Stats', value=f"**STR**: {charDict['STR']} **DEX**: {charDict['DEX']} **CON**: {charDict['CON']} **INT**: {charDict['INT']} **WIS**: {charDict['WIS']} **CHA**: {charDict['CHA']}", inline=False)
+
+        print("charDict-----\n",charDict)    
         def charCreateCheck(r, u):
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
@@ -3565,9 +3609,9 @@ class Character(commands.Cog):
                 # Total number of Games for the month
                 superTotal += statRecords["Games"]
 
-
-
-                gq_sum = statRecords["GQ Total"]
+                gq_sum = 0
+                if "GQ Total" in statRecords:
+                    gq_sum = statRecords["GQ Total"]
                 
                 # Games By Guild
                 if "Guilds" in statRecords:
@@ -3826,7 +3870,10 @@ class Character(commands.Cog):
             if s['Type'] == "Race" or s['Type'] == "Class" or s['Type'] == "Feats" or s['Type'] == "Magic Items":
                 if s['Name'] in charDict[s['Type']]:
                     if 'HP' in s:
-                        totalHP += s['HP'] * lvl
+                        if 'Half Level' in s:
+                            totalHP += s['HP'] * floor(lvl/2)
+                        else:
+                            totalHP += s['HP'] * lvl
 
         return totalHP
 
