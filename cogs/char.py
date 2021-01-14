@@ -3702,8 +3702,10 @@ class Character(commands.Cog):
                 if len(charString) > (768 * cPages):
                     cPageStops.append(len(charString))
                     cPages += 1
+            cPageStops.append(len(charString))
             if not charString:
                 charString = "No stats yet."
+            print(charString)
             if cPages > 1:
                 for p in range(len(cPageStops)-1):
                     statsEmbed.add_field(name=f"Character Class Stats (Lifetime) p. {p+1}", value=charString[cPageStops[p]:cPageStops[p+1]], inline=False)  
