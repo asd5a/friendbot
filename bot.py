@@ -125,7 +125,7 @@ async def help(ctx, *, pageString=''):
 # MAIN HELP MENU ($help)
 
 
-    helpList = [helpEmbedMenu, helpEmbedGen, helpEmbedChar, helpEmbedTimerOne, helpEmbedTimerTwo, helpEmbedTimerThree, helpEmbedShop, helpEmbedTp, helpEmbedGuild, helpEmbedCampaign]
+    helpList = [helpEmbedMenu, helpEmbedGen, helpEmbedChar, helpEmbedTimerOne, helpEmbedTimerTwo, helpEmbedTimerThree, helpEmbedTp, helpEmbedShop, helpEmbedGuild, helpEmbedCampaign]
 
     helpEmbedMenu.title = 'Bot Friend Commands - Table of Contents'
     helpEmbedMenu.description = 'Please react to the group of commands you would like to see and gain more knowledge about.'
