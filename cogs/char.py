@@ -3619,7 +3619,8 @@ class Character(commands.Cog):
 
               
                 # Total number of Games for the month
-                superTotal += statRecords["Games"]
+                if "Games" in statRecords:
+                    superTotal += statRecords["Games"]
 
                 gq_sum = 0
                 if "GQ Total" in statRecords:
