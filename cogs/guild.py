@@ -261,11 +261,11 @@ class Guild(commands.Cog):
         guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)})
         if guildRecords:
             guildRank = ""
-            if guildRecords['Total Reputation'] > 30:
+            if guildRecords['Total Reputation'] >= 30:
                 guildRank = "Rank 4 (Masterwork)"
-            elif guildRecords['Total Reputation'] > 20:
+            elif guildRecords['Total Reputation'] >= 20:
                 guildRank = "Rank 3 (Large)"
-            elif guildRecords['Total Reputation'] > 10:
+            elif guildRecords['Total Reputation'] >= 10:
                 guildRank = "Rank 2 (Medium)"
             else:
                 guildRank = "Rank 1 (Small)"
