@@ -1726,7 +1726,10 @@ class Character(commands.Cog):
         charEmbed.add_field(name='Stats', value=f"**STR**: {charDict['STR']} **DEX**: {charDict['DEX']} **CON**: {charDict['CON']} **INT**: {charDict['INT']} **WIS**: {charDict['WIS']} **CHA**: {charDict['CHA']}", inline=False)
         
         if 'Wizard' in charDict['Class']:
-            charEmbed.add_field(name='Spellbook (Wizard)', value=f"At 1st level, you have a spellbook containing six 1st-level Wizard spells of your choice (+2 free spells for each wizard level). Please use the `{commandPrefix}shop copy` command. **{charDict['Free Spells']} Free Spells Available**", inline=False)
+            charEmbed.add_field(name='Spellbook (Wizard)', value=f"At 1st level, you have a spellbook containing six 1st-level Wizard spells of your choice (+2 free spells for each Wizard level). Please use the `{commandPrefix}shop copy` command.", inline=False)
+
+# Put the text below after the last sentence in the previous line if this breaks anything.
+# **{charDict['Free Spells']} Free Spells Available**
 
             fsString = ""
             fsIndex = 0
@@ -3166,7 +3169,7 @@ class Character(commands.Cog):
                 levelUpEmbed.title = f'{charName} has leveled up to {newCharLevel}!\nCurrent CP: {totalCP}/{cp_bound_array[tierNum-1][1]} CP'
                 levelUpEmbed.description = f"{infoRecords['Race']} {charClass}\n**STR**: {charStats['STR']} **DEX**: {charStats['DEX']} **CON**: {charStats['CON']} **INT**: {charStats['INT']} **WIS**: {charStats['WIS']} **CHA**: {charStats['CHA']}" + f"\n{charFeatsGainedStr}{maxStatStr}\n{specialStatStr}"
                 if charClassChoice != "":
-                    levelUpEmbed.description += f"{charName} has multiclassed into **{charClassChoice}**"
+                    levelUpEmbed.description += f"{charName} has multiclassed into **{charClassChoice}!**"
                 levelUpEmbed.set_footer(text= levelUpEmbed.Empty)
                 levelUpEmbed.clear_fields()
 

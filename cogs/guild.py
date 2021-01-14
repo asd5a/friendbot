@@ -29,7 +29,7 @@ class Guild(commands.Cog):
             msg = "This channel or user does not have permission for this command. "
         elif isinstance(error, commands.BadArgument):
             # convert string to int failed
-            msg = "The GP amount needs to be a number."
+            msg = "The GP amount needs to be a number. "
         if isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'charName':
                 msg = "You're missing your character name in the command. "
@@ -40,9 +40,9 @@ class Guild(commands.Cog):
             elif error.param.name == "channelName":
                 msg = "You're missing the #channel for the guild you want to create. "
             elif error.param.name == "gpName":
-                msg = "You're missing the amount of GP you want to use to fund the guild." 
+                msg = "You're missing the amount of GP you want to use to fund the guild. " 
             elif error.param.name == "gpFund":
-                msg = "You're missing the amount of GP you want to use to fund the guild." 
+                msg = "You're missing the amount of GP you want to use to fund the guild. " 
         # elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
         #     msg = "There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command. "
         
@@ -93,7 +93,7 @@ class Guild(commands.Cog):
             return 
 
         if guildRole == list() or guildChannel == list():
-            await channel.send(f"You are missing the guild's role and/or guild channel.")
+            await channel.send(f"You are missing the guild channel.")
             return 
             
 
@@ -228,7 +228,7 @@ class Guild(commands.Cog):
                         print('Success')
 
                         guildEmbed.title = f"Guild Creation: {guildName}"
-                        guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\n{self.creation_cost} GP must be donated in order for the guild to officially open!\n\nAny character who is not in a guild can fund this guild using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" \"{guildName}\" GP```\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info \"{guildName}\"```\nCurrent Guild Funds: {gpNeeded} GP"
+                        guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\n{self.creation_cost} GP must be donated in order for the guild to officially open!\n\nAny character who is not in a guild can fund this guild using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" #guild-channel GP```\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info #guild-channel```\nCurrent Guild Funds: {gpNeeded} GP"
                         if guildEmbedmsg:
                             await guildEmbedmsg.clear_reactions()
                             await guildEmbedmsg.edit(embed=guildEmbed)
@@ -254,16 +254,16 @@ class Guild(commands.Cog):
         
         guildChannel = ctx.message.channel_mentions
         if guildChannel == list():
-            await ctx.channel.send(f"You are missing the guild's role and/or guild channel.")
+            await ctx.channel.send(f"You are missing the guild channel.")
             return 
         guildChannel = guildChannel[0]
 
         guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)})
         if guildRecords:
             guildRank = ""
-            if guildRecords['Total Reputation'] > 60:
+            if guildRecords['Total Reputation'] > 30:
                 guildRank = "Rank 4 (Masterwork)"
-            elif guildRecords['Total Reputation'] > 30:
+            elif guildRecords['Total Reputation'] > 20:
                 guildRank = "Rank 3 (Large)"
             elif guildRecords['Total Reputation'] > 10:
                 guildRank = "Rank 2 (Medium)"
@@ -380,7 +380,7 @@ class Guild(commands.Cog):
         if charRecords:
             guildChannel = ctx.message.channel_mentions
             if guildChannel == list():
-                await ctx.channel.send(f"You are missing the guild's role and/or guild channel.")
+                await ctx.channel.send(f"You are missing the guild channel.")
                 return 
             guildChannel = guildChannel[0]
 
@@ -526,7 +526,7 @@ class Guild(commands.Cog):
 
             guildChannel = ctx.message.channel_mentions
             if guildChannel == list():
-                await ctx.channel.send(f"You are missing the guild's role and/or guild channel.")
+                await ctx.channel.send(f"You are missing the guild channel.")
                 return 
             guildChannel = guildChannel[0]
 
