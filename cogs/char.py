@@ -876,15 +876,16 @@ class Character(commands.Cog):
         
         if msg == "":
             statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
+
+            
+            if not statsArray:
+                return
             charDict["STR"] = statsArray[0]
             charDict["DEX"] = statsArray[1]
             charDict["CON"] = statsArray[2]
             charDict["INT"] = statsArray[3]
             charDict["WIS"] = statsArray[4]
             charDict["CHA"] = statsArray[5]
-            
-            if not statsArray:
-                return
         #Stats - Feats
         if msg == "":
             featLevels = []
@@ -1555,16 +1556,16 @@ class Character(commands.Cog):
         # Stats - Point Buy
         if msg == "":
             statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
+
+            
+            if not statsArray:
+                return
             charDict["STR"] = statsArray[0]
             charDict["DEX"] = statsArray[1]
             charDict["CON"] = statsArray[2]
             charDict["INT"] = statsArray[3]
             charDict["WIS"] = statsArray[4]
             charDict["CHA"] = statsArray[5]
-            
-            if not statsArray:
-                return
-
 
         #Stats - Feats
         if msg == "":
