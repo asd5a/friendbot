@@ -3600,21 +3600,22 @@ class Character(commands.Cog):
                 statsEmbed.add_field(name="Monthly Quest Stats", value="There have been 0 games played this month. Check back later!", inline=False)
             else:
                 # Iterate through each DM and track tiers + total
-                for k,v in statRecords['DM'].items():
-                    dmMember = guild.get_member(int(k))
-                    if dmMember is None:
-                        continue
-                    statsString += dmMember.mention + " - "
-                    totalGames = 0
-                    for i in range (0,6):
-                        if f'T{i}' not in v:
-                            statsString += f"T{i}: 0 | "
-                        else:
-                            statsString += f"T{i}: {v[f'T{i}']} | " 
-                            totalGames += v[f'T{i}']
-                   
-                    # Total Number of Games per DM
-                    statsString += f"Total: {totalGames}\n"
+                if "DM" in statRecords:
+                    for k,v in statRecords['DM'].items():
+                        dmMember = guild.get_member(int(k))
+                        if dmMember is None:
+                            continue
+                        statsString += dmMember.mention + " - "
+                        totalGames = 0
+                        for i in range (0,6):
+                            if f'T{i}' not in v:
+                                statsString += f"T{i}: 0 | "
+                            else:
+                                statsString += f"T{i}: {v[f'T{i}']} | " 
+                                totalGames += v[f'T{i}']
+                       
+                        # Total Number of Games per DM
+                        statsString += f"Total: {totalGames}\n"
 
               
                 # Total number of Games for the month
@@ -3651,7 +3652,7 @@ class Character(commands.Cog):
                     statsEmbed.add_field(name=f'Campaigns', value=f"Sessions: {statRecords['Campaigns']}", inline=False)
                 
                 if "Life" in statRecords:
-                    monthStart = datetime.now().replace(day = 25).replace(month = 12).replace(year = 2020)
+                    monthStart = datetime.now().replace(day = 14).replace(month = 1).replace(year = 2021)
                 else:
                     monthStart = datetime.now().replace(day = 1)
                 
