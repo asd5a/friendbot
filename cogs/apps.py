@@ -17,7 +17,7 @@ class Apps(commands.Cog):
     @commands.has_any_role('Mod Friend', 'A d m i n')
     async def edit(self, ctx, num, *, editString=""):
         # The Bot
-        botUser = self.bot.get_user(566024681824452619)
+        botUser = self.bot.user
         # App Logs channel 
         channel = self.bot.get_channel(388591318814949376) 
 

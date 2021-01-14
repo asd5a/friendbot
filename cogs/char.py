@@ -3890,7 +3890,10 @@ class Character(commands.Cog):
                     class_level = charDict["Level"]
                     class_name = multi_split[0]
                     if len(multi_split)>2:
-                        class_level=int(multi_split.pop(1))
+                        try:
+                            class_level=int(multi_split.pop(1))
+                        except Exception as e:
+                            continue
                         class_name = " ".join(multi_split)
                         
                         
