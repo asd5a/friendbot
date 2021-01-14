@@ -1615,9 +1615,8 @@ class Character(commands.Cog):
                         if i % 2 != 0:
                             fsIndex += 1
                         charDict['Free Spells'][min(fsIndex, 8)] += 2
-
                 hpRecords.append({'Level':cc['Level'], 'Subclass': cc['Subclass'], 'Name': cc['Class']['Name'], 'Hit Die Max': cc['Class']['Hit Die Max'], 'Hit Die Average':cc['Class']['Hit Die Average']})
-
+                
             
             # Multiclass Requirements
             if '/' in cclass and len(cRecord) > 1:
@@ -1660,42 +1659,7 @@ class Character(commands.Cog):
 
             self.bot.get_command('respec').reset_cooldown(ctx)
             return 
-
-        charEmbed.clear_fields()    
-        charEmbed.title = f"{charDict['Name']} (Lv {charDict['Level']}): {charDict['CP']}/{cp_bound_array[tierNum-1][1]} CP"
-        charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} "
-
-        charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
         
-        for key, amount in bankTP.items():
-            if  amount > 0:
-                charDict[key] = amount
-                charEmbed.add_field(name=f':warning: Unused {key}:', value=amount, inline=True)
-        if charDict['Magic Items'] != 'None':
-            charEmbed.add_field(name='Magic Items', value=charDict['Magic Items'], inline=False)
-        if charDict['Consumables'] != 'None':
-            charEmbed.add_field(name='Consumables', value=charDict['Consumables'], inline=False)
-        charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=True)
-        
-        if 'Wizard' in charDict['Class']:
-            charEmbed.add_field(name='Spellbook (Wizard)', value=f"At 1st level, you have a spellbook containing six 1st-level Wizard spells of your choice (+2 free spells for each wizard level). Please use the `{commandPrefix}shop copy` command. **{charDict['Free Spells']} Free Spells Available**", inline=False)
-
-            fsString = ""
-            fsIndex = 0
-            for el in charDict['Free Spells']:
-                if el > 0:
-                    fsString += f"Level {fsIndex+1}: {el} free spells\n"
-                fsIndex += 1
-
-            if fsString:
-                charEmbed.add_field(name='Free Spellbook Copies Available', value=fsString , inline=False)
-
-        charDictInvString = ""
-        if charDict['Inventory'] != "None":
-            for k,v in charDict['Inventory'].items():
-                charDictInvString += f"• {k} x{v}\n"
-            charEmbed.add_field(name='Starting Equipment', value=charDictInvString, inline=False)
-            charEmbed.set_footer(text= charEmbed.Empty)
         if 'Max Stats' not in charDict:
             charDict['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
         
@@ -1724,7 +1688,7 @@ class Character(commands.Cog):
                 for c in subclasses:
                     print("c-----\n",c)
                     print("s-----\n",s)
-                    if s['Bonus Level'] >= c['Level'] and s['Name'] in f"{c['Name']} ({c['Subclass']})":
+                    if s['Bonus Level'] <= c['Level'] and s['Name'] in f"{c['Name']} ({c['Subclass']})":
                         if 'MAX' in s['Stat Bonuses']:
                             statSplit = s['Stat Bonuses'].split('MAX ')[1].split(', ')
                             for stat in statSplit:
@@ -1739,11 +1703,47 @@ class Character(commands.Cog):
         for sk in charDict['Max Stats'].keys():
             if charDict[sk] > charDict['Max Stats'][sk]:
                 charDict[sk] = charDict['Max Stats'][sk]
-        charEmbed.add_field(name='Stats', value=f"**STR**: {charDict['STR']} **DEX**: {charDict['DEX']} **CON**: {charDict['CON']} **INT**: {charDict['INT']} **WIS**: {charDict['WIS']} **CHA**: {charDict['CHA']}", inline=False)
         if hpRecords:
             charDict['HP'] = await characterCog.calcHP(ctx,hpRecords,charDict,lvl)
 
-        print("charDict-----\n",charDict)    
+        
+        charEmbed.clear_fields()    
+        charEmbed.title = f"{charDict['Name']} (Lv {charDict['Level']}): {charDict['CP']}/{cp_bound_array[tierNum-1][1]} CP"
+        charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} "
+
+        charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
+        
+        for key, amount in bankTP.items():
+            if  amount > 0:
+                charDict[key] = amount
+                charEmbed.add_field(name=f':warning: Unused {key}:', value=amount, inline=True)
+        if charDict['Magic Items'] != 'None':
+            charEmbed.add_field(name='Magic Items', value=charDict['Magic Items'], inline=False)
+        if charDict['Consumables'] != 'None':
+            charEmbed.add_field(name='Consumables', value=charDict['Consumables'], inline=False)
+        charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=True)
+        charEmbed.add_field(name='Stats', value=f"**STR**: {charDict['STR']} **DEX**: {charDict['DEX']} **CON**: {charDict['CON']} **INT**: {charDict['INT']} **WIS**: {charDict['WIS']} **CHA**: {charDict['CHA']}", inline=False)
+        
+        if 'Wizard' in charDict['Class']:
+            charEmbed.add_field(name='Spellbook (Wizard)', value=f"At 1st level, you have a spellbook containing six 1st-level Wizard spells of your choice (+2 free spells for each wizard level). Please use the `{commandPrefix}shop copy` command. **{charDict['Free Spells']} Free Spells Available**", inline=False)
+
+            fsString = ""
+            fsIndex = 0
+            for el in charDict['Free Spells']:
+                if el > 0:
+                    fsString += f"Level {fsIndex+1}: {el} free spells\n"
+                fsIndex += 1
+
+            if fsString:
+                charEmbed.add_field(name='Free Spellbook Copies Available', value=fsString , inline=False)
+
+        charDictInvString = ""
+        if charDict['Inventory'] != "None":
+            for k,v in charDict['Inventory'].items():
+                charDictInvString += f"• {k} x{v}\n"
+            charEmbed.add_field(name='Starting Equipment', value=charDictInvString, inline=False)
+            charEmbed.set_footer(text= charEmbed.Empty)
+        
         def charCreateCheck(r, u):
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
@@ -2544,7 +2544,7 @@ class Character(commands.Cog):
             for sk in charDict['Max Stats'].keys():
                 if charDict[sk] > charDict['Max Stats'][sk]:
                     charDict[sk] = charDict['Max Stats'][sk]
-                   
+            
             specialCollection = db.special
             specialRecords = list(specialCollection.find())
 
