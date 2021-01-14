@@ -90,7 +90,7 @@ class Misc(commands.Cog):
         for cat in chan.guild.categories:
             if("campaigns" in cat.name.lower()):
                 campaign_channels+=cat.text_channels
-        excluded = [534249473006632960, 382027251618938880, 582450618703020052]
+        excluded = [787161189767577640, 382027251618938880, 582450618703020052]
         text = "Number of currently-running campaigns: "
         filtered = []
         #filter the list of channels to be just viewable and not in the specific excluded list
