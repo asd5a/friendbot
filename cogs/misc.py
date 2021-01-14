@@ -305,6 +305,31 @@ class Misc(commands.Cog):
     async def on_message(self,msg):
         if msg.guild == None: 
             return
+        # dndfriends
+        sChannelID = 651992439263068171 
+        vChannelID = 382031984471310336
+
+        sChannel = self.bot.get_channel(sChannelID)
+        vChannel = self.bot.get_channel(vChannelID)
+        if msg.channel.id == sChannelID and not msg.author.bot:
+            author = msg.author 
+            content = msg.content
+
+            await msg.delete()
+
+            vEmbed = discord.Embed()
+            vEmbed.set_author(name=author, icon_url=author.avatar_url)
+            vEmbed.description = content
+
+            vMessage = await vChannel.send(embed=vEmbed)
+
+            await vMessage.add_reaction('✅')
+            await vMessage.add_reaction('❌')
+
+        if msg.channel.id == vChannelID:
+            sMessage = await sChannel.send(content='Thanks! Your suggestion has been submitted and will be reviewed by the Admin team.')
+            await asyncio.sleep(30) 
+            await sMessage.delete()
         tChannel = settingsRecord[str(msg.guild.id)]["QB"]
         if(msg.type.value == 7):
             await msg.add_reaction('👋')

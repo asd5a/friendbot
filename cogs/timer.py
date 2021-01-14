@@ -1716,7 +1716,7 @@ class Timer(commands.Cog):
             # check if the game has rewards
             if role != "":
                 # post a session log entry in the log channel
-                await ctx.channel.send("The timer has been stopped! Your session log has been posted in the #session-logs channel.")
+                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel.")
                 
                 sessionMessage = await logChannel.send(embed=stopEmbed)
                 stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
