@@ -1459,10 +1459,11 @@ class Character(commands.Cog):
                             for i in range (0,int(v)):
                                 charInvString = f"Please choose from the choices below for {iType[0]} {i+1}:\n"
                                 alphaIndex = 0
+                                
+                                charInv = list(filter(lambda c: 'Yklwa' not in c['Name'] and 'Light Repeating Crossbow' not in c['Name'] and 'Double-Bladed Scimitar' not in c['Name'], charInv))
                                 for c in charInv:
-                                    if 'Yklwa' not in c['Name'] and 'Light Repeating Crossbow' not in c['Name'] and 'Double-Bladed Scimitar' not in c['Name']:
-                                        charInvString += f"{alphaEmojis[alphaIndex]}: {c['Name']}\n"
-                                        alphaIndex += 1
+                                    charInvString += f"{alphaEmojis[alphaIndex]}: {c['Name']}\n"
+                                    alphaIndex += 1
 
                                 charEmbed.set_field_at(startEquipmentLength, name=f"Starting Equipment: {startEquipmentLength+1} of {len(cRecord[0]['Class']['Starting Equipment'])}", value=charInvString, inline=False)
                                 await charEmbedmsg.clear_reactions()
@@ -2845,8 +2846,7 @@ class Character(commands.Cog):
                             if "Spellcasting" in c:
                                 s["Spellcasting"] = True
 
-                subclasses = sorted(subclasses, key = lambda i: i['Level'], reverse=True)
-
+                
                 def multiclassEmbedCheck(r, u):
                         sameMessage = False
                         if levelUpEmbedmsg.id == r.message.id:
@@ -3158,7 +3158,7 @@ class Character(commands.Cog):
                         data[sk] = charStats[sk] = data['Max Stats'][sk]
                         if charFeatsGained != "":
                             maxStatStr += f"\n{infoRecords['Name']}'s {sk} will not increase because their maximum is {data['Max Stats'][sk]}."
-
+                infoRecords["Class"] = data["Class"]
                 infoRecords['CON'] = charStats['CON']
                 charHP = await characterCog.calcHP(ctx, subclasses, infoRecords, int(newCharLevel))
                 data['HP'] = charHP
@@ -3281,14 +3281,21 @@ class Character(commands.Cog):
 
             # Check number of items character can attune to. Artificer has exceptions.
             attuneLength = 3
-            if charRecords['Class'] == 'Artificer':
-                if charRecords['Level'] >= 16:
-                    attuneLength = 6
-                elif charRecords['Level'] >= 13:
-                    attuneLength = 5
-                elif charRecords['Level'] >= 10:
-                    attuneLength = 4
-
+            
+            for multi in charRecords['Class'].split("/"):
+                multi = multi.strip()
+                multi_split = multi.split(" ")
+                if multi_split[0] == 'Artificer':
+                    class_level = charRecords["Level"]
+                    if len(multi_split)>2:
+                        class_level = int(multi_split[1])
+                    if class_level >= 18:
+                        attuneLength = 6
+                    elif class_level >= 14:
+                        attuneLength = 5
+                    elif class_level >= 10:
+                        attuneLength = 4
+            print(attuneLength, "Attune")
             if "Attuned" not in charRecords:
                 attuned = []
             else:
@@ -3853,7 +3860,7 @@ class Character(commands.Cog):
         totalHP = 0
         totalHP += classes[0]['Hit Die Max']
         currentLevel = 1
-
+        charDict = charDict.copy()
         for c in classes:
             classLevel = int(c['Level'])
             while currentLevel < classLevel:
@@ -3862,18 +3869,40 @@ class Character(commands.Cog):
             currentLevel = 0
 
         totalHP += ((int(charDict['CON']) - 10) // 2 ) * lvl
-
+        
         specialCollection = db.special
         specialRecords = list(specialCollection.find())
 
         for s in specialRecords:
-            if s['Type'] == "Race" or s['Type'] == "Class" or s['Type'] == "Feats" or s['Type'] == "Magic Items":
+            if s['Type'] == "Race" or s['Type'] == "Feats" or s['Type'] == "Magic Items":
+                
                 if s['Name'] in charDict[s['Type']]:
                     if 'HP' in s:
                         if 'Half Level' in s:
                             totalHP += s['HP'] * floor(lvl/2)
                         else:
                             totalHP += s['HP'] * lvl
+            elif s['Type'] == "Class":
+                for multi in charDict['Class'].split("/"):
+                    
+                    multi = multi.strip()
+                    multi_split = list(multi.split(" "))
+                    class_level = charDict["Level"]
+                    class_name = multi_split[0]
+                    if len(multi_split)>2:
+                        class_level=int(multi_split.pop(1))
+                        class_name = " ".join(multi_split)
+                        
+                        
+                    if class_name == s["Name"]:
+                        
+                        if 'HP' in s:
+                            if 'Half Level' in s:
+                                totalHP += s['HP'] * floor(class_level/2)
+                            else:
+                                totalHP += s['HP'] * class_level
+                            
+                             
 
         return totalHP
 
