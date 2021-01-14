@@ -698,7 +698,7 @@ class Guild(commands.Cog):
                         guildEmbedmsg = await channel.send(embed=guildEmbed)
                 
             else:
-                await channel.send(f'The guild ***{guildName}*** does not exist. Please try again.')
+                await channel.send(f'The guild ***{charRecords["Guild"]}*** does not exist. Please try again.')
                 return
 
 
