@@ -100,8 +100,8 @@ class Apps(commands.Cog):
                 
                 # newRole = get(guild.roles, name = 'Roll20 Tier 0')
                 # newRole = get(guild.roles, name = 'Roll20 Tier 1')
-                # newRole = get(guild.roles, name = 'D&D Friend')
-                # await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
+                newRole = get(guild.roles, name = 'D&D Friend')
+                await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
 
                 await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! The Mod team has approved your application and you have been assigned the appropriate roles.\n\nIf you have any further questions then please don't hesitate to ask in our #help-for-players channel or message a Mod Friend!")
 
