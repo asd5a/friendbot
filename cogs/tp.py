@@ -556,8 +556,7 @@ class Tp(commands.Cog):
                             mIndex = len(currentMagicItems) - 1
                         else:
                             mIndex = [m.rsplit(' (', 1)[0] for m in currentMagicItems].index(mRecord['Name'])
-                            currentMagicItem = re.search('\(\d([^)]+)', currentMagicItems[mIndex]).group(1)
-                            print(currentMagicItem)
+                            currentMagicItem = re.search('\((\d[^)]+)', currentMagicItems[mIndex]).group(1)
                             tpSplit= currentMagicItem.split('/')
                             tpNeeded = float(tpSplit[1]) - float(tpSplit[0]) 
 
