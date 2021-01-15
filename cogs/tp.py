@@ -555,8 +555,8 @@ class Tp(commands.Cog):
                             currentMagicItems.append(f"{mRecord['Name']} (0/0)")
                             mIndex = len(currentMagicItems) - 1
                         else:
-                            mIndex = [m.split(' (')[0] for m in currentMagicItems].index(mRecord['Name'])
-                            currentMagicItem = re.search('\(([^)]+)', currentMagicItems[mIndex]).group(1)
+                            mIndex = [m.rsplit(' (', 1)[0] for m in currentMagicItems].index(mRecord['Name'])
+                            currentMagicItem = re.search('\(\d([^)]+)', currentMagicItems[mIndex]).group(1)
                             print(currentMagicItem)
                             tpSplit= currentMagicItem.split('/')
                             tpNeeded = float(tpSplit[1]) - float(tpSplit[0]) 
