@@ -389,21 +389,18 @@ class Character(commands.Cog):
                             
                         spellItem = r.lower().replace("spell scroll", "").replace('(', '').replace(')', '')
                         sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem) 
-                        if not sRecord:
-                            reRecord = None
+                        
+                        if not sRecord :
+                            msg += f'''**{r}** belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Reward Item Table, what tier it is, and your spelling.'''
+                            
+
                         else:
-                            if (sRecord["Level"] >= 3 and tierNum < 2) or sRecord["Level"] > 3:
-                                msg += f"""The **Spell Scroll {sRecord['Name']}** cannot be a reward item because the level of the spell scroll is too high for your character.\n"""
-                                break
+                            
+                            ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
+                            # change the query to be an accurate representation
+                            r = f"Spell Scroll ({ordinal(sRecord['Level'])} Level)"
 
-                            elif sRecord["Level"] == 3:
-                                sTier = 2
-                            else:
-                                sTier = 1
-
-                            reRecord = {"Name": f"Spell Scroll ({sRecord['Name']})", "Type": "Consumables",  "Tier": sTier, "Minor/Major" : "Minor"}
-                    else:
-                        reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r, tier = tierNum) 
+                    reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r, tier = tierNum) 
 
                     if charEmbedmsg == "Fail":
                         return
@@ -411,6 +408,9 @@ class Character(commands.Cog):
                         msg += f" {r} belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Reward Item Table, what tier it is, and your spelling.\n"
                         break
                     else:
+                        
+                        if 'spell scroll' in r.lower():
+                            reRecord['Name'] = f"Spell Scroll ({sRecord['Name']})"
                         allRewardItemsString.append(reRecord)
                 allRewardItemsString.sort(key=lambda x: x["Tier"])
                 tier1CountMNC = 0
