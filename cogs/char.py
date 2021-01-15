@@ -2820,7 +2820,7 @@ class Character(commands.Cog):
     @commands.command(aliases=['r5'])
     async def reflavor(self,ctx, char, *, new_race):
         if( len(new_race) > 20 or len(new_race) <1):
-            await ctx.channel.send(content=f'The new race cannot be shorter than 1 or longer than 20 characters')
+            await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
             return
 
     
@@ -3729,7 +3729,7 @@ class Character(commands.Cog):
                 identity_strings = ["Server", "Server"]
                 statRecords = statRecordsLife
             if statRecords is None:
-                statsEmbed.add_field(name="Monthly Quest Stats", value="There have been 0 games played this month. Check back later!", inline=False)
+                statsEmbed.add_field(name="Monthly Quest Stats", value="There have been 0 one-shots played this month. Check back later!", inline=False)
             else:
                 # Iterate through each DM and track tiers + total
                 if "DM" in statRecords:
@@ -3801,14 +3801,14 @@ class Character(commands.Cog):
 
                 
                 # Number of games by total and by tier
-                statsTotalString += f"**{identity_strings[0]} Stats**\nTotal Games for the {identity_strings[1]}: {superTotal}\n" 
+                statsTotalString += f"**{identity_strings[0]} Stats**\nTotal One-shots for the {identity_strings[1]}: {superTotal}\n" 
                 if superTotal > 0:
                     statsTotalString += f'Guild quests out of total quests: {round((gq_sum / superTotal)* 100,2) }%\n'                   
                 for i in range (0,6):
                     if f'T{i}' not in statRecords:
-                        statsTotalString += f"Tier {i} Games for the {identity_strings[1]}: 0\n"
+                        statsTotalString += f"Tier {i} One-shots for the {identity_strings[1]}: 0\n"
                     else: 
-                        statsTotalString += f"Tier {i} Games for the {identity_strings[1]}: {statRecords[f'T{i}']}\n"
+                        statsTotalString += f"Tier {i} One-shots for the {identity_strings[1]}: {statRecords[f'T{i}']}\n"
 
 
                 if 'Players' in statRecords and 'Playtime' in statRecords:
@@ -4079,7 +4079,7 @@ class Character(commands.Cog):
                     for num in range(len(statSplit)):
                         statSplitString += f'{numberEmojis[num]}: {statSplit[num]}\n'
                     try:
-                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose between {s}. React [1-{len(statSplit)}] below with the stat you chose.", value=statSplitString, inline=False)
+                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose between {s}. React [1-{len(statSplit)}] below with the stat(s) you would like to choose.", value=statSplitString, inline=False)
                         if charEmbedmsg:
                             await charEmbedmsg.edit(embed=charEmbed)
                         else: 
@@ -4137,7 +4137,7 @@ class Character(commands.Cog):
                             uniqueStatStr += f'{numberEmojis[u]}: {uniqueArray[u]}\n'
                             uniqueReacts.append(numberEmojis[u])
 
-                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose {anyCheck} extra stats to increase by {anyAmount}. React below with the stat(s) you chose.", value=uniqueStatStr, inline=False)
+                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose {anyCheck} extra stats to increase by {anyAmount}. React below with the stat(s) you would like to choose.", value=uniqueStatStr, inline=False)
                         if charEmbedmsg:
                             await charEmbedmsg.edit(embed=charEmbed)
                         else: 
@@ -4619,7 +4619,7 @@ class Character(commands.Cog):
                         try:
                             charEmbed.clear_fields()    
                             charEmbed.set_footer(text= charEmbed.Empty)
-                            charEmbed.add_field(name=f"The {featPicked['Name']} feat lets you choose between {featBonus}. React with [1-{len(featBonusList)}] below with the stat you chose.", value=featBonusString, inline=False)
+                            charEmbed.add_field(name=f"The {featPicked['Name']} feat lets you choose between {featBonus}. React with [1-{len(featBonusList)}] below with the stat(s) you would like to choose.", value=featBonusString, inline=False)
                             await charEmbedmsg.edit(embed=charEmbed)
                             for num in range(0,len(featBonusList)): await charEmbedmsg.add_reaction(numberEmojis[num])
                             await charEmbedmsg.add_reaction('❌')

@@ -346,7 +346,7 @@ class Guild(commands.Cog):
                 guildEmbed.add_field(name="Members", value="There are no guild members currently.")
 
             if guildRecords['Funds'] < self.creation_cost:
-                guildEmbed.add_field(name="Funds", value=f"{guildRecords['Funds']} GP / {self.creation_cost} GP.\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!", inline=False)
+                guildEmbed.add_field(name="Funds", value=f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!", inline=False)
             else:
                 guildEmbed.add_field(name="Reputation", value=f"Total Reputation: {guildRecords['Total Reputation']} :sparkles:\nBank: {guildRecords['Reputation']} :sparkles:", inline=False)
             guildEmbed.add_field(name="Monthly Stats", value=guild_stats_string, inline=False)

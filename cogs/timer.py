@@ -1716,8 +1716,11 @@ class Timer(commands.Cog):
             # check if the game has rewards
             if role != "":
                 # post a session log entry in the log channel
-                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel.")
+                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the <#382045698931294208> channel.")
                 
+# {logChannel.mention}
+# Not sure why this wasn't hyperlinking to #session-logs as it should have been so I'm seeing if hyperlinking the channel itself will force a mention.
+
                 sessionMessage = await logChannel.send(embed=stopEmbed)
                 stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
                 modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
@@ -1849,7 +1852,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 
 **Exploration**
 • Did they deal with environmental effects? How did they resolve them?
-• Did they interact the envrionment to gather info and make informed decisions? What were the clues? How did these contribute to their success?
+• Did they interact the environment to gather info and make informed decisions? What were the clues? How did these contribute to their success?
 • Did they travel or solve a puzzle/trap within a limited time frame? What problems did they have to face? How were they solved?
 • How did any unsuccessful attempts negatively affect future events?
 
