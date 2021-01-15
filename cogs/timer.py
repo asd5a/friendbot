@@ -1684,10 +1684,8 @@ class Timer(commands.Cog):
             tierNum = 0
             guild = ctx.guild
 
-            print("GUILDS 4", guildsList)
             stopEmbed = discord.Embed()
             
-            print("DD 3", ddmrw)
             stopEmbed.set_footer(text=f"Placeholder, if this remains remember the wise words DO NOT PANIC and get a towel.")
             
             # turn Tier string into tier number
@@ -1716,7 +1714,7 @@ class Timer(commands.Cog):
             # check if the game has rewards
             if role != "":
                 # post a session log entry in the log channel
-                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the <#382045698931294208> channel.")
+                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel.")
                 
 # {logChannel.mention}
 # Not sure why this wasn't hyperlinking to #session-logs as it should have been so I'm seeing if hyperlinking the channel itself will force a mention.
@@ -1752,7 +1750,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             dbEntry["Players"] = {}
             
             dbEntry["DDMRW"] = settingsRecord["ddmrw"] or ddmrw
-            print("DD 4", settingsRecord["ddmrw"] or ddmrw)
             if tierNum < 1:
                 tierNum = 1
             rewardsCollection = db.rit
@@ -1802,12 +1799,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     playerDBEntry={}
                     randomItems = [random.choice(rewardList).copy(), random.choice(rewardList_lower).copy()]
                     playerDBEntry["Double Items"] = []
-                    print("SPEEEEEEEEEEEEEEEEEEEEEEL", randomItems)
                     for i in randomItems:
                         if("Grouped" in i):
                             i["Name"] = random.choice(i["Name"])
                         elif("Spell Scroll" in i["Name"]):
-                            print("SPEEEEEEEEEEEEEEEEEEEEEEL", i)
                             if("Cantrip" in i["Name"]):
                                 spell_level = 0
                             else:
@@ -1835,8 +1830,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     dbEntry["Players"][f"{value[0].id}"] = playerDBEntry
                     playerList.append(value)
 
-                print('playerList')
-                print(playerList)
                 
                 
             
@@ -1873,6 +1866,18 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 • If guidelines were not fulfilled, how/why did the party fail?
 """ 
             
+            if hoursPlayed < 0.5:
+                self.timer.get_command('prep').reset_cooldown(ctx)
+                await sessionMessage.delete()
+                modEmbed.description = f"""A one-shot session log was just posted for {ctx.channel.mention}.
+
+DM: {dmChar[0].mention} 
+
+The session was less than 30 minutes and therefore was not counted.
+"""
+                await modMessage.edit(embed=modEmbed)
+                return
+            
             hoursPlayed = (totalDurationTime // 1800) / 2
             
             # get the collections of characters
@@ -1886,7 +1891,6 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
             uRecord  = usersCollection.find_one({"User ID": str(dmChar[0].id)})
             noodles = 0
             # get the total amount of minutes played
-            print("DM:", uRecord)
             
             #DM REWARD MATH STARTS HERE
             dmDBEntry = {}
@@ -1978,15 +1982,11 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                 # create a list of of UpdateOne objects from the data entries for the bulk_write
                 timerData = list(map(lambda item: UpdateOne({'_id': item[3]}, {"$set": {"GID": dbEntry["Log ID"]}}), playerList))
                 
-                print("GUILDS 6", guildsList)
-                
-                print("GUILDS 7", dbEntry["Guilds"])
+
                 # try to update all the player entries
                 try:
                     playersCollection.bulk_write(timerData)
-                    
-                    print(dbEntry)
-                    
+
                     logCollection.insert_one(dbEntry)
                 except BulkWriteError as bwe:
                     print(bwe.details)
