@@ -797,14 +797,14 @@ class Character(commands.Cog):
                             except asyncio.TimeoutError:
                                 await charEmbedmsg.delete()
                                 await channel.send(f'Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
-                                self.bot.get_command('respec').reset_cooldown(ctx)
+                                self.bot.get_command('create').reset_cooldown(ctx)
                                 return
                             else:
                                 await charEmbedmsg.clear_reactions()
                                 if tReaction.emoji == '❌':
                                     await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
                                     await charEmbedmsg.clear_reactions()
-                                    self.bot.get_command('respec').reset_cooldown(ctx)
+                                    self.bot.get_command('create').reset_cooldown(ctx)
                                     return
 
                             beTopValues = beTopChoiceList[alphaEmojis.index(tReaction.emoji)]
@@ -844,14 +844,14 @@ class Character(commands.Cog):
                             except asyncio.TimeoutError:
                                 await charEmbedmsg.delete()
                                 await channel.send(f'Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
-                                self.bot.get_command('respec').reset_cooldown(ctx)
+                                self.bot.get_command('create').reset_cooldown(ctx)
                                 return
                             else:
                                 await charEmbedmsg.clear_reactions()
                                 if tReaction.emoji == '❌':
                                     await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
                                     await charEmbedmsg.clear_reactions()
-                                    self.bot.get_command('respec').reset_cooldown(ctx)
+                                    self.bot.get_command('create').reset_cooldown(ctx)
                                     return
                                 beKey = beList[alphaEmojis.index(tReaction.emoji)]
                                 if charDict['Inventory'] == "None":
@@ -1564,7 +1564,7 @@ class Character(commands.Cog):
             bRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'backgrounds',bg)
 
             if charEmbedmsg == "Fail":
-                self.bot.get_command('create').reset_cooldown(ctx)
+                self.bot.get_command('respec').reset_cooldown(ctx)
                 return
             if not bRecord:
                 msg += f':warning: **{bg}** isn\'t on the list or it is banned! Check #allowed-and-banned-content and check your spelling.\n'
@@ -1609,14 +1609,14 @@ class Character(commands.Cog):
                             except asyncio.TimeoutError:
                                 await charEmbedmsg.delete()
                                 await channel.send(f'Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
-                                self.bot.get_command('create').reset_cooldown(ctx)
+                                self.bot.get_command('respec').reset_cooldown(ctx)
                                 return
                             else:
                                 await charEmbedmsg.clear_reactions()
                                 if tReaction.emoji == '❌':
                                     await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
                                     await charEmbedmsg.clear_reactions()
-                                    self.bot.get_command('create').reset_cooldown(ctx)
+                                    self.bot.get_command('respec').reset_cooldown(ctx)
                                     return
 
                             beTopValues = beTopChoiceList[alphaEmojis.index(tReaction.emoji)]
@@ -1656,14 +1656,14 @@ class Character(commands.Cog):
                             except asyncio.TimeoutError:
                                 await charEmbedmsg.delete()
                                 await channel.send(f'Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
-                                self.bot.get_command('create').reset_cooldown(ctx)
+                                self.bot.get_command('respec').reset_cooldown(ctx)
                                 return
                             else:
                                 await charEmbedmsg.clear_reactions()
                                 if tReaction.emoji == '❌':
                                     await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
                                     await charEmbedmsg.clear_reactions()
-                                    self.bot.get_command('create').reset_cooldown(ctx)
+                                    self.bot.get_command('respec').reset_cooldown(ctx)
                                     return
                                 beKey = beList[alphaEmojis.index(tReaction.emoji)]
                                 if charDict['Inventory'] == "None":
