@@ -934,7 +934,7 @@ class Campaign(commands.Cog):
     @timer.command(aliases=['end'])
     async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", campaignRecords = None):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
-            end = time.time() + 3600 * 3
+            end = time.time() + 3600 * 0
             allRewardStrings = {}
             guild = ctx.guild
             startTime = start["Start"]
