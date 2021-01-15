@@ -1679,8 +1679,7 @@ class Timer(commands.Cog):
     async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", ddmrw= False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
             end = time.time() + 3600 * 0
-            allRewardStrings = {}
-            treasureString = "No Rewards"
+            
             tierNum = 0
             guild = ctx.guild
 
@@ -1711,36 +1710,8 @@ class Timer(commands.Cog):
             logChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Sessions"])  # 728456783466725427 737076677238063125
             # logChannel = self.bot.get_channel(577227687962214406)
             
-            # check if the game has rewards
-            if role != "":
-                # post a session log entry in the log channel
-                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel.")
-                
-# {logChannel.mention}
-# Not sure why this wasn't hyperlinking to #session-logs as it should have been so I'm seeing if hyperlinking the channel itself will force a mention.
-
-                sessionMessage = await logChannel.send(embed=stopEmbed)
-                stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
-                modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
-                modEmbed = discord.Embed()
-                modEmbed.description = f"""A one-shot session log was just posted for {ctx.channel.mention}.
-
-DM: {dmChar[0].mention} 
-Game ID: {sessionMessage.id}
-Link: {sessionMessage.jump_url}
-
-React with :pencil: if you messaged the DM to fix something in their summary.
-React with ✅ if you have approved the log.
-React with :x: if you have denied the log.
-React with :classical_building: if you have denied one of the guilds.
-
-Reminder: do not deny any logs until we have spoken about it as a team."""
-
-                modMessage = await modChannel.send(embed=modEmbed)
-                for e in ["📝", "✅", "❌", "🏛️"]:
-                    await modMessage.add_reaction(e)
+            
             dbEntry = {}
-            dbEntry["Log ID"] = sessionMessage.id
             dbEntry["Role"] = role
             dbEntry["Tier"] = tierNum
             dbEntry["Channel"] = ctx.channel.name
@@ -1829,11 +1800,42 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     # add the player to the list of completed entries
                     dbEntry["Players"][f"{value[0].id}"] = playerDBEntry
                     playerList.append(value)
-
+            hoursPlayed = (totalDurationTime // 1800) / 2
+            
+            if hoursPlayed < 0.5:
+                self.timer.get_command('prep').reset_cooldown(ctx)
+                await ctx.channel.send(content=f"The session was less than 30 minutes and therefore was not counted.")
                 
+                return
+            # check if the game has rewards
+            if role != "":
+                # post a session log entry in the log channel
+                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel.")
+                sessionMessage = await logChannel.send(embed=stopEmbed)
+                stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
+                modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
+                modEmbed = discord.Embed()
+                modEmbed.description = f"""A one-shot session log was just posted for {ctx.channel.mention}.
+
+DM: {dmChar[0].mention} 
+Game ID: {sessionMessage.id}
+Link: {sessionMessage.jump_url}
+
+React with :pencil: if you messaged the DM to fix something in their summary.
+React with ✅ if you have approved the log.
+React with :x: if you have denied the log.
+React with :classical_building: if you have denied one of the guilds.
+
+Reminder: do not deny any logs until we have spoken about it as a team."""
+
+                modMessage = await modChannel.send(embed=modEmbed)
+                for e in ["📝", "✅", "❌", "🏛️"]:
+                    await modMessage.add_reaction(e)    
                 
             
             dbEntry["Start"] = starting_time
+            
+            dbEntry["Log ID"] = sessionMessage.id
             
             stopEmbed.title = f"Timer: {game} [END] - {totalDuration}"
             stopEmbed.description = """**General Summary**:
@@ -1866,19 +1868,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 • If guidelines were not fulfilled, how/why did the party fail?
 """ 
             
-            if hoursPlayed < 0.5:
-                self.timer.get_command('prep').reset_cooldown(ctx)
-                await sessionMessage.delete()
-                modEmbed.description = f"""A one-shot session log was just posted for {ctx.channel.mention}.
-
-DM: {dmChar[0].mention} 
-
-The session was less than 30 minutes and therefore was not counted.
-"""
-                await modMessage.edit(embed=modEmbed)
-                return
             
-            hoursPlayed = (totalDurationTime // 1800) / 2
             
             # get the collections of characters
             playersCollection = db.players

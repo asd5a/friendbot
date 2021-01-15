@@ -20,7 +20,11 @@ class Character(commands.Cog):
         async def predicate(ctx):
             return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
         return commands.check(predicate)
-        
+   def is_log_channel_or_game():
+        async def predicate(ctx):
+            return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"])
+        return commands.check(predicate) 
     async def cog_command_error(self, ctx, error):
         msg = None
         
@@ -1536,15 +1540,6 @@ class Character(commands.Cog):
                     else:
                         charDict['Class'] += f' / {className}'
 
-        bRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'backgrounds',bg)
-        if charEmbedmsg == "Fail":
-            return
-        if not bRecord:
-            msg += f':warning: **{bg}** isn\'t on the list or it is banned! Check #allowed-and-banned-content and check your spelling.\n'
-        else:
-            charDict['Background'] = bRecord['Name']
-            charDict['GP'] = int(bRecord['GP']) + totalGP
-
         # check bg and gp
 
         def bgTopItemCheck(r, u):
@@ -2024,7 +2019,6 @@ class Character(commands.Cog):
                         
                         deadCollection = db.dead
                         usersCollection = db.users
-                        
                         if "Guild" in charDict:
                             guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charDict['Guild'], '$options': 'i' }}))
                             # If there is only one of user's character in the guild remove the role.
@@ -2209,7 +2203,7 @@ class Character(commands.Cog):
 
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
+    @is_log_channel_or_game()
     @commands.command(aliases=['bag','inv'])
     async def inventory(self,ctx, char):
         channel = ctx.channel
@@ -2590,7 +2584,7 @@ class Character(commands.Cog):
             
            
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
+    @is_log_channel_or_game()
     @commands.command(aliases=['i', 'char'])
     async def info(self,ctx, char):
         channel = ctx.channel

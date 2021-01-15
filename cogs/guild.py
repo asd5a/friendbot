@@ -198,6 +198,7 @@ class Guild(commands.Cog):
                             await guildEmbedmsg.clear_reactions()
                             ctx.command.reset_cooldown(ctx)
                             return
+                    guildName = guildRole[0].name
                     guildEmbed.clear_fields()
                     await guildEmbedmsg.clear_reactions()
                     baseRep = int(noodleRep[alphaEmojis.index(tReaction.emoji[0])].split(' (')[1].replace(')',""))
@@ -244,6 +245,7 @@ class Guild(commands.Cog):
             return
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @guild.command()
     async def info(self,ctx, guildName): 
         channel = ctx.channel
