@@ -275,13 +275,13 @@ async def help(ctx, *, pageString=''):
 
 # DM COMMANDS
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)', value=f'{commandPrefix}session log questID summary', inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)', value=f'{commandPrefix}session log gameID summary', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)', value=f'{commandPrefix}approveRewards gameID #guild-channel', inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)', value=f'{commandPrefix}session approveRewards gameID #guild-channel', inline=False)
 
     helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Rewards (DM)', value=f'{commandPrefix}session denyRewards gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Items (DM)', value=f'{commandPrefix}approveItems gameID #guild-channel', inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Items (DM)', value=f'{commandPrefix}session approveItems gameID #guild-channel', inline=False)
 
     helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Items (DM)', value=f'{commandPrefix}session denyItems gameID #guild-channel', inline=False)
 
@@ -350,7 +350,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGuild.add_field(name=f'▫️ Creating a Guild', value=f'{commandPrefix}guild create "character name" "guild name" @guildrole #guild-channel', inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Funding a Guild', value=f'{commandPrefix}guild fund "character name" @guildrole GP', inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Funding a Guild', value=f'{commandPrefix}guild fund "character name" #guild-channel GP', inline=False)
 
 
 # CAMPAIGN COMMANDS MENU ($help campaign)
