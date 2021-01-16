@@ -960,7 +960,7 @@ class Character(commands.Cog):
                     if m['Class']['Multiclass'] != 'None':
                         if '/' not in m['Class']['Multiclass'] and '+' not in m['Class']['Multiclass']:
                             if int(charDict[statReq[0]]) < int(statReq[1]):
-                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{statReq[0]} {charDict[statReq[0]]}**\n"
+                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{statReq[0]} {charDict[statReq[0]]}**!\n"
 
                         elif '/' in m['Class']['Multiclass']:
                             statReq[0] = statReq[0].split('/')
@@ -971,7 +971,7 @@ class Character(commands.Cog):
                                 else:
                                   reqFufillList.append(f"{s} {charDict[s]}")
                             if not reqFufill:
-                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{' and '.join(reqFufillList)}**\n"
+                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{' and '.join(reqFufillList)}**!\n"
 
                         elif '+' in m['Class']['Multiclass']:
                             statReq[0] = statReq[0].split('+')
@@ -981,7 +981,7 @@ class Character(commands.Cog):
                                   reqFufill = False
                                   reqFufillList.append(f"{s} {charDict[s]}")
                             if not reqFufill:
-                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{' and '.join(reqFufillList)}**\n"
+                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{' and '.join(reqFufillList)}**!\n"
 
         if msg:
             if charEmbedmsg and charEmbedmsg != "Fail":
@@ -3812,7 +3812,7 @@ class Character(commands.Cog):
                 # Number of games by total and by tier
                 statsTotalString += f"**{identity_strings[0]} Stats**\nTotal One-shots for the {identity_strings[1]}: {superTotal}\n" 
                 if superTotal > 0:
-                    statsTotalString += f'Guild quests out of total quests: {round((gq_sum / superTotal)* 100,2) }%\n'                   
+                    statsTotalString += f'Guild Quest % (Out of Total Quests): {round((gq_sum / superTotal)* 100,2) }%\n'                   
                 for i in range (0,6):
                     if f'T{i}' not in statRecords:
                         statsTotalString += f"Tier {i} One-shots for the {identity_strings[1]}: 0\n"
