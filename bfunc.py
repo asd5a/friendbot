@@ -73,10 +73,16 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
     
     #######role = role.lower()
     
-    if level >= 20:
-        tier = 5
-    elif tier <= 0:
+    tier = 5
+    # calculate the tier of the rewards
+    if level < 5:
         tier = 1
+    elif level < 11:
+        tier = 2
+    elif level < 17:
+        tier = 3
+    elif level < 20:
+        tier = 4
     #unreasonably large number as a cap
     cpThreshHoldArray = [16, 16+60, 16+60+60, 16+60+60+30, 90000000]
     # calculate how far into the current level CP the character is after the game

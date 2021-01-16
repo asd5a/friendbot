@@ -14,6 +14,12 @@ class Guild(commands.Cog):
         async def predicate(ctx):
             return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
         return commands.check(predicate)
+    def is_game_channel():
+        async def predicate(ctx):
+            return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"] or
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"])
+        return commands.check(predicate)
         
     @commands.group(aliases=['g'], case_insensitive=True)
     async def guild(self, ctx):	
@@ -245,7 +251,7 @@ class Guild(commands.Cog):
             return
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
+    @is_game_channel()
     @guild.command()
     async def info(self,ctx, guildName): 
         channel = ctx.channel
