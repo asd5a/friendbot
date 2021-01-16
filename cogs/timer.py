@@ -1657,9 +1657,9 @@ class Timer(commands.Cog):
             
             # we need separate advice strings if there are no rewards
             if role != "":
-                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - "item"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "reward item1, reward item2, [...]"\n# Stopping the Timer\n   {commandPrefix}timer stop```'
+                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - item\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "reward item1, reward item2, [...]"\n# Revoking Reward Items\n   {commandPrefix}timer undo rewards\n# Stopping the Timer\n   {commandPrefix}timer stop```'
             else:
-                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - "item"\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "reward item1, reward item2, [...]"\n# Revoking Reward Items\n   {commandPrefix}timer undo rewards\n# Stopping the Timer\n   {commandPrefix}timer stop```'
+                stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}timer addme "character name" "consumables"\n# Using Items\n   - item\n# Removing Yourself\n   {commandPrefix}timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}timer add @player "character name" "consumables"\n# Removing Players\n   {commandPrefix}timer remove @player\n# Awarding Reward Items\n   {commandPrefix}timer reward @player "reward item1, reward item2, [...]"\n# Revoking Reward Items\n   {commandPrefix}timer undo rewards\n# Stopping the Timer\n   {commandPrefix}timer stop```'
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):
@@ -1810,7 +1810,7 @@ class Timer(commands.Cog):
             # check if the game has rewards
             if role != "":
                 # post a session log entry in the log channel
-                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel.")
+                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel. Write your session log summary in this channel by using the following command:\n```md\n$session log {sessionMessage.id} < Replace the angle brackets and this text with your session summary log. >```")
                 sessionMessage = await logChannel.send(embed=stopEmbed)
                 stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
                 modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
