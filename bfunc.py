@@ -351,12 +351,14 @@ async def checkForChar(ctx, char, charEmbed="", authorCheck=None, mod=False, cus
 
     playersCollection = db.players
 
-    char = char.strip()
-
+    query = char.strip()
+    query = query.replace('(', '\\(')
+    query = query.replace(')', '\\)')
+    query = query.replace('.', '\\.')
     if mod == True:
-        charRecords = list(playersCollection.find({"Name": {"$regex": char, '$options': 'i' }})) 
+        charRecords = list(playersCollection.find({"Name": {"$regex": query, '$options': 'i' }})) 
     else:
-        charRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": char, '$options': 'i' }}))
+        charRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": query, '$options': 'i' }}))
 
     if charRecords == list():
         if not mod and not customError:

@@ -140,6 +140,7 @@ class Character(commands.Cog):
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
     async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes="", campaignName = None, timeTransfer = None):
+        name = name.strip()
         characterCog = self.bot.get_cog('Character')
         roleCreationDict = {
             'Journeyfriend':[3],
@@ -235,8 +236,12 @@ class Character(commands.Cog):
 
 
         if msg == "":
+            query = name
+            query = query.replace('(', '\\(')
+            query = query.replace(')', '\\)')
+            query = query.replace('.', '\\.')
             playersCollection = db.players
-            userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": f"^{name}$", '$options': 'i' } }))
+            userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": f"^{query}$", '$options': 'i' } }))
 
             if userRecords != list():
                 msg += f":warning: You already have a character by the name of ***{name}***! Please use a different name.\n"
@@ -1126,6 +1131,7 @@ class Character(commands.Cog):
     @is_log_channel()
     @commands.command(aliases=['rs'])
     async def respec(self,ctx, name, newname, race, cclass, bg, sStr:int, sDex:int, sCon:int, sInt:int, sWis:int, sCha:int):
+        newname = newname.strip()
         characterCog = self.bot.get_cog('Character')
         author = ctx.author
         guild = ctx.guild
@@ -1229,10 +1235,15 @@ class Character(commands.Cog):
             self.bot.get_command('respec').reset_cooldown(ctx)
             return
         
+        
+        query = newname
+        query = query.replace('(', '\\(')
+        query = query.replace(')', '\\)')
+        query = query.replace('.', '\\.')
         playersCollection = db.players
-        userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": f"^{newname}$", '$options': 'i' }}))
+        userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": f"^{query}$", '$options': 'i' }}))
 
-        if userRecords != list() and newname != name:
+        if userRecords != list() and newname.lower() != name.lower():
             msg += f":warning: You already have a character by the name ***{newname}***. Please use a different name.\n"
 
         oldName = charDict['Name']
