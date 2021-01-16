@@ -434,7 +434,7 @@ class Guild(commands.Cog):
                 guildRecords['Funds'] += float(gpFund) 
 
                 if  (guildRecords['Funds'] >= self.creation_cost)  and (oldFundGP < self.creation_cost) and gpNeeded < gpFund:
-                    refundGP = gpFund - gpNeeded
+                    refundGP = guildRecords['Funds'] - max(self.creation_cost, gpNeeded+oldFundGP)
 
                 newGP = (charRecords['GP'] - float(gpFund)) + refundGP
 
