@@ -20,7 +20,8 @@ class Character(commands.Cog):
         async def predicate(ctx):
             return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
         return commands.check(predicate)
-   def is_log_channel_or_game():
+   
+    def is_log_channel_or_game():
         async def predicate(ctx):
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"])
@@ -2247,11 +2248,11 @@ class Character(commands.Cog):
                     if len(spellBookString) > (768 * sPages):
                         sPageStops.append(len(spellBookString))
                         sPages += 1
-
                 sPageStops.append(len(spellBookString))
 
-                if sPages > 1:
+                if sPages > 1 and sPageStops[-1] > sPageStops[-2]:
                     for p in range(len(sPageStops)-1):
+                        print(p, spellBookString[sPageStops[p]:sPageStops[p+1]])
                         charEmbed.add_field(name=f'Spellbook- p. {p+1}', value=spellBookString[sPageStops[p]:sPageStops[p+1]], inline=False)
                 else:
                     charEmbed.add_field(name='Spellbook', value=spellBookString, inline=False)
@@ -2281,7 +2282,7 @@ class Character(commands.Cog):
             
             cPageStops.append(len(consumesString))
 
-            if cPages > 1:
+            if cPages > 1 and cPageStops[-1] > cPageStops[-2]:
                 for p in range(len(cPageStops)-1):
                     charEmbed.add_field(name=f'Consumables - p. {p+1}', value=consumesString[cPageStops[p]:cPageStops[p+1]], inline=False)
             else:
@@ -2309,7 +2310,7 @@ class Character(commands.Cog):
                     mPages += 1
 
             mPageStops.append(len(miString))
-            if mPages > 1:
+            if mPages > 1 and mPageStops[-1] > mPageStops[-2]:
                 for p in range(len(mPageStops)-1):
                     charEmbed.add_field(name=f'Magic Items - p. {p+1}', value=miString[mPageStops[p]:mPageStops[p+1]], inline=False)
             else:
@@ -2388,7 +2389,7 @@ class Character(commands.Cog):
                                 vPages += 1
 
                         vPageStops.append(len(vString))
-                        if vPages > 1:
+                        if vPages > 1  and vPageStops[-1] > vPageStops[-2]:
                             for p in range(len(vPageStops)-1):
                                 charEmbed.add_field(name=f'{k} - p. {p+1}', value=vString[vPageStops[p]:vPageStops[p+1]], inline=False)
 
