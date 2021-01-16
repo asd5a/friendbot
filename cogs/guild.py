@@ -486,19 +486,19 @@ class Guild(commands.Cog):
                     await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try guild join again.")
                 else:
                     guildEmbed.title = f"Fund Guild: {guildRecords['Name']}"
-                    guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***\n\n**Current GP**: {newGP}\n"
+                    guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***\n\n**Current GP**: {newGP} GP\n"
 
 
                     if guildRecords['Funds'] < self.creation_cost:
-                        guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} GP.\nIf this amount puts the guild's funds over {self.creation_cost} GP, the leftover is given back to the character.\n\n**Current Guild Funds**: {maxGP} GP / {self.creation_cost} GP\n\n**Current GP**: {newGP}\n"
+                        guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} GP.\nIf this amount puts the guild's funds over {self.creation_cost} GP, the leftover is given back to the character.\n\n**Current Guild Funds**: {maxGP} GP / {self.creation_cost} GP\n\n**Current GP**: {newGP} GP\n"
                     elif guildRecords['Funds'] >= self.creation_cost and oldFundGP < self.creation_cost:
-                        guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***\n\n**Current GP**: {newGP}\n"
+                        guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***\n\n**Current GP**: {newGP} GP\n"
                         guildEmbed.description += f"Congratulations! :tada: ***{guildRecords['Name']}***  is officially open!"
                         if refundGP:
                             guildEmbed.description += f"\n\n Because you funded the guild over {self.creation_cost} GP, you have been refunded {abs(refundGP)} GP."
 
                     else:
-                        guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***\n\n**Current GP**: {newGP}\n"
+                        guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***.\n\n**Current GP**: {newGP} GP\n"
 
                     if guildEmbedmsg:
                         await guildEmbedmsg.edit(embed=guildEmbed)
@@ -604,7 +604,7 @@ class Guild(commands.Cog):
                     print ('MONGO ERROR: ' + str(e))
                     await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try shop buy again.")
                 else:
-                    guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}*** for {gpNeeded}!\n\n**Current GP**: {newGP}\n"
+                    guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}*** for {gpNeeded} GP!\n\n**Previous GP**: {charRecords['GP']} GP\n**Cost**: {gpNeeded} GP\n**Current GP**: {newGP} GP\n"
                     if guildEmbedmsg:
                         await guildEmbedmsg.edit(embed=guildEmbed)
                     else:
@@ -669,7 +669,7 @@ class Guild(commands.Cog):
                     return
 
                 guildEmbed.title = f"Ranking Up - Guild: {guildRecords['Name']}"
-                guildEmbed.description = f"Are you sure you want to upgrade your rank to **{charRecords['Guild Rank'] + 1}**? (Cost: {gpNeeded} GP)\n\nCurrent GP: {charRecords['GP']} GP → {charRecords['GP'] - gpNeeded} GP\n\n✅: Yes\n\n❌: Cancel"
+                guildEmbed.description = f"Are you sure you want to upgrade your rank to **{charRecords['Guild Rank'] + 1}** for {gpNeeded} GP?\n\n**Current GP**: {charRecords['GP']} GP\n**Cost**: {gpNeeded} GP\n**New GP**: {charRecords['GP'] - gpNeeded} GP\n\n✅: Yes\n\n❌: Cancel"
 
                 if guildEmbedmsg:
                     await guildEmbedmsg.edit(embed=guildEmbed)
@@ -699,7 +699,7 @@ class Guild(commands.Cog):
                     print ('MONGO ERROR: ' + str(e))
                     await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try shop buy again.")
                 else:
-                    guildEmbed.description = f"***{charRecords['Name']}*** has ranked up! Rank **{charRecords['Guild Rank']}** → **{charRecords['Guild Rank'] + 1}**\n\n**Current GP**: {newGP}\n"
+                    guildEmbed.description = f"***{charRecords['Name']}*** has ranked up using {gpNeeded} GP! Rank **{charRecords['Guild Rank']}** → **{charRecords['Guild Rank'] + 1}**\n\n**Previous GP**: {charRecords['GP']} GP\n**Cost**: {gpNeeded} GP\n**New GP**: {newGP} GP\n"
                     if guildEmbedmsg:
                         await guildEmbedmsg.edit(embed=guildEmbed)
                     else:

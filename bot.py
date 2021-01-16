@@ -106,18 +106,18 @@ async def help(ctx, *, pageString=''):
         page = 1
     elif 'char' in pageString:
         page = 2
-    elif 'timer2' in pageString:
-        page = 4
-    elif 'timer3' in pageString:
-        page = 5
-    elif 'timer1' in pageString or 'timer' in pageString:
-        page = 3
     elif 'tp' in pageString:
-        page = 6
+        page = 3
     elif 'shop' in pageString:
-        page = 7
+        page = 4
     elif 'guild' in pageString:
+        page = 5
+    elif 'timer2' in pageString:
+        page = 7
+    elif 'timer3' in pageString:
         page = 8
+    elif 'timer1' in pageString or 'timer' in pageString:
+        page = 6
     elif 'campaign' in pageString:
         page = 9
 
@@ -125,18 +125,18 @@ async def help(ctx, *, pageString=''):
 # MAIN HELP MENU ($help)
 
 
-    helpList = [helpEmbedMenu, helpEmbedGen, helpEmbedChar, helpEmbedTimerOne, helpEmbedTimerTwo, helpEmbedTimerThree, helpEmbedTp, helpEmbedShop, helpEmbedGuild, helpEmbedCampaign]
+    helpList = [helpEmbedMenu, helpEmbedGen, helpEmbedChar, helpEmbedTp, helpEmbedShop, helpEmbedGuild, helpEmbedTimerOne, helpEmbedTimerTwo, helpEmbedTimerThree, helpEmbedCampaign]
 
     helpEmbedMenu.title = 'Bot Friend Commands - Table of Contents'
     helpEmbedMenu.description = 'Please react to the group of commands you would like to see and gain more knowledge about.'
     helpEmbedMenu.add_field(name=f"1️⃣ General Commands\n{commandPrefix}help gen", value="Various commands which don't fit into any other section.", inline=False)
     helpEmbedMenu.add_field(name=f"2️⃣ Character Commands\n{commandPrefix}help char", value="How to manage your character(s).", inline=False)
-    helpEmbedMenu.add_field(name=f"3️⃣ Pre-Quest Timer Commands\n{commandPrefix}help timer1", value="How to prepare and sign up to a timer for a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"4️⃣ Running Timer Commands\n{commandPrefix}help timer2", value="How to do various things while hosting or participating in a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"5️⃣ Post-Quest Timer Commands\n{commandPrefix}help timer3", value="How to do various things after the completion of a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"6️⃣ TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
-    helpEmbedMenu.add_field(name=f"7️⃣ Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
-    helpEmbedMenu.add_field(name=f"8️⃣ Guild Commands\n{commandPrefix}help guild", value="How to be a member of a guild or manage one.", inline=False)
+    helpEmbedMenu.add_field(name=f"3️⃣ TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
+    helpEmbedMenu.add_field(name=f"4️⃣ Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
+    helpEmbedMenu.add_field(name=f"5️⃣ Guild Commands\n{commandPrefix}help guild", value="How to be a member of a guild or manage one.", inline=False)
+    helpEmbedMenu.add_field(name=f"6️⃣ Pre-Quest Timer Commands\n{commandPrefix}help timer1", value="How to prepare and sign up to a timer for a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"7️⃣ Running Timer Commands\n{commandPrefix}help timer2", value="How to do various things while hosting or participating in a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"8️⃣ Post-Quest Timer Commands\n{commandPrefix}help timer3", value="How to do various things after the completion of a one-shot.", inline=False)
     helpEmbedMenu.add_field(name=f"9️⃣ Campaign Commands\n{commandPrefix}help campaign", value="How to create, host, and participate in a campaign.", inline=False)
 
 
