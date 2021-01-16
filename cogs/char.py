@@ -3430,7 +3430,10 @@ class Character(commands.Cog):
                 if multi_split[0] == 'Artificer':
                     class_level = charRecords["Level"]
                     if len(multi_split)>2:
-                        class_level = int(multi_split[1])
+                        try:
+                            class_level = int(multi_split[1])
+                        except Exception as e:
+                            pass
                     if class_level >= 18:
                         attuneLength = 6
                     elif class_level >= 14:
