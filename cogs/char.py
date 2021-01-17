@@ -3970,7 +3970,6 @@ class Character(commands.Cog):
                             page = 0
                     statsEmbed.clear_fields()
                     for p in range(subpages*page, subpages*page+min(len(bPageStops)-1-page*subpages, subpages)):
-                        print(p)
                         statsEmbed.add_field(name=f"Character Magic Items Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
             
                     statsEmbed.set_footer(text=f"Page {subpages*page+1} of {bPages}")

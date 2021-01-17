@@ -486,13 +486,13 @@ class Guild(commands.Cog):
                     await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try guild join again.")
                 else:
                     guildEmbed.title = f"Fund Guild: {guildRecords['Name']}"
-                    guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}*** for {gpNeeded} GP.\n\n**Previous GP**: {charRecords['GP'] GP\n**Current GP**: {newGP} GP\n"
+                    guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}*** for {gpNeeded} GP.\n\n**Previous GP**: {charRecords['GP']} GP\n**Current GP**: {newGP} GP\n"
 
 
                     if guildRecords['Funds'] < self.creation_cost:
-                        guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} GP.\nIf this amount puts the guild's funds over {self.creation_cost} GP, the leftover is given back to the character.\n\n**Current Guild Funds**: {maxGP} GP / {self.creation_cost} GP\n\n**Previous GP**: {charRecords['GP'] GP\n**Current GP**: {newGP} GP\n"
+                        guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} GP.\nIf this amount puts the guild's funds over {self.creation_cost} GP, the leftover is given back to the character.\n\n**Current Guild Funds**: {maxGP} GP / {self.creation_cost} GP\n\n**Previous GP**: {charRecords['GP']} GP\n**Current GP**: {newGP} GP\n"
                     elif guildRecords['Funds'] >= self.creation_cost and oldFundGP < self.creation_cost:
-                        guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} GP.\n\n**Previous GP**: {charRecords['GP'] GP\n**Current GP**: {newGP} GP\n\n"
+                        guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} GP.\n\n**Previous GP**: {charRecords['GP']} GP\n**Current GP**: {newGP} GP\n\n"
                         guildEmbed.description += f"Congratulations! ***{guildRecords['Name']}***  is officially open! :tada:"
                         await guildEmbedmsg.add_reaction('🎉')
                         await guildEmbedmsg.add_reaction('🥳')
@@ -503,7 +503,7 @@ class Guild(commands.Cog):
                             guildEmbed.description += f"\n\n Because you funded the guild over {self.creation_cost} GP, you have been refunded {abs(refundGP)} GP."
 
                     else:
-                        guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***.\n\n**Previous GP**: {charRecords['GP'] GP\n**Current GP**: {newGP} GP"
+                        guildEmbed.description = f"***{charRecords['Name']}*** has joined ***{guildRecords['Name']}***.\n\n**Previous GP**: {charRecords['GP']} GP\n**Current GP**: {newGP} GP"
 
                     if guildEmbedmsg:
                         await guildEmbedmsg.edit(embed=guildEmbed)
