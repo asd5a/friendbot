@@ -346,10 +346,19 @@ class Guild(commands.Cog):
             
             
             if guildMembers != list():
+                
+                guildMemberStrList = []
                 guildMemberStr = ""
                 for g in guildMembers:
-                    guildMemberStr += f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
-                guildEmbed.add_field(name="Members", value=guildMemberStr)
+                    next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
+                    if len(guildMemberStr) +len(next_member_str)>1000:
+                        guildMemberStrList.append(guildMemberStr)
+                        guildMemberStr = next_member_str 
+                    else:
+                        guildMemberStr += next_member_str
+                guildMemberStrList.append(guildMemberStr)
+                for out_string in guildMemberStrList:
+                    guildEmbed.add_field(name="Members", value=out_string)
             else:
                 guildEmbed.add_field(name="Members", value="There are no guild members currently.")
 
