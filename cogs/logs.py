@@ -386,16 +386,18 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         channel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Sessions"]) 
+        editMessage = None
         
-        editMessage = await channel.fetch_message(num)
+        try:
+            editMessage = await channel.fetch_message(num)
+        except Exception as e:
+            return ctx.channel.send("Log could not be found.")
             
             
 
         if not sessionInfo:
             return ctx.channel.send("Session could not be found.")
             
-        if not editMessage:
-            return ctx.channel.send("Log could not be found.")
         if sessionInfo["Status"] != "Processing":
             await ctx.channel.send("This session has already been processed")
             
@@ -896,11 +898,14 @@ class Log(commands.Cog):
         sessionInfo = logData.find_one({"Log ID": int(num)})
         channel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Sessions"]) 
         
-        editMessage = await channel.fetch_message(num)
+        try:
+            editMessage = await channel.fetch_message(num)
+        except Exception as e:
+            return ctx.channel.send("Log could not be found.")
+            
         if not sessionInfo:
             return ctx.channel.send("Session could not be found.")
-        if not editMessage:
-            return ctx.channel.send("Log could not be found.")
+        
         if sessionInfo["Status"] != "Processing":
             await ctx.channel.send("This session has already been processed")
             return

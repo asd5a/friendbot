@@ -43,6 +43,9 @@ class Timer(commands.Cog):
             msg = "You do not have the required permissions for this command."        
         elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
              msg = "Your \" placement seems to be messed up.\n"
+        elif isinstance(error, commands.BadArgument):
+            # convert string to int failed
+            return
         else:
             if isinstance(error, commands.MissingRequiredArgument):
                 print(error.param.name)
@@ -418,7 +421,6 @@ class Timer(commands.Cog):
 
             await prepEmbedMsg.delete()
             prepEmbedMsg = await channel.send(embed=prepEmbed)
-        print("GUILDS 1", guildsList)
         await ctx.invoke(self.timer.get_command('start'), userList = signedPlayers, game=game, role=role, guildsList = guildsList)
 
 

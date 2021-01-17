@@ -40,6 +40,9 @@ class Campaign(commands.Cog):
         elif isinstance(error, commands.MissingAnyRole):
             await ctx.channel.send("You do not have the required permissions for this command.")
             return
+        elif isinstance(error, commands.BadArgument):
+            await ctx.channel.send("One of your parameters was of an incorrect type.")
+            return
         else:
             if isinstance(error, commands.MissingRequiredArgument):
                 print(error.param.name)
@@ -51,7 +54,6 @@ class Campaign(commands.Cog):
                     msg = "You can't prepare a timer without any players! \n"
                 else:
                     msg = "Your command is missing an argument!"
-                print("WWWWWWWWWWw")
             elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
               msg = "There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command."
 
@@ -390,7 +392,12 @@ class Campaign(commands.Cog):
         campaignRecords = campaignCollection.find_one({"Channel ID": f"{ctx.channel.id}"})
 
         usersCollection = db.users
-        dmRecord = list(usersCollection.find({"User ID": str(author.id)}))[0]
+        dm_record_check = list(usersCollection.find({"User ID": str(author.id)}))
+        if len(dm_record_check) < 1:
+            await channel.send(f"The DM has no DB record. Use ```$user``` in a log channel.")
+            self.timer.get_command('prep').reset_cooldown(ctx)
+            return 
+        dmRecord = dm_record_check[0]
         if not "Campaigns" in dmRecord or not campaignRecords["Name"] in dmRecord["Campaigns"] or not dmRecord["Campaigns"][campaignRecords["Name"]]["Active"]:
             await channel.send(f"You are not on the campaign roster.")
             self.timer.get_command('prep').reset_cooldown(ctx)
@@ -569,10 +576,11 @@ class Campaign(commands.Cog):
             # This is only true if this is during a campaign, in that case there are no characters or consumables
             if char is None: 
                 usersCollection = db.users
-                print("SING", char)
                 # grab the DB records of the first user with the ID of the author
                 userRecord = list(usersCollection.find({"User ID": str(author.id)}))[0]
-                if("Campaigns" in userRecord and campaignRecords["Name"] in userRecord["Campaigns"].keys() and userRecord["Campaigns"][campaignRecords["Name"]]["Active"]):
+                if not userRecord:
+                    await ctx.channel.send(f"{author.mention} could not be found in the DB.")
+                elif("Campaigns" in userRecord and campaignRecords["Name"] in userRecord["Campaigns"].keys() and userRecord["Campaigns"][campaignRecords["Name"]]["Active"]):
                     # this indicates a selection of user info that seems to never be used
                     return {"Member" : author, "DB Entry": userRecord}
                 else:
@@ -1208,8 +1216,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 await ctx.channel.send('Channel is not a campaign channel! ')
                 return
                 
-        editMessage = await channel.fetch_message(num)
-
+        try:
+            editMessage = await channel.fetch_message(num)
+        except Exception as e:
+            return ctx.channel.send("Log could not be found.")
         if not editMessage:
             delMessage = await ctx.channel.send(content=f"I couldn't find the game with ID - `{num}`. Please try again, I will delete your message and this message in 10 seconds.")
             await asyncio.sleep(10) 
@@ -1301,8 +1311,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 await ctx.channel.send('Channel is not a campaign channel! ')
                 return
                 
-        editMessage = await channel.fetch_message(num)
-
+        
+        try:
+            editMessage = await channel.fetch_message(num)
+        except Exception as e:
+            return ctx.channel.send("Log could not be found.")
         if not editMessage:
             delMessage = await ctx.channel.send(content=f"I couldn't find the game with ID - `{num}`. Please try again, I will delete your message and this message in 10 seconds.")
             await asyncio.sleep(10) 
