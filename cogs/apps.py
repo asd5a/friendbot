@@ -103,7 +103,7 @@ class Apps(commands.Cog):
                 newRole = get(guild.roles, name = 'D&D Friend')
                 await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
 
-                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! The Mod team has approved your application and you have been assigned the appropriate roles.\n\nIf you have any further questions then please don't hesitate to ask in our #help-for-players channel or message a Mod Friend!")
+                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! The Mod team has approved your application and you have been assigned the `D&D Friend` role. In order to be pinged for one-shots, you must navigate to the *#role-management* channel and opt into the tiers you would like to be pinged for by reacting to the posts.\n\nIf you have any further questions then please don't hesitate to ask in our #help-for-players channel or message a Mod Friend!")
 
             elif 'deny' in mMessage.content:
                 await botMsg.edit(embed=botEmbed, content=f"{appNum}. {guild.get_member_named(appDiscord).mention} #{appHash} - **Denied** (Did not read server rules)")
