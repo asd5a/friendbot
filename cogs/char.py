@@ -228,7 +228,7 @@ class Character(commands.Cog):
             msg += ":warning: Your character's name is too long! The limit is 64 characters.\n"
 
         # Reserved for regex, lets not use these for character names please
-        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|", "(",")" ]
+        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|"]
 
         for i in invalidChars:
             if i in name:
@@ -1223,9 +1223,9 @@ class Character(commands.Cog):
         if len(newname) > 64:
             msg += ":warning: Your character's new name is too long! The limit is 64 characters.\n"
         # Reserved for regex, lets not use these for character names please
-        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|", "(",")" ]
+        invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "+", "}", "^", ">", "<", "|"]
         for i in invalidChars:
-            if i in name:
+            if i in newname:
                 msg += f":warning: Your character's name cannot contain `{i}`. Please revise your character name.\n"
 
 
@@ -3936,13 +3936,51 @@ class Character(commands.Cog):
             if not bgString:
                 bgString = "No stats yet."
             if bPages > 1:
-                for p in range(len(bPageStops)-1):
+                for p in range(min(len(bPageStops)-1, 5)):
                     statsEmbed.add_field(name=f"Character Magic Items Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
             else:
                 statsEmbed.add_field(name="Character Magic Items Stats (Lifetime)", value=bgString, inline=False)  
-
+            await statsEmbedmsg.clear_reactions()
+            await statsEmbedmsg.edit(embed=statsEmbed)
+            def userCheck(r,u):
+                sameMessage = False
+                if statsEmbedmsg.id == r.message.id:
+                    sameMessage = True
+                return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
+            subpages= 5
+            page = 0
+            while bPages >= subpages:
+                await statsEmbedmsg.add_reaction(left) 
+                await statsEmbedmsg.add_reaction(right)
+                try:
+                    hReact, hUser = await self.bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
+                except asyncio.TimeoutError:
+                    await statsEmbedmsg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
+                    await statsEmbedmsg.clear_reactions()
+                    await statsEmbedmsg.add_reaction('💤')
+                    return
+                else:
+                    if hReact.emoji == left:
+                        page -= 1
+                        if page < 0:
+                            page = len(bPageStops) // subpages
+                    if hReact.emoji == right:
+                        page += 1
+                        if page > len(bPageStops) // subpages:
+                            page = 0
+                    statsEmbed.clear_fields()
+                    for p in range(subpages*page, subpages*page+min(len(bPageStops)-1-page*subpages, subpages)):
+                        print(p)
+                        statsEmbed.add_field(name=f"Character Magic Items Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
+            
+                    statsEmbed.set_footer(text=f"Page {subpages*page+1} of {bPages}")
+                    await statsEmbedmsg.edit(embed=statsEmbed) 
+                    await statsEmbedmsg.clear_reactions()
+            return
         await statsEmbedmsg.clear_reactions()
         await statsEmbedmsg.edit(embed=statsEmbed)
+        
+        
         
     @commands.command()
     @commands.cooldown(1, 5, type=commands.BucketType.member)
