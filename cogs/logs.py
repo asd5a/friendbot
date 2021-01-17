@@ -391,21 +391,21 @@ class Log(commands.Cog):
         try:
             editMessage = await channel.fetch_message(num)
         except Exception as e:
-            return ctx.channel.send("Log could not be found.")
+            return await ctx.channel.send("Log could not be found.")
             
             
 
         if not sessionInfo:
-            return ctx.channel.send("Session could not be found.")
+            return await ctx.channel.send("Session could not be found.")
             
         if sessionInfo["Status"] != "Processing":
             await ctx.channel.send("This session has already been processed")
-            
+            return
         if ctx.author.id == int(sessionInfo["DM"]["ID"]):
             await ctx.channel.send("You cannot approve your own log.")
             return
         if not editMessage or editMessage.author != self.bot.user:
-            return ctx.channel.send("Session has no corresponding message in the log channel.")
+            return await ctx.channel.send("Session has no corresponding message in the log channel.")
 
 
         
@@ -901,10 +901,10 @@ class Log(commands.Cog):
         try:
             editMessage = await channel.fetch_message(num)
         except Exception as e:
-            return ctx.channel.send("Log could not be found.")
+            return await ctx.channel.send("Log could not be found.")
             
         if not sessionInfo:
-            return ctx.channel.send("Session could not be found.")
+            return await ctx.channel.send("Session could not be found.")
         
         if sessionInfo["Status"] != "Processing":
             await ctx.channel.send("This session has already been processed")
@@ -913,7 +913,7 @@ class Log(commands.Cog):
             await ctx.channel.send("You cannot deny your own log.")
             return
         if not editMessage or editMessage.author != self.bot.user:
-            return ctx.channel.send("Session has no corresponding message in the log channel.")
+            return await ctx.channel.send("Session has no corresponding message in the log channel.")
 
         sessionLogEmbed = editMessage.embeds[0]
         #dictionary indexed by user id

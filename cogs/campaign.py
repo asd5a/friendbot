@@ -1219,7 +1219,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         try:
             editMessage = await channel.fetch_message(num)
         except Exception as e:
-            return ctx.channel.send("Log could not be found.")
+            return await ctx.channel.send("Log could not be found.")
         if not editMessage:
             delMessage = await ctx.channel.send(content=f"I couldn't find the game with ID - `{num}`. Please try again, I will delete your message and this message in 10 seconds.")
             await asyncio.sleep(10) 
@@ -1315,7 +1315,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         try:
             editMessage = await channel.fetch_message(num)
         except Exception as e:
-            return ctx.channel.send("Log could not be found.")
+            return await ctx.channel.send("Log could not be found.")
         if not editMessage:
             delMessage = await ctx.channel.send(content=f"I couldn't find the game with ID - `{num}`. Please try again, I will delete your message and this message in 10 seconds.")
             await asyncio.sleep(10) 
