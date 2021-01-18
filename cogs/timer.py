@@ -1813,7 +1813,7 @@ class Timer(commands.Cog):
             if role != "":
                 # post a session log entry in the log channel
                 sessionMessage = await logChannel.send(embed=stopEmbed)
-                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel. Write your session log summary in this channel by using the following command:\n```ini\n$session log {sessionMessage.id} [Replace the angle brackets and this text with your session summary log.]```")
+                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel. Write your session log summary in this channel by using the following command:\n```ini\n$session log {sessionMessage.id} [Replace the brackets and this text with your session summary log.]```")
 
                 stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
                 modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
@@ -1824,15 +1824,16 @@ DM: {dmChar[0].mention}
 Game ID: {sessionMessage.id}
 Link: {sessionMessage.jump_url}
 
-React with :pencil: if you messaged the DM to fix something in their summary.
-React with ✅ if you have approved the log.
-React with :x: if you have denied the log.
+React with :construction: if a summary log has not yet been appended by the DM.
+React with :pencil: if you messaged the DM to fix something in their summary log.
+React with ✅ if you have approved the session log.
+React with :x: if you have denied the session log.
 React with :classical_building: if you have denied one of the guilds.
 
-Reminder: do not deny any logs until we have spoken about it as a team."""
+Reminder: do not deny any session logs until we have spoken about it as a team."""
 
                 modMessage = await modChannel.send(embed=modEmbed)
-                for e in ["📝", "✅", "❌", "🏛️"]:
+                for e in ["🚧", "📝", "✅", "❌", "🏛️"]:
                     await modMessage.add_reaction(e)    
                 
             

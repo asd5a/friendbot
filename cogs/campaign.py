@@ -773,7 +773,7 @@ class Campaign(commands.Cog):
                 return None
             # if there was no player added
             elif addList == list():
-                await ctx.channel.send(content=f"GHOST CHECK THIS IN THE ADD FUNCTION")
+                await ctx.channel.send(content=f"You cannot sign up to a timer unless the DM has added you to the prepared timer!")
                 return None
             else:
                 # get the first ( and only ) mentioned user 
@@ -1018,14 +1018,15 @@ DM: {dmChar["Member"].mention}
 Game ID: {session_msg.id}
 Link: {session_msg.jump_url}
 
-React with :pencil: if you messaged the DM to fix something in their summary.
-React with ✅ if you have approved the log.
-React with :x: if you have denied the log.
+React with :construction: if a summary log has not yet been appended by the DM.
+React with :pencil: if you messaged the DM to fix something in their summary log.
+React with ✅ if you have approved the session log.
+React with :x: if you have denied the session log.
 
 Reminder: do not deny any logs until we have spoken about it as a team."""
 
                 modMessage = await modChannel.send(embed=modEmbed)
-                for e in ["📝", "✅", "❌"]:
+                for e in ["🚧", "📝", "✅", "❌"]:
                     await modMessage.add_reaction(e)
                 print('Success')  
                 stopEmbed.set_footer(text=f"Game ID: {session_msg.id}")
