@@ -629,7 +629,7 @@ class Tp(commands.Cog):
                                 statSplit = None
                                 unsetTP = False
                                 # For the stat books, this will increase the characters stats permanently here.
-                                if 'Attunement' not in mRecord and 'Stat Bonuses' in mRecord:
+                                if complete and 'Attunement' not in mRecord and 'Stat Bonuses' in mRecord:
                                     if 'Max Stats' not in charRecords:
                                         charRecords['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
 

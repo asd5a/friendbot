@@ -1293,6 +1293,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 print("Success")
                 sessionLogEmbed.set_footer(text=sessionLogEmbed.footer.text + "\n✅ Log complete! Players have been awarded their rewards. The DM may still edit the summary log if they wish.")
                 await editMessage.edit(embed=sessionLogEmbed)
+                
+                await ctx.channel.send("The session has been approved.")
         else:
             await ctx.channel.send('Log has already been processed! ')
             
@@ -1366,6 +1368,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 print("Success")
                 sessionLogEmbed.set_footer(text=sessionLogEmbed.footer.text + "\n❌ Log complete! The DM may still edit the summary log if they wish.")
                 await editMessage.edit(embed=sessionLogEmbed)
+                await ctx.channel.send("The session has been denied.")
         else:
             await ctx.channel.send('Log has already been processed! ')
             
