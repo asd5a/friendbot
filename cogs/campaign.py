@@ -1291,7 +1291,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
             else:
                 print("Success")
-                sessionLogEmbed.set_footer(text=sessionLogEmbed.footer.text + "\n✅ Log complete! Players have been awarded their rewards. The DM may still edit the summary log if they wish.")
+                sessionLogEmbed.set_footer(text=sessionLogEmbed.footer.text + "\n✅ Log approved! The DM has received their Noodles and time and the players have received their time.")
                 await editMessage.edit(embed=sessionLogEmbed)
                 
                 await ctx.channel.send("The session has been approved.")
