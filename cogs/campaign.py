@@ -1170,8 +1170,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 await channel.send('Try this command in a campaign channel! ')
                 return
                 
-        editMessage = await channel.fetch_message(num)
-
+        try:
+            editMessage = await channel.fetch_message(num)
+        except Exception as e:
+            return await ctx.channel.send("Log could not be found.")
         if not editMessage:
             delMessage = await ctx.channel.send(content=f"I couldn't find your game with ID - `{num}`. Please try again, I will delete your message and this message in 10 seconds.")
             await asyncio.sleep(10) 
