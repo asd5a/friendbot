@@ -504,10 +504,10 @@ class Guild(commands.Cog):
                         guildEmbed.description = f"***{charRecords['Name']}*** has funded ***{guildRecords['Name']}*** with {gpFund} GP.\n\n**Previous GP**: {charRecords['GP']} GP\n**Current GP**: {newGP} GP\n\n"
                         guildEmbed.description += f"Congratulations! ***{guildRecords['Name']}***  is officially open! :tada:"
                         await guildEmbedmsg.add_reaction('🎉')
-                        await guildEmbedmsg.add_reaction('🥳')
-                        await guildEmbedmsg.add_reaction('🙌')
                         await guildEmbedmsg.add_reaction('🎊')
+                        await guildEmbedmsg.add_reaction('🥳')
                         await guildEmbedmsg.add_reaction('🍾')
+                        await guildEmbedmsg.add_reaction('🥂')
                         if refundGP:
                             guildEmbed.description += f"\n\n Because you funded the guild over {self.creation_cost} GP, you have been refunded {abs(refundGP)} GP."
 

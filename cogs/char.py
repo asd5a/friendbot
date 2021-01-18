@@ -3359,10 +3359,10 @@ class Character(commands.Cog):
                     levelUpEmbed.title = f":tada: {roleName} role acquired! :tada:\n" + levelUpEmbed.title
                     await levelUpEmbedmsg.edit(embed=levelUpEmbed)
                     await levelUpEmbedmsg.add_reaction('🎉')
-                    await levelUpEmbedmsg.add_reaction('🥳')
-                    await levelUpEmbedmsg.add_reaction('🙌')
                     await levelUpEmbedmsg.add_reaction('🎊')
+                    await levelUpEmbedmsg.add_reaction('🥳')
                     await levelUpEmbedmsg.add_reaction('🍾')
+                    await levelUpEmbedmsg.add_reaction('🥂')
 
         self.bot.get_command('levelup').reset_cooldown(ctx)
     async def levelCheck(self, ctx, level, charName):
