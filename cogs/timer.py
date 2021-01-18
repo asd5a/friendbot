@@ -937,7 +937,7 @@ class Timer(commands.Cog):
                 # since this checks for multiple things, this cannot be avoided
                 for u, v in startcopy.items():
                     if 'Full Rewards' in u:
-                        totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 * 0) // 60 #Set multiplier to wanted hour shift 
+                        totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 * 6) // 60 #Set multiplier to wanted hour shift 
                         if totalDurationTime < 180:
                             if not resume:
                               await ctx.channel.send(content=f"You cannot award any reward items if the quest is under three hours.") 
@@ -1804,16 +1804,17 @@ class Timer(commands.Cog):
                     playerList.append(value)
             hoursPlayed = (totalDurationTime // 1800) / 2
             
-            if hoursPlayed < 0.5:
-                self.timer.get_command('prep').reset_cooldown(ctx)
-                await ctx.channel.send(content=f"The session was less than 30 minutes and therefore was not counted.")
+            # if hoursPlayed < 0.5:
+                # self.timer.get_command('prep').reset_cooldown(ctx)
+                # await ctx.channel.send(content=f"The session was less than 30 minutes and therefore was not counted.")
                 
-                return
+                # return
             # check if the game has rewards
             if role != "":
                 # post a session log entry in the log channel
-                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel. Write your session log summary in this channel by using the following command:\n```ini\n$session log {sessionMessage.id} [Replace the angle brackets and this text with your session summary log.]```")
                 sessionMessage = await logChannel.send(embed=stopEmbed)
+                await ctx.channel.send(f"The timer has been stopped! Your session log has been posted in the {logChannel.mention} channel. Write your session log summary in this channel by using the following command:\n```ini\n$session log {sessionMessage.id} [Replace the angle brackets and this text with your session summary log.]```")
+
                 stopEmbed.set_footer(text=f"Game ID: {sessionMessage.id}")
                 modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
                 modEmbed = discord.Embed()
