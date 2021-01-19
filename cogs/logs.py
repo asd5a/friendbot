@@ -1028,6 +1028,7 @@ class Log(commands.Cog):
                             m = guildChannel.mention
                             # filter player list by guild
                             gPlayers = [p for p in players.values() if "Guild" in p and 
+                                            p["Guild"] in guilds and
                                             guilds[p["Guild"]]["Mention"] == m
                                             and  p["CP"]>= 3 and p['Guild Rank'] > 1]
                             if(len(gPlayers) >= min_members):
