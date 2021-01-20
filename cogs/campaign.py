@@ -190,6 +190,8 @@ class Campaign(commands.Cog):
                     await campaignEmbedmsg.edit(embed=campaignEmbed)
                 else: 
                     campaignEmbedmsg = await channel.send(embed=campaignEmbed)
+        else:
+            await channel.send("You need a user profile to create a campaign. Use ```$user``` in one of the log channels.")
         return
 
     #@commands.cooldown(1, 5, type=commands.BucketType.member)
