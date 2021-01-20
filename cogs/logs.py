@@ -1220,7 +1220,6 @@ class Log(commands.Cog):
             delMessage = await ctx.channel.send(content=f"Your session log caused an error with Discord, most likely from length.")
             
         
-        await editMessage.edit(embed=sessionLogEmbed)
         await asyncio.sleep(30) 
         await delMessage.delete()
         await ctx.message.delete()
