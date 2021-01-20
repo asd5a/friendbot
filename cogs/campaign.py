@@ -579,7 +579,9 @@ class Campaign(commands.Cog):
             if char is None: 
                 usersCollection = db.users
                 # grab the DB records of the first user with the ID of the author
-                userRecord = list(usersCollection.find_one({"User ID": str(author.id)}))
+                userRecord = list(usersCollection.find({"User ID": str(author.id)}))[0]
+                print(userRecord)
+                print(campaignRecords)
                 if not userRecord:
                     await ctx.channel.send(f"{author.mention} could not be found in the DB.")
                 elif("Campaigns" in userRecord and campaignRecords["Name"] in userRecord["Campaigns"].keys() and userRecord["Campaigns"][campaignRecords["Name"]]["Active"]):
