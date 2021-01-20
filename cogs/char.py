@@ -2260,11 +2260,11 @@ class Character(commands.Cog):
                         sPageStops.append(len(spellBookString))
                         sPages += 1
                 sPageStops.append(len(spellBookString))
-
-                if sPages > 1 and sPageStops[-1] > sPageStops[-2]:
+                print(sPageStops)
+                if sPages > 1:
                     for p in range(len(sPageStops)-1):
-                        print(p, spellBookString[sPageStops[p]:sPageStops[p+1]])
-                        charEmbed.add_field(name=f'Spellbook- p. {p+1}', value=spellBookString[sPageStops[p]:sPageStops[p+1]], inline=False)
+                        if(sPageStops[p+1] > sPageStops[p]):
+                            charEmbed.add_field(name=f'Spellbook- p. {p+1}', value=spellBookString[sPageStops[p]:sPageStops[p+1]], inline=False)
                 else:
                     charEmbed.add_field(name='Spellbook', value=spellBookString, inline=False)
 
@@ -2293,9 +2293,10 @@ class Character(commands.Cog):
             
             cPageStops.append(len(consumesString))
 
-            if cPages > 1 and cPageStops[-1] > cPageStops[-2]:
+            if cPages > 1:
                 for p in range(len(cPageStops)-1):
-                    charEmbed.add_field(name=f'Consumables - p. {p+1}', value=consumesString[cPageStops[p]:cPageStops[p+1]], inline=False)
+                    if(cPageStops[p+1] > cPageStops[p]):
+                        charEmbed.add_field(name=f'Consumables - p. {p+1}', value=consumesString[cPageStops[p]:cPageStops[p+1]], inline=False)
             else:
                 charEmbed.add_field(name='Consumables', value=consumesString, inline=False)
 
@@ -2321,9 +2322,10 @@ class Character(commands.Cog):
                     mPages += 1
 
             mPageStops.append(len(miString))
-            if mPages > 1 and mPageStops[-1] > mPageStops[-2]:
+            if mPages > 1:
                 for p in range(len(mPageStops)-1):
-                    charEmbed.add_field(name=f'Magic Items - p. {p+1}', value=miString[mPageStops[p]:mPageStops[p+1]], inline=False)
+                    if(mPageStops[p+1] > mPageStops[p]):
+                        charEmbed.add_field(name=f'Magic Items - p. {p+1}', value=miString[mPageStops[p]:mPageStops[p+1]], inline=False)
             else:
                 charEmbed.add_field(name='Magic Items', value=miString, inline=False)
 
@@ -2409,7 +2411,7 @@ class Character(commands.Cog):
 
             embedList = [discord.Embed()]
             pages = 1
-
+            print(charEmbed.fields)
             if len(charEmbed) > 2048:
                 charEmbedDict = charEmbed.to_dict()
                 for f in charEmbedDict['fields']:
