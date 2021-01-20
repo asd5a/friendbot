@@ -3739,16 +3739,22 @@ class Character(commands.Cog):
             if tReaction.emoji == alphaEmojis[1]:
                 identity_strings = ["Server", "Server"]
                 statRecords = statRecordsLife
+            dmPages = 0
             if statRecords is None:
                 statsEmbed.add_field(name="Monthly Quest Stats", value="There have been 0 one-shots played this month. Check back later!", inline=False)
             else:
                 # Iterate through each DM and track tiers + total
                 if "DM" in statRecords:
+                    
+                    dmPages = 1
+                    dmPageStops = [0]
                     for k,v in statRecords['DM'].items():
                         dmMember = guild.get_member(int(k))
                         if dmMember is None:
-                            continue
-                        statsString += dmMember.mention + " - "
+                            statsString += f"<@!{k}>" + " - "
+                            # continue
+                        else:
+                            statsString += dmMember.mention + " - "
                         totalGames = 0
                         for i in range (0,6):
                             if f'T{i}' not in v:
@@ -3759,6 +3765,11 @@ class Character(commands.Cog):
                        
                         # Total Number of Games per DM
                         statsString += f"Total: {totalGames}\n"
+                        if len(statsString) > (768 * dmPages):
+                            dmPageStops.append(len(statsString))
+                            dmPages += 1
+                    dmPageStops.append(len(statsString))
+
 
               
                 # Total number of Games for the month
@@ -3808,8 +3819,14 @@ class Character(commands.Cog):
                     statsEmbed.add_field(name="Averages", value=avgString, inline=False) 
 
                 if statsString:
-                    statsEmbed.add_field(name="DM Games", value=statsString, inline=False)
-
+                    
+                    if dmPages > 1:
+                        for p in range(len(dmPageStops)-1):
+                            if dmPageStops[p+1] > dmPageStops[p]:
+                                statsEmbed.add_field(name=f'DM Games - p. {p+1}', value=statsString[dmPageStops[p]:dmPageStops[p+1]], inline=False)
+                    else:
+                        statsEmbed.add_field(name="DM Games", value=statsString, inline=False)
+                print(len(statsString))
                 
                 # Number of games by total and by tier
                 statsTotalString += f"**{identity_strings[0]} Stats**\nTotal One-shots for the {identity_strings[1]}: {superTotal}\n" 
