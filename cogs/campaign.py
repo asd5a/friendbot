@@ -626,7 +626,7 @@ class Campaign(commands.Cog):
             # Inform the user of the started timer
             await channel.send(content=f"Starting the timer for **{game}** {roleString}.\n" )
             # add the timer to the list of runnign timers
-            currentTimers.append('#'+game)
+            currentTimers.append('#'+channel.name)
             
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
@@ -652,7 +652,7 @@ class Campaign(commands.Cog):
             # allow the creation of a new timer
             self.timer.get_command('prep').reset_cooldown(ctx)
             # when the game concludes, remove the timer from the global tracker
-            currentTimers.remove('#'+game)
+            currentTimers.remove('#'+channel.name)
             return
 
     

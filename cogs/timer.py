@@ -844,8 +844,6 @@ class Timer(commands.Cog):
             stampEmbed.set_footer(text=f'#{ctx.channel}\nType `{commandPrefix}help timer2` for help with a running timer.')
             stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
 
-            print('USERLIST')
-            print(userList)
             
             # playerList is never used
             playerList = []
@@ -862,16 +860,12 @@ class Timer(commands.Cog):
             else:
                 # if there are no rewards then consumables will always be None allowing us to shortcut the check
                 for u in userList:
-                    print('USER')
-                    print(u)
                     stampEmbed.add_field(name=f"**{u[0].display_name}**", value=u[0].mention, inline=False)
             
 
             stampEmbedmsg = await channel.send(embed=stampEmbed)
 
-            print("GUILDS 1", guildsList)
             ddmrw = settingsRecord["ddmrw"]
-            print("DD 1", ddmrw)
             # During Timer
             await timerCog.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg,dmChar,guildsList, ddmrw = ddmrw)
             
