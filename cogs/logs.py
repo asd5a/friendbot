@@ -88,17 +88,17 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         for g in guildDBentries:
             guildDBEntriesDic[g["Name"]] = g
             
-            if g["Reputation"] > guild_drive_costs[sessionInfo["Tier"]]:
+            if g["Reputation"] >= guild_drive_costs[sessionInfo["Tier"]]:
                 g["Reputation"] -= guild_drive_costs[sessionInfo["Tier"]]*guilds[g["Name"]]["Drive"]
             else:
                 guilds[g["Name"]]["Drive"] = False
             
-            if g["Reputation"] > 25:
+            if g["Reputation"] >= 25:
                 g["Reputation"] -= 25*guilds[g["Name"]]["Rewards"]
             else:
                 guilds[g["Name"]]["Rewards"] = False
             
-            if g["Reputation"] > 10:
+            if g["Reputation"] >= 10:
                 g["Reputation"] -= 10*guilds[g["Name"]]["Items"]
             else:
                 guilds[g["Name"]]["Items"] = False
@@ -449,17 +449,17 @@ class Log(commands.Cog):
         guildDBEntriesDic = {}
         for g in guildDBentries:
             guildDBEntriesDic[g["Name"]] = g
-            if g["Reputation"] > guild_drive_costs[sessionInfo["Tier"]]:
+            if g["Reputation"] >= guild_drive_costs[sessionInfo["Tier"]]:
                 g["Reputation"] -= guild_drive_costs[sessionInfo["Tier"]]*guilds[g["Name"]]["Drive"]
             else:
                 guilds[g["Name"]]["Drive"] = False
             
-            if g["Reputation"] > 25:
+            if g["Reputation"] >= 25:
                 g["Reputation"] -= 25*guilds[g["Name"]]["Rewards"]
             else:
                 guilds[g["Name"]]["Rewards"] = False
             
-            if g["Reputation"] > 10:
+            if g["Reputation"] >= 10:
                 g["Reputation"] -= 10*guilds[g["Name"]]["Items"]
             else:
                 guilds[g["Name"]]["Items"] = False
