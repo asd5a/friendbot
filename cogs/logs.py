@@ -301,7 +301,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                         gain += p["CP"]  // 3
                     
                     gain += sparklesGained*int("Guild" in dm and dm["Guild"] == name)
-                    guildRewardsStr += f"{g['Name']}: +{gain} :sparkles:\n"
+                    guildRewardsStr += f"{g['Name']}: +{int(gain)} :sparkles:\n"
 
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
         sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
@@ -746,7 +746,7 @@ class Log(commands.Cog):
                     reputationCost = (20*guilds[name]["Rewards"]+10*guilds[name]["Items"]+guild_drive_costs[sessionInfo["Tier"]]*guilds[name]["Drive"])*guilds[name]["Status"]
                     if guilds[name]["Status"]:
                         guildsData.append(UpdateOne({"Name": name},
-                                                   {"$inc": {"Games": 1, "Reputation": gain- reputationCost, "Total Reputation": gain}}))
+                                                   {"$inc": {"Games": 1, "Reputation": int(gain- reputationCost), "Total Reputation": gain}}))
         
         del players[dm["ID"]]
         
