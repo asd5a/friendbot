@@ -294,10 +294,11 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                 guildsListStr += "\n"+(g["Drive"]*"**Recruitment Drive** ")+g["Mention"]
                 # get the DB record of the guild
                 #filter player list by guild
-                print(players.values())
                 gPlayers = [p for p in players.values() if "Guild" in p and p["Guild"]==name]
                 if(len(gPlayers)>0): 
-                    gain = sparklesGained*len(gPlayers) + sparklesGained*int("Guild" in dm and dm["Guild"]==name)
+                    gain = 0
+                    for p in gPlayers:
+                        gain += p["CP"]  // 3
                     guildRewardsStr += f"{g['Name']}: +{gain} :sparkles:\n"
 
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
@@ -716,7 +717,7 @@ class Log(commands.Cog):
         # Noodles Math
         hoursPlayed = maximumCP
         # that is the base line of sparkles and noodles gained
-        noodlesGained = sparklesGained = int(hoursPlayed) // 3
+        noodlesGained = int(hoursPlayed) // 3
         
         timerData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), playerUpdates))
         players[dm["ID"]] = dm
@@ -735,9 +736,9 @@ class Log(commands.Cog):
                     guilds[name]["Player Sparkles"] = sparklesGained*p_count
                     guilds[name]["DM Sparkles"] = 2*sparklesGained*int("Guild" in dm and dm["Guild"] == name)
                     gain = 0
+                    for p in gPlayers:
+                        gain += p["CP"]  // 3
                     reputationCost = (20*guilds[name]["Rewards"]+10*guilds[name]["Items"]+guild_drive_costs[sessionInfo["Tier"]]*guilds[name]["Drive"])*guilds[name]["Status"]
-                    if(len(gPlayers)>0):
-                        gain = sparklesGained*len(gPlayers) + sparklesGained*int("Guild" in dm and dm["Guild"] == name)
                     if guilds[name]["Status"]:
                         guildsData.append(UpdateOne({"Name": name},
                                                    {"$inc": {"Games": 1, "Reputation": gain- reputationCost, "Total Reputation": gain}}))
@@ -1161,6 +1162,17 @@ class Log(commands.Cog):
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
     
+    @commands.has_any_role('Mod Friend', 'A d m i n')
+    @session.command()
+    async def genLog(self, ctx,  num : int):
+        logData = db.logdata
+        sessionInfo = logData.find_one({"Log ID": int(num)})
+        if( sessionInfo):
+            await generateLog(self, ctx, num) 
+            await ctx.channel.send("Log has been generated.")
+    
+        else:
+            await ctx.channel.send("The session could not be found, please double check your number.")
     
     
     
