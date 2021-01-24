@@ -299,6 +299,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                     gain = 0
                     for p in gPlayers:
                         gain += p["CP"]  // 3
+                    
+                    gain += sparklesGained*int("Guild" in dm and dm["Guild"] == name)
                     guildRewardsStr += f"{g['Name']}: +{gain} :sparkles:\n"
 
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
@@ -717,7 +719,7 @@ class Log(commands.Cog):
         # Noodles Math
         hoursPlayed = maximumCP
         # that is the base line of sparkles and noodles gained
-        noodlesGained = int(hoursPlayed) // 3
+        noodlesGained = sparklesGained = int(hoursPlayed) // 3
         
         timerData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), playerUpdates))
         players[dm["ID"]] = dm
@@ -728,16 +730,19 @@ class Log(commands.Cog):
             if guilds != list():
                 # for every guild in the game
                 for g in guildDBEntriesDic.values():
-                    name = g["Name"]
+                    name = g["Name"]                    
+                    gain = 0
                     # get the DB record of the guild
                     #filter player list by guild
                     gPlayers = [p for p in players.values() if "Guild" in p and p["Guild"] == name]
                     p_count = len(gPlayers) - int("Guild" in dm and dm["Guild"] == name)
-                    guilds[name]["Player Sparkles"] = sparklesGained*p_count
-                    guilds[name]["DM Sparkles"] = 2*sparklesGained*int("Guild" in dm and dm["Guild"] == name)
-                    gain = 0
                     for p in gPlayers:
                         gain += p["CP"]  // 3
+                    guilds[name]["Player Sparkles"] = gain - sparklesGained*int("Guild" in dm and dm["Guild"] == name)
+                    guilds[name]["DM Sparkles"] = 2*sparklesGained*int("Guild" in dm and dm["Guild"] == name)
+
+                    gain += sparklesGained*int("Guild" in dm and dm["Guild"] == name)
+                    
                     reputationCost = (20*guilds[name]["Rewards"]+10*guilds[name]["Items"]+guild_drive_costs[sessionInfo["Tier"]]*guilds[name]["Drive"])*guilds[name]["Status"]
                     if guilds[name]["Status"]:
                         guildsData.append(UpdateOne({"Name": name},
