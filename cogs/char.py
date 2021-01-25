@@ -2825,7 +2825,7 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
-    @commands.command(aliases=['r5'])
+    @commands.command(aliases=['r6'])
     async def reflavor(self,ctx, char, *, new_race):
         if( len(new_race) > 20 or len(new_race) <1):
             await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
@@ -3823,9 +3823,9 @@ class Character(commands.Cog):
                     if dmPages > 1:
                         for p in range(len(dmPageStops)-1):
                             if dmPageStops[p+1] > dmPageStops[p]:
-                                statsEmbed.add_field(name=f'DM Games - p. {p+1}', value=statsString[dmPageStops[p]:dmPageStops[p+1]], inline=False)
+                                statsEmbed.add_field(name=f'One-shots by DM - p. {p+1}', value=statsString[dmPageStops[p]:dmPageStops[p+1]], inline=False)
                     else:
-                        statsEmbed.add_field(name="DM Games", value=statsString, inline=False)
+                        statsEmbed.add_field(name="One-shots by DM", value=statsString, inline=False)
                 print(len(statsString))
                 
                 # Number of games by total and by tier

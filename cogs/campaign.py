@@ -432,7 +432,7 @@ class Campaign(commands.Cog):
             prepEmbed.add_field(name=p.display_name, value='Has not yet signed up for the campaign.', inline=False)
         playerRoster = [author] + playerRoster
         #set up a field to inform the DM on how to start the timer or how to get help with it
-        prepEmbed.set_footer(text= f"If enough players have signed up, use the following command to start the timer: `{commandPrefix}campaign timer start`\nUse the following command to see a list of timer commands: `{commandPrefix}campaign timer help`")
+        prepEmbed.set_footer(text= f"If enough players have signed up, use the following command to start the timer: `{commandPrefix}campaign timer start`\nUse the following command to see a list of campaign commands: `{commandPrefix}help campaign`")
 
         # if it is a campaign or the previous message somehow failed then the prepEmbedMsg would not exist yet send we now send another message
         prepEmbedMsg = await channel.send(embed=prepEmbed)
@@ -631,7 +631,7 @@ class Campaign(commands.Cog):
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
-            stampEmbed.set_footer(text=f'#{ctx.channel}\nType `{commandPrefix}campaign help timer2` for help with a running timer.')
+            stampEmbed.set_footer(text=f'#{ctx.channel}\nType `{commandPrefix}help campaign` for help with a running timer.')
             stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
 
             print('USERLIST')
