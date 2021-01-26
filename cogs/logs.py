@@ -1047,7 +1047,7 @@ class Log(commands.Cog):
                                 else:
                                     err_message += m +" not found in game.\n"
                             else:
-                                err_message += "There needs to be a minimum of three guild members from "+ m +"\n in order to activate its Guild Boons."
+                                err_message += "There needs to be a minimum of three guild members from "+ m +" in order to activate its Guild Boons."
                         if err_message != "":
                             await ctx.channel.send(err_message)
                         else:

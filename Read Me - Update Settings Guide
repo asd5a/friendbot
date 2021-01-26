@@ -1,0 +1,52 @@
+dnd.settings collection on MongoDB.
+
+D&D Friends ID = 382025597041246210
+Dorfer ID = 259732415319244800
+
+
+
+QB List : Object (Object)
+    Channel ID : Server ID (String)
+    D&D Friends - 382027190633627649 : 382025597041246210 (#quest-board)
+    Dorfer - 728476108940640297 : 259732415319244800
+# This points Bot Friend to the quest board for the Quest Board Availability Post (QBAP).
+
+
+Role Channel List : Object (Object)
+    Channel ID : Server ID (String)
+    D&D Friends - 786352666296844309 : 382025597041246210 (#role-management)
+    Dorfer - 781360717101400084 : 259732415319244800
+# This points Bot Friend to the channel wherein members can react to a post (defined below in the "Messages" section) and be given roles for Roll20 and Foundry.
+
+
+Server ID : Object (Object)
+382025597041246210 : Object
+    Channel : Channel ID or Category (Int64)
+    Sessions : 382045698931294208 (channel - this is #session-logs)
+    QB : 382027190633627649 (channel)
+    CB : 382027251618938880 (channel)
+    Player Logs : 788158884329422848 (category)
+    Game Rooms : 382027737189056544 (category)
+    Guild Rooms : 452704598440804375 (category)
+    Campaign Rooms : 698784680488730666 (unused)
+    Mod Rooms : 390727109632327690 (category)
+    Mod Logs : 792563229569581056 (channel - this is #mod-session-queue)
+# This points Bot Friend to certain channels or categories where it does various functions.
+
+
+Messages : Objects (Object)
+    Message ID : Emoji Name (String)
+    794707382366109716 : Roll20
+    794707384252891137 : Foundry
+# This is used to mark the message ID that members can react to for Bot Friend to give out roles for Roll20 and Foundry. This is a sub-directory of Role Channel List above.
+
+
+Emotes : Object (Object)
+    Emoji Name : Emoji ID (string)
+    Roll20 : <:roll20:777800916673363998>
+    Foundry : <:foundry:777767632471719956>
+
+
+
+# After all changes have been made to the dnd.settings DB, use the "updateSettings" command to push these changes to Bot Friend without needing a restart.
+
