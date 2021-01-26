@@ -970,10 +970,13 @@ def setup(bot):
     # Deletes a character from the database.
 
 # $reload <file name> | $reload misc
-    # Reloads the individual file and updates them on Bot Friend without requiring a restart.
+    # Hot reloads the specific cog file and updates the commands of the cog to the latest local version while resetting cooldowns and variables. This allows you to change anything in the cog folder without requiring a restart.
 
 # $updateSettings
-    # Pulls the settings from the dnd.settings collection database and updates them on Bot Friend without requiring a restart.
+    # Updates the "settingsRecord" variable with the current dnd.settings collection database entry without requiring a restart.
+
+# $genLod ID
+    # Updates the specified session log with the corresponding dnd.logdata collection database entry.
 
 # $printTierItems tier TP
     # Prints a list of magic items in the specified tier and TP.
@@ -993,8 +996,8 @@ def setup(bot):
 # $send channelID message
     # Forces Bot Friend to send a message in the specified channel.
 
-# $react channelID messageID :reaction:
-    # Forces Bot Friend to react with a Unicode emoji to the specified message within a channel.
+# $react add/remove channelID messageID :emoji:
+    # Forces Bot Friend to add or remove a Unicode emoji as a reaction to the specified message within a channel.
 
 # $uwuize
     # Translates the previous message into uwu-speak.

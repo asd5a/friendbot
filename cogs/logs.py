@@ -1201,7 +1201,7 @@ class Log(commands.Cog):
                     break 
 
         if not msgFound:
-            delMessage = await ctx.channel.send(content=f"I couldn't find your game with ID - `{num}` in the last {limit} games. Please try again, I will delete your message and this message in 10 seconds.")
+            delMessage = await ctx.channel.send(content=f"I couldn't find your session with ID `{num}` in the last {limit} sessions. Please try again. I will delete your message and this message in 10 seconds.\n\n:warning: **DO NOT DELETE YOUR OWN MESSAGE.** :warning")
             await asyncio.sleep(10) 
             await delMessage.delete()
             await ctx.message.delete() 
@@ -1217,10 +1217,10 @@ class Log(commands.Cog):
                 pass
                  
             else:
-                await ctx.channel.send("You were not the DM of that session.")
+                await ctx.channel.send("You were not the DM of that session and cannot edit it.")
                 return 
         else:
-            await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
+            await ctx.channel.send("The session could not be found. Please double check your number or if the session has already been approved.")
             return
         sessionLogEmbed = editMessage.embeds[0]
 
@@ -1231,12 +1231,12 @@ class Log(commands.Cog):
             sessionLogEmbed.description += "\n"+editString
         try:
             await editMessage.edit(embed=sessionLogEmbed)
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
+            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will delete your message and this one in 30 seconds.\n\n:warning: **DO NOT DELETE YOUR OWN MESSAGE.** :warning")
             await asyncio.sleep(30) 
             await ctx.message.delete()
             await delMessage.delete()
         except Exception as e:
-            delMessage = await ctx.channel.send(content=f"Your session log caused an error with Discord, most likely from length.")
+            delMessage = await ctx.channel.send(content=f"The maximum length of the session log summary is 2048 symbols. Please reduce the length of your summary.")
         
         
         
