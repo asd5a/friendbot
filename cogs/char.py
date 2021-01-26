@@ -3175,7 +3175,7 @@ class Character(commands.Cog):
                                     lvlClass = s['Name']
                                     s['Level'] += 1
                                     if 'Wizard' in s['Name']:
-                                        fsLvl = (subclasses[0]['Level'] - 1) // 2
+                                        fsLvl = (s['Level'] - 1) // 2
                                         if fsLvl > 8:
                                             fsLvl = 8
                                         freeSpells[fsLvl] += 2
@@ -3982,10 +3982,10 @@ class Character(commands.Cog):
                     if hReact.emoji == left:
                         page -= 1
                         if page < 0:
-                            page = len(bPageStops) // subpages
+                            page = (len(bPageStops) -1) // subpages
                     if hReact.emoji == right:
                         page += 1
-                        if page > len(bPageStops) // subpages:
+                        if page > (len(bPageStops) -1 ) // subpages:
                             page = 0
                     statsEmbed.clear_fields()
                     for p in range(subpages*page, subpages*page+min(len(bPageStops)-1-page*subpages, subpages)):
