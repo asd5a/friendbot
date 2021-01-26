@@ -100,19 +100,19 @@ class Apps(commands.Cog):
                 newRole = get(guild.roles, name = 'D&D Friend')
                 await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
 
-                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! The Mod team has approved your application and you have been assigned the `D&D Friend` role. In order to be pinged for one-shots, you must navigate to the *#role-management* channel and opt into the tiers you would like to be pinged for by reacting to the posts.\n\nIf you have any further questions then please don't hesitate to ask in our #help-for-players channel or message a Mod Friend!")
+                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! The Mod team has approved your application and you have been assigned the appropriate role(s). In order to be pinged for one-shots, you must navigate to the `#role-management` channel and opt into the tiers you would like to be pinged for by reacting to the posts.\n\nIf you have any further questions then please don't hesitate to ask in our #help-for-players channel or message a Mod Friend!")
 
             elif 'deny' in mMessage.content:
                 await botMsg.edit(embed=botEmbed, content=f"{appNum}. {guild.get_member_named(appDiscord).mention} #{appHash} - **Denied** (Did not read server rules)")
                 await botMsg.clear_reactions()
                 await mMessage.delete()
-                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! Unfortunately, the Mod team has declined your application since you did not read the server rules or did not agree to abide by them. If you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>\n\nWe hope you find other like-minded people to play D&D with. Good luck!")
+                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! Unfortunately, the Mod team has declined your application since you did not consent to possible NSFW content in one-shots or did not read the server rules and agree to abide by them.\n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>\n\nWe hope you find other like-minded people to play D&D with. Good luck!")
              
             elif 'under17' in mMessage.content:
                 await botMsg.edit(embed=botEmbed, content=f"{appNum}. {guild.get_member_named(appDiscord).mention} #{appHash} - **Denied** (Under 17)")
                 await botMsg.clear_reactions()
                 await mMessage.delete()
-                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! Unfortunately, the **D&D Friends** Mod team has declined your application since you did not meet the cut-off age. If you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>\n\nWe hope you find other like-minded people to play D&D with. Good luck!")
+                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! Unfortunately, the **D&D Friends** Mod team has declined your application since you did not meet the cut-off age.\n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>\n\nWe hope you find other like-minded people to play D&D with. Good luck!")
 
 def setup(bot):
     bot.add_cog(Apps(bot))

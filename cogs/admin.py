@@ -960,3 +960,44 @@ class Admin(commands.Cog, name="Admin"):
 
 def setup(bot):
     bot.add_cog(Admin(bot))
+
+
+
+# Secret Admin/Dev-only Commands
+
+
+# $removeCharacter "character name"
+    # Deletes a character from the database.
+
+# $reload <file name> | $reload misc
+    # Reloads the individual file and updates them on Bot Friend without requiring a restart.
+
+# $updateSettings
+    # Pulls the settings from the dnd.settings collection database and updates them on Bot Friend without requiring a restart.
+
+# $printTierItems tier TP
+    # Prints a list of magic items in the specified tier and TP.
+
+# $printrewarditems tier
+    # Prints a list of reward items in the specified tier.
+
+# $tpupdate tier TP newTP
+    # Updates all magic items in the specified tier and TP to the new TP value.
+
+# $goldupdate tier TP newGP
+    # Updates all magic items int he specified tier and TP to the new GP value.
+
+# $moveItem "item" tier TP
+    # Moves the specified magic item to the specified tier and TP and refunds all characters with partial TP towards it. It does not refund completed items and is mostly non-functional.
+
+# $send channelID message
+    # Forces Bot Friend to send a message in the specified channel.
+
+# $react channelID messageID :reaction:
+    # Forces Bot Friend to react with a Unicode emoji to the specified message within a channel.
+
+# $uwuize
+    # Translates the previous message into uwu-speak.
+
+# $killbot
+    # Forcefully shuts down Bot Friend.
