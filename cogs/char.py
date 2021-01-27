@@ -4121,8 +4121,6 @@ class Character(commands.Cog):
                 sameMessage = True
             if (r.emoji in uniqueReacts or r.emoji == '❌') and u == author:
                 anyList[charEmbedmsg.id].add(r.emoji)
-                print("HEY",anyList)
-            print(uniqueReacts)
             return sameMessage and ((len(anyList[charEmbedmsg.id]) == anyCheck) or str(r.emoji) == '❌') and u == author
 
         def slashCharEmbedcheck(r, u):
@@ -4186,7 +4184,6 @@ class Character(commands.Cog):
 
                 elif 'AOU' in s or 'ANY' in s:
                     try:
-                        print(uniqueArray)
                         anyList = dict()
                         anyCheck = [int(charL) for charL in s if charL.isnumeric()][0] #int(s[len(s)-1])
                         anyAmount = int(s[len(s)-1])
