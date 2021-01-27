@@ -661,7 +661,7 @@ class Character(commands.Cog):
                             for i in range (0,int(v)):
                                 charInvString = f"Please choose from the choices below for {iType[0]} {i+1}:\n"
                                 alphaIndex = 0
-                                charInv = list(filter(lambda c: 'Yklwa' not in c['Name'] and 'Light Repeating Crossbow' not in c['Name'] and 'Double-Bladed Scimitar' not in c['Name'], charInv))
+                                charInv = list(filter(lambda c: 'Yklwa' not in c['Name'] and 'Light Repeating Crossbow' not in c['Name'] and 'Double-Bladed Scimitar' not in c['Name'] and 'Oversized Longbow' not in c['Name'], charInv))
                                 for c in charInv:
                                     charInvString += f"{alphaEmojis[alphaIndex]}: {c['Name']}\n"
                                     alphaIndex += 1
@@ -1477,7 +1477,7 @@ class Character(commands.Cog):
                                 charInvString = f"Please choose from the choices below for {iType[0]} {i+1}:\n"
                                 alphaIndex = 0
                                 
-                                charInv = list(filter(lambda c: 'Yklwa' not in c['Name'] and 'Light Repeating Crossbow' not in c['Name'] and 'Double-Bladed Scimitar' not in c['Name'], charInv))
+                                charInv = list(filter(lambda c: 'Yklwa' not in c['Name'] and 'Light Repeating Crossbow' not in c['Name'] and 'Double-Bladed Scimitar' not in c['Name'] and 'Oversized Longbow' not in c['Name'], charInv))
                                 for c in charInv:
                                     charInvString += f"{alphaEmojis[alphaIndex]}: {c['Name']}\n"
                                     alphaIndex += 1

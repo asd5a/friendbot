@@ -1231,7 +1231,7 @@ class Log(commands.Cog):
             sessionLogEmbed.description += "\n"+editString
         try:
             await editMessage.edit(embed=sessionLogEmbed)
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will delete your message and this one in 30 seconds.\n\n:warning: **DO NOT DELETE YOUR OWN MESSAGE.** :warning")
+            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will delete your message and this one in 30 seconds.\n\n:warning: **DO NOT DELETE YOUR OWN MESSAGE.** :warning:")
             await asyncio.sleep(30) 
             await ctx.message.delete()
             await delMessage.delete()
