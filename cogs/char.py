@@ -2513,10 +2513,10 @@ class Character(commands.Cog):
                     char_race = charDict['Race']
                     if "Reflavor" in charDict:
                         char_race = f"{charDict['Reflavor']} ({char_race})"
-                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {charDict['Class']}\n"
+                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {charDict['Class']}"
 
                     if 'Guild' in charDict:
-                        charString += f"~ Guild: *{charDict['Guild']}*\n"
+                        charString += f", *{charDict['Guild']}*\n"
 
                     if len(charString) > (768 * pages):
                         pageStops.append(len(tempCharString))
@@ -2540,9 +2540,7 @@ class Character(commands.Cog):
         if "Campaigns" in userRecords:
             campaignString = ""
             for u, v in userRecords['Campaigns'].items():
-                campaignString += f"• {u}:\n----Time: {timeConversion(v['Time'])}\n"
-                campaignString += f"----Sessions: {v['Sessions']}\n"
-                campaignString += f"----Active Member: {v['Active']}\n"
+                campaignString += f"• {u}: {v['Sessions']} sessions, {timeConversion(v['Time'])}, {v['Active']}\n"
 
             charEmbed.add_field(name='Campaigns', value=campaignString, inline=False)
         
@@ -2552,7 +2550,7 @@ class Character(commands.Cog):
         else:
             charEmbed.description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: 0 (Try hosting sessions to receive Noodles!)\n"
     
-        charEmbed.description += f"Total Number of Characters: {len(charRecords)}\nTier 1 Characters: {len(charDictTiers[0])}\nTier 2 Characters: {len(charDictTiers[1])}\nTier 3 Characters: {len(charDictTiers[2])}\nTier 4 Characters: {len(charDictTiers[3])}\nTier 5 Characters: {len(charDictTiers[4])}"
+        charEmbed.description += f"Total Characters: {len(charRecords)}\nTier 1 Characters: {len(charDictTiers[0])}\nTier 2 Characters: {len(charDictTiers[1])}\nTier 3 Characters: {len(charDictTiers[2])}\nTier 4 Characters: {len(charDictTiers[3])}\nTier 5 Characters: {len(charDictTiers[4])}"
 
         userEmbedList = [charEmbed]
         page = 0
