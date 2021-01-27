@@ -525,7 +525,7 @@ class Tp(commands.Cog):
                         return
                     #refund the TP in the item if the user decides to purchase with gold
                     elif tReaction.emoji == '2️⃣':
-                        newGP = charRecords['GP'] - gpNeeded
+                        newGP = round(charRecords['GP'] - gpNeeded,2)
                         #search for the item in the items currently worked towards
                         complete = True
                         if mRecord['Name'] in charRecords['Current Item']:
