@@ -4123,7 +4123,8 @@ class Character(commands.Cog):
                 sameMessage = True
             if (r.emoji in uniqueReacts or r.emoji == '❌') and u == author:
                 anyList[charEmbedmsg.id].add(r.emoji)
-
+                print("HEY",anyList)
+            print(uniqueReacts)
             return sameMessage and ((len(anyList[charEmbedmsg.id]) == anyCheck) or str(r.emoji) == '❌') and u == author
 
         def slashCharEmbedcheck(r, u):
@@ -4187,7 +4188,7 @@ class Character(commands.Cog):
 
                 elif 'AOU' in s or 'ANY' in s:
                     try:
-                        
+                        print(uniqueArray)
                         anyList = dict()
                         anyCheck = [int(charL) for charL in s if charL.isnumeric()][0] #int(s[len(s)-1])
                         anyAmount = int(s[len(s)-1])
@@ -4210,6 +4211,7 @@ class Character(commands.Cog):
                         for num in range(0,len(uniqueArray)): await charEmbedmsg.add_reaction(numberEmojis[num])
                         await charEmbedmsg.add_reaction('❌')
                         tReaction, tUser = await self.bot.wait_for("reaction_add", check=anyCharEmbedcheck, timeout=60)
+                        
                     except asyncio.TimeoutError:
                         await charEmbedmsg.delete()
                         await channel.send(f'Point buy timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
@@ -4222,12 +4224,13 @@ class Character(commands.Cog):
                             await charEmbedmsg.clear_reactions()
                             self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                             return None, None 
+                        
 
                     charEmbed.clear_fields()
                     await charEmbedmsg.clear_reactions()
                     if 'AOU' in s:
                         for s in anyList[charEmbedmsg.id]:
-                            statsArray[allStatsArray.index(uniqueArray[int(s[0]) - 1])] += anyAmount
+                            statsArray[allStatsArray.index(uniqueArray.pop(int(s[0]) - 1))] += anyAmount
                     else:
 
                         for s in anyList[charEmbedmsg.id]:
