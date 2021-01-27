@@ -2513,10 +2513,10 @@ class Character(commands.Cog):
                     char_race = charDict['Race']
                     if "Reflavor" in charDict:
                         char_race = f"{charDict['Reflavor']} ({char_race})"
-                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {charDict['Class']}"
+                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {charDict['Class']}\n"
 
                     if 'Guild' in charDict:
-                        charString += f", *{charDict['Guild']}*\n"
+                        charString += f"---Guild: *{charDict['Guild']}*\n"
 
                     if len(charString) > (768 * pages):
                         pageStops.append(len(tempCharString))
@@ -2617,7 +2617,7 @@ class Character(commands.Cog):
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
-            description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\nGames Played: {charDict['Games']}\n"
+            description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\nOne-shots Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
                 description +=  f"Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
@@ -2650,7 +2650,7 @@ class Character(commands.Cog):
 
             if 'Death' in charDict:
                 statusEmoji = "⚰️"
-                description += f"{statusEmoji} Status: **DEAD** -  decide their fate with {commandPrefix}death" 
+                description += f"{statusEmoji} Status: **DEAD** -  decide their fate with the following command: {commandPrefix}death" 
                 charEmbed.colour = discord.Colour(0xbb0a1e)
 
             charDictAuthor = guild.get_member(int(charDict['User ID']))
@@ -4028,7 +4028,7 @@ class Character(commands.Cog):
 
         
         if statRecords is None:
-            statsEmbed.add_field(name="Fanatic Stats", value="There have been 0 valid games played this month. Check back later!", inline=False)
+            statsEmbed.add_field(name="Fanatic Stats", value="There have been 0 valid one-shots played this month. Check back later!", inline=False)
         else:
             friend_list = []
             guild_list = []
