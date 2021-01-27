@@ -89,8 +89,6 @@ class Campaign(commands.Cog):
             await channel.send(f"No campaign could be found for this channel.")
             return 
         playerRecords = list(db.users.find({"Campaigns."+campaignRecords["Name"]: {"$exists": True}}))
-        print("Records", playerRecords)
-        print("Records", [x["Campaigns"][campaignRecords["Name"]] for x in playerRecords])
         playerRecords.sort(key=lambda x:not  x["Campaigns"][campaignRecords["Name"]]["Active"])
         infoEmbed = discord.Embed()
         infoEmbedmsg = None

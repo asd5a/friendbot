@@ -2540,7 +2540,7 @@ class Character(commands.Cog):
         if "Campaigns" in userRecords:
             campaignString = ""
             for u, v in userRecords['Campaigns'].items():
-                campaignString += f"• {u}: {v['Sessions']} sessions, {timeConversion(v['Time'])}, {v['Active']}\n"
+                campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, {timeConversion(v['Time'])}\n"
 
             charEmbed.add_field(name='Campaigns', value=campaignString, inline=False)
         
