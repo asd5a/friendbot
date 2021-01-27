@@ -107,9 +107,9 @@ class Campaign(commands.Cog):
                 member_name = "Left the Server"
                 if member:
                     member_name = member.display_name
-                info_string += f"---Time: {timeConversion(player['Campaigns'][campaignRecords['Name']]['Time'])}\n"
-                info_string += f"---Sessions: {player['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
-                info_string += f"---Active Member: {player['Campaigns'][campaignRecords['Name']]['Active']}"
+                info_string += f"• Time: {timeConversion(player['Campaigns'][campaignRecords['Name']]['Time'])}\n"
+                info_string += f"• Sessions: {player['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
+                info_string += f"• Active Member: {player['Campaigns'][campaignRecords['Name']]['Active']}"
                 infoEmbed.add_field(name=f"**{member.display_name}**:", value = info_string, inline = False)
         infoEmbed.description = description_string
         
@@ -117,10 +117,10 @@ class Campaign(commands.Cog):
         member_name = "Left the Server"
         if member:
             member_name = member.display_name
-        master_text += f"---Time: {timeConversion(master['Campaigns'][campaignRecords['Name']]['Time'])}\n"
-        master_text += f"---Sessions: {master['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
-        master_text += f"---Active Member: {master['Campaigns'][campaignRecords['Name']]['Active']}"
-        infoEmbed.insert_field_at(0, name=f"**Campaign Master {member_name}**:", value = master_text, inline = False)
+        master_text += f"• Time: {timeConversion(master['Campaigns'][campaignRecords['Name']]['Time'])}\n"
+        master_text += f"• Sessions: {master['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
+        master_text += f"• Active Member: {master['Campaigns'][campaignRecords['Name']]['Active']}"
+        infoEmbed.insert_field_at(0, name=f"**{member_name}** (Campaign Master):", value = master_text, inline = False)
         await ctx.channel.send(embed=infoEmbed)
     
     #@commands.cooldown(1, 5, type=commands.BucketType.member)
@@ -300,7 +300,7 @@ class Campaign(commands.Cog):
             return
 
         if campaignRecords['Campaign Master ID'] != str(author.id):
-            await channel.send(f"You cannot remove users from this campaign because you are not the campaign master of {campaignRecords['Name']}")
+            await channel.send(f"You cannot remove users from this campaign because you are not the Campaign Master of {campaignRecords['Name']}")
             return
         try:
             usersCollection.update_one({'User ID': str(user[0].id)}, {"$set": {f"Campaigns.{campaignRecords['Name']}.Active": False}}, upsert=True)
