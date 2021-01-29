@@ -4043,8 +4043,8 @@ class Character(commands.Cog):
                     continue
                 if "Friend" in v:
                     friend_list.append({"Member": dmMember, "Count": v["Friend"]})
-                if "Guilds" in v:
-                    guild_list.append({"Member": dmMember, "Count": sum([c for c in v["Guilds"].values()])})
+                if "Guild Fanatic" in v:
+                    guild_list.append({"Member": dmMember, "Count": v["Guild Fanatic"]})
             friend_list.sort(key = lambda x: -x["Count"])
             
             guild_list.sort(key = lambda x: -x["Count"])
