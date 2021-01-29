@@ -855,8 +855,12 @@ class Campaign(commands.Cog):
             guild = ctx.guild
             removeList = msg.mentions
             removeUser = ""
+            
+            if removeList == list():
+                if not resume:
+                        await ctx.channel.send(content=f"I cannot find any mention of the user you are trying to remove. Please check your format and spelling.")
 
-            if len(removeList) > 1:
+            elif len(removeList) > 1:
                 await ctx.channel.send(content=f"I cannot remove more than one player! Please try the command with one player and check your format and spelling.")
                 return None
             elif not removeList[0] in start:
