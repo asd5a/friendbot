@@ -788,6 +788,7 @@ class Log(commands.Cog):
                     statsIncrement[f"DM.{dm['ID']}.Guild Fanatic"] = 1
                     for g in guildDBEntriesDic.values():
                         if guilds[g["Name"]]["Status"]:
+                            statsIncrement[f"DM.{dm['ID']}.Guild Fanatic"] = 1
                             statsIncrement[f"DM.{dm['ID']}.Guilds.{g['Name']}"] = 1
             
             
