@@ -309,7 +309,7 @@ class Tp(commands.Cog):
                         tpEmbed.clear_fields()
                         try:
                             playersCollection = db.players
-                            setData = {}
+                            setData = {"Attuned" : charRecords["Attuned"]}
                             incData = {f'Predecessor.{mRecord["Name"]}.Stage': 1}
                             statSplit = None
                             unsetTP = False
@@ -359,11 +359,13 @@ class Tp(commands.Cog):
                                     unsetData[tp] = 1
                                 else:
                                     setData[tp] = charRecords[tp]
+                            
                             playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData, "$unset": unsetData, "$inc" : incData})
                             
                         except Exception as e:
                             print ('MONGO ERROR: ' + str(e))
                             tpEmbedmsg = await channel.send(embed=None, content=f"Uh oh, looks like something went wrong. Try again using the same command!")
+                            ctx.command.reset_cooldown(ctx)
                         else:
                             tpEmbed.description = f"You have upgraded **{mRecord['Name']}** for {tpNeeded_copy} TP! :tada:\n\nCurrent TP: {used_tp_text}\n\n"
                             
@@ -594,8 +596,6 @@ class Tp(commands.Cog):
                     if("Predecessor" not in charRecords):
                         charRecords["Predecessor"] = {}
                     if(complete and "Predecessor" in mRecord and mRecord["Name"] not in charRecords["Predecessor"]):
-                        print("mRecord", mRecord)
-                        print("charRecords", charRecords)
                         charRecords["Predecessor"][mRecord["Name"]] ={"Names" : mRecord["Predecessor"]["Names"], "Stage" : 0}
                     tpEmbed.set_footer(text=tpEmbed.Empty)
                     await tpEmbedmsg.edit(embed=tpEmbed)
@@ -633,7 +633,6 @@ class Tp(commands.Cog):
                                     if 'Max Stats' not in charRecords:
                                         charRecords['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
 
-                                    print(charRecords['Max Stats'])
                                     # statSplit = MAX STAT +X
                                     statSplit = mRecord['Stat Bonuses'].split(' +')
                                     maxSplit = statSplit[0].split(' ')

@@ -1980,6 +1980,8 @@ class Character(commands.Cog):
                 charEmbedmsg = await channel.send(embed=charEmbed, content=f"Congratulations! You have respecced your character!")
 
         self.bot.get_command('respec').reset_cooldown(ctx)
+    
+    
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @is_log_channel()

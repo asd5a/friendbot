@@ -31,6 +31,8 @@ class Shop(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'charName':
                 msg = "You're missing your character name in the command.\n"
+            if error.param.name == 'searchQuery':
+                msg = "You're missing your item name in the command.\n"
             elif error.param.name == "buyItem":
                 msg = "You're missing the item you want to buy/sell in the command.\n"
             elif error.param.name == "spellName":
@@ -532,7 +534,100 @@ class Shop(commands.Cog):
                     ctx.command.reset_cooldown(ctx)
        
 
-    
+    @shop.command()
+    async def toss(self, ctx, charName, searchQuery): 
+        channel = ctx.channel
+        # extract the name of the consumable and transform it into a standardized format
+        searchItem = searchQuery.lower().replace(' ', '')
+        author = ctx.author
+        charEmbed = discord.Embed()
+        charEmbedmsg = None
+        
+        charDict, charEmbedmsg = await checkForChar(ctx, charName, charEmbed)
+        
+        def charEmbedCheck(r, u):
+            sameMessage = False
+            if charEmbedmsg.id == r.message.id:
+                sameMessage = True
+            return sameMessage and ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author
+            
+        
+        # search through the users list of brough consumables 
+        # could have used normal for loop, we do not use the index
+        item_type = None
+        
+        if not charDict:
+            return
+        consumables_list = []
+        if charDict["Consumables"] != "None":
+            consumables_list  = charDict["Consumables"].split(", ")
+        foundItem = None
+        for j in consumables_list:
+            # if found than we can mark it as such
+            if searchItem == j.lower().replace(" ", ""):
+                foundItem = j
+                item_type = "Consumables"
+                break
+         
+        # inform the user if we couldnt find the item
+        if not foundItem:
+            for key, inv in charDict["Inventory"].items():
+                # if found than we can mark it as such
+                if searchItem == key.lower().replace(' ', '') and inv > 0:
+                    foundItem = key
+                    item_type = "Inventory"
+                    break  
+                    
+        if not foundItem:
+            await channel.send(f"I could not find the item **{searchQuery}** in your inventory in order to remove it.")
+                                 
+        else:
+            if item_type == "Consumables":
+                # remove the entry from the list of consumables of the character
+                consumables_list.remove(foundItem)
+                # update the characters consumables to reflect the item removal
+                charDict["Consumables"] = ', '.join(consumables_list).strip()
+            elif item_type == "Inventory":
+                charDict[item_type][foundItem] -= 1
+                        
+            charEmbed.title = f"Shop (Toss): {charDict['Name']}"
+            charEmbed.description = f"Are you sure you want to toss **{foundItem}**?\n\n✅: Yes\n\n❌: Cancel"
+
+            if charEmbedmsg:
+                await charEmbedmsg.edit(embed=charEmbed)
+            else:
+                charEmbedmsg = await channel.send(embed=charEmbed)
+
+            await charEmbedmsg.add_reaction('✅')
+            await charEmbedmsg.add_reaction('❌')
+            try:
+                tReaction, tUser = await self.bot.wait_for("reaction_add", check=charEmbedCheck , timeout=60)
+            except asyncio.TimeoutError:
+                await charEmbedmsg.delete()
+                await channel.send(f'Shop cancelled. Try again using the command!')
+                ctx.command.reset_cooldown(ctx)
+                return
+            else:
+                await charEmbedmsg.clear_reactions()
+                if tReaction.emoji == '❌':
+                    await charEmbedmsg.edit(embed=None, content=f"Shop cancelled. Try again using the command!")
+                    await charEmbedmsg.clear_reactions()
+                    ctx.command.reset_cooldown(ctx)
+                    return
+                elif tReaction.emoji == '✅':
+                    if item_type == "Inventory":
+                        if int(charDict['Inventory'][f"{foundItem}"]) <= 0:
+                            del charDict['Inventory'][f"{foundItem}"]
+                    try:
+                        playersCollection = db.players
+                        playersCollection.update_one({'_id': charDict['_id']}, {"$set": {"Inventory":charDict['Inventory'], "Consumables": charDict['Consumables']}})
+                    except Exception as e:
+                        print ('MONGO ERROR: ' + str(e))
+                        charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try shop buy again.")
+                    else:
+                        charEmbed.description = f"The item **{foundItem}** has been removed from your inventory."
+                        await charEmbedmsg.edit(embed=charEmbed)
+                        ctx.command.reset_cooldown(ctx)
     
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @shop.command()
