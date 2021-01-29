@@ -587,6 +587,7 @@ class Shop(commands.Cog):
                 consumables_list.remove(foundItem)
                 # update the characters consumables to reflect the item removal
                 charDict["Consumables"] = ', '.join(consumables_list).strip()
+                charDict["Consumables"] = charDict["Consumables"]*(charDict["Consumables"]=="")
             elif item_type == "Inventory":
                 charDict[item_type][foundItem] -= 1
                         
