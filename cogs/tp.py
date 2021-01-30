@@ -309,7 +309,7 @@ class Tp(commands.Cog):
                         tpEmbed.clear_fields()
                         try:
                             playersCollection = db.players
-                            setData = {"Attuned" : charRecords["Attuned"]}
+                            setData = {"HP" : charRecords["HP"]}
                             incData = {f'Predecessor.{mRecord["Name"]}.Stage': 1}
                             statSplit = None
                             unsetTP = False
