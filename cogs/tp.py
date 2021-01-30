@@ -532,7 +532,7 @@ class Tp(commands.Cog):
                         complete = True
                         if mRecord['Name'] in charRecords['Current Item']:
                             #grab the matching item
-                            currentMagicItem = re.search('\(\d([^)]+)', charRecords['Current Item']).group(1)
+                            currentMagicItem = re.search('\((\d[^)]+)', charRecords['Current Item']).group(1)
                             #split the current/needed TP
                             tpSplit= currentMagicItem.split('/')
                             refundTP = float(tpSplit[0])
