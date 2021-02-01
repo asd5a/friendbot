@@ -1298,7 +1298,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             dmUser = ctx.guild.get_member(int(dmID))
             if dmUser:
                 
-                dmEntry = usersCollection.find_one(str(dmID))
+                dmEntry = usersCollection.find_one({"User ID" : str(dmID)})
                 noodles = dmEntry["Noodles"]
                 noodles += dmEntry[f'{campaignRecord["Name"]} inc']["Noodles"]
                 noodleString = ""
