@@ -294,7 +294,7 @@ class Character(commands.Cog):
                     pass
                 else:
                     for key in userRecords["Campaigns"].keys():
-                        if key.lower() == (campaignChannels[0].name.replace('-', '')):
+                        if key.lower() == (campaignChannels[0].name.replace('-', ' ')):
                             campaignFind = True
                             campaignKey = key
                             break
