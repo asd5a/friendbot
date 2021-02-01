@@ -3374,11 +3374,8 @@ class Character(commands.Cog):
         roleName = ""
         if not any([(x in roles) for x in ['Junior Friend', 'Journeyfriend', 'Elite Friend', 'True Friend', 'Ascended Friend']]) and 'D&D Friend' in roles and level > 1:
             roleName = 'Junior Friend' 
-            roleRemoveStr = 'New Friend'
             levelRole = get(guild.roles, name = roleName)
-            roleRemove = get(guild.roles, name = roleRemoveStr)
             await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 2!")
-            await author.remove_roles(roleRemove)
         if 'Journeyfriend' not in roles and 'Junior Friend' in roles and level > 4:
             roleName = 'Journeyfriend' 
             roleRemoveStr = 'Junior Friend'
