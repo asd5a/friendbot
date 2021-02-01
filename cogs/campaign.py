@@ -1391,10 +1391,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     log.value = log.value.replace(i, "")
                 
                 logItems = log.value.split(' | ')
-
+                
                 if "DM" in log.name:
                     dmID = logItems[0].strip()
                     charData.append(dmID)
+                    continue
                 
                 # if no character was listed then there will be 2 entries
                 # since there is no character to update we block the charData
