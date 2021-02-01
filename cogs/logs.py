@@ -146,7 +146,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             # if there were no rewards we only care about the time
             treasureString = timeConversion(duration) 
         groupString = ""
-        groupString += guildDouble * "Guild "
+        groupString += guildDouble * "2xR "
         groupString += playerDouble * "Fanatic "
             
         groupString += f'{role} Friend {"Full"*(player["CP"]==dm["CP"])+"Partial"*(not player["CP"]==dm["CP"])} Rewards:\n{treasureString}'
