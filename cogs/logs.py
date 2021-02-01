@@ -849,9 +849,11 @@ class Log(commands.Cog):
             print('Success')
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
-        noodles += noodlesGained
-        noodleString = ""
         if dmUser:
+            
+            noodles = dmUser["Noodles"]
+            noodles += noodlesGained
+            noodleString = ""
             dmRoleNames = [r.name for r in dmUser.roles]
             # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
             if noodles >= 210:

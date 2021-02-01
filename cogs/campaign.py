@@ -989,7 +989,7 @@ class Campaign(commands.Cog):
                     "Campaigns."+campaignRecord["Name"]+".Sessions" :1}
                     playerData.append(v)
                 stopEmbed.add_field(name=key, value=temp, inline=False)
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\n", inline=False)
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :sparkles:: {dmChar['DB Entry']['Noodles']}\n Current :sparkles:: Gained :sparkles:: {int((total_duration/3600)//3)}", inline=False)
 
             try:   
                 usersCollection = db.users
@@ -1033,7 +1033,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 for e in ["🚧", "📝", "✅", "❌"]:
                     await modMessage.add_reaction(e)
                 print('Success')  
-                stopEmbed.set_footer(text=f"Game ID: {session_msg.id}")
+                stopEmbed.set_footer(text=f"Game ID: {session_msg.id}\nLog is being processed!")
                 
                 print('Success')  
                 await session_msg.edit(embed=stopEmbed)
@@ -1132,10 +1132,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                                 # @player is a protection from people copying the command
                 elif self.startsWithCheck(msg, "add") and '@player' not in msg.content:
-                    print("AAAAAAa")
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
-                        print("BBBBBBBBB")
                         # update the startTimes with the new added player
                         await self.addDuringTimer(ctx, start=startTimes, role=role, msg=msg, dmChar = dmChar, campaignRecords = campaignRecords)
                         # update the msg with the new stamp
@@ -1241,7 +1239,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             charData = []
 
             for log in sessionLogEmbed.fields:
-                print("   AAAAa   ", log)
                 for i in "\<>@#&!:":
                     log.value = log.value.replace(i, "")
                 
@@ -1260,7 +1257,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             if ctx.author.id == int(dmID):
                 await ctx.channel.send("You cannot approve your own log.")
                 return
-            print(charData)
             usersCollection = db.users
             userRecordsList = list(usersCollection.find({"User ID" : {"$in": charData }}))
             campaignCollection = db.campaigns
@@ -1286,10 +1282,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 desc = sessionLogEmbed.description
                 print(desc)
                 date_find = re.search("Date: (.*?) ", desc)
-                print("DATAEEEEEEEEEEEEEEE",date_find)
                 if date_find:
                     month_year_splits = date_find[1].split("-")
-                    print(f"{month_year_splits[0]}-{month_year_splits[2]}")
                     db.stats.update_one({"Date": f"{month_year_splits[0]}-{month_year_splits[2]}"}, {"$inc" : {"Campaigns" : 1}})
             except Exception as e:
                 print ('MONGO ERROR: ' + str(e))
@@ -1300,6 +1294,59 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 await editMessage.edit(embed=sessionLogEmbed)
                 
                 await ctx.channel.send("The session has been approved.")
+            guild = ctx.guild
+            dmUser = ctx.guild.get_member(int(dmID))
+            if dmUser:
+                
+                noodles = dmUser["Noodles"]
+                noodles += dmUser[f'{campaignRecord["Name"]} inc']["Noodles"]
+                noodleString = ""
+                dmRoleNames = [r.name for r in dmUser.roles]
+                # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
+                if noodles >= 210:
+                    if 'Eternal Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Eternal Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
+                        if 'Ascended Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
+                        noodleString += "\n**Eternal Noodle** role received! :tada:"
+                if noodles >= 150:
+                    if 'Immortal Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Immortal Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 150 sessions. This user has 150+ Noodles.")
+                        if 'Ascended Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'Ascended Noodle'))
+                        noodleString += "\n**Immortal Noodle** role received! :tada:"
+                elif noodles >= 100:
+                    if 'Ascended Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Ascended Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 100 sessions. This user has 100+ Noodles.")
+                        if 'True Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'True Noodle'))
+                        noodleString += "\n**Ascended Noodle** role received! :tada:"
+
+                elif noodles >= 60:
+                    if 'True Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'True Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 60 sessions. This user has 60+ Noodles.")
+                        if 'Elite Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'Elite Noodle'))
+                        noodleString += "\n**True Noodle** role received! :tada:"
+                
+                elif noodles >= 30:
+                    if 'Elite Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Elite Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 30 sessions. This user has 30+ Noodles.")
+                        if 'Good Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'Good Noodle'))
+                        noodleString += "\n**Elite Noodle** role received! :tada:"
+
+                elif noodles >= 10:
+                    if 'Good Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Good Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 10 sessions. This user has 10+ Noodles.")
+                        noodleString += "\n**Good Noodle** role received! :tada:"
+      
         else:
             await ctx.channel.send('Log has already been processed! ')
             
@@ -1345,9 +1392,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 
                 logItems = log.value.split(' | ')
 
-                if "DM" in logItems[0]:
-                    for i in "*DM":
-                        logItems[0] = logItems[0].replace(i, "")
+                if "DM" in log.name:
                     dmID = logItems[0].strip()
                     charData.append(dmID)
                 
