@@ -1302,7 +1302,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 
                 dmEntry = usersCollection.find_one({"User ID" : str(dmID)})
                 noodles = dmEntry["Noodles"]
-                noodles += dmEntry[f'{campaignRecord["Name"]} inc']["Noodles"]
                 noodleString = ""
                 dmRoleNames = [r.name for r in dmUser.roles]
                 # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll

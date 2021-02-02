@@ -852,7 +852,6 @@ class Log(commands.Cog):
         if dmUser:
             dmEntry = usersCollection.find_one({"User ID" : str(dm["ID"])})
             noodles = dmEntry["Noodles"]
-            noodles += noodlesGained
             noodleString = ""
             dmRoleNames = [r.name for r in dmUser.roles]
             # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
