@@ -296,9 +296,17 @@ class Campaign(commands.Cog):
         if not campaignRecords:
             await channel.send(f"`{campaignName}` doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
             return
-
+        
         if campaignRecords['Campaign Master ID'] != str(author.id):
             await channel.send(f"You cannot remove users from this campaign because you are not the Campaign Master of {campaignRecords['Name']}")
+            return
+        user_roles = [r.name for r in user[0].roles]
+        if campaignRecords["Name"] not in user_roles:
+            await channel.send(f"The user does not have the campaign role to remove.")
+            return  
+        user_entry = usersCollection.find_one({'User ID': str(user[0].id), f"Campaigns.{campaignRecords['Name']}"})
+        if not user_entry:
+            await channel.send(f"`{user[0].display_name}` could not be found as part of the campaign.")
             return
         try:
             usersCollection.update_one({'User ID': str(user[0].id)}, {"$set": {f"Campaigns.{campaignRecords['Name']}.Active": False}}, upsert=True)
