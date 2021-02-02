@@ -304,7 +304,7 @@ class Campaign(commands.Cog):
         if campaignRecords["Name"] not in user_roles:
             await channel.send(f"The user does not have the campaign role to remove.")
             return  
-        user_entry = usersCollection.find_one({'User ID': str(user[0].id), f"Campaigns.{campaignRecords['Name']}"})
+        user_entry = usersCollection.find_one({'User ID': str(user[0].id), f"Campaigns.{campaignRecords['Name']}" : {"$exists" : True}})
         if not user_entry:
             await channel.send(f"`{user[0].display_name}` could not be found as part of the campaign.")
             return
