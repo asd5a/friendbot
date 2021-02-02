@@ -850,7 +850,7 @@ class Log(commands.Cog):
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
         if dmUser:
-            dmEntry = usersCollection.find_one({"User ID" : str(dmID)})
+            dmEntry = usersCollection.find_one({"User ID" : str(dm["ID"])})
             noodles = dmEntry["Noodles"]
             noodles += noodlesGained
             noodleString = ""
