@@ -991,7 +991,7 @@ class Campaign(commands.Cog):
                     "Campaigns."+campaignRecord["Name"]+".Sessions" :1}
                     playerData.append(v)
                 stopEmbed.add_field(name=key, value=temp, inline=False)
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :sparkles:: {dmChar['DB Entry']['Noodles']}\n Current :sparkles:: Gained :sparkles:: {int((total_duration/3600)//3)}", inline=False)
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :sparkles:: {dmChar['DB Entry']['Noodles']}\nGained :sparkles:: {int((total_duration/3600)//3)}", inline=False)
 
             try:   
                 usersCollection = db.users
