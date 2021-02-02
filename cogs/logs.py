@@ -291,7 +291,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             # for every guild in the game
             for name, g in guilds.items():
                 
-                guildsListStr += "\n"+(g["Drive"]*"**Recruitment Drive** ")+g["Mention"]
+                guildsListStr += "\n"+(g["Drive"]*"**Recruitment Drive** ")+(g["Rewards"]*"**2xR** ")+(g["Items"]*"**2xI** ")+g["Mention"]
                 # get the DB record of the guild
                 #filter player list by guild
                 gPlayers = [p for p in players.values() if "Guild" in p and p["Guild"]==name]
