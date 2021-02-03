@@ -1012,7 +1012,7 @@ class Campaign(commands.Cog):
                 stopEmbed.set_footer(text=f"Placeholder, if this remains remember the wise words DO NOT PANIC and get a towel.")
                 session_msg = await ctx.channel.send(embed=stopEmbed)
                 
-                modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
+                modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Campaign Logs"])
                 modEmbed = discord.Embed()
                 modEmbed.description = f"""A campaign session log was just posted for {ctx.channel.mention}.
 
