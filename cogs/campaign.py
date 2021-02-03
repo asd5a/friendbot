@@ -979,7 +979,7 @@ class Campaign(commands.Cog):
             stopEmbed.set_footer(text=stopEmbed.Empty)
             dateend = datetime.fromtimestamp(end).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
             totalDuration = timeConversion(end - startTime)
-            stopEmbed.description = f"**{game}**\nStart: {datestart}\nEnd: {dateend}\nRuntime: {totalDuration}\nPut your summary here."
+            stopEmbed.description = f"**{game}**\nStart: {datestart} EST\nEnd: {dateend} EST\nRuntime: {totalDuration}\nPut your summary here."
 
             playerData = []
             campaignCollection = db.campaigns
