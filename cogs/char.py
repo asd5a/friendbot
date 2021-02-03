@@ -3942,12 +3942,14 @@ class Character(commands.Cog):
             srBg = collections.OrderedDict(sorted(statRecordsLife['Magic Items'].items()))
 
             for k, v in srBg.items():
+                lastEntry = False
                 bgString += f"{k}: {v}\n"
                 if len(bgString) > (768 * bPages):
                     bPageStops.append(len(bgString))
                     bPages += 1
-
-            bPageStops.append(len(bgString))
+                    lastEntry = True
+            if(not lastEntry):
+                bPageStops.append(len(bgString))
 
             if not bgString:
                 bgString = "No stats yet."
@@ -3982,10 +3984,13 @@ class Character(commands.Cog):
                             page = (len(bPageStops) -1) // subpages
                     if hReact.emoji == right:
                         page += 1
+                        print((len(bPageStops) -1 ) // subpages)
                         if page > (len(bPageStops) -1 ) // subpages:
                             page = 0
                     statsEmbed.clear_fields()
+                    print(bPageStops)
                     for p in range(subpages*page, subpages*page+min(len(bPageStops)-1-page*subpages, subpages)):
+                        print(p, bgString[bPageStops[p]:bPageStops[p+1]])
                         statsEmbed.add_field(name=f"Character Magic Items Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
             
                     statsEmbed.set_footer(text=f"Page {subpages*page+1} of {bPages}")
