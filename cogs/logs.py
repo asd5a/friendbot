@@ -146,7 +146,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             # if there were no rewards we only care about the time
             treasureString = timeConversion(duration) 
         groupString = ""
-        groupString += guildDouble * "Guild "
+        groupString += guildDouble * "2xR "
         groupString += playerDouble * "Fanatic "
             
         groupString += f'{role} Friend {"Full"*(player["CP"]==dm["CP"])+"Partial"*(not player["CP"]==dm["CP"])} Rewards:\n{treasureString}'
@@ -225,7 +225,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             
             dmDouble = player["DM Double"] and sessionInfo["DDMRW"]
             
-            dm_double_string += guildDouble * "Guild "
+            dm_double_string += guildDouble * "2xR "
             dm_double_string += playerDouble * "Fanatic "
             dm_double_string += dmDouble * "DDMRW "
             
@@ -1027,7 +1027,7 @@ class Log(commands.Cog):
                         guilds = sessionInfo["Guilds"]
                         print("Drives", [g["Drive"] for g in guilds.values()])
                         if unique and ((len(ctx.message.channel_mentions) > 1) or any([g["Drive"] for g in guilds.values()])):
-                            await ctx.channel.send("The Recruitment Drive Guild Boon can only be used on by one guild per guild quest.")
+                            await ctx.channel.send("The Recruitment Drive Guild Boon can only be used by one guild per guild quest.")
                             return
                         guild_dic = {}
                         for g in guilds.values():

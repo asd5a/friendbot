@@ -975,7 +975,7 @@ def setup(bot):
 # $updateSettings
     # Updates the "settingsRecord" variable with the current dnd.settings collection database entry without requiring a restart.
 
-# $genLod ID
+# $session genLog ID
     # Updates the specified session log with the corresponding dnd.logdata collection database entry.
 
 # $printTierItems tier TP

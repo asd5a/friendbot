@@ -163,13 +163,15 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f"{commandPrefix}user", inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f"{commandPrefix}stats", inline=False)
-
-    helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f"{commandPrefix}reward XhYm tier", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing the List of Allowed Races', value=f"{commandPrefix}printRaces", inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f"{commandPrefix}help", inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Print a List of Allowed Races', value=f"{commandPrefix}printRaces", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f"{commandPrefix}reward XhYm tier", inline=False)
+
+    helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f"{commandPrefix}stats", inline=False)
+
+    helpEmbedGen.add_field(name=f'▫️ Viewing Fanatic Competition Stats', value=f"{commandPrefix}fanatic", inline=False)
 
 
 
@@ -326,6 +328,8 @@ async def help(ctx, *, pageString=''):
     helpEmbedShop.add_field(name=f'▫️ Buying a Miscellaneous Item', value=f'{commandPrefix}shop buy "character name" Miscellaneous #', inline=False)
 
     helpEmbedShop.add_field(name=f'▫️ Selling a Mundane Item', value=f'{commandPrefix}shop sell "character name" "item" #', inline=False)
+
+    helpEmbedShop.add_field(name=f'▫️ Tossing a Consumable or Mundane Item', value=f'{commandPrefix}shop toss "character name" "item"', inline=False)
 
     helpEmbedShop.add_field(name=f'▫️ Copying a Spell Scroll', value=f'{commandPrefix}shop copy "character name" "spell name"', inline=False)
 
