@@ -979,7 +979,7 @@ class Campaign(commands.Cog):
             stopEmbed.set_footer(text=stopEmbed.Empty)
             dateend = datetime.fromtimestamp(end).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
             totalDuration = timeConversion(end - startTime)
-            stopEmbed.description = f"**{game}**\nStart: {datestart}\nEnd: {dateend}\nRuntime: {totalDuration}\nPut your summary here."
+            stopEmbed.description = f"**{game}**\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\nPut your summary here."
 
             playerData = []
             campaignCollection = db.campaigns
@@ -999,7 +999,7 @@ class Campaign(commands.Cog):
                     "Campaigns."+campaignRecord["Name"]+".Sessions" :1}
                     playerData.append(v)
                 stopEmbed.add_field(name=key, value=temp, inline=False)
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :sparkles:: {dmChar['DB Entry']['Noodles']}\nGained :sparkles:: {int((total_duration/3600)//3)}", inline=False)
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}", inline=False)
 
             try:   
                 usersCollection = db.users
@@ -1043,7 +1043,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 for e in ["🚧", "📝", "✅", "❌"]:
                     await modMessage.add_reaction(e)
                 print('Success')  
-                stopEmbed.set_footer(text=f"Game ID: {session_msg.id}\nLog is being processed. If you have appended a summary to your campaign session log and it hasn't been approved after 48 hours, message a Mod.")
+                stopEmbed.set_footer(text=f"Game ID: {session_msg.id}\nLog is being processed. If you have appended a summary to your campaign session log and it hasn't been approved after 48 hours, message a Mod with a link to your campaign session log.")
                 
                 print('Success')  
                 await session_msg.edit(embed=stopEmbed)
