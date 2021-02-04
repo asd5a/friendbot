@@ -350,6 +350,9 @@ class Guild(commands.Cog):
                 guildMemberStrList = []
                 guildMemberStr = ""
                 for g in guildMembers:
+                    g_member = guild.get_member(int(g['User ID']))
+                    if not g_member:
+                        continue
                     next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
                     if len(guildMemberStr) +len(next_member_str)>1000:
                         guildMemberStrList.append(guildMemberStr)
