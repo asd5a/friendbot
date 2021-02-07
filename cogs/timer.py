@@ -24,7 +24,6 @@ class Timer(commands.Cog):
 
     @commands.group(aliases=['t'], case_insensitive=True)
     async def timer(self, ctx):	
-        print(datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p"))
         pass
 
     @timer.command()
@@ -239,7 +238,6 @@ class Timer(commands.Cog):
                             {"Consumables": {"Add": [], "Remove": []}, 
                              "Inventory": {"Add": [], "Remove": []},
                              "Magic Items": []}]]
-        print(signedPlayers)
         # signedPlayers +=[[self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 1", "Level": 19, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 0, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350", {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}], 
                             # [self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 2", "Level": 19, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 9, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350",  {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}], 
                             # [self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 3", "Level": 20, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 1, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350",  {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}]]
@@ -331,7 +329,6 @@ class Timer(commands.Cog):
                         if not foundSignedPlayer:
                             signedPlayers.append(playerChar)
                         
-                print(signedPlayers)
 
             # similar issues arise as mentioned above about wrongful calls
             elif (msg.content.startswith(f"{commandPrefix}timer add ") or msg.content.startswith(f"{commandPrefix}t add ")):
@@ -607,8 +604,7 @@ class Timer(commands.Cog):
                     else:
                         charConsumables[c] += 1
 
-                print([j.lower().replace(" ", "") for j in charConsumables.keys()])
-
+                
                 gameConsumables = []
                 checkedIndices = []
                 notValidConsumables = ""
@@ -633,7 +629,6 @@ class Timer(commands.Cog):
                 # charConsumables are the consumables that the character has available.
                 # gameConsumables are the final list of consumables characters are bringing
                 for i in consumablesList:
-                    print(i)
                     itemFound = False
                     for jk, jv in charConsumables.items():
                         if i.strip() != "" and i.lower().replace(" ", "").strip() in jk.lower().replace(" ", ""):
@@ -644,7 +639,6 @@ class Timer(commands.Cog):
                                 break
 
                     if not itemFound:
-                        print(i)
                         notValidConsumables += f"`• {i.strip()}`\n"
                         
 
@@ -685,7 +679,6 @@ class Timer(commands.Cog):
             searchItem = searchQuery.lower().replace(' ', '')
             timeKey = ""
             removedItem = ""
-            print("GGGGGGGG", searchItem, searchItem.startswith("+") and searchItem[1].isnumeric() )
             if searchItem.startswith("+") and not searchItem[1].isnumeric() and not resume:
                 await channel.send(f"You cannot remove reward items.")
                 return start         
@@ -725,10 +718,8 @@ class Timer(commands.Cog):
                             if item_type == "Consumables":
                                 # remove the entry from the list of consumables of the character
                                 charConsumableList = currentItem[1]['Consumables'].split(', ')
-                                print("F11111111111", foundItem, currentItem[2])
                                 charConsumableList.remove(foundItem)
                                 # remove the item from the brought consumables
-                                print("F222222222", foundItem, currentItem[2])
                                 currentItem[2].remove(foundItem) 
                                 # update the characters consumables to reflect the item removal
                                 currentItem[1]['Consumables'] = ', '.join(charConsumableList).strip()
@@ -804,7 +795,6 @@ class Timer(commands.Cog):
                                             "DM" : {"Major":[], "Minor": []}}])
 
             # find the name of which noodle role the DM has
-            print("ARG", dmChar)
             for r in dmChar[0].roles:
                 if 'Noodle' in r.name:
                     dmChar[5][0] = r.name
@@ -851,8 +841,6 @@ class Timer(commands.Cog):
                 # for every player check their consumables and create a field in the embed to display them
                 # this field also show the charater name
                 for u in userList:
-                    print('USER')
-                    print(u)
                     consumablesString = ""
                     if u[2] != ['None']:
                         consumablesString = "\nConsumables: " + ', '.join(u[2])
@@ -1038,8 +1026,6 @@ class Timer(commands.Cog):
                         else:
                             tierNum -= 1
 
-                    print('tierNum')
-                    print(tierNum)
                     
                     dmMajorLimit += floor((totalDurationTimeMultiplier -1) / 2)
                     dmMinorLimit += (totalDurationTimeMultiplier -1)
@@ -1049,10 +1035,6 @@ class Timer(commands.Cog):
                     if dmMnc:
                         dmMinorLimit += dmMajorLimit
                         dmMajorLimit = 0
-                    print("Major Limit", rewardMajorLimit)
-                    print("Minor Limit", rewardMinorLimit)
-                    print("Major Limit DM", dmMajorLimit)
-                    print("Minor Limit DM", dmMinorLimit)
                     
                     player_type = "Players"
                     if rewardUser == dmChar[0]:
@@ -1064,7 +1046,6 @@ class Timer(commands.Cog):
                     character_add = {"Inventory": [], "Consumables": [], "Magic Items": []}
                     
                     blocking_list_additions = {"Major": [], "Minor" : []}
-                    print("Before:", dmChar)
                     for query in consumablesList:
                         # TODO: Deal with this in resume, should not show embed
                         # if the player is getting a spell scoll then we need to determine which spell they are going for
@@ -1200,7 +1181,6 @@ class Timer(commands.Cog):
                     item_list = awarded_majors+awarded_minors
                     item_list_with_pluses = list(map(lambda s: "+"+s, item_list))
                     item_list_string = ", ".join(item_list)
-                    print("DDDDDDDDDDDDDDDDDDDD", currentItem)
                     if currentItem[2] == ["None"]:
                         currentItem[2] = item_list_with_pluses
                     else:
@@ -1224,9 +1204,6 @@ class Timer(commands.Cog):
                 else:
                     if not resume:
                         await ctx.channel.send(content=f"***{rewardUser}*** is not on the timer to receive rewards.")
-            print(start)
-            print('dmChar')
-            print(dmChar)
             return start, dmChar
     """
     This command gets invoked by duringTimer and resume
@@ -1376,7 +1353,6 @@ class Timer(commands.Cog):
                 # if the player was found in the dictionary, and the entries did not include any of the above the something was messed up
                 if not resume:
                     await ctx.channel.send(content=f"I cannot find any mention of the user you are trying to add. Please check your format and spelling.")
-            print(start)
             return start
     """
     This command is used to add players to the prep list or the running timer
@@ -1416,7 +1392,6 @@ class Timer(commands.Cog):
                 else:
                     #otherwise we need to add the user properly to the timer and perform the setup
                     await ctx.invoke(self.timer.get_command('addme'), role=role, start=start, msg=msg, user=addUser, resume=resume) 
-            print(start)
             return start
     
     async def addDuringTimer(self,ctx, *, msg, role="", start=None,resume=False, dmChar=None, ):
@@ -1440,7 +1415,6 @@ class Timer(commands.Cog):
                 # the dictionary gets manipulated directly which affects all versions
                 #otherwise we need to add the user properly to the timer and perform the setup
                 await ctx.invoke(self.timer.get_command('addme'), role=role, start=start, msg=msg, user=addUser, resume=resume, dmChar=dmChar) 
-            print(start)
             return start
 
     @timer.command()
@@ -1505,7 +1479,6 @@ class Timer(commands.Cog):
                 if not resume:
                     await ctx.channel.send(content=f"***{user}***, you have been removed from the timer.")
 
-        print(start)
         return start
 
     @timer.command()
@@ -1585,7 +1558,6 @@ class Timer(commands.Cog):
             # reset the fields in the embed object
             embed.clear_fields()
 
-            print(start)
             # fore every entry in the timer dictionary we need to perform calculations
             for key, value in startcopy.items():
                 for v in value:
@@ -1603,7 +1575,6 @@ class Timer(commands.Cog):
                             # go over every entry in the consumables list and add them appropriately
                             # reward items are indicated by a plus
                             for i in v[2]:
-                                print("AAAAAAA", i)
                                 if i.startswith('+') and not i[1].isnumeric():
                                     rList.append(i)
                                 else:
@@ -1674,7 +1645,7 @@ class Timer(commands.Cog):
     @timer.command(aliases=['end'])
     async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", ddmrw= False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
-            end = time.time() + 3600 * 0
+            end = time.time() + 3600 *0
             
             tierNum = 0
             guild = ctx.guild
@@ -1798,11 +1769,11 @@ class Timer(commands.Cog):
                     playerList.append(value)
             hoursPlayed = (totalDurationTime // 1800) / 2
             
-            if hoursPlayed < 0.5:
-                self.timer.get_command('prep').reset_cooldown(ctx)
-                await ctx.channel.send(content=f"The session was less than 30 minutes and therefore was not counted.")
+            # if hoursPlayed < 0.5:
+                # self.timer.get_command('prep').reset_cooldown(ctx)
+                # await ctx.channel.send(content=f"The session was less than 30 minutes and therefore was not counted.")
                 
-                return
+                # return
             # check if the game has rewards
             if role != "":
                 # post a session log entry in the log channel
@@ -1930,7 +1901,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
             dmDBEntry["ID"] = str(dmChar[0].id)
             dmDBEntry["Mention"] = dmChar[0].mention
             n=0
-            if "Noodles" in uRecord:
+            if uRecord and "Noodles" in uRecord:
                 n = uRecord["Noodles"]
             dmDBEntry["Noodles"] = n
             dmDBEntry["CP"] = hoursPlayed
@@ -1979,6 +1950,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                 except BulkWriteError as bwe:
                     print(bwe.details)
                     # if it fails, we need to cancel and use the error details
+                    charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
                     return
                 await sessionMessage.edit(embed=stopEmbed)
 
@@ -1994,7 +1966,6 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                     charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
                 else:
                     print('Success')
-                print(dbEntry)
                 await generateLog(self, ctx, dbEntry["Log ID"], sessionInfo = dbEntry)
             
             
@@ -2232,7 +2203,6 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
         else:
             timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'stamp']
 
-        print("DD 2", ddmrw)
         timerCombined = []
         #create a list of all command an alias combinations
         for x in product(timerAlias,timerCommands):
@@ -2240,7 +2210,6 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
         
         #repeat this entire chunk until the stop command is given
         while not timerStopped:
-            print("On Cooldown Before Command:", self.timer.get_command(ctx.invoked_with).is_on_cooldown(ctx))
             try:
                 if role != "":
                     #the additional check for  '-' being only in games with a tier allows for consumables to be used only in proper games
@@ -2265,7 +2234,6 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
                         
-                        print("GUILDS 3", guildsList)
                         await ctx.invoke(self.timer.get_command('stop'), start=startTimes, role=role, game=game, datestart=datestart, dmChar=dmChar, guildsList=guildsList, ddmrw=ddmrw)
                         return
 
@@ -2317,8 +2285,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                 stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
             else:
                 pass
-            print("On Cooldown After Command:", self.timer.get_command(ctx.invoked_with).is_on_cooldown(ctx))
-                
+               
 
 def setup(bot):
     bot.add_cog(Timer(bot))
