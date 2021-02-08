@@ -212,7 +212,6 @@ class Tp(commands.Cog):
             # calculate the tier of the character to limit which items they can purchase
 
             cLevel = charRecords["Level"]
-            print(cLevel)
             tier = 5
             if(cLevel < 5):
                 tier= 1
@@ -223,7 +222,6 @@ class Tp(commands.Cog):
             elif(cLevel < 20):
                 tier= 4
             #make the call to the bfunc function to retrieve an item matching with mItem
-            print(tier)
             mRecord, tpEmbed, tpEmbedmsg = await callAPI(ctx, tpEmbed, tpEmbedmsg, 'mit', mItem,  tier=tier) 
             #if an item was found
             if mRecord:
@@ -255,15 +253,12 @@ class Tp(commands.Cog):
                       tpBank[x-1] = (float(charRecords[f'T{x} TP']))
                       tpBankString += f"{tpBank[x-1]} T{x} TP, " 
                 tpNeeded = float(mRecord['Predecessor']["Costs"][upgrade_stage])
-                print("tpNeeded", tpNeeded)
                 tpNeeded_copy = tpNeeded
                 used_tp = []
                 for tp in range (int(tierNum) - 1, 5):
                     if tpBank[tp] > 0 and tpNeeded > 0:
                         tp += 1
-                        print("TP", tp)
                         tp_reduction = min(charRecords[f"T{tp} TP"],  tpNeeded)
-                        print("tp_reduction", tp_reduction)
                         charRecords[f"T{tp} TP"] -= tp_reduction
                         tpNeeded -= tp_reduction
                         used_tp.append(f"T{tp} TP")
@@ -318,7 +313,6 @@ class Tp(commands.Cog):
                                 if 'Max Stats' not in charRecords:
                                     charRecords['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
 
-                                print(charRecords['Max Stats'])
                                 # statSplit = MAX STAT +X
                                 statSplit = mRecord["Predecessor"]['Stat Bonuses'][upgrade_stage].split(' +')
                                 maxSplit = statSplit[0].split(' ')
@@ -341,9 +335,6 @@ class Tp(commands.Cog):
                                     setData['HP'] = charRecords['HP']
                             elif 'Attuned' in charRecords  and 'Attunement' in mRecord and 'Stat Bonuses' in mRecord["Predecessor"]:
                                 attunements = charRecords['Attuned'].split(", ")
-                                print("attunements", attunements)
-                                print("item name", mRecord["Name"])
-                                print("search list", [a.split("[")[0].strip() for a in attunements])
                                 # Find if the item is currently attuned to inorder to update the stat bonus
                                 try:
                                     index = list([a.split("[")[0].strip() for a in attunements]).index(mRecord["Name"])
@@ -404,7 +395,6 @@ class Tp(commands.Cog):
             # calculate the tier of the character to limit which items they can purchase
 
             cLevel = charRecords["Level"]
-            print(cLevel)
             tier = 5
             if(cLevel < 5):
                 tier= 1
@@ -415,7 +405,6 @@ class Tp(commands.Cog):
             elif(cLevel < 20):
                 tier= 4
             #make the call to the bfunc function to retrieve an item matching with mItem
-            print(tier)
             mRecord, tpEmbed, tpEmbedmsg = await callAPI(ctx, tpEmbed, tpEmbedmsg, 'mit', mItem,  tier=tier) 
             #if an item was found
             if mRecord:

@@ -68,7 +68,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     
     userIDs.append(str(dm["ID"]))
     
-    print(userIDs)
     # the db entry of every character
     if characterDBentries == None:
         characterDBentries = playersCollection.find({"_id": {"$in": characterIDs}})
@@ -161,7 +160,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                 # otherwise add the new players
                 allRewardStrings[treasureString] += [player] 
         else:
-            print(groupString, "\n", allRewardStrings)
             # check if the full rewards have already been added, if yes create it and add the players
             if groupString in allRewardStrings:
                 allRewardStrings[groupString] += [player]
@@ -198,7 +196,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             dmRole = 'Ascended'
             
         duration = player["CP"]*3600
-        print(duration)
         if role != "":
             guild_valid =("Guild" in player and 
                             player["Guild"] in guilds and 
@@ -448,7 +445,6 @@ class Log(commands.Cog):
     
         # the db entry of every guild
         guildDBentries = guildCollection.find({"Name": {"$in": guildIDs}})
-        print("GUILD", guildDBentries)
         guildDBEntriesDic = {}
         for g in guildDBentries:
             guildDBEntriesDic[g["Name"]] = g
@@ -471,8 +467,6 @@ class Log(commands.Cog):
         for u in userDBentries:
             userDBEntriesDic[u["User ID"]] = u
 
-        #print(characterDBentries)
-        print(players)
         
         for character in characterDBentries:
             player = players[str(character["User ID"])]
@@ -570,7 +564,6 @@ class Log(commands.Cog):
                                 "Inventory" : character["Inventory"], 
                                 "Drive" : []}
                 for g in guilds.values():
-                    print("DRIVE", g)
                     if g["Drive"] and player["CP"]>= 3:
                         player_set["Drive"]=g["Name"]
                 
@@ -579,12 +572,9 @@ class Log(commands.Cog):
                                     "$set": player_set}}
                 if(player["Status"] == "Dead"):
                     del charRewards["fields"]["$inc"]["Games"]
-                    print("charRewards 1", charRewards)
                     deathDic = {"inc": increment.copy(), "set": charRewards["fields"]["$set"]}
                     charRewards["fields"]["$inc"] = {"Games": 1}
                     charRewards["fields"]["$set"] = {"Death": deathDic}
-                    print("death", deathDic)
-                    print("charRewards 2", charRewards)
                 playerUpdates.append(charRewards)
                 
         dmRewardsList = []
@@ -596,7 +586,6 @@ class Log(commands.Cog):
             
             duration = player["CP"] * 3600
             # the db entry of every character
-            print(dm)
             character = playersCollection.find_one({"_id": dm["Character ID"]})
             charLevel = int(dm['Level'])
             # calculate the tier of the DM character
@@ -760,7 +749,6 @@ class Log(commands.Cog):
             statsIncrement ={"Games": 1, "Playtime": totalDuration, 'Players': len(players.keys())}
             statsAddToSet = {}
             for name in [g["Name"] for g in guilds.values() if g["Status"]]:
-                print(guilds[name])
                 # Track how many guild quests there were
                 statsIncrement["Guilds."+name+".GQ"] = 1
                 statsIncrement["Guilds."+name+".GQM"] = 0
@@ -817,7 +805,6 @@ class Log(commands.Cog):
             sessionInfo["Status"]="Approved"
             
             if guildsData != list():
-                print(guildsData)
                 # do a bulk write for the guild data
                 db.guilds.bulk_write(guildsData)
             
@@ -1025,7 +1012,6 @@ class Log(commands.Cog):
                         players = sessionInfo["Players"]
                         players[sessionInfo["DM"]["ID"]] = sessionInfo["DM"]
                         guilds = sessionInfo["Guilds"]
-                        print("Drives", [g["Drive"] for g in guilds.values()])
                         if unique and ((len(ctx.message.channel_mentions) > 1) or any([g["Drive"] for g in guilds.values()])):
                             await ctx.channel.send("The Recruitment Drive Guild Boon can only be used by one guild per guild quest.")
                             return
@@ -1041,7 +1027,6 @@ class Log(commands.Cog):
                                             guilds[p["Guild"]]["Mention"] == m
                                             and  p["CP"]>= 3 and p['Guild Rank'] > 1]
                             if(len(gPlayers) >= min_members):
-                                print(guilds)
                                 if guildChannel.mention in guild_dic:
                                     try:
                                         db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Guilds."+guild_dic[m]["Name"]+"."+target: goal}})

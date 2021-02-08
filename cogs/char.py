@@ -1826,8 +1826,6 @@ class Character(commands.Cog):
         for s in specialRecords:
             if 'Bonus Level' in s:
                 for c in subclasses:
-                    print("c-----\n",c)
-                    print("s-----\n",s)
                     if s['Bonus Level'] <= c['Level'] and s['Name'] in f"{c['Name']} ({c['Subclass']})":
                         if 'MAX' in s['Stat Bonuses']:
                             statSplit = s['Stat Bonuses'].split('MAX ')[1].split(', ')
@@ -2262,7 +2260,6 @@ class Character(commands.Cog):
                         sPageStops.append(len(spellBookString))
                         sPages += 1
                 sPageStops.append(len(spellBookString))
-                print(sPageStops)
                 if sPages > 1:
                     for p in range(len(sPageStops)-1):
                         if(sPageStops[p+1] > sPageStops[p]):
@@ -2413,7 +2410,6 @@ class Character(commands.Cog):
 
             embedList = [discord.Embed()]
             pages = 1
-            print(charEmbed.fields)
             if len(charEmbed) > 2048:
                 charEmbedDict = charEmbed.to_dict()
                 for f in charEmbedDict['fields']:
@@ -3439,7 +3435,6 @@ class Character(commands.Cog):
                         attuneLength = 5
                     elif class_level >= 10:
                         attuneLength = 4
-            print(attuneLength, "Attune")
             if "Attuned" not in charRecords:
                 attuned = []
             else:
@@ -3823,8 +3818,7 @@ class Character(commands.Cog):
                                 statsEmbed.add_field(name=f'One-shots by DM - p. {p+1}', value=statsString[dmPageStops[p]:dmPageStops[p+1]], inline=False)
                     else:
                         statsEmbed.add_field(name="One-shots by DM", value=statsString, inline=False)
-                print(len(statsString))
-                
+
                 # Number of games by total and by tier
                 statsTotalString += f"**{identity_strings[0]} Stats**\nTotal One-shots for the {identity_strings[1]}: {superTotal}\n" 
                 if superTotal > 0:
@@ -3862,7 +3856,6 @@ class Character(commands.Cog):
             cPageStops.append(len(charString))
             if not charString:
                 charString = "No stats yet."
-            print(charString)
             if cPages > 1:
                 for p in range(len(cPageStops)-1):
                     statsEmbed.add_field(name=f"Character Class Stats (Lifetime) p. {p+1}", value=charString[cPageStops[p]:cPageStops[p+1]], inline=False)  
@@ -3984,13 +3977,10 @@ class Character(commands.Cog):
                             page = (len(bPageStops) -1) // subpages
                     if hReact.emoji == right:
                         page += 1
-                        print((len(bPageStops) -1 ) // subpages)
                         if page > (len(bPageStops) -1 ) // subpages:
                             page = 0
                     statsEmbed.clear_fields()
-                    print(bPageStops)
                     for p in range(subpages*page, subpages*page+min(len(bPageStops)-1-page*subpages, subpages)):
-                        print(p, bgString[bPageStops[p]:bPageStops[p+1]])
                         statsEmbed.add_field(name=f"Character Magic Items Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
             
                     statsEmbed.set_footer(text=f"Page {subpages*page+1} of {bPages}")
@@ -4091,7 +4081,6 @@ class Character(commands.Cog):
                             totalHP += s['HP'] * lvl
             elif s['Type'] == "Class":
                 for multi in charDict['Class'].split("/"):
-                    print("TYPE", s, multi)
                     multi = multi.strip()
                     multi_split = list(multi.split(" "))
                     class_level = charDict["Level"]

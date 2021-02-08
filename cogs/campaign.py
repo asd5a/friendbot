@@ -84,7 +84,6 @@ class Campaign(commands.Cog):
         channel = campaignChannel[0]
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)})
-        print(campaignRecords)
         if not campaignRecords:
             await channel.send(f"No campaign could be found for this channel.")
             return 
@@ -152,7 +151,6 @@ class Campaign(commands.Cog):
             return 
         campaignCollection = db.campaigns
         campaignRecords = campaignCollection.find_one({"Name": {"$regex": campaignName, '$options': 'i' }})
-        print(campaignRecords)
         if campaignRecords:
             await channel.send(f"Another campaign by this name has already been created.")
             return 
@@ -195,7 +193,6 @@ class Campaign(commands.Cog):
     #@commands.cooldown(1, 5, type=commands.BucketType.member)
     @campaign.command()
     async def add(self,ctx, user, campaignName):
-        print("ssssss", campaignName)
         channel = ctx.channel
         author = ctx.author
         campaignEmbed = discord.Embed()
@@ -322,7 +319,6 @@ class Campaign(commands.Cog):
         return
     @campaign.group(aliases=['t'])
     async def timer(self, ctx):	
-        print(datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p"))
         pass
 
     @timer.command()
@@ -464,7 +460,6 @@ class Campaign(commands.Cog):
         for x in product(timerAlias, timerCommands):
             timerCombined.append(f"{commandPrefix}campaign {x[0]} {x[1]}")
             timerCombined.append(f"{commandPrefix}c {x[0]} {x[1]}")
-        print(timerCombined)
         """
         This is the heart of the command, this section runs continuously until the start command is used to change the looping variable
         during this process the bot will wait for any message that contains one of the commands listed in timerCombined above 
@@ -484,7 +479,6 @@ class Campaign(commands.Cog):
             The signup command has different behaviors if the signup is from the DM, a player or campaign player
             
             """
-            print("React")
             if self.startsWithCheck(msg, "signup"):
                 # if the message author is the one who started the timer, call signup with the special DM moniker
                 # the character is extracted from the message in the signup command 
@@ -501,7 +495,6 @@ class Campaign(commands.Cog):
                 else:
                     await channel.send(f"***{msg.author.display_name}***, you must be on the player roster in order to signup.")
                 
-                print(signedPlayers)
 
             # similar issues arise as mentioned above about wrongful calls
             elif self.startsWithCheck(msg, "add"):
@@ -509,7 +502,6 @@ class Campaign(commands.Cog):
                     # this simply checks the message for the user that is being added, the Member object is returned
                     addUser = await self.addDuringPrep(ctx, msg=msg, prep=True)
                     #failure to add a user does not have an error message if no user is being added
-                    print(playerRoster)
                     if addUser is None:
                         pass
                     elif addUser not in playerRoster:
@@ -527,8 +519,7 @@ class Campaign(commands.Cog):
                 if await self.permissionCheck(msg, author):
                     # this simply checks the message for the user that is being added, the Member object is returned
                     removeUser = await self.removeDuringPrep(ctx, msg=msg, start=playerRoster, prep=True)
-                    print (removeUser)
-                    print(playerRoster)
+
                     if removeUser is None:
                         pass
                     #check if the user is not the DM
@@ -640,13 +631,7 @@ class Campaign(commands.Cog):
             stampEmbed.set_footer(text=f'#{ctx.channel}\nType `{commandPrefix}help campaign` for help with a running timer.')
             stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
 
-            print('USERLIST')
-            print(userList)
-            
-
             for u in userList["Players"].values():
-                print('USER')
-                print(u)
                 stampEmbed.add_field(name=f"**{u['Member'].display_name}**", value=u['Member'].mention, inline=False)
             
 
@@ -754,8 +739,6 @@ class Campaign(commands.Cog):
                     return start
             userInfo["Latest Join"] = startTime
             userInfo["State"] = "Partial"
-            print("UUUUUU", userInfo)
-            print(start)
             return start
     """
     This command is used to add players to the prep list or the running timer
@@ -786,7 +769,6 @@ class Campaign(commands.Cog):
             else:
                 # get the first ( and only ) mentioned user 
                 return addList[0]
-            print(start)
             return start
     
     async def addDuringTimer(self,ctx, *, msg, role="", start=None,resume=False, dmChar=None, campaignRecords = None):
@@ -843,7 +825,6 @@ class Campaign(commands.Cog):
             else:
                 user_dic["State"] = "Removed"
                 user_dic["Duration"] += endTime - user_dic["Latest Join"] 
-                print("DDDDDDDDDDDD", user_dic["Duration"])
                 if not resume:
                     await ctx.channel.send(content=f"***{user}***, you have been removed from the timer.")
 
@@ -919,7 +900,6 @@ class Campaign(commands.Cog):
             # reset the fields in the embed object
             embed.clear_fields()
 
-            print(start)
             # fore every entry in the timer dictionary we need to perform calculations
             for key, v in start["Players"].items():
                 if v["State"] == "Full":
@@ -1011,7 +991,6 @@ class Campaign(commands.Cog):
                                                  'Noodles': int((total_duration/3600)//3)}}}, upsert=True)
                 # update the player entries in bulk
                 usersData = list(map(lambda item: UpdateOne({'_id': item["DB Entry"]['_id']}, {'$set': {campaignRecord["Name"]+" inc" : item["inc"]}}, upsert=True), playerData))
-                print(usersData)
                 usersCollection.bulk_write(usersData)
             except BulkWriteError as bwe:
                 print(bwe.details)
@@ -1113,7 +1092,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         
         #repeat this entire chunk until the stop command is given
         while not timerStopped:
-            print("On Cooldown Before Command:", self.timer.get_command(ctx.invoked_with).is_on_cooldown(ctx))
             try:
                 msg = await self.bot.wait_for('message', timeout=60.0, check=lambda m: (any(x in m.content for x in timerCombined)) and m.channel == channel)
                 #transfer ownership of the timer
@@ -1121,7 +1099,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 # it invokes the stop command with the required information, explanations for the parameters can be found in the documentation
                 # the 'end' alias could be removed for minimal efficiancy increases
                 
-                print(msg.content)
                 if self.startsWithCheck(msg, "stop") or self.startsWithCheck(msg, "end"):
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
@@ -1162,8 +1139,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
             else:
                 pass
-            print("On Cooldown After Command:", self.timer.get_command(ctx.invoked_with).is_on_cooldown(ctx))
-          
+            
     @campaign.command()
     async def log(self, ctx, num : int, *, editString=""):
         # The real Bot
@@ -1198,7 +1174,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
 
         if not ("✅" in sessionLogEmbed.footer.text or "❌" in sessionLogEmbed.footer.text):
             summaryIndex = max(sessionLogEmbed.description.find('\nSummary: '),sessionLogEmbed.description.find('Put your summary here.'))
-            print(summaryIndex)
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex] + "\nSummary: " + editString+"\n"
         else:
             sessionLogEmbed.description += "\n" + editString+"\n"
@@ -1392,7 +1367,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             charData = []
 
             for log in sessionLogEmbed.fields:
-                print("   AAAAa   ", log)
                 for i in "\<>@#&!:":
                     log.value = log.value.replace(i, "")
                 
@@ -1409,7 +1383,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             if ctx.author.id == int(dmID):
                 await ctx.channel.send("You cannot deny your own log.")
                 return
-            print(charData)
             campaignCollection = db.campaigns
             # get the record of the campaign for the current channel
             campaignRecord = list(campaignCollection.find({"Channel ID": str(channel.id)}))[0]      

@@ -203,7 +203,6 @@ class Admin(commands.Cog, name="Admin"):
                         out += i["Grouped"]
                     else:
                         out += i["Name"]
-                    print(i)
                     out += f"\n"
             length = len(out)
             while(length>2000):
@@ -324,7 +323,6 @@ class Admin(commands.Cog, name="Admin"):
             count = db.players.delete_many(
                {"User ID": userID}
             )
-            print(count)
             await msg.edit(content=f"Successfully deleted {count.deleted_count} characters.")
     
         except Exception as e:
@@ -351,7 +349,6 @@ class Admin(commands.Cog, name="Admin"):
         
         try:
             targetTierInfoItem = db.mit.find_one( {"TP": tp, "Tier": tier})
-            print(targetTierInfoItem)
             updatedGP = rRecord["GP"]
             if(targetTierInfoItem):
                 updatedGP = targetTierInfoItem["GP"]
@@ -365,8 +362,6 @@ class Admin(commands.Cog, name="Admin"):
             traceback.print_exc()
             await traceBack(ctx,e)
             return
-        
-        print(returnData)
         
         refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
         
@@ -382,21 +377,16 @@ class Admin(commands.Cog, name="Admin"):
     def characterEntryItemRemovalUpdate(self, ctx, rRecord, category, refundTier, tp):
         characters = list( db.players.find({"Current Item": {"$regex": f".*?{rRecord['Name']}"}}))
         returnData = []
-        print(rRecord)
         for char in characters:
-            print(char["Name"])
             items = char[category].split(", ")
             removeItem = None
             refundTP = 0
             for item in items:
-                print(item)
                 nameSplit = item.split("(")
                 if(nameSplit[0].strip() == rRecord["Name"]):
                     removeItem = item
                     refundTP = float(nameSplit[1].split("/")[0])
                     
-            print("Remove: ", removeItem)
-            
             if(refundTier in char):
                 refundTP += char[refundTier]
             if not removeItem:
@@ -412,8 +402,6 @@ class Admin(commands.Cog, name="Admin"):
 
             if("Grouped" in rRecord):
                 groupedPair = rRecord["Grouped"]+" : "+rRecord["Name"]
-                print(list(char["Grouped"]))
-                print(groupedPair)
                 updatedGrouped = list(char["Grouped"])
                 updatedGrouped.remove(groupedPair)
                 entry["fields"]["$set"]["Grouped"] = updatedGrouped
@@ -684,7 +672,6 @@ class Admin(commands.Cog, name="Admin"):
                     charDict["Inventory"][i] = 1
             out = {"Magic Items":magicItemString, "Consumables":consumablesString, "Inventory":charDict["Inventory"]}
             charDict["Transfer Set"] = out
-            print(charDict)
         try:
             db.players.insert_one(charDict)
             await ctx.channel.send(content=f"Transfer Character has been created.")
@@ -919,7 +906,6 @@ class Admin(commands.Cog, name="Admin"):
             await traceBack(ctx,e)
             return
         
-        print(returnData)
         
         refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
         
