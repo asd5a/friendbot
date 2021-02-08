@@ -1272,25 +1272,21 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             campaignCollection = db.campaigns
             # get the record of the campaign for the current channel
             campaignRecord = list(campaignCollection.find({"Channel ID": str(channel.id)}))[0]
-            print(userRecordsList)
             data = []
             for charDict in userRecordsList:
                 if f'{campaignRecord["Name"]} inc' in charDict:
                     charRewards = charDict[f'{campaignRecord["Name"]} inc']
-                    print("SSSSSSSSSSSSSSSSs", charRewards)
                     data.append({'_id': charDict['_id'], "fields": {"$inc": charRewards, "$unset": {f'{campaignRecord["Name"]} inc': 1} }})
 
             playersData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), data))
             
 
-            print(playersData)
             try:
                 if len(data) > 0:
                     usersCollection.bulk_write(playersData)
                 campaignCollection.update_one({"_id": campaignRecord["_id"]}, {"$inc" : {"Sessions" : 1}})
                 db.stats.update_one({"Life": 1}, {"$inc" : {"Campaigns" : 1}})
                 desc = sessionLogEmbed.description
-                print(desc)
                 date_find = re.search("Date: (.*?) ", desc)
                 if date_find:
                     month_year_splits = date_find[1].split("-")
@@ -1300,7 +1296,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
             else:
                 print("Success")
-                sessionLogEmbed.set_footer(text=sessionLogEmbed.footer.text + "\n✅ Log approved! The DM has received their Noodles and time and the players have received their time.")
+                sessionLogEmbed.set_footer(text=f"Game ID: {num}\n✅ Log approved! The DM has received their Noodles and time and the players have received their time.")
                 await editMessage.edit(embed=sessionLogEmbed)
                 
                 await ctx.channel.send("The session has been approved.")
@@ -1427,7 +1423,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
             else:
                 print("Success")
-                sessionLogEmbed.set_footer(text=sessionLogEmbed.footer.text + "\n❌ Log complete! The DM may still edit the summary log if they wish.")
+                sessionLogEmbed.set_footer(text=f"Game ID: {num}\n❌ Log complete! The DM may still edit the summary log if they wish.")
                 await editMessage.edit(embed=sessionLogEmbed)
                 await ctx.channel.send("The session has been denied.")
         else:
