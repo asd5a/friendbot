@@ -3343,8 +3343,10 @@ class Character(commands.Cog):
                 if charFeatsGained != "":
                     if infoRecords['Feats'] == 'None':
                         data['Feats'] = charFeatsGained
+                        infoRecords['Feats'] = charFeatsGained
                     elif infoRecords['Feats'] != None:
                         data['Feats'] = charFeats + ", " + charFeatsGained
+                        infoRecords['Feats'] = charFeats + ", " + charFeatsGained
 
                 statsCollection = db.stats
                 statsRecord  = statsCollection.find_one({'Life': 1})
