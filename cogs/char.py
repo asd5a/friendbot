@@ -2016,7 +2016,7 @@ class Character(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 return
             bRecord = db.rit.find_one({"Name" : {"$regex" : f"{selected_item}", "$options": "i"}}) 
-            out_text = f"You received **{show_name} ({selected_item})**\n\n*{amount-1} rolls remaining*"
+            out_text = f"You reach into the gift box and find a(n) **{show_name} ({selected_item})**\n\n*{amount-1} rolls remaining*"
             if bRecord:
                 
                 if shopEmbedmsg:
