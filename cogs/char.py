@@ -1982,7 +1982,7 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def eventRoll(self, ctx, char):
+    async def bemine(self, ctx, char):
         channel = ctx.channel
         author = ctx.author
         shopEmbed = discord.Embed()
@@ -2487,7 +2487,6 @@ class Character(commands.Cog):
                         charEmbed.add_field(name=k, value=vString, inline=False)
             if "Collectibles" in charDict:
                 vString = ""
-                print(charDict["Collectibles"])
                 for k, v in charDict["Collectibles"].items():
                         vString += f'• {k} x{v}\n'
                 vPages = 0
