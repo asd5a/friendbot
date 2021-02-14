@@ -3,7 +3,7 @@ import random
 import asyncio
 from discord.utils import get
 from discord.ext import commands
-from bfunc import settingsRecord, settingsRecord
+from bfunc import settingsRecord, settingsRecord, checkForChar, callAPI
 
 def admin_or_owner():
     async def predicate(ctx):

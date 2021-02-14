@@ -555,7 +555,10 @@ class Log(commands.Cog):
                         del character["Inventory"][i]
                 
                 # set up all db values that need to be incremented
-                increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1}
+                increment = {"CP":  treasureArray[0], 
+                            "GP":  treasureArray[2],
+                            "Games": 1,
+                            "Event Token" : 1}
                 # for every TP tier value that was gained create the increment field
                 for k,v in treasureArray[1].items():
                     increment[k] = v
@@ -681,7 +684,7 @@ class Log(commands.Cog):
                     del character["Inventory"][i]
             
             # set up all db values that need to be incremented
-            increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1}
+            increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1, "Event Token": 1}
             # for every TP tier value that was gained create the increment field
             for k,v in treasureArray[1].items():
                 increment[k] = v

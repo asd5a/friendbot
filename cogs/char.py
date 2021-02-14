@@ -2,6 +2,7 @@ import discord
 import decimal
 import pytz
 import re
+import random
 import requests
 import asyncio
 import collections
@@ -1979,7 +1980,84 @@ class Character(commands.Cog):
 
         self.bot.get_command('respec').reset_cooldown(ctx)
     
-    
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @commands.command()
+    async def eventRoll(self, ctx, char):
+        channel = ctx.channel
+        author = ctx.author
+        shopEmbed = discord.Embed()
+        
+        # Check if character exists
+        charRecords, shopEmbedmsg = await checkForChar(ctx, char, shopEmbed)
+
+        if charRecords:
+            
+            outcomes = [("Ghost Pepper Chocolate", "Ghost Pepper Chocolate"), 
+                    ("Wand of Smiles", "Wand of Smiles"), 
+                    ("Promise Rings", "Band of Loyalty"), 
+                    ("Arcanaloth's Music Box", "Arcanaloth's Music Box"), 
+                    ("Talking Teddy Bear", "Talking Doll"), 
+                    ("Crown of Blind Love", "Crown of the Forest"), 
+                    ("Pipe of Remembrance", "Pipe of Remembrance"), 
+                    ("Chocolate of Nourishment", "Bead of Nourishment"), 
+                    ("Love Note Bird", "Paper Bird"), 
+                    ("Perfume of Bewitching", "Perfume of Bewitching"), 
+                    ("Philter of Love", "Philter of Love"), 
+                    ("Swan Boat", "Quaal's Feather Token \\(Swan Boat\\)")]
+            selection = random.randrange(len(outcomes)) 
+            
+            show_name, selected_item = outcomes[selection]
+            amount = 0
+            if "Event Token" in charRecords:
+                amount = charRecords["Event Token"]
+            if amount <= 0:
+                shopEmbed.description = f"You would have received {show_name} ({selected_item})"
+                shopEmbedmsg = await channel.send(embed=shopEmbed)
+                ctx.command.reset_cooldown(ctx)
+                return
+            bRecord = db.rit.find_one({"Name" : {"$regex" : f"{selected_item}", "$options": "i"}}) 
+            out_text = f"You received **{show_name} ({selected_item})**\n\n*{amount-1} rolls remaining*"
+            if bRecord:
+                
+                if shopEmbedmsg:
+                    await shopEmbedmsg.edit(embed=shopEmbed)
+                else:
+                    shopEmbedmsg = await channel.send(embed=shopEmbed)
+                if bRecord["Type"] != "Inventory":
+                    if charRecords[bRecord["Type"]] != "None":
+                        charRecords[bRecord["Type"]] += ', ' + selected_item
+                    else:
+                        charRecords[bRecord["Type"]] = selected_item
+                else:
+                    if charRecords['Inventory'] == "None":
+                        charRecords['Inventory'] = {f"{selected_item}" : 1}
+                    else:
+                        if bRecord['Name'] not in charRecords['Inventory']:
+                            charRecords['Inventory'][f"{selected_item}"] = 1 
+                        else:
+                            charRecords['Inventory'][f"{selected_item}"] += 1 
+                try:
+                    playersCollection = db.players
+                    playersCollection.update_one({'_id': charRecords['_id']}, {"$set": {bRecord["Type"]:charRecords[bRecord["Type"]]}, "$inc": {"Event Token": -1}})
+                except Exception as e:
+                    print ('MONGO ERROR: ' + str(e))
+                    shopEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try shop buy again.")
+                else:
+                    shopEmbed.description = out_text
+                    await shopEmbedmsg.edit(embed=shopEmbed)
+
+            else:
+                try:
+                    playersCollection = db.players
+                    playersCollection.update_one({'_id': charRecords['_id']}, {"$inc": {f"Collectibles.{selected_item}": 1, "Event Token": -1}})
+                except Exception as e:
+                    print ('MONGO ERROR: ' + str(e))
+                    shopEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try shop buy again.")
+                else:
+                    shopEmbed.description = out_text
+                    await channel.send(embed=shopEmbed)
+                
+        ctx.command.reset_cooldown(ctx)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @is_log_channel()
@@ -2407,7 +2485,32 @@ class Character(commands.Cog):
 
                     else:
                         charEmbed.add_field(name=k, value=vString, inline=False)
+            if "Collectibles" in charDict:
+                vString = ""
+                print(charDict["Collectibles"])
+                for k, v in charDict["Collectibles"].items():
+                        vString += f'• {k} x{v}\n'
+                vPages = 0
+                vPageStops = [0]
+                if len(vString) > 1024:
+                    vArray = vString.split("\n")
+                    vPages = 1
+                    vString = ""
 
+                    for v in vArray:
+                        vString += v + "\n"
+                        if len(vString) > (768 * vPages):
+                            vPageStops.append(len(vString))
+                            vPages += 1
+
+                    vPageStops.append(len(vString))
+                if vPages > 1  and vPageStops[-1] > vPageStops[-2]:
+                    for p in range(len(vPageStops)-1):
+                        charEmbed.add_field(name=f'{k} - p. {p+1}', value=vString[vPageStops[p]:vPageStops[p+1]], inline=False)
+
+                else:
+                    charEmbed.add_field(name="Collectibles", value=vString, inline=False)
+            
             embedList = [discord.Embed()]
             pages = 1
             if len(charEmbed) > 2048:
