@@ -1314,7 +1314,7 @@ class Timer(commands.Cog):
                                 return start
                             await addEmbedmsg.edit(embed=None, content=f"I've added ***{addUser.display_name}*** to the timer.")
                     
-                    if dmChar[0] is addUser:
+                    if dmChar[0] == addUser:
                         dmChar[5][1]["DM"]["Major"].clear()
                         dmChar[5][1]["DM"]["Minor"].clear()
                         userInfo.append(dmChar[5])
@@ -1505,20 +1505,19 @@ class Timer(commands.Cog):
             if len(removeList) > 1:
                 await ctx.channel.send(content=f"I cannot remove more than one player! Please try the command with one player and check your format and spelling.")
                 return None
+            elif len(removeList) == 0:
+                if not resume:
+                    await ctx.channel.send(content=f"I cannot find any mention of the user you are trying to remove. Please check your format and spelling.")
             elif not removeList[0] in start:
                 await ctx.channel.send(content=f"I cannot find the mentioned player in the roster.")
                 return None
-            elif removeList != list():
+            else:
                 removeUser = removeList[0]
                 if prep:
                     return removeUser
                 else:
                     await ctx.invoke(self.timer.get_command('removeme'), start=start, msg=msg, role=role, user=removeUser, resume=resume, death=death)
-            else:
-                if not resume:
-                    await ctx.channel.send(content=f"I cannot find any mention of the user you are trying to remove. Please check your format and spelling.")
-
-            
+                
     async def removeDuringTimer(self,ctx, msg, start=None,role="", resume=False, death=False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
             guild = ctx.guild
