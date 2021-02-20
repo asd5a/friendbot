@@ -327,8 +327,34 @@ class Admin(commands.Cog, name="Admin"):
     
         except Exception as e:
             traceback.print_exc()        
-    
+    @commands.command()
+    @admin_or_owner()
+    async def generateBoard(self, ctx):
+                                        
+        all_users = list(db.users.find( {"Noodles": {"$gt":0}}))
+        all_users.sort(key = lambda x: x["Noodles"], reverse=True)
+        all_messages = []
+        curr_message = ""
+        count = 0
+        new_stuff = False
+        for u in all_users:
+            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} \\✨\n"
+            if len(curr_message) >1900:
+                count += 1
+                next_message = await ctx.channel.send(str(count))
+                all_messages.append([next_message, curr_message])
+                curr_message = ""
+                new_stuff = False
+            else:
+                new_stuff = True
+        if new_stuff:
+            count += 1
+            next_message = await ctx.channel.send(str(count))
+            all_messages.append([next_message, curr_message])
             
+        for m in all_messages:
+            await m[0].edit(content=m[1])
+        
     @commands.command()
     @admin_or_owner()
     async def moveItem(self, ctx, item, tier: int, tp: int):
