@@ -338,7 +338,8 @@ class Admin(commands.Cog, name="Admin"):
         count = 0
         new_stuff = False
         for u in all_users:
-            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} \\✨\n"
+            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} {'👑'*(u['Noodles']//100)}{'🌟'*((u['Noodles']%100)//10)}{'⭐'*(u['Noodles']%10)}\n"
+             
             if len(curr_message) >1900:
                 count += 1
                 next_message = await ctx.channel.send(str(count))

@@ -4187,7 +4187,7 @@ class Character(commands.Cog):
                 for multi in charDict['Class'].split("/"):
                     multi = multi.strip()
                     multi_split = list(multi.split(" "))
-                    class_level = charDict["Level"]
+                    class_level = lvl
                     class_name = multi_split[0]
                     if len(multi_split) > 2:
                         try:
