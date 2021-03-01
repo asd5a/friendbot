@@ -396,8 +396,8 @@ class Timer(commands.Cog):
                     guildsListStr = ""
                     guildCategoryID = settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
 
-                    if (len(msg.channel_mentions) > 3):
-                        await channel.send(f"The number of guilds exceeds three. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1 #guild2, #guild3```") 
+                    if (len(msg.channel_mentions) > 2):
+                        await channel.send(f"The number of guilds exceeds two. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1 #guild2```") 
                     elif msg.channel_mentions != list():
                         guildsList = msg.channel_mentions
                         invalidChannel = False
@@ -407,14 +407,14 @@ class Timer(commands.Cog):
                         for g in guildsList:
                             if g.category_id != guildCategoryID:
                                 invalidChannel = True
-                                await channel.send(f"***{g}*** is not a guild channel. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2, #guild3```") 
+                                await channel.send(f"***{g}*** is not a guild channel. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2```") 
                                 guildsList = []
                                 break
                                 
                         if not invalidChannel:
-                            prepEmbed.description = f"Guilds: {', '.join([g.mention for g in guildsList])}\n**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Set guild**: {commandPrefix}timer guild #guild1, #guild2, #guild3"
+                            prepEmbed.description = f"Guilds: {', '.join([g.mention for g in guildsList])}\n**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Set guild**: {commandPrefix}timer guild #guild1, #guild2"
                     else:
-                        await channel.send(f"I couldn't find any mention of a guild. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2, #guild3```") 
+                        await channel.send(f"I couldn't find any mention of a guild. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2```") 
 
             await prepEmbedMsg.delete()
             prepEmbedMsg = await channel.send(embed=prepEmbed)
