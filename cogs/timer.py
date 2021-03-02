@@ -1232,9 +1232,7 @@ class Timer(commands.Cog):
             for sk, sv in startcopy.items():
                 playerCount += len(sv)
 
-            if playerCount + 1 > playerLimit:
-                await channel.send(f'You cannot add more than {playerLimit} players to the timer.')
-                return start
+            
                 
             # make sure that only the the relevant user can respond
             def addMeEmbedCheck(r, u):
@@ -1267,6 +1265,11 @@ class Timer(commands.Cog):
                 
                 if addUser == dmChar[0]:
                     role = "DM"
+                
+                elif playerCount + 1 > playerLimit:
+                    await channel.send(f'You cannot add more than {playerLimit} players to the timer.')
+                    return start
+                
                 # first we invoke the signup command
                 # no character is necessary if there are no rewards
                 # this will return a player entry
