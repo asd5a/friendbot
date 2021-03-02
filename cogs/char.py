@@ -4105,7 +4105,7 @@ class Character(commands.Cog):
         
     @commands.command()
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
+    @stats_special()
     async def fanatic(self,ctx, month = None, year = None):                
         statsCollection = db.stats
         currentDate = datetime.now().strftime("%b-%y")
