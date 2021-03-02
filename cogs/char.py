@@ -27,6 +27,13 @@ class Character(commands.Cog):
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"])
         return commands.check(predicate) 
+        
+    def stats_special():
+        async def predicate(ctx):
+            return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"] or
+                    ctx.channel.id == 564994370416410624)
+        return commands.check(predicate) 
     async def cog_command_error(self, ctx, error):
         msg = None
         
@@ -3776,7 +3783,7 @@ class Character(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
+    @stats_special()
     async def stats(self,ctx, month = None, year = None):                
         statsCollection = db.stats
         currentDate = datetime.now().strftime("%b-%y")
