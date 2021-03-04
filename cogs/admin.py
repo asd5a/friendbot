@@ -423,17 +423,34 @@ class Admin(commands.Cog, name="Admin"):
         if(not await self.doubleVerify(ctx, moveEmbedmsg)):
             return
         costs = [0, 1000, 4000, 7000]
-        try:
+        returnData =[]
+        player_list = list(db.players.find( {"Guild": guildRecords["Name"]}))
+        
+        for p in player_list:
+            tier = 1
+            if p["Level"] >= 17:
+                tier = 4
+            elif p["Level"] >= 11:
+                tier = 3
+            elif p["Level"] >= 5:
+                tier = 2
             # refund each rank and delete entries
-            for i in range(0, len(costs)):
-                print(i)
-                db.players.update( {"Guild": guildRecords["Name"], "Guild Rank": i+1},
-                                    {"$inc" : {"GP": costs[i]}, "$unset": {"Guild": 1, "Guild Rank": 1}})
+            returnData.append({"_id": p["_id"], "fields": {"$inc" : {"GP": costs[p["Guild Rank"]-1]+200*tier}, "$unset": {"Guild": 1, "Guild Rank": 1}}})
+        try:
             db.guilds.delete_one( {"_id": guildRecords["_id"]})
         except Exception as e:
             print("ERRORpr", e)
             traceback.print_exc()
             await traceBack(ctx,e)
+            return
+        refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
+        
+        try:
+            if(len(refundData)>0):
+                db.players.bulk_write(refundData)
+        except BulkWriteError as bwe:
+            print(bwe.details)
+            # if it fails, we need to cancel and use the error details
             return
         
         await moveEmbedmsg.edit(content="Completed")    
