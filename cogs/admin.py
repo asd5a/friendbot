@@ -422,7 +422,7 @@ class Admin(commands.Cog, name="Admin"):
         
         if(not await self.doubleVerify(ctx, moveEmbedmsg)):
             return
-        costs = [0, 1000, 3000, 3000]
+        costs = [0, 1000, 4000, 7000]
         try:
             # refund each rank and delete entries
             for i in range(0, len(costs)):
