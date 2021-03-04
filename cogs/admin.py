@@ -400,6 +400,44 @@ class Admin(commands.Cog, name="Admin"):
             # if it fails, we need to cancel and use the error details
             return
         await moveEmbedmsg.edit(content="Completed")
+        
+    @commands.command()
+    @admin_or_owner()
+    async def snapGuild(self, ctx, guild):
+        guildChannel = ctx.message.channel_mentions
+
+        if guildChannel == list():
+            await ctx.channel.send(f"You must provide a guild channel.")
+            return 
+        channel = guildChannel[0]
+        
+        guildRecords = db.guilds.find_one({"Channel ID": str(channel.id)})
+        
+        moveEmbed = discord.Embed()
+        moveEmbedmsg = None
+        
+        moveEmbedmsg = await  ctx.channel.send(content=f"Are you sure you want to move and refund {guildRecords['Name']}?\n No: ❌\n Yes: ✅")
+        
+        author = ctx.author
+        
+        if(not await self.doubleVerify(ctx, moveEmbedmsg)):
+            return
+        costs = [0, 1000, 3000, 3000]
+        try:
+            # refund each rank and delete entries
+            for i in range(0, len(costs)):
+                print(i)
+                db.players.update( {"Guild": guildRecords["Name"], "Guild Rank": i+1},
+                                    {"$inc" : {"GP": costs[i]}, "$unset": {"Guild": 1, "Guild Rank": 1}})
+            db.guilds.delete_one( {"_id": guildRecords["_id"]})
+        except Exception as e:
+            print("ERRORpr", e)
+            traceback.print_exc()
+            await traceBack(ctx,e)
+            return
+        
+        await moveEmbedmsg.edit(content="Completed")    
+    
     
     def characterEntryItemRemovalUpdate(self, ctx, rRecord, category, refundTier, tp):
         characters = list( db.players.find({"Current Item": {"$regex": f".*?{rRecord['Name']}"}}))

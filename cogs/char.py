@@ -3911,6 +3911,9 @@ class Character(commands.Cog):
                 
                 if "Life" in statRecords:
                     monthStart = datetime.now().replace(day = 14).replace(month = 1).replace(year = 2021)
+                elif month:
+                    
+                    monthStart = datetime.now().replace(year=2000+int(year), month= int(month), day=1) -  timedelta(days=1)
                 else:
                     monthStart = datetime.now().replace(day = 1)
                 
