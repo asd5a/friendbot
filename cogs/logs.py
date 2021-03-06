@@ -307,6 +307,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             status_text = "✅ Log approved! The DM and players have received their rewards and their characters can be used in further one-shots."
         elif sessionInfo["Status"] == "Denied":
             status_text = "❌ Log Denied! Characters have been cleared"
+        elif sessionInfo["Status"] == "Pending":
+            status_text = "❔ Log Pending! DM has been messaged due to session log issues."
         sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}")
         
         # add the field for the DM's player rewards
@@ -1062,6 +1064,11 @@ class Log(commands.Cog):
     @session.command()
     async def approveDDMRW(self, ctx,  num : int):
         await self.session_set(ctx, num, "DDMRW", True)
+    
+    @commands.has_any_role('Mod Friend', 'Admins')
+    @session.command()
+    async def pending(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Status", "Pending")
         
     async def session_set(self, ctx, num : int, target, goal):
         logData = db.logdata
