@@ -400,7 +400,7 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
             
-        if sessionInfo["Status"] != "Processing":
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied"::
             await ctx.channel.send("This session has already been processed")
             return
         if ctx.author.id == int(sessionInfo["DM"]["ID"]):
@@ -907,7 +907,7 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
         
-        if sessionInfo["Status"] != "Processing":
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied"::
             await ctx.channel.send("This session has already been processed")
             return
         if ctx.message.author.id == int(sessionInfo["DM"]["ID"]):
@@ -1010,7 +1010,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":):
                 if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or "Mod Friend" in [r.name for r in ctx.author.roles]):
                 # if the game received rewards
                     if len(sessionInfo["Guilds"].keys()) > 0: 
@@ -1074,7 +1074,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( True or sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":):
                 try:
                     db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {target: goal}})
                 except BulkWriteError as bwe:
@@ -1106,7 +1106,7 @@ class Log(commands.Cog):
         logData =db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
                 if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or "Mod Friend" in [r.name for r in ctx.author.roles] and sessionInfo["DDMRW"]):
                     try:
                         db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"DM.DM Double": goal}})
@@ -1138,7 +1138,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":):
                 if sessionInfo["Role"] != "": 
                     players = sessionInfo["Players"]
                     players[sessionInfo["DM"]["ID"]] = sessionInfo["DM"]
@@ -1222,7 +1222,7 @@ class Log(commands.Cog):
             return
         sessionLogEmbed = editMessage.embeds[0]
 
-        if sessionInfo["Status"] == "Processing" or sessionInfo["Status"] == "Pending":
+        if sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
             summaryIndex = sessionLogEmbed.description.find('General Summary**:')
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"General Summary**:\n" + editString+"\n"
         else:
