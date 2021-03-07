@@ -1010,7 +1010,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or "Mod Friend" in [r.name for r in ctx.author.roles]):
                 # if the game received rewards
                     if len(sessionInfo["Guilds"].keys()) > 0: 
@@ -1074,7 +1074,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 try:
                     db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {target: goal}})
                 except BulkWriteError as bwe:
@@ -1106,7 +1106,7 @@ class Log(commands.Cog):
         logData =db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or "Mod Friend" in [r.name for r in ctx.author.roles] and sessionInfo["DDMRW"]):
                     try:
                         db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"DM.DM Double": goal}})
@@ -1138,7 +1138,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 if sessionInfo["Role"] != "": 
                     players = sessionInfo["Players"]
                     players[sessionInfo["DM"]["ID"]] = sessionInfo["DM"]
