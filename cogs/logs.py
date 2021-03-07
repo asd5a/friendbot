@@ -400,7 +400,7 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
             
-        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied"::
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
             await ctx.channel.send("This session has already been processed")
             return
         if ctx.author.id == int(sessionInfo["DM"]["ID"]):
@@ -907,7 +907,7 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
         
-        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied"::
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
             await ctx.channel.send("This session has already been processed")
             return
         if ctx.message.author.id == int(sessionInfo["DM"]["ID"]):
