@@ -1222,7 +1222,7 @@ class Log(commands.Cog):
             return
         sessionLogEmbed = editMessage.embeds[0]
 
-        if sessionInfo["Status"] == "Processing":
+        if sessionInfo["Status"] == "Processing" or sessionInfo["Status"] == "Pending":
             summaryIndex = sessionLogEmbed.description.find('General Summary**:')
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"General Summary**:\n" + editString+"\n"
         else:
