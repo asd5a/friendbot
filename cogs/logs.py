@@ -307,6 +307,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             status_text = "✅ Log approved! The DM and players have received their rewards and their characters can be used in further one-shots."
         elif sessionInfo["Status"] == "Denied":
             status_text = "❌ Log Denied! Characters have been cleared"
+        elif sessionInfo["Status"] == "Pending":
+            status_text = "❔ Log Pending! DM has been messaged due to session log issues."
         sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}")
         
         # add the field for the DM's player rewards
@@ -398,7 +400,7 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
             
-        if sessionInfo["Status"] != "Processing":
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
             await ctx.channel.send("This session has already been processed")
             return
         if ctx.author.id == int(sessionInfo["DM"]["ID"]):
@@ -905,7 +907,7 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
         
-        if sessionInfo["Status"] != "Processing":
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
             await ctx.channel.send("This session has already been processed")
             return
         if ctx.message.author.id == int(sessionInfo["DM"]["ID"]):
@@ -1008,7 +1010,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or "Mod Friend" in [r.name for r in ctx.author.roles]):
                 # if the game received rewards
                     if len(sessionInfo["Guilds"].keys()) > 0: 
@@ -1062,12 +1064,17 @@ class Log(commands.Cog):
     @session.command()
     async def approveDDMRW(self, ctx,  num : int):
         await self.session_set(ctx, num, "DDMRW", True)
+    
+    @commands.has_any_role('Mod Friend', 'Admins')
+    @session.command()
+    async def pending(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Status", "Pending")
         
     async def session_set(self, ctx, num : int, target, goal):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( True or sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 try:
                     db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {target: goal}})
                 except BulkWriteError as bwe:
@@ -1099,7 +1106,7 @@ class Log(commands.Cog):
         logData =db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or "Mod Friend" in [r.name for r in ctx.author.roles] and sessionInfo["DDMRW"]):
                     try:
                         db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"DM.DM Double": goal}})
@@ -1131,7 +1138,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 if sessionInfo["Role"] != "": 
                     players = sessionInfo["Players"]
                     players[sessionInfo["DM"]["ID"]] = sessionInfo["DM"]
@@ -1215,7 +1222,7 @@ class Log(commands.Cog):
             return
         sessionLogEmbed = editMessage.embeds[0]
 
-        if sessionInfo["Status"] == "Processing":
+        if sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
             summaryIndex = sessionLogEmbed.description.find('General Summary**:')
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"General Summary**:\n" + editString+"\n"
         else:
