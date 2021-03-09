@@ -793,6 +793,36 @@ class Guild(commands.Cog):
                     await guildEmbedmsg.edit(embed=guildEmbed)
                 else:
                     guildEmbedmsg = await channel.send(embed=guildEmbed)
-                
+
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @guild.command()
+    async def rename(self,ctx, newName, channelName=""):
+        channel = ctx.channel
+        author = ctx.author    # to be used when making exception code
+        guildChannel = ctx.message.channel_mentions
+        guildChannel = guildChannel[0]
+
+        guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)}) #finds the guild that has the same Channel ID as the channel mention.
+        #collects the important variables
+        oldName = guildRecords['Name']
+        noodleUsed = guildRecords['Noodle Used']
+        
+        #update guild log
+        guildCollection = db.guilds
+        guildCollection.update_one({"Name": guildRecords['Name']}, {"$set": {'Name':newName}}) # updates the guild with the new name
+        
+        #update player logs
+        playersCollection = db.players
+        playersCollection.update_many({'Guild': oldName}, {"$set": {'Guild': newName}})
+        
+        #update noodle
+        entryStr = "%s: %s" % (oldName, noodleUsed)
+        newStr = "%s: %s" % (newName, noodleUsed)
+        db.users.update_one({"Guilds": entryStr}, {"$set": {"Guilds.$": newStr}})
+        
+        #update stats
+        db.stats.update_many({}, {"$rename": {'Guilds.'+oldName: 'Guilds.'+newName}})
+
 def setup(bot):
     bot.add_cog(Guild(bot))
