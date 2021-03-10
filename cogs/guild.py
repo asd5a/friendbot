@@ -800,29 +800,45 @@ class Guild(commands.Cog):
     async def rename(self,ctx, newName, channelName=""):
         channel = ctx.channel
         author = ctx.author    # to be used when making exception code
-        guildChannel = ctx.message.channel_mentions
+        roles = [r.name for r in ctx.author.roles]
+        # Check if the user using the command has the Admin role
+        if 'A d m i n' not in roles:
+            await channel.send(f"You do not have the Administrator role to use this command.")
+            return
+        
+        guildChannel = ctx.message.channel_mentions 
+        if guildChannel == list():  # checks to see if a channel was mentioned
+            await ctx.channel.send(f"You are missing the guild channel.")
+            return 
         guildChannel = guildChannel[0]
 
-        guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)}) #finds the guild that has the same Channel ID as the channel mention.
-        #collects the important variables
-        oldName = guildRecords['Name']
-        noodleUsed = guildRecords['Noodle Used']
-        
-        #update guild log
-        guildCollection = db.guilds
-        guildCollection.update_one({"Name": guildRecords['Name']}, {"$set": {'Name':newName}}) # updates the guild with the new name
-        
-        #update player logs
-        playersCollection = db.players
-        playersCollection.update_many({'Guild': oldName}, {"$set": {'Guild': newName}})
-        
-        #update noodle
-        entryStr = "%s: %s" % (oldName, noodleUsed)
-        newStr = "%s: %s" % (newName, noodleUsed)
-        db.users.update_one({"Guilds": entryStr}, {"$set": {"Guilds.$": newStr}})
-        
-        #update stats
-        db.stats.update_many({}, {"$rename": {'Guilds.'+oldName: 'Guilds.'+newName}})
+        try:
+            guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)}) #finds the guild that has the same Channel ID as the channel mention.
+            #collects the important variables
+            oldName = guildRecords['Name']
+            noodleUsed = guildRecords['Noodle Used']
+            
+            #update guild log
+            guildCollection = db.guilds
+            guildCollection.update_one({"Name": guildRecords['Name']}, {"$set": {'Name':newName}}) # updates the guild with the new name
+            
+            #update player logs
+            playersCollection = db.players
+            playersCollection.update_many({'Guild': oldName}, {"$set": {'Guild': newName}})
+            
+            #update noodle
+            entryStr = "%s: %s" % (oldName, noodleUsed)
+            newStr = "%s: %s" % (newName, noodleUsed)
+            db.users.update_one({"Guilds": entryStr}, {"$set": {"Guilds.$": newStr}})
+            
+            #update stats
+            db.stats.update_many({}, {"$rename": {'Guilds.'+oldName: 'Guilds.'+newName}})
+        except Exception as e:
+            print ('MONGO ERROR: ' + str(e))
+            await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please renaming the guild again.")
+        else:
+            print('Success')
+            await ctx.channel.send(f"You have successfully renamed {oldName} to {newName}!")
 
 def setup(bot):
     bot.add_cog(Guild(bot))
