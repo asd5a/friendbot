@@ -19,7 +19,8 @@ class Guild(commands.Cog):
         async def predicate(ctx):
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"] or
-                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"])
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"]or
+                    ctx.channel.category_id == 698784680488730666)
         return commands.check(predicate)
         
     @commands.group(aliases=['g'], case_insensitive=True)
