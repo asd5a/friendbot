@@ -3,7 +3,7 @@ import random
 import asyncio
 from discord.utils import get
 from discord.ext import commands
-from bfunc import settingsRecord, settingsRecord
+from bfunc import settingsRecord, settingsRecord, checkForChar, callAPI
 
 def admin_or_owner():
     async def predicate(ctx):
@@ -174,9 +174,7 @@ class Misc(commands.Cog):
         if not str(payload.channel_id) in settingsRecord["Role Channel List"].keys(): 
             return
         guild_id = settingsRecord["Role Channel List"][str(payload.channel_id)]
-        print(guild_id)
         guild = self.bot.get_guild(int(guild_id))
-        print(guild)
         if str(payload.message_id) in settingsRecord[guild_id]["Messages"].keys():
             if payload.emoji.name == "1️⃣":
                 name = 'Tier 1' 
@@ -194,7 +192,6 @@ class Misc(commands.Cog):
                 return
             
             name = settingsRecord[guild_id]["Messages"][str(payload.message_id)]+" "+name    
-            print(name)
             role = get(guild.roles, name = name)    
 
             if role is not None:
@@ -239,13 +236,10 @@ class Misc(commands.Cog):
                     channel_dm_dic[mention.mention][0] = "❌ "+mention.mention+": "+username
                     for tierMention in elem.role_mentions:
                         name_split = tierMention.name.split(" ",1)
-                        print(tierMention)
-                        print("Split",)
                         if tierMention.name.split(" ",1)[1] in tierMap:
                             channel_dm_dic[mention.mention][1].add(emoteMap[tierMention.name.split(" ",1)[0]]+" "+tierMap[tierMention.name.split(" ",1)[1]])
         #build the message using the pairs built above
         for c in game_channel_category.text_channels:
-            print(c, c.permissions_for(channel.guild.me).view_channel)
             if(c.permissions_for(channel.guild.me).view_channel):
                 tierAddendum = ""
                 if(len(channel_dm_dic[c.mention][1])> 0):

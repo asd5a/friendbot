@@ -203,7 +203,6 @@ class Admin(commands.Cog, name="Admin"):
                         out += i["Grouped"]
                     else:
                         out += i["Name"]
-                    print(i)
                     out += f"\n"
             length = len(out)
             while(length>2000):
@@ -324,13 +323,39 @@ class Admin(commands.Cog, name="Admin"):
             count = db.players.delete_many(
                {"User ID": userID}
             )
-            print(count)
             await msg.edit(content=f"Successfully deleted {count.deleted_count} characters.")
     
         except Exception as e:
             traceback.print_exc()        
-    
+    @commands.command()
+    @admin_or_owner()
+    async def generateBoard(self, ctx):
+                                        
+        all_users = list(db.users.find( {"Noodles": {"$gt":0}}))
+        all_users.sort(key = lambda x: x["Noodles"], reverse=True)
+        all_messages = []
+        curr_message = ""
+        count = 0
+        new_stuff = False
+        for u in all_users:
+            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} {'👑'*(u['Noodles']//100)}{'🌟'*((u['Noodles']%100)//10)}{'⭐'*(u['Noodles']%10)}\n"
+             
+            if len(curr_message) >1900:
+                count += 1
+                next_message = await ctx.channel.send(str(count))
+                all_messages.append([next_message, curr_message])
+                curr_message = ""
+                new_stuff = False
+            else:
+                new_stuff = True
+        if new_stuff:
+            count += 1
+            next_message = await ctx.channel.send(str(count))
+            all_messages.append([next_message, curr_message])
             
+        for m in all_messages:
+            await m[0].edit(content=m[1])
+        
     @commands.command()
     @admin_or_owner()
     async def moveItem(self, ctx, item, tier: int, tp: int):
@@ -351,7 +376,6 @@ class Admin(commands.Cog, name="Admin"):
         
         try:
             targetTierInfoItem = db.mit.find_one( {"TP": tp, "Tier": tier})
-            print(targetTierInfoItem)
             updatedGP = rRecord["GP"]
             if(targetTierInfoItem):
                 updatedGP = targetTierInfoItem["GP"]
@@ -366,8 +390,6 @@ class Admin(commands.Cog, name="Admin"):
             await traceBack(ctx,e)
             return
         
-        print(returnData)
-        
         refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
         
         try:
@@ -378,25 +400,75 @@ class Admin(commands.Cog, name="Admin"):
             # if it fails, we need to cancel and use the error details
             return
         await moveEmbedmsg.edit(content="Completed")
+        
+    @commands.command()
+    @admin_or_owner()
+    async def snapGuild(self, ctx, guild):
+        guildChannel = ctx.message.channel_mentions
+
+        if guildChannel == list():
+            await ctx.channel.send(f"You must provide a guild channel.")
+            return 
+        channel = guildChannel[0]
+        
+        guildRecords = db.guilds.find_one({"Channel ID": str(channel.id)})
+        
+        moveEmbed = discord.Embed()
+        moveEmbedmsg = None
+        
+        moveEmbedmsg = await  ctx.channel.send(content=f"Are you sure you want to move and refund {guildRecords['Name']}?\n No: ❌\n Yes: ✅")
+        
+        author = ctx.author
+        
+        if(not await self.doubleVerify(ctx, moveEmbedmsg)):
+            return
+        costs = [0, 1000, 4000, 7000]
+        returnData =[]
+        player_list = list(db.players.find( {"Guild": guildRecords["Name"]}))
+        
+        for p in player_list:
+            tier = 1
+            if p["Level"] >= 17:
+                tier = 4
+            elif p["Level"] >= 11:
+                tier = 3
+            elif p["Level"] >= 5:
+                tier = 2
+            # refund each rank and delete entries
+            returnData.append({"_id": p["_id"], "fields": {"$inc" : {"GP": costs[p["Guild Rank"]-1]+200*tier}, "$unset": {"Guild": 1, "Guild Rank": 1}}})
+        try:
+            db.guilds.delete_one( {"_id": guildRecords["_id"]})
+        except Exception as e:
+            print("ERRORpr", e)
+            traceback.print_exc()
+            await traceBack(ctx,e)
+            return
+        refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
+        
+        try:
+            if(len(refundData)>0):
+                db.players.bulk_write(refundData)
+        except BulkWriteError as bwe:
+            print(bwe.details)
+            # if it fails, we need to cancel and use the error details
+            return
+        
+        await moveEmbedmsg.edit(content="Completed")    
+    
     
     def characterEntryItemRemovalUpdate(self, ctx, rRecord, category, refundTier, tp):
         characters = list( db.players.find({"Current Item": {"$regex": f".*?{rRecord['Name']}"}}))
         returnData = []
-        print(rRecord)
         for char in characters:
-            print(char["Name"])
             items = char[category].split(", ")
             removeItem = None
             refundTP = 0
             for item in items:
-                print(item)
                 nameSplit = item.split("(")
                 if(nameSplit[0].strip() == rRecord["Name"]):
                     removeItem = item
                     refundTP = float(nameSplit[1].split("/")[0])
                     
-            print("Remove: ", removeItem)
-            
             if(refundTier in char):
                 refundTP += char[refundTier]
             if not removeItem:
@@ -412,8 +484,6 @@ class Admin(commands.Cog, name="Admin"):
 
             if("Grouped" in rRecord):
                 groupedPair = rRecord["Grouped"]+" : "+rRecord["Name"]
-                print(list(char["Grouped"]))
-                print(groupedPair)
                 updatedGrouped = list(char["Grouped"])
                 updatedGrouped.remove(groupedPair)
                 entry["fields"]["$set"]["Grouped"] = updatedGrouped
@@ -684,7 +754,6 @@ class Admin(commands.Cog, name="Admin"):
                     charDict["Inventory"][i] = 1
             out = {"Magic Items":magicItemString, "Consumables":consumablesString, "Inventory":charDict["Inventory"]}
             charDict["Transfer Set"] = out
-            print(charDict)
         try:
             db.players.insert_one(charDict)
             await ctx.channel.send(content=f"Transfer Character has been created.")
@@ -919,7 +988,6 @@ class Admin(commands.Cog, name="Admin"):
             await traceBack(ctx,e)
             return
         
-        print(returnData)
         
         refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
         

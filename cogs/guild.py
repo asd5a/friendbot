@@ -12,7 +12,8 @@ class Guild(commands.Cog):
        
     def is_log_channel():
         async def predicate(ctx):
-            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
+            return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or
+                    ctx.channel.category_id == 698784680488730666)
         return commands.check(predicate)
     def is_game_channel():
         async def predicate(ctx):
@@ -350,6 +351,9 @@ class Guild(commands.Cog):
                 guildMemberStrList = []
                 guildMemberStr = ""
                 for g in guildMembers:
+                    g_member = guild.get_member(int(g['User ID']))
+                    if not g_member:
+                        continue
                     next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
                     if len(guildMemberStr) +len(next_member_str)>1000:
                         guildMemberStrList.append(guildMemberStr)
@@ -790,6 +794,52 @@ class Guild(commands.Cog):
                     await guildEmbedmsg.edit(embed=guildEmbed)
                 else:
                     guildEmbedmsg = await channel.send(embed=guildEmbed)
-                
+
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @guild.command()
+    @commands.has_any_role('A d m i n')
+    async def rename(self,ctx, newName, channelName=""):
+        channel = ctx.channel
+        
+        guildChannel = ctx.message.channel_mentions 
+        if guildChannel == list():  # checks to see if a channel was mentioned
+            await ctx.channel.send(f"You are missing the guild channel.")
+            return 
+        guildChannel = guildChannel[0]
+
+        try:
+            guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)}) #finds the guild that has the same Channel ID as the channel mention.
+            if not guildRecords:
+                await ctx.channel.send(f"No guild was found.")
+                return 
+            
+            #collects the important variables
+            oldName = guildRecords['Name']
+            noodleUsed = guildRecords['Noodle Used']
+            
+            #update guild log
+            guildCollection = db.guilds
+            guildCollection.update_one({"Name": guildRecords['Name']}, {"$set": {'Name':newName}}) # updates the guild with the new name
+                  
+            #update player logs
+            playersCollection = db.players
+            playersCollection.update_many({'Guild': oldName}, {"$set": {'Guild': newName}})
+            
+            #update noodle
+            entryStr = "%s: %s" % (oldName, noodleUsed)
+            newStr = "%s: %s" % (newName, noodleUsed)
+            db.users.update_one({"Guilds": entryStr}, {"$set": {"Guilds.$": newStr}})
+            
+            #update stats
+            db.stats.update_many({}, {"$rename": {'Guilds.'+oldName: 'Guilds.'+newName}})
+        except Exception as e:
+            print ('MONGO ERROR: ' + str(e))
+            
+            await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please renaming the guild again.")
+        else:
+            print('Success')
+            await ctx.channel.send(f"You have successfully renamed {oldName} to {newName}!")
+
 def setup(bot):
     bot.add_cog(Guild(bot))

@@ -2,6 +2,7 @@ import discord
 import decimal
 import pytz
 import re
+import random
 import requests
 import asyncio
 import collections
@@ -25,6 +26,13 @@ class Character(commands.Cog):
         async def predicate(ctx):
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"])
+        return commands.check(predicate) 
+        
+    def stats_special():
+        async def predicate(ctx):
+            return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"] or
+                    ctx.channel.id == 564994370416410624)
         return commands.check(predicate) 
     async def cog_command_error(self, ctx, error):
         msg = None
@@ -1826,8 +1834,6 @@ class Character(commands.Cog):
         for s in specialRecords:
             if 'Bonus Level' in s:
                 for c in subclasses:
-                    print("c-----\n",c)
-                    print("s-----\n",s)
                     if s['Bonus Level'] <= c['Level'] and s['Name'] in f"{c['Name']} ({c['Subclass']})":
                         if 'MAX' in s['Stat Bonuses']:
                             statSplit = s['Stat Bonuses'].split('MAX ')[1].split(', ')
@@ -1981,7 +1987,84 @@ class Character(commands.Cog):
 
         self.bot.get_command('respec').reset_cooldown(ctx)
     
-    
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @commands.command()
+    async def bemine(self, ctx, char):
+        channel = ctx.channel
+        author = ctx.author
+        shopEmbed = discord.Embed()
+        
+        # Check if character exists
+        charRecords, shopEmbedmsg = await checkForChar(ctx, char, shopEmbed)
+
+        if charRecords:
+            
+            outcomes = [("Ghost Pepper Chocolate", "Ghost Pepper Chocolate"), 
+                    ("Wand of Smiles", "Wand of Smiles"), 
+                    ("Promise Rings", "Band of Loyalty"), 
+                    ("Arcanaloth's Music Box", "Arcanaloth's Music Box"), 
+                    ("Talking Teddy Bear", "Talking Doll"), 
+                    ("Crown of Blind Love", "Crown of the Forest"), 
+                    ("Pipe of Remembrance", "Pipe of Remembrance"), 
+                    ("Chocolate of Nourishment", "Bead of Nourishment"), 
+                    ("Love Note Bird", "Paper Bird"), 
+                    ("Perfume of Bewitching", "Perfume of Bewitching"), 
+                    ("Philter of Love", "Philter of Love"), 
+                    ("Swan Boat", "Quaal's Feather Token \\(Swan Boat\\)")]
+            selection = random.randrange(len(outcomes)) 
+            
+            show_name, selected_item = outcomes[selection]
+            amount = 0
+            if "Event Token" in charRecords:
+                amount = charRecords["Event Token"]
+            if amount <= 0:
+                shopEmbed.description = f"You would have received {show_name} ({selected_item})"
+                shopEmbedmsg = await channel.send(embed=shopEmbed)
+                ctx.command.reset_cooldown(ctx)
+                return
+            bRecord = db.rit.find_one({"Name" : {"$regex" : f"{selected_item}", "$options": "i"}}) 
+            out_text = f"You reach into the gift box and find a(n) **{show_name} ({selected_item})**\n\n*{amount-1} rolls remaining*"
+            if bRecord:
+                
+                if shopEmbedmsg:
+                    await shopEmbedmsg.edit(embed=shopEmbed)
+                else:
+                    shopEmbedmsg = await channel.send(embed=shopEmbed)
+                if bRecord["Type"] != "Inventory":
+                    if charRecords[bRecord["Type"]] != "None":
+                        charRecords[bRecord["Type"]] += ', ' + selected_item
+                    else:
+                        charRecords[bRecord["Type"]] = selected_item
+                else:
+                    if charRecords['Inventory'] == "None":
+                        charRecords['Inventory'] = {f"{selected_item}" : 1}
+                    else:
+                        if bRecord['Name'] not in charRecords['Inventory']:
+                            charRecords['Inventory'][f"{selected_item}"] = 1 
+                        else:
+                            charRecords['Inventory'][f"{selected_item}"] += 1 
+                try:
+                    playersCollection = db.players
+                    playersCollection.update_one({'_id': charRecords['_id']}, {"$set": {bRecord["Type"]:charRecords[bRecord["Type"]]}, "$inc": {"Event Token": -1}})
+                except Exception as e:
+                    print ('MONGO ERROR: ' + str(e))
+                    shopEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try shop buy again.")
+                else:
+                    shopEmbed.description = out_text
+                    await shopEmbedmsg.edit(embed=shopEmbed)
+
+            else:
+                try:
+                    playersCollection = db.players
+                    playersCollection.update_one({'_id': charRecords['_id']}, {"$inc": {f"Collectibles.{selected_item}": 1, "Event Token": -1}})
+                except Exception as e:
+                    print ('MONGO ERROR: ' + str(e))
+                    shopEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try shop buy again.")
+                else:
+                    shopEmbed.description = out_text
+                    await channel.send(embed=shopEmbed)
+                
+        ctx.command.reset_cooldown(ctx)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @is_log_channel()
@@ -2262,7 +2345,6 @@ class Character(commands.Cog):
                         sPageStops.append(len(spellBookString))
                         sPages += 1
                 sPageStops.append(len(spellBookString))
-                print(sPageStops)
                 if sPages > 1:
                     for p in range(len(sPageStops)-1):
                         if(sPageStops[p+1] > sPageStops[p]):
@@ -2410,10 +2492,33 @@ class Character(commands.Cog):
 
                     else:
                         charEmbed.add_field(name=k, value=vString, inline=False)
+            if "Collectibles" in charDict:
+                vString = ""
+                for k, v in charDict["Collectibles"].items():
+                        vString += f'• {k} x{v}\n'
+                vPages = 0
+                vPageStops = [0]
+                if len(vString) > 1024:
+                    vArray = vString.split("\n")
+                    vPages = 1
+                    vString = ""
 
+                    for v in vArray:
+                        vString += v + "\n"
+                        if len(vString) > (768 * vPages):
+                            vPageStops.append(len(vString))
+                            vPages += 1
+
+                    vPageStops.append(len(vString))
+                if vPages > 1  and vPageStops[-1] > vPageStops[-2]:
+                    for p in range(len(vPageStops)-1):
+                        charEmbed.add_field(name=f'{k} - p. {p+1}', value=vString[vPageStops[p]:vPageStops[p+1]], inline=False)
+
+                else:
+                    charEmbed.add_field(name="Collectibles", value=vString, inline=False)
+            
             embedList = [discord.Embed()]
             pages = 1
-            print(charEmbed.fields)
             if len(charEmbed) > 2048:
                 charEmbedDict = charEmbed.to_dict()
                 for f in charEmbedDict['fields']:
@@ -3245,8 +3350,10 @@ class Character(commands.Cog):
                 if charFeatsGained != "":
                     if infoRecords['Feats'] == 'None':
                         data['Feats'] = charFeatsGained
+                        infoRecords['Feats'] = charFeatsGained
                     elif infoRecords['Feats'] != None:
                         data['Feats'] = charFeats + ", " + charFeatsGained
+                        infoRecords['Feats'] = charFeats + ", " + charFeatsGained
 
                 statsCollection = db.stats
                 statsRecord  = statsCollection.find_one({'Life': 1})
@@ -3439,7 +3546,6 @@ class Character(commands.Cog):
                         attuneLength = 5
                     elif class_level >= 10:
                         attuneLength = 4
-            print(attuneLength, "Attune")
             if "Attuned" not in charRecords:
                 attuned = []
             else:
@@ -3677,7 +3783,7 @@ class Character(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
+    @stats_special()
     async def stats(self,ctx, month = None, year = None):                
         statsCollection = db.stats
         currentDate = datetime.now().strftime("%b-%y")
@@ -3805,6 +3911,9 @@ class Character(commands.Cog):
                 
                 if "Life" in statRecords:
                     monthStart = datetime.now().replace(day = 14).replace(month = 1).replace(year = 2021)
+                elif month:
+                    
+                    monthStart = datetime.now().replace(year=2000+int(year), month= int(month), day=1) -  timedelta(days=1)
                 else:
                     monthStart = datetime.now().replace(day = 1)
                 
@@ -3823,8 +3932,7 @@ class Character(commands.Cog):
                                 statsEmbed.add_field(name=f'One-shots by DM - p. {p+1}', value=statsString[dmPageStops[p]:dmPageStops[p+1]], inline=False)
                     else:
                         statsEmbed.add_field(name="One-shots by DM", value=statsString, inline=False)
-                print(len(statsString))
-                
+
                 # Number of games by total and by tier
                 statsTotalString += f"**{identity_strings[0]} Stats**\nTotal One-shots for the {identity_strings[1]}: {superTotal}\n" 
                 if superTotal > 0:
@@ -3862,7 +3970,6 @@ class Character(commands.Cog):
             cPageStops.append(len(charString))
             if not charString:
                 charString = "No stats yet."
-            print(charString)
             if cPages > 1:
                 for p in range(len(cPageStops)-1):
                     statsEmbed.add_field(name=f"Character Class Stats (Lifetime) p. {p+1}", value=charString[cPageStops[p]:cPageStops[p+1]], inline=False)  
@@ -3942,12 +4049,14 @@ class Character(commands.Cog):
             srBg = collections.OrderedDict(sorted(statRecordsLife['Magic Items'].items()))
 
             for k, v in srBg.items():
+                lastEntry = False
                 bgString += f"{k}: {v}\n"
                 if len(bgString) > (768 * bPages):
                     bPageStops.append(len(bgString))
                     bPages += 1
-
-            bPageStops.append(len(bgString))
+                    lastEntry = True
+            if(not lastEntry):
+                bPageStops.append(len(bgString))
 
             if not bgString:
                 bgString = "No stats yet."
@@ -3999,7 +4108,7 @@ class Character(commands.Cog):
         
     @commands.command()
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
+    @stats_special()
     async def fanatic(self,ctx, month = None, year = None):                
         statsCollection = db.stats
         currentDate = datetime.now().strftime("%b-%y")
@@ -4086,10 +4195,9 @@ class Character(commands.Cog):
                             totalHP += s['HP'] * lvl
             elif s['Type'] == "Class":
                 for multi in charDict['Class'].split("/"):
-                    print("TYPE", s, multi)
                     multi = multi.strip()
                     multi_split = list(multi.split(" "))
-                    class_level = charDict["Level"]
+                    class_level = lvl
                     class_name = multi_split[0]
                     if len(multi_split) > 2:
                         try:
