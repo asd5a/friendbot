@@ -1210,8 +1210,7 @@ class Log(commands.Cog):
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
             if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or 
-                "Mod Friend" in [r.name for r in ctx.author.roles] and 
-                sessionInfo["DDMRW"]):
+                "Mod Friend" in [r.name for r in ctx.author.roles]):
                 pass
                  
             else:
