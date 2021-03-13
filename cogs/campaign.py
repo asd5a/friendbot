@@ -1289,7 +1289,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     if 'Eternal Noodle' not in dmRoleNames:
                         noodleRole = get(guild.roles, name = 'Eternal Noodle')
                         await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
-                        if 'Ascended Noodle' in dmRoleNames:
+                        if 'Immortal Noodle' in dmRoleNames:
                             await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
                         noodleString += "\n**Eternal Noodle** role received! :tada:"
                 if noodles >= 150:
