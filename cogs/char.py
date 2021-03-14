@@ -2698,9 +2698,217 @@ class Character(commands.Cog):
                 userEmbedList[page].set_footer(text=f"Page {page+1} of {pages}")
                 await charEmbedmsg.edit(embed=userEmbedList[page]) 
                 await charEmbedmsg.clear_reactions()
+   
+            
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel_or_game()
+    @commands.command()
+    async def apply(self,ctx, char, cons="", mits=""):
+        channel = ctx.channel
+        author = ctx.author
+        guild = ctx.guild
+        roleColors = {r.name:r.colour for r in guild.roles}
+        charEmbed = discord.Embed()
+        charEmbedmsg = None
+
+        statusEmoji = ""
+        charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+        if charDict:
+            footer = f"Attuned magic items are bolded."
+            
+            char_race = charDict['Race']
+            if "Reflavor" in charDict:
+                char_race = f"{charDict['Reflavor']} ({char_race})"
+            nick_string = ""
+            if "Nickname" in charDict and charDict['Nickname'] != "":
+                nick_string = f"Goes By: **{charDict['Nickname']}**\n"
+            description = f"{nick_string}{char_race}\n{charDict['Class']}\n"
+            
+            charLevel = charDict['Level']
+            if charLevel < 5:
+                role = 1
+                charEmbed.colour = (roleColors['Junior Friend'])
+            elif charLevel < 11:
+                role = 2
+                charEmbed.colour = (roleColors['Journeyfriend'])
+            elif charLevel < 17:
+                role = 3
+                charEmbed.colour = (roleColors['Elite Friend'])
+            elif charLevel < 20:
+                role = 4
+                charEmbed.colour = (roleColors['True Friend'])
+            else:
+                role = 5
+                charEmbed.colour = (roleColors['Ascended Friend'])
+
+            cpSplit = charDict['CP']
+            
+            if 'Guild' in charDict:
+                description += f"{charDict['Guild']}\nGuild Rank: {charDict['Guild Rank']}"
+            else:
+                description += "No Guild"
+            charDictAuthor = guild.get_member(int(charDict['User ID']))
+            charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.avatar_url)
+            charEmbed.description = description
+            charEmbed.clear_fields()    
+            charEmbed.title = f"{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
+            
+            
+            notValidConsumables = ""
+            consumesCount = collections.Counter(charDict['Consumables'].split(', '))
+            if cons:
+                consumablesList = list(map(lambda x: x.strip(), cons.split(',')))
+                brought_consumables = {}
+                
+                consumableLength = 2 + (charDict["Level"]-1)//4
+                if("Ioun Stone (Mastery)" in charDict['Magic Items']):
+                    consumableLength += 1
+                # block the command if more consumables than allowed (limit or available) are being registed
+                if len(consumablesList) > consumableLength:
+                    await channel.send(content=f'You are trying to bring in too many consumables (**{len(consumablesList)}/{consumableLength}**)! The limit for your character is **{consumableLength}**.')
+                
+                #loop over all consumable pairs and check if the listed consumables are in the inventory
+        
+                # consumablesList is the consumable list the player intends to bring
+                # consumesCount are the consumables that the character has available.
+                for i in consumablesList:
+                    itemFound = False
+                    for jk, jv in consumesCount.items():
+                        if i.strip() != "" and i.lower().replace(" ", "").strip() in jk.lower().replace(" ", ""):
+                            if jv > 0 :
+                                consumesCount[jk] -= 1
+                                if jk in brought_consumables:
+                                    brought_consumables[jk] += 1
+                                else:
+                                    brought_consumables[jk] = 1
+                                
+                                itemFound = True
+                                break
+
+                    if not itemFound:
+                        notValidConsumables += f"{i.strip()}, "
+                        
+
+                # if there were any invalid consumables, inform the user on which ones cause the issue
+                if notValidConsumables:
+                    notValidConsumables=f"The following consumables were not found in your character's inventory: {notValidConsumables}"
+                    await channel.send(notValidConsumables[0:-2])
+                    return
+                    
+                consumesCount = brought_consumables
+            # Show Consumables in inventory.
+            cPages = 1
+            cPageStops = [0]
+
+            consumesString = ""
+            for k, v in consumesCount.items():
+                if v == 1:
+                    consumesString += f"• {k}\n"
+                else:
+                    consumesString += f"• {k} x{v}\n"
+
+                if len(consumesString) > (768 * cPages):
+                    cPageStops.append(len(consumesString))
+                    cPages += 1
+            
+            cPageStops.append(len(consumesString))
+            if not consumesString:
+                consumesString = "None"
+            if cPages > 1:
+                for p in range(len(cPageStops)-1):
+                    if(cPageStops[p+1] > cPageStops[p]):
+                        charEmbed.add_field(name=f'Consumables - p. {p+1}', value=consumesString[cPageStops[p]:cPageStops[p+1]], inline=True)
+            else:
+                charEmbed.add_field(name='Consumables', value=consumesString, inline=True)
+
+            # Show Magic items in inventory.
+            mPages = 1
+            mPageStops = [0]
+
 
             
+            attune_list = []
+            if 'Attuned' in charDict:
+                for attune_item in charDict['Attuned'].split(", "):
+                    attune_list.append(attune_item.split(" [", 1)[0])
             
+            
+            miString = ""
+            miArray = collections.Counter(charDict['Magic Items'].split(', '))
+            notValidMagicItems = ""
+            
+            if mits:
+                magic_item_list = list(map(lambda x: x.strip(), mits.split(',')))
+                brought_mits = {}
+                #loop over all magic item pairs and check if the listed consumables are in the inventory
+        
+                # magic_item_list is the magic item list the player intends to bring
+                # miArray are the magic items that the character has available.
+                for i in magic_item_list:
+                    itemFound = False
+                    for jk, jv in miArray.items():
+                        if i.strip() != "" and i.lower().replace(" ", "").strip() in jk.lower().replace(" ", ""):
+                            if jv > 0 :
+                                miArray[jk] -= 1
+                                if jk in brought_mits:
+                                    brought_mits[jk] += 1
+                                else:
+                                    brought_mits[jk] = 1
+                                
+                                itemFound = True
+                                break
+
+                    if not itemFound:
+                        notValidMagicItems += f"{i.strip()}, "
+                        
+
+                # if there were any invalid consumables, inform the user on which ones cause the issue
+                if notValidMagicItems:
+                    notValidMagicItems=f"The following magic items were not found in your character's inventory: {notValidMagicItems}"
+                    await channel.send(notValidMagicItems[0:-2])
+                    return
+                rit_db_entries = []
+                miArray = brought_mits
+            else:
+                rit_db_entries = [x["Name"] for x in list(db.rit.find({"Name": {"$in" : list(miArray.keys())}}))]
+            
+            for m,v in miArray.items():
+                # mi was a non-con
+                if m in rit_db_entries:
+                    continue
+                bolding = ""
+                if m in attune_list:
+                    bolding = "**"
+                if "Predecessor" in charDict and m in charDict["Predecessor"]:
+                    upgrade_names = charDict['Predecessor'][m]["Names"]
+                    stage = charDict['Predecessor'][m]["Stage"]
+                    m = m + f" ({upgrade_names[stage]})"
+                
+                miString += f"• {bolding}{m}{bolding}"
+                if v == 1:
+                    miString+="\n"
+                else:
+                    miString += f" x{v}\n"
+
+                if len(miString) > (768 * mPages):
+                    mPageStops.append(len(miString))
+                    mPages += 1
+
+            mPageStops.append(len(miString))
+            if mPages > 1:
+                for p in range(len(mPageStops)-1):
+                    if(mPageStops[p+1] > mPageStops[p]):
+                        charEmbed.add_field(name=f'Magic Items - p. {p+1}', value=miString[mPageStops[p]:mPageStops[p+1]], inline=True)
+            else:
+                charEmbed.add_field(name='Magic Items', value=miString, inline=True)
+            
+            charEmbed.set_footer(text=footer)
+                
+            if not charEmbedmsg:
+                charEmbedmsg = await ctx.channel.send(embed=charEmbed)
+            else:
+                await charEmbedmsg.edit(embed=charEmbed)
+
            
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel_or_game()

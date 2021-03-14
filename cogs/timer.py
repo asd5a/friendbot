@@ -620,11 +620,7 @@ class Timer(commands.Cog):
                 
                 #loop over all consumable pairs and check if the listed consumables are in the inventory
 
-                #this code is completely non-functional
-                # the else will execute if the first element of charConsumables is not the listed item
-                # this means that only that first entry can be brought as it never get to check past that
-                # this can be fixed by doing using a variable that checks if has been found and maintaining it and then doing a check after the inner loop finishes
-
+               
                 # consumablesList is the consumable list the player intends to bring
                 # charConsumables are the consumables that the character has available.
                 # gameConsumables are the final list of consumables characters are bringing

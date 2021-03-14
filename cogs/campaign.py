@@ -1182,10 +1182,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             await editMessage.edit(embed=sessionLogEmbed)
         except Exception as e:
             delMessage = await ctx.channel.send(content=f"Your session log caused an error with Discord, most likely from length.")
-        try:
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
-        except Exception as e:
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
+        else:
+            try:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
+            except Exception as e:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
         await asyncio.sleep(20) 
         await delMessage.delete()
         await ctx.message.delete() 
