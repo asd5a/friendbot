@@ -159,19 +159,19 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.title = 'General Commands'
 
+    helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f'{commandPrefix}user', inline=False)
 
+    helpEmbedGen.add_field(name=f'▫️ Viewing the List of Allowed Races', value=f'{commandPrefix}printRaces', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f"{commandPrefix}user", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f'{commandPrefix}help', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing the List of Allowed Races', value=f"{commandPrefix}printRaces", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Applying to a One-shot', value=f'{commandPrefix}apply "character name" "consumable1, consumable2, [...]" "magic item1, magic item2, [...]"', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f"{commandPrefix}help", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f'{commandPrefix}reward XhYm tier', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f"{commandPrefix}reward XhYm tier", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f'{commandPrefix}stats', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f"{commandPrefix}stats", inline=False)
-
-    helpEmbedGen.add_field(name=f'▫️ Viewing Fanatic Competition Stats', value=f"{commandPrefix}fanatic", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing Fanatic Competition Stats', value=f'{commandPrefix}fanatic', inline=False)
 
 
 
