@@ -1412,7 +1412,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             return
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
-        
+        if not campaignRecords:
+            return
         if str(author.id) != campaignRecords['Campaign Master ID']:
             await channel.send(f"You are not the campaign owner!")
             return 
@@ -1443,6 +1444,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             return
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
+        if not campaignRecords:
+            return
         if str(author.id) != campaignRecords['Campaign Master ID']:
             await channel.send(f"You are not the campaign owner!")
             return 
@@ -1471,7 +1474,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             return
 
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
-        
+        if not campaignRecords:
+            return
         if str(author.id) != campaignRecords['Campaign Master ID']:
             await channel.send(f"You are not the campaign owner!")
             return
