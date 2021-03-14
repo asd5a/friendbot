@@ -16,12 +16,14 @@ from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory,
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
+
+def campaign_channel_check(channel):
+    return "campaign" in str(channel.category.name).lower()
+
 class Campaign(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
        
-    async def campaign_channel_check(self, channel):
-        return not "campaign" in str(channel.category.name).lower():
 
     @commands.group(aliases=['c'], case_insensitive=True)
     async def campaign(self, ctx):	
@@ -1156,7 +1158,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         
 
 
-        if not await campaign_channel_check(channel):
+        if not campaign_channel_check(channel):
             #inform the user of the correct location to use the command and how to use it
             await channel.send('Try this command in a campaign channel! ')
             return
@@ -1199,7 +1201,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         if not (ctx.message.channel_mentions == list()):
             channel = ctx.message.channel_mentions[0] 
         
-        if not await campaign_channel_check(channel):
+        if not campaign_channel_check(channel):
             #inform the user of the correct location to use the command and how to use it
             await ctx.channel.send('Channel is not a campaign channel! ')
             return
@@ -1338,7 +1340,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             channel = ctx.message.channel_mentions[0] 
         
 
-        if not await campaign_channel_check(channel):
+        if not campaign_channel_check(channel):
             #inform the user of the correct location to use the command and how to use it
             await ctx.channel.send('Channel is not a campaign channel! ')
             return
@@ -1404,7 +1406,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         author = ctx.author
         
         
-        if not await campaign_channel_check(channel):
+        if not campaign_channel_check(channel):
             #inform the user of the correct location to use the command and how to use it
             await channel.send('Try this command in a campaign channel! ')
             return
@@ -1435,7 +1437,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         channel = ctx.channel
         author = ctx.author
         
-        if not await campaign_channel_check(channel):
+        if not campaign_channel_check(channel):
             #inform the user of the correct location to use the command and how to use it
             await channel.send('Try this command in a campaign channel! ')
             return
@@ -1463,7 +1465,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         author = ctx.author
         
         
-        if not await campaign_channel_check(channel):
+        if not campaign_channel_check(channel):
             #inform the user of the correct location to use the command and how to use it
             await channel.send('Try this command in a campaign channel! ')
             return
