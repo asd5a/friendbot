@@ -14,6 +14,10 @@ class Guild(commands.Cog):
         async def predicate(ctx):
             return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
         return commands.check(predicate)
+    def is_guild_channel():
+        async def predicate(ctx):
+            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
+        return commands.check(predicate)
     def is_game_channel():
         async def predicate(ctx):
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
@@ -842,67 +846,51 @@ class Guild(commands.Cog):
             
     
     @guild.command()
+    @is_guild_channel()
     @commands.has_any_role('Guildmaster')
     async def pin(self,ctx):
         channel = ctx.channel
         
-        try:
-            async with channel.typing():
-                async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
-                    await message.pin() #pins the previous message
+        async with channel.typing():
+            async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
+                await message.pin() #pins the previous message
 
-                    async for message in channel.history(): #searches for and deletes any non-default messages in the channel to delete, including the message saying that something was pinned.
-                        if message.type != ctx.message.type:
-                            await message.delete()
-                    await ctx.message.delete()
-
-        except Exception as e:
-            print ('MONGO ERROR: ' + str(e))
-            
-            resultMessage = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again. This message will self-destruct in 10 seconds.")
-        else:
-            print('Success')
-            resultMessage = await ctx.channel.send(f"You have successfully pinned your message to this channel! This message will self-destruct in 10 seconds.")
+                async for message in channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel after the command to delete.
+                    if message.type != ctx.message.type:
+                        await message.delete()
+                await ctx.message.delete()
+        print('Success')
+        resultMessage = await ctx.channel.send(f"You have successfully pinned your message to this channel! This message will self-destruct in 10 seconds.")
         await asyncio.sleep(10) 
         await resultMessage.delete()
 
 
     @guild.command()
+    @is_guild_channel()
     @commands.has_any_role('Guildmaster')
     async def unpin(self,ctx):
         channel = ctx.channel
         await ctx.message.delete()
         
-        try:
-            pins = await channel.pins()
-            for message in pins:
-                await message.unpin()
+        pins = await channel.pins()
+        for message in pins:
+            await message.unpin()
 
-        except Exception as e:
-            print ('MONGO ERROR: ' + str(e))
-            resultMessage = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again. This message will self-destruct in 10 seconds.")
-        else:
-            print('Success')
-            resultMessage = await ctx.channel.send(f"You have successfully unpinned all pinned messages to this channel! This message will self-destruct in 10 seconds.")
-            
+        print('Success')
+        resultMessage = await ctx.channel.send(f"You have successfully unpinned all pinned messages to this channel! This message will self-destruct in 10 seconds.")            
         await asyncio.sleep(10) 
         await resultMessage.delete()
     
     @guild.command()
+    @is_guild_channel()
     @commands.has_any_role('Guildmaster')
-    async def topic(self, ctx, messageTopic): # channelName=""
+    async def topic(self, ctx, messageTopic):
         channel = ctx.channel
-                
-        try:
-            await ctx.channel.edit(topic=messageTopic)
-            #won't print error if incorrect syntax?
-        except Exception as e:
-            print ('MONGO ERROR: ' + str(e))
-            
-            resultMessage = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again. This message will self-destruct in 10 seconds.")
-        else:
-            print('Success')
-            resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your guild! This message will self-destruct in 10 seconds.")
+        await ctx.message.delete()  
+        await ctx.channel.edit(topic=messageTopic)
+        
+        print('Success')
+        resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your guild! This message will self-destruct in 10 seconds.")
         await asyncio.sleep(10) 
         await resultMessage.delete()
         

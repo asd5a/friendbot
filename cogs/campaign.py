@@ -1403,86 +1403,94 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             await ctx.channel.send('Log has already been processed! ')
 
     @campaign.command()
-    @commands.has_any_role('Guildmaster')
+    @commands.has_any_role('Campaign Master')
     async def pin(self,ctx):
         channel = ctx.channel
         author = ctx.author
-        #campaign check
+        
+        if not "campaign" in str(channel.category.name).lower():
+            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
+                pass
+            else: 
+                #inform the user of the correct location to use the command and how to use it
+                await channel.send('Try this command in a campaign channel! ')
+                return
+        
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         
         if str(author.id) != campaignRecords['Campaign Master ID']:
             await channel.send(f"You are not the campaign owner!")
             return 
         
-        try:
-            async with channel.typing():
-                async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
-                    await message.pin() #pins the previous message
+        async with channel.typing():
+            async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
+                await message.pin() #pins the previous message
 
-                    async for message in channel.history(): #searches for and deletes any non-default messages in the channel to delete, including the message saying that something was pinned.
-                        if message.type != ctx.message.type:
-                            await message.delete()
-                    await ctx.message.delete()
+                async for message in channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel to delete, including the message saying that something was pinned.
+                    if message.type != ctx.message.type:
+                        await message.delete()
+                await ctx.message.delete()
 
-        except Exception as e:
-            print ('MONGO ERROR: ' + str(e))
-            
-            resultMessage = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again. This message will self-destruct in 10 seconds.")
-        else:
-            print('Success')
-            resultMessage = await ctx.channel.send(f"You have successfully pinned your message to this channel! This message will self-destruct in 10 seconds.")
+        print('Success')
+        resultMessage = await ctx.channel.send(f"You have successfully pinned your message to this channel! This message will self-destruct in 10 seconds.")
         await asyncio.sleep(10) 
         await resultMessage.delete()
         
     @campaign.command()
-    @commands.has_any_role('Guildmaster')
+    @commands.has_any_role('Campaign Master')
     async def unpin(self,ctx):
         channel = ctx.channel
         author = ctx.author
-        await ctx.message.delete()
+        
+        if not "campaign" in str(channel.category.name).lower():
+            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
+                pass
+            else: 
+                #inform the user of the correct location to use the command and how to use it
+                await channel.send('Try this command in a campaign channel! ')
+                return
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         if str(author.id) != campaignRecords['Campaign Master ID']:
             await channel.send(f"You are not the campaign owner!")
             return 
         
-        try:
-            pins = await channel.pins()
-            for message in pins:
-                await message.unpin()
+        pins = await channel.pins()
+        for message in pins:
+            await message.unpin()
 
-        except Exception as e:
-            print ('MONGO ERROR: ' + str(e))
-            resultMessage = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again. This message will self-destruct in 10 seconds.")
-        else:
-            print('Success')
-            resultMessage = await ctx.channel.send(f"You have successfully unpinned all pinned messages to this channel! This message will self-destruct in 10 seconds.")
+        print('Success')
+        await ctx.message.delete()
+        
+        resultMessage = await ctx.channel.send(f"You have successfully unpinned all pinned messages to this channel! This message will self-destruct in 10 seconds.")
         await asyncio.sleep(10) 
         await resultMessage.delete()
     
     @campaign.command()
-    @commands.has_any_role('Guildmaster')
+    @commands.has_any_role('Campaign Master')
     async def topic(self, ctx, messageTopic): # channelName=""
         channel = ctx.channel
         author = ctx.author
-        await ctx.message.delete()
         
+        if not "campaign" in str(channel.category.name).lower():
+            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
+                pass
+            else: 
+                #inform the user of the correct location to use the command and how to use it
+                await channel.send('Try this command in a campaign channel! ')
+                return
+
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         
         if str(author.id) != campaignRecords['Campaign Master ID']:
             await channel.send(f"You are not the campaign owner!")
             return
         
-        try:
-            await ctx.channel.edit(topic=messageTopic)
-            #won't print error if incorrect syntax?
-        except Exception as e:
-            print ('MONGO ERROR: ' + str(e))
-            
-            resultMessage = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again. This message will self-destruct in 10 seconds.")
-        else:
-            print('Success')
-            resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your campaign! This message will self-destruct in 10 seconds.")
+        await ctx.channel.edit(topic=messageTopic)
+        print('Success')
+        await ctx.message.delete()
+
+        resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your campaign! This message will self-destruct in 10 seconds.")
         await asyncio.sleep(10) 
         await resultMessage.delete()
 
