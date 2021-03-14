@@ -1810,7 +1810,7 @@ Reminder: do not deny any session logs until we have spoken about it as a team."
 • Focus on the outline of quest and shouldn't include "fluff".
 • Should help Mods understand context of the one-shot.
 
-In order to help determine if the adventurers fulfilled a pillar or a guild's quest guidelines, ask yourself the following questions:
+In order to help determine if the adventurers fulfilled a pillar or a guild's quest guidelines, answer the following questions:
 
 **Exploration**
 • Did they deal with environmental effects? How did they resolve them?
@@ -1821,11 +1821,11 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 **Social**
 • Did they change an NPC's attitude? How did they do it and why was it important?
 • Did they convince an NPC of something against their nature or traits? Why was it important?
-• Did they retrieve info from an NPC? How did they retrieve it? Was it relevant to the main objective?
+• Did they retrieve info from an NPC? How did they retrieve it? How was it relevant to the main objective?
 • How did any unsuccessful attempts negatively affect future events?
 
 **Combat**
-• Did they fight? What kind of creatures?
+• Did they fight? What kind of creatures and why? How did these encounters relate to the main objective?
 • Did they engage in combat as a result of unsuccessful attempts in the Exploration or Social pillars?
 • Did combat present complications for future events?
 
