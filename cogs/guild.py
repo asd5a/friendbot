@@ -886,11 +886,10 @@ class Guild(commands.Cog):
     @guild.command()
     @is_guild_channel()
     @commands.has_any_role('Guildmaster')
-    async def topic(self, ctx, messageTopic):
+    async def topic(self, ctx, *, messageTopic= ""):
         channel = ctx.channel
         await ctx.message.delete()  
         await ctx.channel.edit(topic=messageTopic)
-        
         print('Success')
         resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your guild! This message will self-destruct in 10 seconds.")
         await asyncio.sleep(10) 

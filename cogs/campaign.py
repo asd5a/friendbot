@@ -1460,7 +1460,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
     
     @campaign.command()
     @commands.has_any_role('Campaign Master')
-    async def topic(self, ctx, messageTopic): # channelName=""
+    async def topic(self, ctx, *, messageTopic = ""): # channelName=""
         channel = ctx.channel
         author = ctx.author
         
