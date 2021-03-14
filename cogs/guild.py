@@ -15,6 +15,10 @@ class Guild(commands.Cog):
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or
                     ctx.channel.category_id == 698784680488730666)
         return commands.check(predicate)
+    def is_guild_channel():
+        async def predicate(ctx):
+            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
+        return commands.check(predicate)
     def is_game_channel():
         async def predicate(ctx):
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
@@ -841,6 +845,57 @@ class Guild(commands.Cog):
         else:
             print('Success')
             await ctx.channel.send(f"You have successfully renamed {oldName} to {newName}!")
+            
+    
+    @guild.command()
+    @is_guild_channel()
+    @commands.has_any_role('Guildmaster')
+    async def pin(self,ctx):
+        channel = ctx.channel
+        
+        async with channel.typing():
+            async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
+                await message.pin() #pins the previous message
 
+                async for message in channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel after the command to delete.
+                    if message.type != ctx.message.type:
+                        await message.delete()
+                await ctx.message.delete()
+        print('Success')
+        resultMessage = await ctx.channel.send(f"You have successfully pinned your message to this channel! This message will self-destruct in 10 seconds.")
+        await asyncio.sleep(10) 
+        await resultMessage.delete()
+
+
+    @guild.command()
+    @is_guild_channel()
+    @commands.has_any_role('Guildmaster')
+    async def unpin(self,ctx):
+        channel = ctx.channel
+        await ctx.message.delete()
+        
+        pins = await channel.pins()
+        for message in pins:
+            await message.unpin()
+
+        print('Success')
+        resultMessage = await ctx.channel.send(f"You have successfully unpinned all pinned messages to this channel! This message will self-destruct in 10 seconds.")            
+        await asyncio.sleep(10) 
+        await resultMessage.delete()
+    
+    @guild.command()
+    @is_guild_channel()
+    @commands.has_any_role('Guildmaster')
+    async def topic(self, ctx, messageTopic):
+        channel = ctx.channel
+        await ctx.message.delete()  
+        await ctx.channel.edit(topic=messageTopic)
+        
+        print('Success')
+        resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your guild! This message will self-destruct in 10 seconds.")
+        await asyncio.sleep(10) 
+        await resultMessage.delete()
+        
+        
 def setup(bot):
     bot.add_cog(Guild(bot))

@@ -2744,7 +2744,7 @@ class Character(commands.Cog):
             cpSplit = charDict['CP']
             
             if 'Guild' in charDict:
-                description += f"{charDict['Guild']}\nGuild Rank: {charDict['Guild Rank']}"
+                description += f"{charDict['Guild']}: Rank {charDict['Guild Rank']}"
             else:
                 description += "No Guild"
             charDictAuthor = guild.get_member(int(charDict['User ID']))
@@ -2979,7 +2979,7 @@ class Character(commands.Cog):
                     tpString += f"**Tier {i} TP**: {charDict[f'T{i} TP']} \n" 
             charEmbed.add_field(name='TP', value=f"Current TP Item: **{charDict['Current Item']}**\n{tpString}", inline=True)
             if 'Guild' in charDict:
-                charEmbed.add_field(name='Guild', value=f"{charDict['Guild']}\nGuild Rank: {charDict['Guild Rank']}", inline=True)
+                charEmbed.add_field(name='Guild', value=f"{charDict['Guild']}: Rank {charDict['Guild Rank']}", inline=True)
             charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=False)
 
             if 'Free Spells' in charDict:
