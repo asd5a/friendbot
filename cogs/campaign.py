@@ -1403,13 +1403,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         channel = ctx.channel
         author = ctx.author
         
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
+        
+        if not await campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await channel.send('Try this command in a campaign channel! ')
+            return
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         
@@ -1437,13 +1435,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         channel = ctx.channel
         author = ctx.author
         
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
+        if not await campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await channel.send('Try this command in a campaign channel! ')
+            return
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         if str(author.id) != campaignRecords['Campaign Master ID']:
@@ -1467,13 +1462,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         channel = ctx.channel
         author = ctx.author
         
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
+        
+        if not await campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await channel.send('Try this command in a campaign channel! ')
+            return
 
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         
