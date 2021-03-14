@@ -20,6 +20,9 @@ class Campaign(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
        
+    async def campaign_channel_check(self, channel):
+        return not "campaign" in str(channel.category.name).lower():
+
     @commands.group(aliases=['c'], case_insensitive=True)
     async def campaign(self, ctx):	
         pass
@@ -1152,13 +1155,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         channel = ctx.channel # 728456783466725427 737076677238063125
         
 
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
+
+        if not await campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await channel.send('Try this command in a campaign channel! ')
+            return
                 
         try:
             editMessage = await channel.fetch_message(num)
@@ -1198,15 +1199,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         if not (ctx.message.channel_mentions == list()):
             channel = ctx.message.channel_mentions[0] 
         
-        
-
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await ctx.channel.send('Channel is not a campaign channel! ')
-                return
+        if not await campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await ctx.channel.send('Channel is not a campaign channel! ')
+            return
                 
         try:
             editMessage = await channel.fetch_message(num)
@@ -1342,13 +1338,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             channel = ctx.message.channel_mentions[0] 
         
 
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await ctx.channel.send('Channel is not a campaign channel! ')
-                return
+        if not await campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await ctx.channel.send('Channel is not a campaign channel! ')
+            return
                 
         
         try:
