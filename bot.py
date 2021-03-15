@@ -200,6 +200,8 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedChar.add_field(name=f'▫️ Adding Extra Names', value=f'{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', inline=False)
 
+    helpEmbedChar.add_field(name=f'▫️ Adding Alignment', value=f'{commandPrefix}align "character name" alignment\n[{commandPrefix}aka]', inline=False)
+
     helpEmbedChar.add_field(name=f'▫️ Retiring a Character', value=f'{commandPrefix}retire "character name"', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Attuning to a Magic Item', value=f'{commandPrefix}attune "character name" "magic item"\n[{commandPrefix}att]', inline=False)
@@ -356,6 +358,12 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGuild.add_field(name=f'▫️ Funding a Guild', value=f'{commandPrefix}guild fund "character name" #guild-channel GP', inline=False)
 
+    helpEmbedGuild.add_field(name=f'▫️ Pinning a Message (Guildmaster only)', value=f'{commandPrefix}guild pin', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Unpinning all Messages (Guildmaster only)', value=f'{commandPrefix}guild unpin', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Changing the Channel Topic (Guildmaster only)', value=f'{commandPrefix}guild topic text', inline=False)
+
 
 # CAMPAIGN COMMANDS MENU ($help campaign)
 
@@ -399,6 +407,12 @@ async def help(ctx, *, pageString=''):
     helpEmbedCampaign.add_field(name=f'▫️ Stopping the Timer (DM)', value=f'{commandPrefix}campaign timer stop', inline=False)
 
     helpEmbedCampaign.add_field(name=f'▫️ Submitting a Campaign Log (DM)', value=f'{commandPrefix}campaign log gameID summary', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Pinning a Message', value=f'{commandPrefix}campaign pin', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Unpinning all Messages', value=f'{commandPrefix}campaign unpin', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Changing the Channel Topic', value=f'{commandPrefix}campaign topic text', inline=False)
 
 
 
