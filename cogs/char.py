@@ -187,6 +187,7 @@ class Character(commands.Cog):
           'INT': int(sInt),
           'WIS': int(sWis),
           'CHA': int(sCha),
+          'Alignment': 'Unknown',
           'CP' : 0,
           'Current Item': 'None',
           'GP': 0,
@@ -2932,7 +2933,11 @@ class Character(commands.Cog):
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
-            description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\nOne-shots Played: {charDict['Games']}\n"
+            alignment_string = "Alignment: Unknown\n"
+            if "Alignment" in charDict and charDict['Alignment'] != "":
+                alignment_string = f"Alignment: {charDict['Alignment']}\n"
+                
+            description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\n{alignment_string}One-shots Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
                 description +=  f"Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
@@ -3166,7 +3171,40 @@ class Character(commands.Cog):
                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
             else:
                 print('Success')
-                await ctx.channel.send(content=f'I have updated the race for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+                await ctx.channel.send(content=f'I have updated the race for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+    
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @commands.command()
+    async def align(self,ctx, char, *, new_align):
+        if( len(new_align) > 20 or len(new_align) <1):
+            await ctx.channel.send(content=f'The new alignment must be between 1 and 20 symbols.')
+            return
+
+    
+        channel = ctx.channel
+        author = ctx.author
+        guild = ctx.guild
+        charEmbed = discord.Embed()
+
+        infoRecords, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+
+        if infoRecords:
+            charID = infoRecords['_id']
+            data = {
+                'Alignment': new_align
+            }
+
+            try:
+                playersCollection = db.players
+                playersCollection.update_one({'_id': charID}, {"$set": data})
+            except Exception as e:
+                print ('MONGO ERROR: ' + str(e))
+                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
+            else:
+                print('Success')
+                await ctx.channel.send(content=f'I have updated the alignment for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+    
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()

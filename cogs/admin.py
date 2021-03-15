@@ -145,6 +145,23 @@ class Admin(commands.Cog, name="Admin"):
             
     @commands.command()
     @admin_or_owner()
+    async def updateInventory(self, ctx, oldName, newName):
+        player_list = db.players.find(
+               {"Inventory."+oldName: {"$exists": True}}
+            )
+        renameData = list(map(lambda item: UpdateOne({'_id': item['_id']}, {"$inc" : {"Inventory."+newName : item["Inventory"][oldName]}, "$unset" : {"Inventory."+oldName : 1}}), player_list))
+        
+        try:
+            if(len(renameData)>0):
+                db.players.bulk_write(renameData)
+        except BulkWriteError as bwe:
+            print(bwe.details)
+            # if it fails, we need to cancel and use the error details
+            return
+        await ctx.channel.send(content=f"Successfully renamed {oldName} to {newName} of {len(player_list)} player inventories")
+            
+    @commands.command()
+    @admin_or_owner()
     async def printTierItems(self, ctx, tier: int, tp: int):
         try:
             items = list(db.mit.find(
