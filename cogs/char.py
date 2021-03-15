@@ -2942,7 +2942,7 @@ class Character(commands.Cog):
                 char_race = f"{charDict['Reflavor']} ({char_race})"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
-                nick_string = f"Goes By: **{harDict['Nickname']}**\n"
+                nick_string = f"Goes By: **{charDict['Nickname']}**\n"
             alignment_string = "Alignment: Unknown\n"
             if "Alignment" in charDict and charDict['Alignment'] != "":
                 alignment_string = f"Alignment: {charDict['Alignment']}\n"
