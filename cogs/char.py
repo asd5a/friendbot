@@ -147,7 +147,7 @@ class Character(commands.Cog):
     @is_log_channel()
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes="", campaignName = None, timeTransfer = None):
+    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes="", campaignName = "", timeTransfer = None):
         name = name.strip()
         characterCog = self.bot.get_cog('Character')
         roleCreationDict = {
@@ -290,47 +290,57 @@ class Character(commands.Cog):
         cp = 0
         cpTransfered = 0
         campaignTransferSuccess = False
+        campaignKey = ""
         if campaignName:
             campaignChannels = ctx.message.channel_mentions
-            if len(campaignChannels) > 1 or campaignChannels == list():
-                msg += f":warning: I could not find which campaign channel you want!\n"
+            
+            userRecords = db.users.find_one({"User ID" : str(author.id)})
+            campaignFind = False
+            if not userRecords:
+                msg += f":warning: I could not find you in the database!\n"
+            elif "Campaigns" not in userRecords.keys():
+                pass
             else:
-                userRecords = db.users.find_one({"User ID" : str(author.id)})
-                campaignFind = False
-                if not userRecords:
-                    msg += f":warning: I could not find you in the database!\n"
-                elif "Campaigns" not in userRecords.keys():
-                    pass
+                
+                if len(campaignChannels) > 1 or campaignChannels == list():
+                    for key in userRecords["Campaigns"].keys():
+                        if campaignName.lower() in key.lower(): 
+                            campaignFind = True
+                            campaignKey = key
+                            break
+                    error_name = campaignName
                 else:
                     for key in userRecords["Campaigns"].keys():
                         if key.lower() == (campaignChannels[0].name.replace('-', ' ')):
                             campaignFind = True
                             campaignKey = key
                             break
-                    if not campaignFind:
-                        msg += f":warning: I could not find {campaignChannels[0].mention} in your records!\n"
-                    else:
-                        def convert_to_seconds(s):
-                            return int(s[:-1]) * seconds_per_unit[s[-1]]
+                    
+                    error_name = campaignChannels[0].mention
+                if not campaignFind:
+                    msg += f":warning: I could not find {error_name} in your records!\n"
+                else:
+                    def convert_to_seconds(s):
+                        return int(s[:-1]) * seconds_per_unit[s[-1]]
 
-                        seconds_per_unit = { "m": 60, "h": 3600 }
-                        lowerTimeString = timeTransfer.lower()
-                        l = list((re.findall('.*?[hm]', lowerTimeString)))
-                        totalTime = 0
-                        for timeItem in l:
-                            totalTime += convert_to_seconds(timeItem)
-                        if userRecords["Campaigns"][campaignKey]["Time"]< 3600*4 or totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
-                            msg += f":warning: You do not have enough hours to transfer from {campaignChannels[0].mention}!\n"
-                        else:
-                            cp = ((totalTime) // 1800) / 2
-                            cpTransfered = cp
-                            while(cp >= maxCP and lvl <20):
-                                cp -= maxCP
-                                lvl += 1
-                                if lvl > 4:
-                                    maxCP = 10
-                            campaignTransferSuccess = True
-                            charDict["Level"] = lvl
+                    seconds_per_unit = { "m": 60, "h": 3600 }
+                    lowerTimeString = timeTransfer.lower()
+                    l = list((re.findall('.*?[hm]', lowerTimeString)))
+                    totalTime = 0
+                    for timeItem in l:
+                        totalTime += convert_to_seconds(timeItem)
+                    if userRecords["Campaigns"][campaignKey]["Time"]< 3600*4 or totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
+                        msg += f":warning: You do not have enough hours to transfer from {campaignChannels[0].mention}!\n"
+                    else:
+                        cp = ((totalTime) // 1800) / 2
+                        cpTransfered = cp
+                        while(cp >= maxCP and lvl <20):
+                            cp -= maxCP
+                            lvl += 1
+                            if lvl > 4:
+                                maxCP = 10
+                        campaignTransferSuccess = True
+                        charDict["Level"] = lvl
                             
         charDict['CP'] = cp
         
@@ -1015,7 +1025,7 @@ class Character(commands.Cog):
             tierNum = 4
         charEmbed.clear_fields()    
         charEmbed.title = f"{charDict['Name']} (Lv {charDict['Level']}): {charDict['CP']}/{cp_bound_array[tierNum-1][1]} CP"
-        charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} "
+        charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} " + (campaignTransferSuccess * ("\n**Transfered from:** " + campaignKey))
 
         charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
         
@@ -2932,7 +2942,7 @@ class Character(commands.Cog):
                 char_race = f"{charDict['Reflavor']} ({char_race})"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
-                nick_string = f"Goes By: **{charDict['Nickname']}**\n"
+                nick_string = f"Goes By: **{harDict['Nickname']}**\n"
             alignment_string = "Alignment: Unknown\n"
             if "Alignment" in charDict and charDict['Alignment'] != "":
                 alignment_string = f"Alignment: {charDict['Alignment']}\n"

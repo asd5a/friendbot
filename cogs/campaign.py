@@ -1449,7 +1449,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         if str(author.id) != campaignRecords['Campaign Master ID']:
             await channel.send(f"You are not the campaign owner!")
             return 
-        
+        # tReaction, tUser = await self.bot.wait_for("reaction_add", check=addMeEmbedCheck , timeout=60)
+                        
         pins = await channel.pins()
         for message in pins:
             await message.unpin()
