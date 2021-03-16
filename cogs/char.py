@@ -2726,7 +2726,8 @@ class Character(commands.Cog):
         charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
         if charDict:
             footer = f"Attuned magic items are bolded."
-            
+            if 'Image' in charDict:
+                charEmbed.set_thumbnail(url=charDict['Image'])
             char_race = charDict['Race']
             if "Reflavor" in charDict:
                 char_race = f"{charDict['Reflavor']} ({char_race})"
