@@ -2907,6 +2907,8 @@ class Character(commands.Cog):
                     mPages += 1
 
             mPageStops.append(len(miString))
+            if not miString:
+                miString = "None"
             if mPages > 1:
                 for p in range(len(mPageStops)-1):
                     if(mPageStops[p+1] > mPageStops[p]):
