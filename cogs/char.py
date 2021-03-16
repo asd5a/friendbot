@@ -2738,19 +2738,14 @@ class Character(commands.Cog):
             
             charLevel = charDict['Level']
             if charLevel < 5:
-                role = 1
                 charEmbed.colour = (roleColors['Junior Friend'])
             elif charLevel < 11:
-                role = 2
                 charEmbed.colour = (roleColors['Journeyfriend'])
             elif charLevel < 17:
-                role = 3
                 charEmbed.colour = (roleColors['Elite Friend'])
             elif charLevel < 20:
-                role = 4
                 charEmbed.colour = (roleColors['True Friend'])
             else:
-                role = 5
                 charEmbed.colour = (roleColors['Ascended Friend'])
 
             cpSplit = charDict['CP']
