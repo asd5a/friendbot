@@ -6,6 +6,7 @@ from discord.utils import get
 from discord.ext import commands
 import sys
 import traceback
+import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
@@ -160,6 +161,14 @@ class Admin(commands.Cog, name="Admin"):
             return
         await ctx.channel.send(content=f"Successfully renamed {oldName} to {newName} of {len(player_list)} player inventories")
             
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def alignmentList(self, ctx):
+        player_list = list(db.players.find(
+               {"Alignment": {"$exists": True}})
+            )
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Alignment"].replace("\"", "") for x in player_list])))).items()]))  
+    
     @commands.command()
     @admin_or_owner()
     async def printTierItems(self, ctx, tier: int, tp: int):
