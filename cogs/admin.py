@@ -1090,8 +1090,9 @@ def setup(bot):
 
 
 
-# Secret Admin/Dev-only Commands
+#### Secret Admin/Dev-only Commands
 
+## Note: these commands are not case-sensitive and are only capitalized to emphasize the name of the commands.
 
 # $removeCharacter "character name"
     # Deletes a character from the database.
@@ -1108,13 +1109,13 @@ def setup(bot):
 # $printTierItems tier TP
     # Prints a list of magic items in the specified tier and TP.
 
-# $printrewarditems tier
+# $printRewardItems tier
     # Prints a list of reward items in the specified tier.
 
-# $tpupdate tier TP newTP
+# $tpUpdate tier TP newTP
     # Updates all magic items in the specified tier and TP to the new TP value.
 
-# $goldupdate tier TP newGP
+# $goldUpdate tier TP newGP
     # Updates all magic items int he specified tier and TP to the new GP value.
 
 # $moveItem "item" tier TP
@@ -1125,6 +1126,9 @@ def setup(bot):
 
 # $snapGuild #channel
     # Removes the guild entry in guilds.db, refunds all GP spent joining the guild and upgrading guild ranks, and removes all instances of it from individual entries in players.db. It leaves stats untouched and doesn't refund the Guildmaster's Noodle role in guilds.db.
+
+# $generateBoard
+    # Posts a list of all users that have a Noodle count in descending order.
 
 # $send channelID message
     # Forces Bot Friend to send a message in the specified channel.

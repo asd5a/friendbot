@@ -360,7 +360,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGuild.add_field(name=f'▫️ Pinning a Message (Guildmaster only)', value=f'{commandPrefix}guild pin', inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Unpinning all Messages (Guildmaster only)', value=f'{commandPrefix}guild unpin', inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Unpinning a Message (Guildmaster only)', value=f'{commandPrefix}guild unpin', inline=False)
 
     helpEmbedGuild.add_field(name=f'▫️ Changing the Channel Topic (Guildmaster only)', value=f'{commandPrefix}guild topic text', inline=False)
 
@@ -410,7 +410,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGuild.add_field(name=f'▫️ Pinning a Message', value=f'{commandPrefix}campaign pin', inline=False)
 
-    helpEmbedGuild.add_field(name=f'▫️ Unpinning all Messages', value=f'{commandPrefix}campaign unpin', inline=False)
+    helpEmbedGuild.add_field(name=f'▫️ Unpinning a Message', value=f'{commandPrefix}campaign unpin', inline=False)
 
     helpEmbedGuild.add_field(name=f'▫️ Changing the Channel Topic', value=f'{commandPrefix}campaign topic text', inline=False)
 
