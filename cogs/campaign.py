@@ -7,6 +7,7 @@ import decimal
 import random
 import discord
 import asyncio
+from cogs.guild import pin_control
 from discord.utils import get        
 from discord.ext import commands
 from math import ceil, floor
@@ -1399,86 +1400,53 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         else:
             await ctx.channel.send('Log has already been processed! ')
 
-    @campaign.command()
-    @commands.has_any_role('Campaign Master')
-    async def pin(self,ctx):
+    async def campaign_check(self, ctx):
         channel = ctx.channel
         author = ctx.author
-        
-        
         if not campaign_channel_check(channel):
             #inform the user of the correct location to use the command and how to use it
             await channel.send('Try this command in a campaign channel! ')
-            return
+            return False
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         if not campaignRecords:
-            return
+            return False
         if str(author.id) != campaignRecords['Campaign Master ID']:
             await channel.send(f"You are not the campaign owner!")
-            return 
+            return False
+        return True
+
+    @campaign.command()
+    @commands.has_any_role('Campaign Master')
+    async def pin(self,ctx):
         
-        async with channel.typing():
-            async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
-                await message.pin() #pins the previous message
+        if not await self.campaign_check(ctx):
+            return
+        
+        
+        async with ctx.channel.typing():
+            
+            await pin_control(self, ctx, "pin")
+            async for message in ctx.channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel to delete, including the message saying that something was pinned.
+                if message.type != ctx.message.type:
+                    await message.delete()
 
-                async for message in channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel to delete, including the message saying that something was pinned.
-                    if message.type != ctx.message.type:
-                        await message.delete()
-                await ctx.message.delete()
-
-        print('Success')
-        resultMessage = await ctx.channel.send(f"You have successfully pinned your message to this channel! This message will self-destruct in 10 seconds.")
-        await asyncio.sleep(10) 
-        await resultMessage.delete()
         
     @campaign.command()
     @commands.has_any_role('Campaign Master')
     async def unpin(self,ctx):
-        channel = ctx.channel
-        author = ctx.author
         
-        if not campaign_channel_check(channel):
-            #inform the user of the correct location to use the command and how to use it
-            await channel.send('Try this command in a campaign channel! ')
+        if not await self.campaign_check(ctx):
             return
         
-        campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
-        if not campaignRecords:
-            return
-        if str(author.id) != campaignRecords['Campaign Master ID']:
-            await channel.send(f"You are not the campaign owner!")
-            return 
-        # tReaction, tUser = await self.bot.wait_for("reaction_add", check=addMeEmbedCheck , timeout=60)
-                        
-        pins = await channel.pins()
-        for message in pins:
-            await message.unpin()
-
-        print('Success')
-        await ctx.message.delete()
-        
-        resultMessage = await ctx.channel.send(f"You have successfully unpinned all pinned messages to this channel! This message will self-destruct in 10 seconds.")
-        await asyncio.sleep(10) 
-        await resultMessage.delete()
+        async with ctx.channel.typing():
+            await pin_control(self, ctx, "unpin")
     
     @campaign.command()
     @commands.has_any_role('Campaign Master')
     async def topic(self, ctx, *, messageTopic = ""): # channelName=""
-        channel = ctx.channel
-        author = ctx.author
         
-        
-        if not campaign_channel_check(channel):
-            #inform the user of the correct location to use the command and how to use it
-            await channel.send('Try this command in a campaign channel! ')
-            return
-
-        campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
-        if not campaignRecords:
-            return
-        if str(author.id) != campaignRecords['Campaign Master ID']:
-            await channel.send(f"You are not the campaign owner!")
+        if not await self.campaign_check(ctx):
             return
         
         await ctx.channel.edit(topic=messageTopic)

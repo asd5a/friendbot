@@ -303,12 +303,15 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
         sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
+        await editMessage.clear_reactions()
         if sessionInfo["Status"] == "Approved":
             status_text = "✅ Log approved! The DM and players have received their rewards and their characters can be used in further one-shots."
         elif sessionInfo["Status"] == "Denied":
             status_text = "❌ Log Denied! Characters have been cleared"
         elif sessionInfo["Status"] == "Pending":
             status_text = "❔ Log Pending! DM has been messaged due to session log issues."
+            
+            await editMessage.add_reaction('<:nipatya:408137844972847104>')
         sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}")
         
         # add the field for the DM's player rewards

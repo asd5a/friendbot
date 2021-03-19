@@ -5,6 +5,26 @@ from discord.ext import commands
 from bfunc import  numberEmojis, numberEmojisMobile, commandPrefix, checkForChar, checkForGuild, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
 from datetime import datetime, timezone,timedelta
 
+async def pin_control(self, ctx, goal):
+        author = ctx.author
+        channel = ctx.channel
+        print(ctx.invoked_with)
+        infoMessage = await channel.send(f"React to the message you want to {ctx.invoked_with} with 📌")
+        def pinnedEmbedCheck(event):
+            print(event)
+            return str(event.emoji) == '📌' and event.user_id == author.id
+        try:
+            event = await self.bot.wait_for("raw_reaction_add", check=pinnedEmbedCheck , timeout=60)
+        except asyncio.TimeoutError:
+            await infoMessage.edit(content=f'{ctx.invoked_with} timed out! Try again.')
+            return
+        message = await channel.fetch_message(event.message_id)
+        await (getattr(message, goal))()
+        await ctx.message.delete()
+        await infoMessage.edit(content = f"You have successfully {ctx.invoked_with}ned the message! This message will self-destruct in 10 seconds.")            
+        await asyncio.sleep(10) 
+        await infoMessage.delete()
+
 class Guild(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
@@ -851,37 +871,23 @@ class Guild(commands.Cog):
     @is_guild_channel()
     @commands.has_any_role('Guildmaster')
     async def pin(self,ctx):
-        channel = ctx.channel
+        async with ctx.channel.typing():
+            
+            await pin_control(ctx, "pin")
+            async for message in ctx.channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel after the command to delete.
+                if message.type != ctx.message.type:
+                    await message.delete()
+                    break
         
-        async with channel.typing():
-            async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
-                await message.pin() #pins the previous message
-
-                async for message in channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel after the command to delete.
-                    if message.type != ctx.message.type:
-                        await message.delete()
-                await ctx.message.delete()
-        print('Success')
-        resultMessage = await ctx.channel.send(f"You have successfully pinned your message to this channel! This message will self-destruct in 10 seconds.")
-        await asyncio.sleep(10) 
-        await resultMessage.delete()
-
 
     @guild.command()
     @is_guild_channel()
     @commands.has_any_role('Guildmaster')
     async def unpin(self,ctx):
-        channel = ctx.channel
-        await ctx.message.delete()
-        
-        pins = await channel.pins()
-        for message in pins:
-            await message.unpin()
-
-        print('Success')
-        resultMessage = await ctx.channel.send(f"You have successfully unpinned all pinned messages to this channel! This message will self-destruct in 10 seconds.")            
-        await asyncio.sleep(10) 
-        await resultMessage.delete()
+        async with ctx.channel.typing():
+            await pin_control(ctx, "unpin")
+    
+    
     
     @guild.command()
     @is_guild_channel()

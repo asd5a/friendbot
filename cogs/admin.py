@@ -170,6 +170,31 @@ class Admin(commands.Cog, name="Admin"):
         await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Alignment"].replace("\"", "") for x in player_list])))).items()]))  
     
     @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def reflavorList(self, ctx):
+        player_list = list(db.players.find(
+               {"Reflavor": {"$exists": True}})
+            )
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Reflavor"].replace("\"", "") for x in player_list])))).items()]))  
+    
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def nicknameList(self, ctx):
+        player_list = list(db.players.find(
+               {"Nickname": {"$exists": True}})
+            )
+        out ="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Nickname"].replace("\"", "") for x in player_list])))).items()])
+        
+        length = len(out)
+        while(length>2000):
+            x = out[:2000]
+            x = x.rsplit("\n", 1)[0]
+            await ctx.channel.send(content=x)
+            out = out[len(x):]
+            length -= len(x)
+        await ctx.channel.send(content=out)
+    
+    @commands.command()
     @admin_or_owner()
     async def printTierItems(self, ctx, tier: int, tp: int):
         try:
@@ -363,15 +388,23 @@ class Admin(commands.Cog, name="Admin"):
         curr_message = ""
         count = 0
         new_stuff = False
+        
+        symbol_count_fix = [0,0,0]
         for u in all_users:
-            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} {'👑'*(u['Noodles']//100)}{'🌟'*((u['Noodles']%100)//10)}{'⭐'*(u['Noodles']%10)}\n"
-             
-            if len(curr_message) >1900:
+            crown_count = u['Noodles']//100
+            big_star_count = (u['Noodles']%100)//10
+            star_count = u['Noodles']%10
+            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} {'👑'*(crown_count)}{'🌟'*big_star_count}{'⭐'* star_count}\n"
+            symbol_count_fix[0] +=crown_count
+            symbol_count_fix[1] +=big_star_count
+            symbol_count_fix[2] +=star_count
+            if len(curr_message) >1900-19*symbol_count_fix[0] - 19*symbol_count_fix[1] - 19*symbol_count_fix[2]:
                 count += 1
                 next_message = await ctx.channel.send(str(count))
                 all_messages.append([next_message, curr_message])
                 curr_message = ""
                 new_stuff = False
+                symbol_count_fix = [0,0,0]
             else:
                 new_stuff = True
         if new_stuff:

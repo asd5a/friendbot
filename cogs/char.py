@@ -3331,6 +3331,7 @@ class Character(commands.Cog):
                 newCharLevel = charLevel  + 1
                 totalCP = leftCP
                 subclasses = []
+                class_name = charClass
                 if '/' in charClass:
                     tempClassList = charClass.split(' / ')
                     for t in tempClassList:
@@ -3338,13 +3339,14 @@ class Character(commands.Cog):
                         tempSub = ""
                         if '(' and ')' in t:
                             tempSub = t[t.find("(")+1:t.find(")")]
-
-                        subclasses.append({'Name':temp[0], 'Subclass':tempSub, 'Level':int(temp[1])})
+                        class_name = temp[0]
+                        subclasses.append({'Name':class_name, 'Subclass':tempSub, 'Level':int(temp[1])})
                 else:
                     tempSub = ""
                     if '(' and ')' in charClass:
                         tempSub = charClass[charClass.find("(")+1:charClass.find(")")]
-                    subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':charLevel})
+                        class_name = charClass[0:charClass.find("(")].strip()
+                    subclasses.append({'Name':class_name, 'Subclass':tempSub, 'Level':charLevel})
 
                 for c in classRecords:
                     for s in subclasses:
@@ -3499,7 +3501,7 @@ class Character(commands.Cog):
                             levelUpEmbed.clear_fields()
                     elif tReaction.emoji == '🚫':
                         if '/' not in charClass:
-                            lvlClass = charClass
+                            lvlClass = class_name
                             subclasses[0]['Level'] += 1
                             if 'Wizard' in charClass: 
                                 fsLvl = (subclasses[0]['Level'] - 1) // 2
@@ -3547,7 +3549,7 @@ class Character(commands.Cog):
 
                             charClass = charClass.replace(f"{lvlClass} {subclasses[alphaEmojis.index(tReaction.emoji)]['Level'] - 1}", f"{lvlClass} {subclasses[alphaEmojis.index(tReaction.emoji)]['Level']}")
                             levelUpEmbed.description = f"{infoRecords['Race']}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
-
+                print(subclasses, lvlClass)
                 # Choosing a subclass
                 subclassCheckClass = subclasses[[s['Name'] for s in subclasses].index(lvlClass)]
 
@@ -4824,6 +4826,7 @@ class Character(commands.Cog):
                             if 'Class Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Class Restriction'].split(', ')]
                                 for c in cRecord:
+                                    print(c)
                                     if ctx.invoked_with.lower() == "create" or ctx.invoked_with.lower() == "respec":
                                         if c['Class']['Name'] in featsList or c['Subclass'] in featsList:
                                             meetsRestriction = True
