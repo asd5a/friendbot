@@ -3156,7 +3156,7 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
-    @commands.command(aliases=['r6'])
+    @commands.command(aliases=['rf'])
     async def reflavor(self,ctx, char, *, new_race):
         if( len(new_race) > 20 or len(new_race) <1):
             await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
