@@ -3354,7 +3354,7 @@ class Character(commands.Cog):
                             s['Hit Die Max'] = c['Hit Die Max']
                             s['Hit Die Average'] = c['Hit Die Average']
                             if "Spellcasting" in c:
-                                s["Spellcasting"] = True
+                                s["Spellcasting"] = c["Spellcasting"]
 
                 
                 def multiclassEmbedCheck(r, u):
@@ -4847,6 +4847,7 @@ class Character(commands.Cog):
                                     if int(charStats[stat]) >= statNumber:
                                         meetsRestriction = True
 
+
                             if "Require Spellcasting" in feat:
                                 for c in cRecord:
                                     if "Class" in c:
@@ -4857,7 +4858,7 @@ class Character(commands.Cog):
                                         if "Spellcasting" in c:
                                             if c["Spellcasting"] == True or c["Spellcasting"] in charClass:
                                                 meetsRestriction = True
-
+                                
                                 
                                 spellcastingFeats = list(featsCollection.find({"Spellcasting": True}))
                                 for f in spellcastingFeats:
