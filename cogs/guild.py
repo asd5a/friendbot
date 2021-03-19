@@ -9,14 +9,14 @@ async def pin_control(self, ctx, goal):
         author = ctx.author
         channel = ctx.channel
         print(ctx.invoked_with)
-        infoMessage = await channel.send(f"React to the message you want to {ctx.invoked_with} with 📌")
+        infoMessage = await channel.send(f"You have 60 seconds to react to the message you want to {ctx.invoked_with} with the 📌 emoji (`:pushpin:`)!")
         def pinnedEmbedCheck(event):
             print(event)
             return str(event.emoji) == '📌' and event.user_id == author.id
         try:
             event = await self.bot.wait_for("raw_reaction_add", check=pinnedEmbedCheck , timeout=60)
         except asyncio.TimeoutError:
-            await infoMessage.edit(content=f'{ctx.invoked_with} timed out! Try again.')
+            await infoMessage.edit(content=f'The `{ctx.invoked_with}` command has timed out! Try again.')
             return
         message = await channel.fetch_message(event.message_id)
         await (getattr(message, goal))()
