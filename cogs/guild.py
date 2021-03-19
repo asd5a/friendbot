@@ -873,7 +873,7 @@ class Guild(commands.Cog):
     async def pin(self,ctx):
         async with ctx.channel.typing():
             
-            await pin_control(ctx, "pin")
+            await pin_control(self, ctx, "pin")
             async for message in ctx.channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel after the command to delete.
                 if message.type != ctx.message.type:
                     await message.delete()
@@ -885,7 +885,7 @@ class Guild(commands.Cog):
     @commands.has_any_role('Guildmaster')
     async def unpin(self,ctx):
         async with ctx.channel.typing():
-            await pin_control(ctx, "unpin")
+            await pin_control(self, ctx, "unpin")
     
     
     
