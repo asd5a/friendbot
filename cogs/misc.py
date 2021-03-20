@@ -240,7 +240,7 @@ class Misc(commands.Cog):
                             channel_dm_dic[mention.mention][1].add(emoteMap[tierMention.name.split(" ",1)[0]]+" "+tierMap[tierMention.name.split(" ",1)[1]])
         #build the message using the pairs built above
         for c in game_channel_category.text_channels:
-            if(c.permissions_for(channel.guild.me).view_channel and c.id != 382027190633627649):
+            if(c.permissions_for(channel.guild.me).view_channel and c.id != 820394366278697020): 
                 tierAddendum = ""
                 if(len(channel_dm_dic[c.mention][1])> 0):
                     tierAddendum = " - "+"/".join(sorted(channel_dm_dic[c.mention][1]))
