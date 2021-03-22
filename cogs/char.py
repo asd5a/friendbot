@@ -447,7 +447,7 @@ class Character(commands.Cog):
                 rewardMagics = []
                 rewardInv = []
                 tierRewards = [[], [], [], [], []]
-                tierConsumableCounts = [0,0,0,0,0]
+                tierConsumableCounts = [0,0,0,0,0,0]
                 if 'Good Noodle' in roles:
                     tierConsumableCounts[0] = 1
                 elif 'Elite Noodle' in roles:
