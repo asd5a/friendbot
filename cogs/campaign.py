@@ -234,7 +234,6 @@ class Campaign(commands.Cog):
             return
         
         roles = [r.name for r in user[0].roles]
-        print(roles)
         if "D&D Friend" not in roles:
             await channel.send(f"You cannot add users to this campaign because they have not applied yet.")
             return
