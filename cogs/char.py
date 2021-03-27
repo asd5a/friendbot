@@ -3490,7 +3490,7 @@ class Character(commands.Cog):
                                 if c['Name'] in charClassChoice:
                                     subclass_entry_add = {'Name': charClassChoice, 'Subclass': '', 'Level': 1, 'Hit Die Max': c['Hit Die Max'], 'Hit Die Average': c['Hit Die Average']}
                                     if "Spellcasting" in c:
-                                        subclass_entry_add["Spellcasting"] = True
+                                        subclass_entry_add["Spellcasting"] = c["Spellcasting"]
 
                                     subclasses.append(subclass_entry_add)
 

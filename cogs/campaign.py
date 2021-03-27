@@ -13,7 +13,7 @@ from discord.ext import commands
 from math import ceil, floor
 from itertools import product      
 from datetime import datetime, timezone,timedelta
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
+from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, roleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
@@ -232,7 +232,14 @@ class Campaign(commands.Cog):
         if campaignRecords['Campaign Master ID'] != str(author.id):
             await channel.send(f"You cannot add users to this campaign because you are not the campaign master of {campaignRecords['Name']}")
             return
-
+        
+        roles = [r.name for r in user[0].roles]
+        print(roles)
+        if "D&D Friend" not in roles:
+            await channel.send(f"You cannot add users to this campaign because they have not applied yet.")
+            return
+            
+            
         usersCollection = db.users
         userRecords = usersCollection.find_one({"User ID": str(user[0].id)})  
         if not userRecords:
@@ -246,6 +253,8 @@ class Campaign(commands.Cog):
         userRecords['Campaigns'][campaignRecords['Name']]["Active"] = True
 
         await user[0].add_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
+        if not any([role in roles for role in ["New Friend", "Junior Friend", "Journeyfriend", "Elite Friend", "True Friend", "Ascended Friend"]]):
+            await user[0].add_roles(get(guild.roles, name = "Junior Friend"), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
 
         try:
             usersCollection.update_one({'_id': userRecords['_id']}, {"$set": {"Campaigns": userRecords['Campaigns']}}, upsert=True)
