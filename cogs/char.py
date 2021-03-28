@@ -3603,7 +3603,8 @@ class Character(commands.Cog):
                       'WIS': int(charStats['WIS']),
                       'CHA': int(charStats['CHA']),
                 }
-
+                if "Ritual Book" in statsFeats:
+                    data["Ritual Book"] = statsFeats["Ritual Book"] 
                 if 'Free Spells' in infoRecords:
                     if freeSpells != ([0] * 9):
                         data['Free Spells'] = freeSpells
@@ -3688,7 +3689,6 @@ class Character(commands.Cog):
                         sameMessage = True
                     return sameMessage and ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author
 
-
                 if not levelUpEmbedmsg:
                    levelUpEmbedmsg = await channel.send(embed=levelUpEmbed, content="**Double-check** your character information.\nIf this is correct, please react with one of the following:\n✅ to finish creating your character.\n❌ to cancel. ")
                 else:
@@ -3724,7 +3724,7 @@ class Character(commands.Cog):
                 roleName = await self.levelCheck(ctx, newCharLevel, charName)
                 levelUpEmbed.clear_fields()
                 await levelUpEmbedmsg.edit(content=f":arrow_up:   __**L E V E L   U P!**__\n\n:warning:   **Don't forget to spend your TP!** Use the following command to spend your TP:\n```yaml\n$tp buy \"{charName}\" \"magic item\"```", embed=levelUpEmbed)
-
+                
                 if roleName != "":
                     levelUpEmbed.title = f":tada: {roleName} role acquired! :tada:\n" + levelUpEmbed.title
                     await levelUpEmbedmsg.edit(embed=levelUpEmbed)
