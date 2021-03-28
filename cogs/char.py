@@ -3603,7 +3603,7 @@ class Character(commands.Cog):
                       'WIS': int(charStats['WIS']),
                       'CHA': int(charStats['CHA']),
                 }
-                if "Ritual Book" in statsFeats:
+                if statsFeats and "Ritual Book" in statsFeats:
                     data["Ritual Book"] = statsFeats["Ritual Book"] 
                 if 'Free Spells' in infoRecords:
                     if freeSpells != ([0] * 9):
