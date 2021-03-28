@@ -3576,7 +3576,9 @@ class Character(commands.Cog):
                 for c in subclasses:
                     if (int(c['Level']) in (4,8,12,16,19) or ('Fighter' in c['Name'] and int(c['Level']) in (6,14)) or ('Rogue' in c['Name'] and int(c['Level']) == 10)) and lvlClass in c['Name']:
                         featLevels.append(int(c['Level']))
-
+                
+                statsFeats = {}
+                
                 charFeatsGained = ""
                 charFeatsGainedStr = ""
                 if featLevels != list():
