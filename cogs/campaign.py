@@ -994,6 +994,8 @@ class Campaign(commands.Cog):
                     "Campaigns."+campaignRecord["Name"]+".Sessions" :1}
                     playerData.append(v)
                 stopEmbed.add_field(name=key, value=temp, inline=False)
+            if 'Noodles' not in dmChar['DB Entry']:
+                dmChar['DB Entry']['Noodles'] = 0
             stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}", inline=False)
 
             try:   
