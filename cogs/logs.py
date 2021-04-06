@@ -857,7 +857,7 @@ class Log(commands.Cog):
                     if 'Immortal Noodle' in dmRoleNames:
                         await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
                     noodleString += "\n**Eternal Noodle** role received! :tada:"
-            if noodles >= 150:
+            elif noodles >= 150:
                 if 'Immortal Noodle' not in dmRoleNames:
                     noodleRole = get(guild.roles, name = 'Immortal Noodle')
                     await dmUser.add_roles(noodleRole, reason=f"Hosted 150 sessions. This user has 150+ Noodles.")
