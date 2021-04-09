@@ -495,8 +495,7 @@ class Log(commands.Cog):
                 
 
                 player["Double"] = str(character["User ID"]) in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[str(character["User ID"])] and userDBEntriesDic[str(character["User ID"])]["Double"] >0
-                print("Test", character["User ID"])
-                print(player["Double"])
+
                 playerDouble = player["Double"]
                 dmDouble = False
                 
@@ -796,34 +795,28 @@ class Log(commands.Cog):
             
             # track playtime and players
 
-            for key in characterDBentries:
-                
-                print("Issue", key)
-                print(players[key]["Double"])
-            return 
             dateyear = datetime.fromtimestamp(start).strftime("%b-%y")
             # update all the other data entries
             # update the DB stats
-            # statsCollection.update_one({'Date': dateyear}, {"$set": {'Date': dateyear}, "$inc": statsIncrement, "$addToSet": statsAddToSet}, upsert=True)
-            # statsCollection.update_one({'Life': 1}, {"$inc": statsIncrement, "$addToSet": statsAddToSet}, upsert=True)
+            statsCollection.update_one({'Date': dateyear}, {"$set": {'Date': dateyear}, "$inc": statsIncrement, "$addToSet": statsAddToSet}, upsert=True)
+            statsCollection.update_one({'Life': 1}, {"$inc": statsIncrement, "$addToSet": statsAddToSet}, upsert=True)
             # update the DM' stats
             
             
             
-            # usersCollection.update_one({'User ID': str(dm["ID"])}, {"$set": {'User ID':str(dm["ID"])}, "$inc": {'Games': 1, 'Noodles': noodlesGained, 'Double': -1*dm["Double"]}}, upsert=True)
-            # playersCollection.bulk_write(timerData)
+            usersCollection.update_one({'User ID': str(dm["ID"])}, {"$set": {'User ID':str(dm["ID"])}, "$inc": {'Games': 1, 'Noodles': noodlesGained, 'Double': -1*dm["Double"]}}, upsert=True)
+            playersCollection.bulk_write(timerData)
             
             
-            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in players.items()])
-            # usersCollection.bulk_write(usersData)
+            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in dict([(key, players[key]) for key in characterDBentries]).items()])
+            usersCollection.bulk_write(usersData)
             
             logData.update_one({"_id": sessionInfo["_id"]}, {"$set" : {"Status": "Approved"}})
             sessionInfo["Status"]="Approved"
             
             if guildsData != list():
                 # do a bulk write for the guild data
-                pass
-                # db.guilds.bulk_write(guildsData)
+                db.guilds.bulk_write(guildsData)
             
             await  generateLog(self, ctx, num, sessionInfo=sessionInfo, userDBEntriesDic=userDBEntriesDic, guildDBEntriesDic=guildDBEntriesDic, characterDBentries=characterDBentries)
             
@@ -851,7 +844,6 @@ class Log(commands.Cog):
         #    charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
         else:
             print('Success')
-        return
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
         if dmUser:
