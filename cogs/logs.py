@@ -443,7 +443,7 @@ class Log(commands.Cog):
         userIDs.append(str(dm["ID"]))
         
         # the db entry of every character
-        characterDBentries = playersCollection.find({"_id": {"$in": characterIDs}})
+        characterDBentries = list(playersCollection.find({"_id": {"$in": characterIDs}}))
         
         # the db entry of every user
         userDBentries = usersCollection.find({"User ID": {"$in": userIDs}})
@@ -474,6 +474,7 @@ class Log(commands.Cog):
 
         
         for character in characterDBentries:
+            print(character)
             player = players[str(character["User ID"])]
             # this indicates that the character had died
             if player["Status"] == "Dead":
@@ -746,7 +747,6 @@ class Log(commands.Cog):
                                                    {"$inc": {"Games": 1, "Reputation": int(gain- reputationCost), "Total Reputation": gain}}))
         
         del players[dm["ID"]]
-        
         try:
             end = sessionInfo["End"]
             start = sessionInfo["Start"]
@@ -806,7 +806,7 @@ class Log(commands.Cog):
             usersCollection.update_one({'User ID': str(dm["ID"])}, {"$set": {'User ID':str(dm["ID"])}, "$inc": {'Games': 1, 'Noodles': noodlesGained, 'Double': -1*dm["Double"]}}, upsert=True)
             playersCollection.bulk_write(timerData)
             
-            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in players.items()])
+            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in {character["User ID"] : players[character["User ID"] ] for character in characterDBentries}.items()])
             usersCollection.bulk_write(usersData)
             
             logData.update_one({"_id": sessionInfo["_id"]}, {"$set" : {"Status": "Approved"}})
