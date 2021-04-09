@@ -495,6 +495,7 @@ class Log(commands.Cog):
                 
 
                 player["Double"] = str(character["User ID"]) in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[str(character["User ID"])] and userDBEntriesDic[str(character["User ID"])]["Double"] >0
+
                 playerDouble = player["Double"]
                 dmDouble = False
                 
@@ -794,8 +795,6 @@ class Log(commands.Cog):
             
             # track playtime and players
 
-
-            
             dateyear = datetime.fromtimestamp(start).strftime("%b-%y")
             # update all the other data entries
             # update the DB stats
@@ -803,10 +802,13 @@ class Log(commands.Cog):
             statsCollection.update_one({'Life': 1}, {"$inc": statsIncrement, "$addToSet": statsAddToSet}, upsert=True)
             # update the DM' stats
             
+            
+            
             usersCollection.update_one({'User ID': str(dm["ID"])}, {"$set": {'User ID':str(dm["ID"])}, "$inc": {'Games': 1, 'Noodles': noodlesGained, 'Double': -1*dm["Double"]}}, upsert=True)
             playersCollection.bulk_write(timerData)
             
-            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in players.items()])
+            
+            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in dict([(key, players[key]) for key in characterDBentries]).items()])
             usersCollection.bulk_write(usersData)
             
             logData.update_one({"_id": sessionInfo["_id"]}, {"$set" : {"Status": "Approved"}})
