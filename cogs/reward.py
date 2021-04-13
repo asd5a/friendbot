@@ -39,7 +39,7 @@ class Reward(commands.Cog):
         # Checks to see if a tier was given. If there wasn't, it then checks to see if a valid character was given. If not, error.
         if tier not in ('0','1','2','3','4', '5') and tier.lower() not in [r.lower() for r in roleArray]:
             charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
-            if charDict == None:
+            if charEmbedmsg == None:
                 await channel.send(f"**{tier}** is not a valid tier or character name. Please try again with **New** or **0**, **Junior** or **1**, **Journey** or **2**, **Elite** or **3**, **True** or **4**, or **Ascended** or **5**, or input a valid character name.")
                 return
             else:
@@ -92,29 +92,14 @@ class Reward(commands.Cog):
 
             if charDict["Level"] < 5:
                 tierNum = 0
-                tierInitial = 'T1 TP'
-                tierNext = 'T2 TP'
-                tierNext1 = 'T3 TP'
-                tierNext2 = 'T4 TP'
-                tierNext3 = 'T5 TP'
             elif charDict["Level"] < 11:
                 tierNum = 1
-                tierInitial = 'T2 TP'
-                tierNext = 'T3 TP'
-                tierNext1 = 'T4 TP'
-                tierNext2 = 'T5 TP'
             elif charDict["Level"] < 17:
                 tierNum = 2
-                tierInitial = 'T3 TP'
-                tierNext = 'T4 TP'
-                tierNext1 = 'T5 TP'
             elif charDict["Level"] < 20:
                 tierNum = 3
-                tierInitial = 'T4 TP'
-                tierNext = 'T5 TP'
             else:
                 tierNum = 4
-                tierInitial = 'T5 TP'
             
             # Uses calculateTreasure to determine the rewards from the quest based on the character
             treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , tierNum, totalTime)
@@ -123,40 +108,29 @@ class Reward(commands.Cog):
             resultLevel = charDict["Level"]
             resultCP = charDict["CP"] + treasureArray[0]
             
-            if tierNum == 0 and resultCP > 4:   # For when levels are gained in tier 1
-                while resultLevel < 5:
-                    resultLevel += 1
-                    resultCP -= 4
-                    if resultCP < 5: # break the loop if they wouldn't level past 4
-                        nextCP = resultCP
-                        break
-                    if resultLevel == 5: #if they go outside of tier 1
-                        resultLevel += resultCP // 10
-                        nextCP = resultCP % 10
-            elif tierNum == 0:
-                nextCP = resultCP
+            # CP and level calculations
+            if resultLevel < 5:
+                maxCP = 4
             else:
-                resultLevel += resultCP // 10
-                nextCP = resultCP % 10
-
-            if resultLevel > 20:    # If tier 5 is reached, level is capped at 20
-                levelDifference = resultLevel - 20
-                nextCP += (levelDifference * 10)
-                resultLevel = 20
+                maxCP = 10
                 
+            while(resultCP >= maxCP and resultLevel <20):
+                resultCP -= maxCP
+                resultLevel += 1
+                if resultLevel > 4:
+                    maxCP = 10
+            
+            # A for loop that prints out multiple tiers of TP
+            tpString = ""
+            for x in treasureArray[1]:
+                #print(x)
+                tpString += str(treasureArray[1].get(x)) + " "
+                tpString += x + ", "
+                print(tpString)
             
             totalGold = charDict["GP"] + treasureArray[2]
-            tpGained = treasureArray[1].values()
-            if len(tpGained) == 1:  # Case for when the character stays in the tier
-                await channel.send(content=f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {int(resultLevel)} with {int(nextCP)} CP with an additional {treasureArray[1].pop(tierInitial)} T{tierNum+1} TP and {totalGold} gold total!")
-            elif len(tpGained) == 2: # Case for crossing just one tier
-                await channel.send(content=f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {int(resultLevel)} with {int(nextCP)} CP with an additional {treasureArray[1].pop(tierInitial)} T{tierNum+1} TP, {treasureArray[1].pop(tierNext)} T{tierNum+2} TP, and {totalGold} gold total!")
-            elif len(tpGained) == 3: # Rest are cases for cheeky bastards who think they'll be in absurdly long games
-                await channel.send(content=f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {int(resultLevel)} with {int(nextCP)} CP with an additional {treasureArray[1].pop(tierInitial)} T{tierNum+1} TP, {treasureArray[1].pop(tierNext)} T{tierNum+2} TP, {treasureArray[1].pop(tierNext1)} T{tierNum+3} TP, and {totalGold} gold total! Did you remember to hydrate?")
-            elif len(tpGained) == 4:
-                await channel.send(content=f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {int(resultLevel)} with {int(nextCP)} CP with an additional {treasureArray[1].pop(tierInitial)} T{tierNum+1} TP, {treasureArray[1].pop(tierNext)} T{tierNum+2} TP, {treasureArray[1].pop(tierNext1)} T{tierNum+3} TP, {treasureArray[1].pop(tierNext2)} T{tierNum+4} TP, and {totalGold} gold total! Please, check on the kids.")
-            elif len(tpGained) == 5:
-                await channel.send(content=f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {int(resultLevel)} with {int(nextCP)} CP with an additional {treasureArray[1].pop(tierInitial)} T{tierNum+1} TP, {treasureArray[1].pop(tierNext)} T{tierNum+2} TP, {treasureArray[1].pop(tierNext1)} T{tierNum+3} TP, {treasureArray[1].pop(tierNext2)} T{tierNum+4} TP, {treasureArray[1].pop(tierNext3)} T{tierNum+5} TP, and {totalGold} gold total! Of course, you will die of exhaustion from playing that much in one game, but yay tier 5???")
+            # Final output
+            await channel.send(content=f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {int(resultLevel)} with {int(resultCP)} CP with an additional {tpString}and {totalGold} gold total!")
             return
             
             
