@@ -123,13 +123,12 @@ class Reward(commands.Cog):
             # A for loop that prints out multiple tiers of TP
             tpString = ""
             for x in treasureArray[1]:
-                #print(x)
                 tpString += str(treasureArray[1].get(x)) + " "
                 tpString += x + ", "
                 print(tpString)
             
             totalGold = charDict["GP"] + treasureArray[2]
-            # Final output
+            # Final output plugs in the duration string, treasure string, tp string, and other variables to make a coherent output
             await channel.send(content=f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {int(resultLevel)} with {int(resultCP)} CP with an additional {tpString}and {totalGold} gold total!")
             return
             
