@@ -247,6 +247,10 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     
     #update noodle role if dm
     noodleString = "Current :star:: " + str(noodles)
+    
+    #new noodle total
+    noodleFinal = noodles + noodlesGained
+    noodleFinalString = "Final :star:: " + str(noodleFinal) 
 
     # if the game received rewards
     if role != "": 
@@ -299,7 +303,20 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                     
                     gain += sparklesGained*int("Guild" in dm and dm["Guild"] == name)
                     guildRewardsStr += f"{g['Name']}: +{int(gain)} :sparkles:\n"
-
+        
+        noodleCongrats = None
+        if noodles < 210 and noodleFinal >= 210:
+            noodleCongrats = "Congratulations! You have reached Eternal Noodle!"
+        elif noodles < 150 and noodleFinal >= 150:
+            noodleCongrats = "Congratulations! You have reached Immortal Noodle!"
+        elif noodles < 100 and noodleFinal >= 100:
+            noodleCongrats = "Congratulations! You have reached Ascended Noodle!"
+        elif noodles < 60 and noodleFinal >= 60:
+            noodleCongrats = "Congratulations! You have reached True Noodle!"
+        elif noodles < 30 and noodleFinal >= 30:
+            noodleCongrats = "Congratulations! You have reached Elite Noodle!"
+        elif noodles < 10 and noodleFinal >= 10:
+            noodleCongrats = "Congratulations! You have reached Good Noodle!"
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
         sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
@@ -308,11 +325,20 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             status_text = "✅ Log approved! The DM and players have received their rewards and their characters can be used in further one-shots."
         elif sessionInfo["Status"] == "Denied":
             status_text = "❌ Log Denied! Characters have been cleared"
+            noodleCongrats = None
         elif sessionInfo["Status"] == "Pending":
             status_text = "❔ Log Pending! DM has been messaged due to session log issues."
             
             await editMessage.add_reaction('<:nipatya:408137844972847104>')
-        sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}")
+        if noodleCongrats:
+            sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}\n{noodleCongrats}")
+            await editMessage.add_reaction('🎉')
+            await editMessage.add_reaction('🎊')
+            await editMessage.add_reaction('🥳')
+            await editMessage.add_reaction('🍾')
+            await editMessage.add_reaction('🥂')
+        else:
+            sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}")
         
         # add the field for the DM's player rewards
         dm_text = "**No Character**"
@@ -321,7 +347,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         if("Character ID" in dm):
             dm_text = f"{dm['Character Name']} {', '.join(dmRewardsList)}"
             dm_name_text = f"DM {dm_double_string}Rewards (Tier {dm_tier_num}):\n**{dmtreasureArray[0]} CP, {sum(dmtreasureArray[1].values())} TP, {dmtreasureArray[2]} GP**\n"
-        sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{'Gained :star:: ' + str(noodlesGained)} \n{noodleString}", name=dm_name_text)
+        sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{noodleString}\n{'Gained :star:: ' + str(noodlesGained)} \n{noodleFinalString}", name=dm_name_text)
         
         # if there are guild rewards then add a field with relevant information
         if guildRewardsStr != "":
