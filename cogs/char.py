@@ -4085,7 +4085,12 @@ class Character(commands.Cog):
             if statsEmbedmsg.id == r.message.id:
                 sameMessage = True
             return sameMessage and ((r.emoji in alphaEmojis[:7]) or (str(r.emoji) == '❌')) and u == author
-
+        
+        def userCheck(r,u):
+            sameMessage = False
+            if statsEmbedmsg.id == r.message.id:
+                sameMessage = True
+            return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
         statsEmbed.description = f"Please choose a category:\n{alphaEmojis[0]}: Monthly Stats\n{alphaEmojis[1]}: Lifetime Main Stats\n{alphaEmojis[2]}: Lifetime Class Stats\n{alphaEmojis[3]}: Lifetime Race Stats\n{alphaEmojis[4]}: Lifetime Background Stats\n{alphaEmojis[5]}: Lifetime Feat Stats\n{alphaEmojis[6]}: Lifetime Magic Items Stats"
         statsEmbedmsg = await ctx.channel.send(embed=statsEmbed)
         for num in range(0,7): await statsEmbedmsg.add_reaction(alphaEmojis[num])
@@ -4101,6 +4106,12 @@ class Character(commands.Cog):
 
         # Lets the user choose a category to view stats
         if tReaction.emoji == alphaEmojis[0] or tReaction.emoji == alphaEmojis[1]:
+        
+            
+            dmEmbed = discord.Embed()
+            
+            dmEmbed.description = "**DM Hosting Information**"
+            
             identity_strings = ["Monthly", "Month"]
             if tReaction.emoji == alphaEmojis[1]:
                 identity_strings = ["Server", "Server"]
@@ -4192,9 +4203,9 @@ class Character(commands.Cog):
                     if dmPages > 1:
                         for p in range(len(dmPageStops)-1):
                             if dmPageStops[p+1] > dmPageStops[p]:
-                                statsEmbed.add_field(name=f'One-shots by DM - p. {p+1}', value=statsString[dmPageStops[p]:dmPageStops[p+1]], inline=False)
+                                dmEmbed.add_field(name=f'One-shots by DM - p. {p+1}', value=statsString[dmPageStops[p]:dmPageStops[p+1]], inline=False)
                     else:
-                        statsEmbed.add_field(name="One-shots by DM", value=statsString, inline=False)
+                        dmEmbed.add_field(name="One-shots by DM", value=statsString, inline=False)
 
                 # Number of games by total and by tier
                 statsTotalString += f"**{identity_strings[0]} Stats**\nTotal One-shots for the {identity_strings[1]}: {superTotal}\n" 
@@ -4213,6 +4224,37 @@ class Character(commands.Cog):
                 if 'Unique Players' in statRecords and 'Playtime' in statRecords:
                     statsTotalString += f"Number of Unique Players: {len(statRecords['Unique Players'])}\n"
                 statsEmbed.description = statsTotalString
+                
+                embedArray = [statsEmbed, dmEmbed]
+                embedArray_len = len([statsEmbed, dmEmbed])
+                
+                page = 0
+                embedArray[page].set_footer(text=f"Page {page+1} of {embedArray_len}")
+                await statsEmbedmsg.clear_reactions()
+                await statsEmbedmsg.edit(embed=statsEmbed)
+                while True:
+                    await statsEmbedmsg.add_reaction(left) 
+                    await statsEmbedmsg.add_reaction(right)
+                    try:
+                        hReact, hUser = await self.bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
+                    except asyncio.TimeoutError:
+                        await statsEmbedmsg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
+                        await statsEmbedmsg.clear_reactions()
+                        await statsEmbedmsg.add_reaction('💤')
+                        return
+                    else:
+                        if hReact.emoji == left:
+                            page -= 1
+                            if page < 0:
+                                page = (embedArray_len -1)
+                        if hReact.emoji == right:
+                            page += 1
+                            if page > (embedArray_len -1 ):
+                                page = 0
+                        embedArray[page].set_footer(text=f"Page {page+1} of {embedArray_len}")
+                        await statsEmbedmsg.edit(embed=embedArray[page]) 
+                        await statsEmbedmsg.clear_reactions()
+                
           
         # Below are lifetime stats which consists of character data
         # Lifetime Class Stats
@@ -4330,11 +4372,6 @@ class Character(commands.Cog):
                 statsEmbed.add_field(name="Character Magic Items Stats (Lifetime)", value=bgString, inline=False)  
             await statsEmbedmsg.clear_reactions()
             await statsEmbedmsg.edit(embed=statsEmbed)
-            def userCheck(r,u):
-                sameMessage = False
-                if statsEmbedmsg.id == r.message.id:
-                    sameMessage = True
-                return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
             subpages= 5
             page = 0
             while bPages >= subpages:
@@ -4364,8 +4401,6 @@ class Character(commands.Cog):
                     await statsEmbedmsg.edit(embed=statsEmbed) 
                     await statsEmbedmsg.clear_reactions()
             return
-        await statsEmbedmsg.clear_reactions()
-        await statsEmbedmsg.edit(embed=statsEmbed)
         
         
         
