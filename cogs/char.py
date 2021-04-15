@@ -147,7 +147,7 @@ class Character(commands.Cog):
     @is_log_channel()
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes="", campaignName = None, timeTransfer = None):
+    async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes="", campaignName = "", timeTransfer = None):
         name = name.strip()
         characterCog = self.bot.get_cog('Character')
         roleCreationDict = {
@@ -187,6 +187,7 @@ class Character(commands.Cog):
           'INT': int(sInt),
           'WIS': int(sWis),
           'CHA': int(sCha),
+          'Alignment': 'Unknown',
           'CP' : 0,
           'Current Item': 'None',
           'GP': 0,
@@ -289,47 +290,57 @@ class Character(commands.Cog):
         cp = 0
         cpTransfered = 0
         campaignTransferSuccess = False
+        campaignKey = ""
         if campaignName:
             campaignChannels = ctx.message.channel_mentions
-            if len(campaignChannels) > 1 or campaignChannels == list():
-                msg += f":warning: I could not find which campaign channel you want!\n"
+            
+            userRecords = db.users.find_one({"User ID" : str(author.id)})
+            campaignFind = False
+            if not userRecords:
+                msg += f":warning: I could not find you in the database!\n"
+            elif "Campaigns" not in userRecords.keys():
+                pass
             else:
-                userRecords = db.users.find_one({"User ID" : str(author.id)})
-                campaignFind = False
-                if not userRecords:
-                    msg += f":warning: I could not find you in the database!\n"
-                elif "Campaigns" not in userRecords.keys():
-                    pass
+                
+                if len(campaignChannels) > 1 or campaignChannels == list():
+                    for key in userRecords["Campaigns"].keys():
+                        if campaignName.lower() in key.lower(): 
+                            campaignFind = True
+                            campaignKey = key
+                            break
+                    error_name = campaignName
                 else:
                     for key in userRecords["Campaigns"].keys():
                         if key.lower() == (campaignChannels[0].name.replace('-', ' ')):
                             campaignFind = True
                             campaignKey = key
                             break
-                    if not campaignFind:
-                        msg += f":warning: I could not find {campaignChannels[0].mention} in your records!\n"
-                    else:
-                        def convert_to_seconds(s):
-                            return int(s[:-1]) * seconds_per_unit[s[-1]]
+                    
+                    error_name = campaignChannels[0].mention
+                if not campaignFind:
+                    msg += f":warning: I could not find {error_name} in your records!\n"
+                else:
+                    def convert_to_seconds(s):
+                        return int(s[:-1]) * seconds_per_unit[s[-1]]
 
-                        seconds_per_unit = { "m": 60, "h": 3600 }
-                        lowerTimeString = timeTransfer.lower()
-                        l = list((re.findall('.*?[hm]', lowerTimeString)))
-                        totalTime = 0
-                        for timeItem in l:
-                            totalTime += convert_to_seconds(timeItem)
-                        if userRecords["Campaigns"][campaignKey]["Time"]< 3600*4 or totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
-                            msg += f":warning: You do not have enough hours to transfer from {campaignChannels[0].mention}!\n"
-                        else:
-                            cp = ((totalTime) // 1800) / 2
-                            cpTransfered = cp
-                            while(cp >= maxCP and lvl <20):
-                                cp -= maxCP
-                                lvl += 1
-                                if lvl > 4:
-                                    maxCP = 10
-                            campaignTransferSuccess = True
-                            charDict["Level"] = lvl
+                    seconds_per_unit = { "m": 60, "h": 3600 }
+                    lowerTimeString = timeTransfer.lower()
+                    l = list((re.findall('.*?[hm]', lowerTimeString)))
+                    totalTime = 0
+                    for timeItem in l:
+                        totalTime += convert_to_seconds(timeItem)
+                    if userRecords["Campaigns"][campaignKey]["Time"]< 3600*4 or totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
+                        msg += f":warning: You do not have enough hours to transfer from {campaignChannels[0].mention}!\n"
+                    else:
+                        cp = ((totalTime) // 1800) / 2
+                        cpTransfered = cp
+                        while(cp >= maxCP and lvl <20):
+                            cp -= maxCP
+                            lvl += 1
+                            if lvl > 4:
+                                maxCP = 10
+                        campaignTransferSuccess = True
+                        charDict["Level"] = lvl
                             
         charDict['CP'] = cp
         
@@ -436,7 +447,7 @@ class Character(commands.Cog):
                 rewardMagics = []
                 rewardInv = []
                 tierRewards = [[], [], [], [], []]
-                tierConsumableCounts = [0,0,0,0,0]
+                tierConsumableCounts = [0,0,0,0,0,0]
                 if 'Good Noodle' in roles:
                     tierConsumableCounts[0] = 1
                 elif 'Elite Noodle' in roles:
@@ -1014,7 +1025,7 @@ class Character(commands.Cog):
             tierNum = 4
         charEmbed.clear_fields()    
         charEmbed.title = f"{charDict['Name']} (Lv {charDict['Level']}): {charDict['CP']}/{cp_bound_array[tierNum-1][1]} CP"
-        charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} "
+        charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} " + (campaignTransferSuccess * ("\n**Transfered from:** " + campaignKey))
 
         charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
         
@@ -1325,7 +1336,7 @@ class Character(commands.Cog):
             if any([s < 8 for s in statsArray]):
                 msg += f":warning: You have at least one stat below the minimum of 8.\n"
             if totalPoints != 27:
-                msg += f":warning: Your stats do not add up to 27 using point buy ({totalPoints}/27). Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+                msg += f":warning: Your stats do not add up to 27 using point buy ({totalPoints}/27). Remember that you must list your stats before applying racial modifiers! Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
             
         
         
@@ -2698,9 +2709,220 @@ class Character(commands.Cog):
                 userEmbedList[page].set_footer(text=f"Page {page+1} of {pages}")
                 await charEmbedmsg.edit(embed=userEmbedList[page]) 
                 await charEmbedmsg.clear_reactions()
+   
+            
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel_or_game()
+    @commands.command()
+    async def apply(self,ctx, char, cons="", mits=""):
+        channel = ctx.channel
+        author = ctx.author
+        guild = ctx.guild
+        roleColors = {r.name:r.colour for r in guild.roles}
+        charEmbed = discord.Embed()
+        charEmbedmsg = None
+
+        statusEmoji = ""
+        charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+        if charDict:
+            footer = f"Attuned magic items are bolded."
+            if 'Image' in charDict:
+                charEmbed.set_thumbnail(url=charDict['Image'])
+            char_race = charDict['Race']
+            if "Reflavor" in charDict:
+                char_race = f"{charDict['Reflavor']} ({char_race})"
+            nick_string = ""
+            if "Nickname" in charDict and charDict['Nickname'] != "":
+                nick_string = f"Goes By: **{charDict['Nickname']}**\n"
+            description = f"{nick_string}{char_race}\n{charDict['Class']}\n"
+            
+            charLevel = charDict['Level']
+            if charLevel < 5:
+                role = 1
+                charEmbed.colour = (roleColors['Junior Friend'])
+            elif charLevel < 11:
+                role = 2
+                charEmbed.colour = (roleColors['Journeyfriend'])
+            elif charLevel < 17:
+                role = 3
+                charEmbed.colour = (roleColors['Elite Friend'])
+            elif charLevel < 20:
+                role = 4
+                charEmbed.colour = (roleColors['True Friend'])
+            else:
+                role = 5
+                charEmbed.colour = (roleColors['Ascended Friend'])
+
+            cpSplit = charDict['CP']
+            
+            if 'Guild' in charDict:
+                description += f"{charDict['Guild']}: Rank {charDict['Guild Rank']}"
+            else:
+                description += "No Guild"
+            charDictAuthor = guild.get_member(int(charDict['User ID']))
+            charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.avatar_url)
+            charEmbed.description = description
+            charEmbed.clear_fields()    
+            charEmbed.title = f"{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
+            
+            
+            notValidConsumables = ""
+            consumesCount = collections.Counter(charDict['Consumables'].split(', '))
+            if cons:
+                consumablesList = list(map(lambda x: x.strip(), cons.split(',')))
+                brought_consumables = {}
+                
+                consumableLength = 2 + (charDict["Level"]-1)//4
+                if("Ioun Stone (Mastery)" in charDict['Magic Items']):
+                    consumableLength += 1
+                # block the command if more consumables than allowed (limit or available) are being registed
+                if len(consumablesList) > consumableLength:
+                    await channel.send(content=f'You are trying to bring in too many consumables (**{len(consumablesList)}/{consumableLength}**)! The limit for your character is **{consumableLength}**.')
+                
+                #loop over all consumable pairs and check if the listed consumables are in the inventory
+        
+                # consumablesList is the consumable list the player intends to bring
+                # consumesCount are the consumables that the character has available.
+                for i in consumablesList:
+                    itemFound = False
+                    for jk, jv in consumesCount.items():
+                        if i.strip() != "" and i.lower().replace(" ", "").strip() in jk.lower().replace(" ", ""):
+                            if jv > 0 :
+                                consumesCount[jk] -= 1
+                                if jk in brought_consumables:
+                                    brought_consumables[jk] += 1
+                                else:
+                                    brought_consumables[jk] = 1
+                                
+                                itemFound = True
+                                break
+
+                    if not itemFound:
+                        notValidConsumables += f"{i.strip()}, "
+                        
+
+                # if there were any invalid consumables, inform the user on which ones cause the issue
+                if notValidConsumables:
+                    notValidConsumables=f"The following consumables were not found in your character's inventory: {notValidConsumables}"
+                    await channel.send(notValidConsumables[0:-2])
+                    return
+                    
+                consumesCount = brought_consumables
+            # Show Consumables in inventory.
+            cPages = 1
+            cPageStops = [0]
+
+            consumesString = ""
+            for k, v in consumesCount.items():
+                if v == 1:
+                    consumesString += f"• {k}\n"
+                else:
+                    consumesString += f"• {k} x{v}\n"
+
+                if len(consumesString) > (768 * cPages):
+                    cPageStops.append(len(consumesString))
+                    cPages += 1
+            
+            cPageStops.append(len(consumesString))
+            if not consumesString:
+                consumesString = "None"
+            if cPages > 1:
+                for p in range(len(cPageStops)-1):
+                    if(cPageStops[p+1] > cPageStops[p]):
+                        charEmbed.add_field(name=f'Consumables - p. {p+1}', value=consumesString[cPageStops[p]:cPageStops[p+1]], inline=True)
+            else:
+                charEmbed.add_field(name='Consumables', value=consumesString, inline=True)
+
+            # Show Magic items in inventory.
+            mPages = 1
+            mPageStops = [0]
+
 
             
+            attune_list = []
+            if 'Attuned' in charDict:
+                for attune_item in charDict['Attuned'].split(", "):
+                    attune_list.append(attune_item.split(" [", 1)[0])
             
+            
+            miString = ""
+            miArray = collections.Counter(charDict['Magic Items'].split(', '))
+            notValidMagicItems = ""
+            
+            if mits:
+                magic_item_list = list(map(lambda x: x.strip(), mits.split(',')))
+                brought_mits = {}
+                #loop over all magic item pairs and check if the listed consumables are in the inventory
+        
+                # magic_item_list is the magic item list the player intends to bring
+                # miArray are the magic items that the character has available.
+                for i in magic_item_list:
+                    itemFound = False
+                    for jk, jv in miArray.items():
+                        if i.strip() != "" and i.lower().replace(" ", "").strip() in jk.lower().replace(" ", ""):
+                            if jv > 0 :
+                                miArray[jk] -= 1
+                                if jk in brought_mits:
+                                    brought_mits[jk] += 1
+                                else:
+                                    brought_mits[jk] = 1
+                                
+                                itemFound = True
+                                break
+
+                    if not itemFound:
+                        notValidMagicItems += f"{i.strip()}, "
+                        
+
+                # if there were any invalid consumables, inform the user on which ones cause the issue
+                if notValidMagicItems:
+                    notValidMagicItems=f"The following magic items were not found in your character's inventory: {notValidMagicItems}"
+                    await channel.send(notValidMagicItems[0:-2])
+                    return
+                rit_db_entries = []
+                miArray = brought_mits
+            else:
+                rit_db_entries = [x["Name"] for x in list(db.rit.find({"Name": {"$in" : list(miArray.keys())}}))]
+            
+            for m,v in miArray.items():
+                # mi was a non-con
+                if m in rit_db_entries:
+                    continue
+                bolding = ""
+                if m in attune_list:
+                    bolding = "**"
+                if "Predecessor" in charDict and m in charDict["Predecessor"]:
+                    upgrade_names = charDict['Predecessor'][m]["Names"]
+                    stage = charDict['Predecessor'][m]["Stage"]
+                    m = m + f" ({upgrade_names[stage]})"
+                
+                miString += f"• {bolding}{m}{bolding}"
+                if v == 1:
+                    miString+="\n"
+                else:
+                    miString += f" x{v}\n"
+
+                if len(miString) > (768 * mPages):
+                    mPageStops.append(len(miString))
+                    mPages += 1
+
+            mPageStops.append(len(miString))
+            if not miString:
+                miString = "None"
+            if mPages > 1:
+                for p in range(len(mPageStops)-1):
+                    if(mPageStops[p+1] > mPageStops[p]):
+                        charEmbed.add_field(name=f'Magic Items - p. {p+1}', value=miString[mPageStops[p]:mPageStops[p+1]], inline=True)
+            else:
+                charEmbed.add_field(name='Magic Items', value=miString, inline=True)
+            
+            charEmbed.set_footer(text=footer)
+                
+            if not charEmbedmsg:
+                charEmbedmsg = await ctx.channel.send(embed=charEmbed)
+            else:
+                await charEmbedmsg.edit(embed=charEmbed)
+
            
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel_or_game()
@@ -2724,7 +2946,11 @@ class Character(commands.Cog):
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
-            description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\nOne-shots Played: {charDict['Games']}\n"
+            alignment_string = "Alignment: Unknown\n"
+            if "Alignment" in charDict and charDict['Alignment'] != "":
+                alignment_string = f"Alignment: {charDict['Alignment']}\n"
+                
+            description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\n{alignment_string}One-shots Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
                 description +=  f"Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
@@ -2771,7 +2997,7 @@ class Character(commands.Cog):
                     tpString += f"**Tier {i} TP**: {charDict[f'T{i} TP']} \n" 
             charEmbed.add_field(name='TP', value=f"Current TP Item: **{charDict['Current Item']}**\n{tpString}", inline=True)
             if 'Guild' in charDict:
-                charEmbed.add_field(name='Guild', value=f"{charDict['Guild']}\nGuild Rank: {charDict['Guild Rank']}", inline=True)
+                charEmbed.add_field(name='Guild', value=f"{charDict['Guild']}: Rank {charDict['Guild Rank']}", inline=True)
             charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=False)
 
             if 'Free Spells' in charDict:
@@ -2930,7 +3156,7 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
-    @commands.command(aliases=['r6'])
+    @commands.command(aliases=['rf'])
     async def reflavor(self,ctx, char, *, new_race):
         if( len(new_race) > 20 or len(new_race) <1):
             await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
@@ -2958,7 +3184,40 @@ class Character(commands.Cog):
                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
             else:
                 print('Success')
-                await ctx.channel.send(content=f'I have updated the race for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+                await ctx.channel.send(content=f'I have updated the race for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+    
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @commands.command()
+    async def align(self,ctx, char, *, new_align):
+        if( len(new_align) > 20 or len(new_align) <1):
+            await ctx.channel.send(content=f'The new alignment must be between 1 and 20 symbols.')
+            return
+
+    
+        channel = ctx.channel
+        author = ctx.author
+        guild = ctx.guild
+        charEmbed = discord.Embed()
+
+        infoRecords, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+
+        if infoRecords:
+            charID = infoRecords['_id']
+            data = {
+                'Alignment': new_align
+            }
+
+            try:
+                playersCollection = db.players
+                playersCollection.update_one({'_id': charID}, {"$set": data})
+            except Exception as e:
+                print ('MONGO ERROR: ' + str(e))
+                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
+            else:
+                print('Success')
+                await ctx.channel.send(content=f'I have updated the alignment for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+    
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
@@ -3072,6 +3331,7 @@ class Character(commands.Cog):
                 newCharLevel = charLevel  + 1
                 totalCP = leftCP
                 subclasses = []
+                class_name = charClass
                 if '/' in charClass:
                     tempClassList = charClass.split(' / ')
                     for t in tempClassList:
@@ -3079,13 +3339,14 @@ class Character(commands.Cog):
                         tempSub = ""
                         if '(' and ')' in t:
                             tempSub = t[t.find("(")+1:t.find(")")]
-
-                        subclasses.append({'Name':temp[0], 'Subclass':tempSub, 'Level':int(temp[1])})
+                        class_name = temp[0]
+                        subclasses.append({'Name':class_name, 'Subclass':tempSub, 'Level':int(temp[1])})
                 else:
                     tempSub = ""
                     if '(' and ')' in charClass:
                         tempSub = charClass[charClass.find("(")+1:charClass.find(")")]
-                    subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':charLevel})
+                        class_name = charClass[0:charClass.find("(")].strip()
+                    subclasses.append({'Name':class_name, 'Subclass':tempSub, 'Level':charLevel})
 
                 for c in classRecords:
                     for s in subclasses:
@@ -3093,7 +3354,7 @@ class Character(commands.Cog):
                             s['Hit Die Max'] = c['Hit Die Max']
                             s['Hit Die Average'] = c['Hit Die Average']
                             if "Spellcasting" in c:
-                                s["Spellcasting"] = True
+                                s["Spellcasting"] = c["Spellcasting"]
 
                 
                 def multiclassEmbedCheck(r, u):
@@ -3229,7 +3490,7 @@ class Character(commands.Cog):
                                 if c['Name'] in charClassChoice:
                                     subclass_entry_add = {'Name': charClassChoice, 'Subclass': '', 'Level': 1, 'Hit Die Max': c['Hit Die Max'], 'Hit Die Average': c['Hit Die Average']}
                                     if "Spellcasting" in c:
-                                        subclass_entry_add["Spellcasting"] = True
+                                        subclass_entry_add["Spellcasting"] = c["Spellcasting"]
 
                                     subclasses.append(subclass_entry_add)
 
@@ -3240,7 +3501,7 @@ class Character(commands.Cog):
                             levelUpEmbed.clear_fields()
                     elif tReaction.emoji == '🚫':
                         if '/' not in charClass:
-                            lvlClass = charClass
+                            lvlClass = class_name
                             subclasses[0]['Level'] += 1
                             if 'Wizard' in charClass: 
                                 fsLvl = (subclasses[0]['Level'] - 1) // 2
@@ -3288,7 +3549,7 @@ class Character(commands.Cog):
 
                             charClass = charClass.replace(f"{lvlClass} {subclasses[alphaEmojis.index(tReaction.emoji)]['Level'] - 1}", f"{lvlClass} {subclasses[alphaEmojis.index(tReaction.emoji)]['Level']}")
                             levelUpEmbed.description = f"{infoRecords['Race']}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
-
+                print(subclasses, lvlClass)
                 # Choosing a subclass
                 subclassCheckClass = subclasses[[s['Name'] for s in subclasses].index(lvlClass)]
 
@@ -3315,7 +3576,9 @@ class Character(commands.Cog):
                 for c in subclasses:
                     if (int(c['Level']) in (4,8,12,16,19) or ('Fighter' in c['Name'] and int(c['Level']) in (6,14)) or ('Rogue' in c['Name'] and int(c['Level']) == 10)) and lvlClass in c['Name']:
                         featLevels.append(int(c['Level']))
-
+                
+                statsFeats = {}
+                
                 charFeatsGained = ""
                 charFeatsGainedStr = ""
                 if featLevels != list():
@@ -3342,7 +3605,8 @@ class Character(commands.Cog):
                       'WIS': int(charStats['WIS']),
                       'CHA': int(charStats['CHA']),
                 }
-
+                if statsFeats and "Ritual Book" in statsFeats:
+                    data["Ritual Book"] = statsFeats["Ritual Book"] 
                 if 'Free Spells' in infoRecords:
                     if freeSpells != ([0] * 9):
                         data['Free Spells'] = freeSpells
@@ -3427,7 +3691,6 @@ class Character(commands.Cog):
                         sameMessage = True
                     return sameMessage and ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author
 
-
                 if not levelUpEmbedmsg:
                    levelUpEmbedmsg = await channel.send(embed=levelUpEmbed, content="**Double-check** your character information.\nIf this is correct, please react with one of the following:\n✅ to finish creating your character.\n❌ to cancel. ")
                 else:
@@ -3463,7 +3726,7 @@ class Character(commands.Cog):
                 roleName = await self.levelCheck(ctx, newCharLevel, charName)
                 levelUpEmbed.clear_fields()
                 await levelUpEmbedmsg.edit(content=f":arrow_up:   __**L E V E L   U P!**__\n\n:warning:   **Don't forget to spend your TP!** Use the following command to spend your TP:\n```yaml\n$tp buy \"{charName}\" \"magic item\"```", embed=levelUpEmbed)
-
+                
                 if roleName != "":
                     levelUpEmbed.title = f":tada: {roleName} role acquired! :tada:\n" + levelUpEmbed.title
                     await levelUpEmbedmsg.edit(embed=levelUpEmbed)
@@ -4565,6 +4828,7 @@ class Character(commands.Cog):
                             if 'Class Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Class Restriction'].split(', ')]
                                 for c in cRecord:
+                                    print(c)
                                     if ctx.invoked_with.lower() == "create" or ctx.invoked_with.lower() == "respec":
                                         if c['Class']['Name'] in featsList or c['Subclass'] in featsList:
                                             meetsRestriction = True
@@ -4585,6 +4849,7 @@ class Character(commands.Cog):
                                     if int(charStats[stat]) >= statNumber:
                                         meetsRestriction = True
 
+
                             if "Require Spellcasting" in feat:
                                 for c in cRecord:
                                     if "Class" in c:
@@ -4595,7 +4860,7 @@ class Character(commands.Cog):
                                         if "Spellcasting" in c:
                                             if c["Spellcasting"] == True or c["Spellcasting"] in charClass:
                                                 meetsRestriction = True
-
+                                
                                 
                                 spellcastingFeats = list(featsCollection.find({"Spellcasting": True}))
                                 for f in spellcastingFeats:

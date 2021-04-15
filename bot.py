@@ -159,19 +159,19 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.title = 'General Commands'
 
+    helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f'{commandPrefix}user', inline=False)
 
+    helpEmbedGen.add_field(name=f'▫️ Viewing the List of Allowed Races', value=f'{commandPrefix}printRaces', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f"{commandPrefix}user", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f'{commandPrefix}help', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing the List of Allowed Races', value=f"{commandPrefix}printRaces", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Applying to a One-shot', value=f'{commandPrefix}apply "character name" "consumable1, consumable2, [...]" "magic item1, magic item2, [...]"', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f"{commandPrefix}help", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f'{commandPrefix}reward XhYm tier', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f"{commandPrefix}reward XhYm tier", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f'{commandPrefix}stats', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f"{commandPrefix}stats", inline=False)
-
-    helpEmbedGen.add_field(name=f'▫️ Viewing Fanatic Competition Stats', value=f"{commandPrefix}fanatic", inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Viewing Fanatic Competition Stats', value=f'{commandPrefix}fanatic', inline=False)
 
 
 
@@ -196,9 +196,11 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedChar.add_field(name=f'▫️ Respecing a Character into a Multiclass', value=f'{commandPrefix}respec "character name" "new character name" "race" "class1 level / class2 level / class3 level / class4 level" "background" STR DEX CON INT WIS CHA', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character\'s Race', value=f'{commandPrefix}reflavor "character name" race name\n[{commandPrefix}r6]', inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character\'s Race', value=f'{commandPrefix}reflavor "character name" race name\n[{commandPrefix}rf]', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Adding Extra Names', value=f'{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', inline=False)
+
+    helpEmbedChar.add_field(name=f'▫️ Adding Alignment', value=f'{commandPrefix}align "character name" alignment\n[{commandPrefix}aka]', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Retiring a Character', value=f'{commandPrefix}retire "character name"', inline=False)
 
@@ -356,6 +358,12 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGuild.add_field(name=f'▫️ Funding a Guild', value=f'{commandPrefix}guild fund "character name" #guild-channel GP', inline=False)
 
+    helpEmbedGuild.add_field(name=f'▫️ Pinning a Message (Guildmaster only)', value=f'{commandPrefix}guild pin', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Unpinning a Message (Guildmaster only)', value=f'{commandPrefix}guild unpin', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Changing the Channel Topic (Guildmaster only)', value=f'{commandPrefix}guild topic text', inline=False)
+
 
 # CAMPAIGN COMMANDS MENU ($help campaign)
 
@@ -399,6 +407,12 @@ async def help(ctx, *, pageString=''):
     helpEmbedCampaign.add_field(name=f'▫️ Stopping the Timer (DM)', value=f'{commandPrefix}campaign timer stop', inline=False)
 
     helpEmbedCampaign.add_field(name=f'▫️ Submitting a Campaign Log (DM)', value=f'{commandPrefix}campaign log gameID summary', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Pinning a Message', value=f'{commandPrefix}campaign pin', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Unpinning a Message', value=f'{commandPrefix}campaign unpin', inline=False)
+
+    helpEmbedGuild.add_field(name=f'▫️ Changing the Channel Topic', value=f'{commandPrefix}campaign topic text', inline=False)
 
 
 

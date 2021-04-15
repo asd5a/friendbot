@@ -620,11 +620,7 @@ class Timer(commands.Cog):
                 
                 #loop over all consumable pairs and check if the listed consumables are in the inventory
 
-                #this code is completely non-functional
-                # the else will execute if the first element of charConsumables is not the listed item
-                # this means that only that first entry can be brought as it never get to check past that
-                # this can be fixed by doing using a variable that checks if has been found and maintaining it and then doing a check after the inner loop finishes
-
+               
                 # consumablesList is the consumable list the player intends to bring
                 # charConsumables are the consumables that the character has available.
                 # gameConsumables are the final list of consumables characters are bringing
@@ -1814,7 +1810,7 @@ Reminder: do not deny any session logs until we have spoken about it as a team."
 • Focus on the outline of quest and shouldn't include "fluff".
 • Should help Mods understand context of the one-shot.
 
-In order to help determine if the adventurers fulfilled a pillar or a guild's quest guidelines, ask yourself the following questions:
+In order to help determine if the adventurers fulfilled a pillar or a guild's quest guidelines, answer the following questions:
 
 **Exploration**
 • Did they deal with environmental effects? How did they resolve them?
@@ -1825,11 +1821,11 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 **Social**
 • Did they change an NPC's attitude? How did they do it and why was it important?
 • Did they convince an NPC of something against their nature or traits? Why was it important?
-• Did they retrieve info from an NPC? How did they retrieve it? Was it relevant to the main objective?
+• Did they retrieve info from an NPC? How did they retrieve it? How was it relevant to the main objective?
 • How did any unsuccessful attempts negatively affect future events?
 
 **Combat**
-• Did they fight? What kind of creatures?
+• Did they fight? What kind of creatures and why? How did these encounters relate to the main objective?
 • Did they engage in combat as a result of unsuccessful attempts in the Exploration or Social pillars?
 • Did combat present complications for future events?
 
