@@ -33,27 +33,43 @@ class Reward(commands.Cog):
         seconds_per_unit = { "m": 60, "h": 3600 }
         lowerTimeString = timeString.lower()
         
+        
+        # Converts the time given to data
+        l = list((re.findall('.*?[hm]', lowerTimeString)))
+        totalTime = 0
+        
+        # protect from incorrect inputs like #h#m
+        try:
+            for timeItem in l:
+                    totalTime += convert_to_seconds(timeItem)
+        except Exception as e:
+            totalTime = 0
+
+        if totalTime == 0:
+            charEmbed.description = "You may have formatted the time incorrectly or calculated for 0. Try again with the correct format." + rewardCommand
+            await channel.send(embed=charEmbed)
+            return
+        
         characterPresent = False    #base case: No character is given
         
         
         # Checks to see if a tier was given. If there wasn't, it then checks to see if a valid character was given. If not, error.
         if tier not in ('0','1','2','3','4', '5') and tier.lower() not in [r.lower() for r in roleArray]:
             charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
-            if charEmbedmsg == None:
-                await channel.send(f"**{tier}** is not a valid tier or character name. Please try again with **New** or **0**, **Junior** or **1**, **Journey** or **2**, **Elite** or **3**, **True** or **4**, or **Ascended** or **5**, or input a valid character name.")
+            if charDict == None:
+                charEmbed.description = f"**{tier}** is not a valid tier or character name. Please try again with **New** or **0**, **Junior** or **1**, **Journey** or **2**, **Elite** or **3**, **True** or **4**, or **Ascended** or **5**, or input a valid character name."
+                charEmbed.clear_fields()
+                
+                # reuse the message created by checkForChar
+                if charEmbedmsg:
+                    await charEmbedmsg.edit(embed=charEmbed)
+                else:
+                    await channel.send(embed=charEmbed)
                 return
             else:
                 characterPresent = True
         
-        # Converts the time given to data
-        l = list((re.findall('.*?[hm]', lowerTimeString)))
-        totalTime = 0
-        for timeItem in l:
-            totalTime += convert_to_seconds(timeItem)
-
-        if totalTime == 0:
-            await channel.send(content="You may have formatted the time incorrectly or calculated for 0. Try again with the correct format." + rewardCommand)
-            return
+        
 
         # Calculates rewards and output if a tier was given instead of a character
         if not characterPresent:
@@ -85,7 +101,13 @@ class Reward(commands.Cog):
             treasureArray = [cp, tp, gp]
             durationString = timeConversion(totalTime)
             treasureString = f"{treasureArray[0]} CP, {treasureArray[1]} TP, and {treasureArray[2]} GP"
-            await channel.send(content=f"A {durationString} game would give a **{tierName}** Friend\n{treasureString}")
+            
+            charEmbed.description = f"A {durationString} game would give a **{tierName}** Friend\n{treasureString}"
+            charEmbed.clear_fields()
+            if charEmbedmsg:
+                await charEmbedmsg.edit(embed=charEmbed)
+            else:
+                await channel.send(embed=charEmbed)
             return
         else:  # Calculates rewards and output if a character was given.
                         
@@ -120,16 +142,18 @@ class Reward(commands.Cog):
                 if resultLevel > 4:
                     maxCP = 10
             
-            # A for loop that prints out multiple tiers of TP
-            tpString = ""
-            for x in treasureArray[1]:
-                tpString += str(treasureArray[1].get(x)) + " "
-                tpString += x + ", "
-                print(tpString)
+            # A list comprehension that joins together the TP values with their names into one string.
+            tpString = ", ".join([f"{value} {key}" for key, value in treasureArray[1].items()])+", "
             
             totalGold = charDict["GP"] + treasureArray[2]
+            
             # Final output plugs in the duration string, treasure string, tp string, and other variables to make a coherent output
-            await channel.send(content=f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {int(resultLevel)} with {int(resultCP)} CP with an additional {tpString}and {totalGold} gold total!")
+            charEmbed.description = f"A {durationString} game would give **{charDict['Name']}** \n{treasureString}\n**{charDict['Name']}** will be level {resultLevel} with {resultCP} CP with an additional {tpString}and {totalGold} gold total!"
+            charEmbed.clear_fields()
+            if charEmbedmsg:
+                await charEmbedmsg.edit(embed=charEmbed)
+            else:
+                await channel.send(embed=charEmbed)
             return
             
             
