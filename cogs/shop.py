@@ -1044,7 +1044,7 @@ class Shop(commands.Cog):
       channel -> the channel the interaction is being made in
       author -> who is doing the purchase
     """
-    async def purchaseProficiency(self, purchaseOption, specificationText, skillFloor, skillRate, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author ):
+    async def purchaseProficiency(self, purchaseOption, trainingType, specificationText, skillFloor, skillRate, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author ):
         if gpNeeded > charRecords['GP']:
             await channel.send(f"***{charRecords['Name']}*** does not have enough GP to learn a language or gain proficiency in a tool in this way.")
             return
@@ -1067,7 +1067,7 @@ class Shop(commands.Cog):
             purchasePossibilities = purchasePossibilities+" (or skill)"
         
         #update embed text to ask for confirmation
-        shopEmbed.title = f"Downtime Training: {charRecords['Name']}"
+        shopEmbed.title = f"Downtime {trainingType} Training: {charRecords['Name']}"
         shopEmbed.description = f"Are you sure you want to learn your **{specificationText}** {purchasePossibilities} for {gpNeeded} GP?\nCurrent GP: {charRecords['GP']} GP\nNew GP: {newGP} GP\n\n✅: Yes\n\n❌: Cancel"
         
         #if a past message exists update that, otherwise send a new one
@@ -1128,7 +1128,7 @@ class Shop(commands.Cog):
             textArray = ["1st", "2nd", "3rd", "4th", "5th"]
             
             #call the extracted function
-            await self.purchaseProficiency('Proficiency', textArray[charRecords['Proficiency']], 0, 5, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
+            await self.purchaseProficiency('Proficiency', 'Friend', textArray[charRecords['Proficiency']], 0, 5, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
                 
     @downtime.command(aliases=["n"])
     async def noodle(self, ctx , charName):
@@ -1166,7 +1166,7 @@ class Shop(commands.Cog):
             gpNeeded = max(0, 500 - charRecords['NoodleTraining'] * 100)
             
             #call the extracted function
-            await self.purchaseProficiency('NoodleTraining',noodleRoleArray[charRecords['NoodleTraining']], 3, 2, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
+            await self.purchaseProficiency('NoodleTraining', 'Noodle',noodleRoleArray[charRecords['NoodleTraining']], 3, 2, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
             
            
 

@@ -7,19 +7,25 @@ import decimal
 import random
 import discord
 import asyncio
+from cogs.guild import pin_control
 from discord.utils import get        
 from discord.ext import commands
 from math import ceil, floor
 from itertools import product      
 from datetime import datetime, timezone,timedelta
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
+from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, roleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
+
+
+def campaign_channel_check(channel):
+    return "campaign" in str(channel.category.name).lower()
 
 class Campaign(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
        
+
     @commands.group(aliases=['c'], case_insensitive=True)
     async def campaign(self, ctx):	
         pass
@@ -226,7 +232,13 @@ class Campaign(commands.Cog):
         if campaignRecords['Campaign Master ID'] != str(author.id):
             await channel.send(f"You cannot add users to this campaign because you are not the campaign master of {campaignRecords['Name']}")
             return
-
+        
+        roles = [r.name for r in user[0].roles]
+        if "D&D Friend" not in roles:
+            await channel.send(f"You cannot add users to this campaign because they have not applied yet.")
+            return
+            
+            
         usersCollection = db.users
         userRecords = usersCollection.find_one({"User ID": str(user[0].id)})  
         if not userRecords:
@@ -240,6 +252,8 @@ class Campaign(commands.Cog):
         userRecords['Campaigns'][campaignRecords['Name']]["Active"] = True
 
         await user[0].add_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
+        if not any([role in roles for role in ["New Friend", "Junior Friend", "Journeyfriend", "Elite Friend", "True Friend", "Ascended Friend"]]):
+            await user[0].add_roles(get(guild.roles, name = "Junior Friend"), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
 
         try:
             usersCollection.update_one({'_id': userRecords['_id']}, {"$set": {"Campaigns": userRecords['Campaigns']}}, upsert=True)
@@ -959,7 +973,8 @@ class Campaign(commands.Cog):
             stopEmbed.set_footer(text=stopEmbed.Empty)
             dateend = datetime.fromtimestamp(end).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
             totalDuration = timeConversion(end - startTime)
-            stopEmbed.description = f"**{game}**\nStart: {datestart} EST\nEnd: {dateend} EST\nRuntime: {totalDuration}\nPut your summary here."
+
+            stopEmbed.description = f"**{game}**\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\nPut your summary here."
 
             playerData = []
             campaignCollection = db.campaigns
@@ -979,7 +994,9 @@ class Campaign(commands.Cog):
                     "Campaigns."+campaignRecord["Name"]+".Sessions" :1}
                     playerData.append(v)
                 stopEmbed.add_field(name=key, value=temp, inline=False)
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :sparkles:: {dmChar['DB Entry']['Noodles']}\nGained :sparkles:: {int((total_duration/3600)//3)}", inline=False)
+            if 'Noodles' not in dmChar['DB Entry']:
+                dmChar['DB Entry']['Noodles'] = 0
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}", inline=False)
 
             try:   
                 usersCollection = db.users
@@ -1023,6 +1040,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     await modMessage.add_reaction(e)
                 print('Success')  
                 stopEmbed.set_footer(text=f"Game ID: {session_msg.id}\nLog is being processed. If you have appended a summary to your campaign session log more than 24 hours after the session ended, message a Mod with a link to your campaign session log to get it approved.")
+
                 
                 print('Success')  
                 await session_msg.edit(embed=stopEmbed)
@@ -1151,13 +1169,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         channel = ctx.channel # 728456783466725427 737076677238063125
         
 
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
+
+        if not campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await channel.send('Try this command in a campaign channel! ')
+            return
                 
         try:
             editMessage = await channel.fetch_message(num)
@@ -1181,10 +1197,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             await editMessage.edit(embed=sessionLogEmbed)
         except Exception as e:
             delMessage = await ctx.channel.send(content=f"Your session log caused an error with Discord, most likely from length.")
-        try:
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
-        except Exception as e:
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
+        else:
+            try:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
+            except Exception as e:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
         await asyncio.sleep(20) 
         await delMessage.delete()
         await ctx.message.delete() 
@@ -1196,15 +1213,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         if not (ctx.message.channel_mentions == list()):
             channel = ctx.message.channel_mentions[0] 
         
-        
-
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await ctx.channel.send('Channel is not a campaign channel! ')
-                return
+        if not campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await ctx.channel.send('Channel is not a campaign channel! ')
+            return
                 
         try:
             editMessage = await channel.fetch_message(num)
@@ -1288,10 +1300,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     if 'Eternal Noodle' not in dmRoleNames:
                         noodleRole = get(guild.roles, name = 'Eternal Noodle')
                         await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
-                        if 'Ascended Noodle' in dmRoleNames:
+                        if 'Immortal Noodle' in dmRoleNames:
                             await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
                         noodleString += "\n**Eternal Noodle** role received! :tada:"
-                if noodles >= 150:
+                elif noodles >= 150:
                     if 'Immortal Noodle' not in dmRoleNames:
                         noodleRole = get(guild.roles, name = 'Immortal Noodle')
                         await dmUser.add_roles(noodleRole, reason=f"Hosted 150 sessions. This user has 150+ Noodles.")
@@ -1340,13 +1352,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             channel = ctx.message.channel_mentions[0] 
         
 
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await ctx.channel.send('Channel is not a campaign channel! ')
-                return
+        if not campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await ctx.channel.send('Channel is not a campaign channel! ')
+            return
                 
         
         try:
@@ -1402,88 +1411,53 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         else:
             await ctx.channel.send('Log has already been processed! ')
 
+    async def campaign_check(self, ctx):
+        channel = ctx.channel
+        author = ctx.author
+        if not campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await channel.send('Try this command in a campaign channel! ')
+            return False
+        
+        campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
+        if not campaignRecords:
+            return False
+        if str(author.id) != campaignRecords['Campaign Master ID']:
+            await channel.send(f"You are not the campaign owner!")
+            return False
+        return True
+
     @campaign.command()
     @commands.has_any_role('Campaign Master')
     async def pin(self,ctx):
-        channel = ctx.channel
-        author = ctx.author
         
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
+        if not await self.campaign_check(ctx):
+            return
         
-        campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         
-        if str(author.id) != campaignRecords['Campaign Master ID']:
-            await channel.send(f"You are not the campaign owner!")
-            return 
-        
-        async with channel.typing():
-            async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
-                await message.pin() #pins the previous message
+        async with ctx.channel.typing():
+            
+            await pin_control(self, ctx, "pin")
+            async for message in ctx.channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel to delete, including the message saying that something was pinned.
+                if message.type != ctx.message.type:
+                    await message.delete()
 
-                async for message in channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel to delete, including the message saying that something was pinned.
-                    if message.type != ctx.message.type:
-                        await message.delete()
-                await ctx.message.delete()
-
-        print('Success')
-        resultMessage = await ctx.channel.send(f"You have successfully pinned your message to this channel! This message will self-destruct in 10 seconds.")
-        await asyncio.sleep(10) 
-        await resultMessage.delete()
         
     @campaign.command()
     @commands.has_any_role('Campaign Master')
     async def unpin(self,ctx):
-        channel = ctx.channel
-        author = ctx.author
         
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
+        if not await self.campaign_check(ctx):
+            return
         
-        campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
-        if str(author.id) != campaignRecords['Campaign Master ID']:
-            await channel.send(f"You are not the campaign owner!")
-            return 
-        
-        pins = await channel.pins()
-        for message in pins:
-            await message.unpin()
-
-        print('Success')
-        await ctx.message.delete()
-        
-        resultMessage = await ctx.channel.send(f"You have successfully unpinned all pinned messages to this channel! This message will self-destruct in 10 seconds.")
-        await asyncio.sleep(10) 
-        await resultMessage.delete()
+        async with ctx.channel.typing():
+            await pin_control(self, ctx, "unpin")
     
     @campaign.command()
     @commands.has_any_role('Campaign Master')
-    async def topic(self, ctx, messageTopic): # channelName=""
-        channel = ctx.channel
-        author = ctx.author
+    async def topic(self, ctx, *, messageTopic = ""): # channelName=""
         
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
-
-        campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
-        
-        if str(author.id) != campaignRecords['Campaign Master ID']:
-            await channel.send(f"You are not the campaign owner!")
+        if not await self.campaign_check(ctx):
             return
         
         await ctx.channel.edit(topic=messageTopic)

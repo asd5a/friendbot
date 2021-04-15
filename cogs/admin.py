@@ -6,6 +6,7 @@ from discord.utils import get
 from discord.ext import commands
 import sys
 import traceback
+import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
@@ -143,6 +144,56 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
             
+    @commands.command()
+    @admin_or_owner()
+    async def updateInventory(self, ctx, oldName, newName):
+        player_list = db.players.find(
+               {"Inventory."+oldName: {"$exists": True}}
+            )
+        renameData = list(map(lambda item: UpdateOne({'_id': item['_id']}, {"$inc" : {"Inventory."+newName : item["Inventory"][oldName]}, "$unset" : {"Inventory."+oldName : 1}}), player_list))
+        
+        try:
+            if(len(renameData)>0):
+                db.players.bulk_write(renameData)
+        except BulkWriteError as bwe:
+            print(bwe.details)
+            # if it fails, we need to cancel and use the error details
+            return
+        await ctx.channel.send(content=f"Successfully renamed {oldName} to {newName} of {len(player_list)} player inventories")
+            
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def alignmentList(self, ctx):
+        player_list = list(db.players.find(
+               {"Alignment": {"$exists": True}})
+            )
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Alignment"].replace("\"", "") for x in player_list])))).items()]))  
+    
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def reflavorList(self, ctx):
+        player_list = list(db.players.find(
+               {"Reflavor": {"$exists": True}})
+            )
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Reflavor"].replace("\"", "") for x in player_list])))).items()]))  
+    
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def nicknameList(self, ctx):
+        player_list = list(db.players.find(
+               {"Nickname": {"$exists": True}})
+            )
+        out ="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Nickname"].replace("\"", "") for x in player_list])))).items()])
+        
+        length = len(out)
+        while(length>2000):
+            x = out[:2000]
+            x = x.rsplit("\n", 1)[0]
+            await ctx.channel.send(content=x)
+            out = out[len(x):]
+            length -= len(x)
+        await ctx.channel.send(content=out)
+    
     @commands.command()
     @admin_or_owner()
     async def printTierItems(self, ctx, tier: int, tp: int):
@@ -337,15 +388,23 @@ class Admin(commands.Cog, name="Admin"):
         curr_message = ""
         count = 0
         new_stuff = False
+        
+        symbol_count_fix = [0,0,0]
         for u in all_users:
-            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} {'👑'*(u['Noodles']//100)}{'🌟'*((u['Noodles']%100)//10)}{'⭐'*(u['Noodles']%10)}\n"
-             
-            if len(curr_message) >1900:
+            crown_count = u['Noodles']//100
+            big_star_count = (u['Noodles']%100)//10
+            star_count = u['Noodles']%10
+            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} {'👑'*(crown_count)}{'🌟'*big_star_count}{'⭐'* star_count}\n"
+            symbol_count_fix[0] +=crown_count
+            symbol_count_fix[1] +=big_star_count
+            symbol_count_fix[2] +=star_count
+            if len(curr_message) >1900-19*symbol_count_fix[0] - 19*symbol_count_fix[1] - 19*symbol_count_fix[2]:
                 count += 1
                 next_message = await ctx.channel.send(str(count))
                 all_messages.append([next_message, curr_message])
                 curr_message = ""
                 new_stuff = False
+                symbol_count_fix = [0,0,0]
             else:
                 new_stuff = True
         if new_stuff:
@@ -1031,8 +1090,9 @@ def setup(bot):
 
 
 
-# Secret Admin/Dev-only Commands
+#### Secret Admin/Dev-only Commands
 
+## Note: these commands are not case-sensitive and are only capitalized to emphasize the name of the commands.
 
 # $removeCharacter "character name"
     # Deletes a character from the database.
@@ -1049,17 +1109,26 @@ def setup(bot):
 # $printTierItems tier TP
     # Prints a list of magic items in the specified tier and TP.
 
-# $printrewarditems tier
+# $printRewardItems tier
     # Prints a list of reward items in the specified tier.
 
-# $tpupdate tier TP newTP
+# $tpUpdate tier TP newTP
     # Updates all magic items in the specified tier and TP to the new TP value.
 
-# $goldupdate tier TP newGP
+# $goldUpdate tier TP newGP
     # Updates all magic items int he specified tier and TP to the new GP value.
 
 # $moveItem "item" tier TP
     # Moves the specified magic item to the specified tier and TP and refunds all characters with partial TP towards it. It does not refund completed items and is mostly non-functional.
+
+# $guild rename "new name" #guild-channel
+    # Renames a guild in the following sub-databases: guilds.db (the guild entry itself), players.db (each individual character entry that is part of the guild), stats.db (monthly and lifetime quest tracking), and users.db (which displays the Noodle role used to create the guild).
+
+# $snapGuild #channel
+    # Removes the guild entry in guilds.db, refunds all GP spent joining the guild and upgrading guild ranks, and removes all instances of it from individual entries in players.db. It leaves stats untouched and doesn't refund the Guildmaster's Noodle role in guilds.db.
+
+# $generateBoard
+    # Posts a list of all users that have a Noodle count in descending order.
 
 # $send channelID message
     # Forces Bot Friend to send a message in the specified channel.

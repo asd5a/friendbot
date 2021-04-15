@@ -303,12 +303,15 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
         sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
+        await editMessage.clear_reactions()
         if sessionInfo["Status"] == "Approved":
             status_text = "✅ Log approved! The DM and players have received their rewards and their characters can be used in further one-shots."
         elif sessionInfo["Status"] == "Denied":
             status_text = "❌ Log Denied! Characters have been cleared"
         elif sessionInfo["Status"] == "Pending":
             status_text = "❔ Log Pending! DM has been messaged due to session log issues."
+            
+            await editMessage.add_reaction('<:nipatya:408137844972847104>')
         sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}")
         
         # add the field for the DM's player rewards
@@ -440,7 +443,7 @@ class Log(commands.Cog):
         userIDs.append(str(dm["ID"]))
         
         # the db entry of every character
-        characterDBentries = playersCollection.find({"_id": {"$in": characterIDs}})
+        characterDBentries = list(playersCollection.find({"_id": {"$in": characterIDs}}))
         
         # the db entry of every user
         userDBentries = usersCollection.find({"User ID": {"$in": userIDs}})
@@ -471,6 +474,7 @@ class Log(commands.Cog):
 
         
         for character in characterDBentries:
+            print(character)
             player = players[str(character["User ID"])]
             # this indicates that the character had died
             if player["Status"] == "Dead":
@@ -743,7 +747,6 @@ class Log(commands.Cog):
                                                    {"$inc": {"Games": 1, "Reputation": int(gain- reputationCost), "Total Reputation": gain}}))
         
         del players[dm["ID"]]
-        
         try:
             end = sessionInfo["End"]
             start = sessionInfo["Start"]
@@ -803,7 +806,7 @@ class Log(commands.Cog):
             usersCollection.update_one({'User ID': str(dm["ID"])}, {"$set": {'User ID':str(dm["ID"])}, "$inc": {'Games': 1, 'Noodles': noodlesGained, 'Double': -1*dm["Double"]}}, upsert=True)
             playersCollection.bulk_write(timerData)
             
-            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in players.items()])
+            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in {character["User ID"] : players[character["User ID"] ] for character in characterDBentries}.items()])
             usersCollection.bulk_write(usersData)
             
             logData.update_one({"_id": sessionInfo["_id"]}, {"$set" : {"Status": "Approved"}})
@@ -851,10 +854,10 @@ class Log(commands.Cog):
                 if 'Eternal Noodle' not in dmRoleNames:
                     noodleRole = get(guild.roles, name = 'Eternal Noodle')
                     await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
-                    if 'Ascended Noodle' in dmRoleNames:
+                    if 'Immortal Noodle' in dmRoleNames:
                         await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
                     noodleString += "\n**Eternal Noodle** role received! :tada:"
-            if noodles >= 150:
+            elif noodles >= 150:
                 if 'Immortal Noodle' not in dmRoleNames:
                     noodleRole = get(guild.roles, name = 'Immortal Noodle')
                     await dmUser.add_roles(noodleRole, reason=f"Hosted 150 sessions. This user has 150+ Noodles.")
@@ -1210,8 +1213,7 @@ class Log(commands.Cog):
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
             if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or 
-                "Mod Friend" in [r.name for r in ctx.author.roles] and 
-                sessionInfo["DDMRW"]):
+                "Mod Friend" in [r.name for r in ctx.author.roles]):
                 pass
                  
             else:
@@ -1229,12 +1231,17 @@ class Log(commands.Cog):
             sessionLogEmbed.description += "\n"+editString
         try:
             await editMessage.edit(embed=sessionLogEmbed)
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will delete your message and this one in 30 seconds.\n\n:warning: **DO NOT DELETE YOUR OWN MESSAGE.** :warning:")
-            await asyncio.sleep(30) 
-            await ctx.message.delete()
-            await delMessage.delete()
         except Exception as e:
             delMessage = await ctx.channel.send(content=f"The maximum length of the session log summary is 2048 symbols. Please reduce the length of your summary.")
+        else:
+            try:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
+            except Exception as e:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
+        
+        await asyncio.sleep(30) 
+        await ctx.message.delete()
+        await delMessage.delete()
         
         
         
