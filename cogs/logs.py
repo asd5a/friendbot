@@ -304,7 +304,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                     gain += sparklesGained*int("Guild" in dm and dm["Guild"] == name)
                     guildRewardsStr += f"{g['Name']}: +{int(gain)} :sparkles:\n"
         
-        noodleCongrats = None
+        noodleCongrats = ""
         if noodles < 210 and noodleFinal >= 210:
             noodleCongrats = "Congratulations! You have reached Eternal Noodle!"
         elif noodles < 150 and noodleFinal >= 150:
@@ -325,20 +325,19 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             status_text = "✅ Log approved! The DM and players have received their rewards and their characters can be used in further one-shots."
         elif sessionInfo["Status"] == "Denied":
             status_text = "❌ Log Denied! Characters have been cleared"
-            noodleCongrats = None
+            noodleCongrats = ""
         elif sessionInfo["Status"] == "Pending":
             status_text = "❔ Log Pending! DM has been messaged due to session log issues."
             
             await editMessage.add_reaction('<:nipatya:408137844972847104>')
+        
+        sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}\n{noodleCongrats}")
         if noodleCongrats:
-            sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}\n{noodleCongrats}")
             await editMessage.add_reaction('🎉')
             await editMessage.add_reaction('🎊')
             await editMessage.add_reaction('🥳')
             await editMessage.add_reaction('🍾')
             await editMessage.add_reaction('🥂')
-        else:
-            sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}")
         
         # add the field for the DM's player rewards
         dm_text = "**No Character**"
