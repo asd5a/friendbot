@@ -8,10 +8,8 @@ from datetime import datetime, timezone,timedelta
 async def pin_control(self, ctx, goal):
         author = ctx.author
         channel = ctx.channel
-        print(ctx.invoked_with)
         infoMessage = await channel.send(f"You have 60 seconds to react to the message you want to {ctx.invoked_with} with the 📌 emoji (`:pushpin:`)!")
         def pinnedEmbedCheck(event):
-            print(event)
             return str(event.emoji) == '📌' and event.user_id == author.id
         try:
             event = await self.bot.wait_for("raw_reaction_add", check=pinnedEmbedCheck , timeout=60)

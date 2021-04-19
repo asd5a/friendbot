@@ -2923,7 +2923,31 @@ class Character(commands.Cog):
             else:
                 await charEmbedmsg.edit(embed=charEmbed)
 
-           
+    # @commands.cooldown(1, 5, type=commands.BucketType.member)
+    # @is_log_channel_or_game()
+    # @commands.command()
+    async def unapply(self, ctx):
+        bot = self.bot
+        author = ctx.author
+        channel = ctx.channel
+        infoMessage = await channel.send(f"You have 60 seconds to react to your application with the ❌ emoji (`:x:`)!")
+        def pinnedEmbedCheck(event):
+            return str(event.emoji) == '❌' and event.user_id == author.id
+        try:
+            event = await self.bot.wait_for("raw_reaction_add", check=pinnedEmbedCheck , timeout=60)
+        except asyncio.TimeoutError:
+            await infoMessage.edit(content=f'The `{ctx.invoked_with}` command has timed out! Try again.')
+            return
+        message = await channel.fetch_message(event.message_id)
+        fail = True
+        await ctx.message.delete()
+        if message.author.id == bot.user.id and len(message.embeds) > 0 and message.embeds[0].author.name == (author.name+"#"+author.discriminator):
+            await message.delete()
+            fail = False
+        await infoMessage.edit(content = f"You have {'un'*fail}successfully unapplied! This message will self-destruct in 10 seconds.")     
+        await asyncio.sleep(10) 
+        await infoMessage.delete()
+        
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel_or_game()
     @commands.command(aliases=['i', 'char'])
@@ -4784,7 +4808,7 @@ class Character(commands.Cog):
                 #     return None, None, None
 
                 charStats[asiList[asi]] = int(charStats[asiList[asi]]) + 1
-                charEmbed.set_field_at(0,name=f"ASI First Stat", value=f"{alphaEmojis[asi]}: {statNames[asi]}", inline=False)
+                charEmbed.set_field_at(0,name=f"ASI First Stat", value=f"{alphaEmojis[asi]}: {asiList[asi]}", inline=False)
                 if ctx.invoked_with == "levelup":
                      charEmbed.description = f"{race}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
 

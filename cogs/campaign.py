@@ -1267,14 +1267,14 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
 
             playersData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), data))
             
+            desc = sessionLogEmbed.description
+            date_find = re.search("Start\\*\\*: (.*?) ", desc)
 
             try:
                 if len(data) > 0:
                     usersCollection.bulk_write(playersData)
                 campaignCollection.update_one({"_id": campaignRecord["_id"]}, {"$inc" : {"Sessions" : 1}})
                 db.stats.update_one({"Life": 1}, {"$inc" : {"Campaigns" : 1}})
-                desc = sessionLogEmbed.description
-                date_find = re.search("Start: (.*?) ", desc)
                 if date_find:
                     month_year_splits = date_find[1].split("-")
                     db.stats.update_one({"Date": f"{month_year_splits[0]}-{month_year_splits[2]}"}, {"$inc" : {"Campaigns" : 1}})
