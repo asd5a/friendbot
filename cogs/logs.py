@@ -317,6 +317,9 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             noodleCongrats = "Congratulations! You have reached Elite Noodle!"
         elif noodles < 10 and noodleFinal >= 10:
             noodleCongrats = "Congratulations! You have reached Good Noodle!"
+        elif noodles < 1 and noodleFinal >= 1:
+            noodleCongrats = "Congratulations on hosting your first game!"
+        
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
         sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
