@@ -587,7 +587,7 @@ class Campaign(commands.Cog):
             signupFormat = f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer signup```'
             # create an embed object
             # This is only true if this is during a campaign, in that case there are no characters or consumables
-            if char is None: 
+            if char is None and author.id != ctx.author.id: 
                 usersCollection = db.users
                 # grab the DB records of the first user with the ID of the author
                 userRecord = usersCollection.find_one({"User ID": str(author.id)})
@@ -996,7 +996,7 @@ class Campaign(commands.Cog):
                 stopEmbed.add_field(name=key, value=temp, inline=False)
             if 'Noodles' not in dmChar['DB Entry']:
                 dmChar['DB Entry']['Noodles'] = 0
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}", inline=False)
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}\nGained :star:: {dmChar['DB Entry']['Noodles']+int((total_duration/3600)//3)}", inline=False)
 
             try:   
                 usersCollection = db.users
@@ -1379,7 +1379,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 for i in "\<>@#&!:":
                     log.value = log.value.replace(i, "")
                 
-                logItems = log.value.split(' | ')
+                logItems = log.value.split('\n')
                 
                 if "DM" in log.name:
                     dmID = logItems[0].strip()

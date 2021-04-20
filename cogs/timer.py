@@ -1767,11 +1767,11 @@ class Timer(commands.Cog):
                     playerList.append(value)
             hoursPlayed = (totalDurationTime // 1800) / 2
             
-            # if hoursPlayed < 0.5:
-                # self.timer.get_command('prep').reset_cooldown(ctx)
-                # await ctx.channel.send(content=f"The session was less than 30 minutes and therefore was not counted.")
+            if hoursPlayed < 0.5:
+                self.timer.get_command('prep').reset_cooldown(ctx)
+                await ctx.channel.send(content=f"The session was less than 30 minutes and therefore was not counted.")
                 
-                # return
+                return
             # check if the game has rewards
             if role != "":
                 # post a session log entry in the log channel
