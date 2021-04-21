@@ -996,7 +996,7 @@ class Campaign(commands.Cog):
                 stopEmbed.add_field(name=key, value=temp, inline=False)
             if 'Noodles' not in dmChar['DB Entry']:
                 dmChar['DB Entry']['Noodles'] = 0
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}\nGained :star:: {dmChar['DB Entry']['Noodles']+int((total_duration/3600)//3)}", inline=False)
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}\Final :star:: {dmChar['DB Entry']['Noodles']+int((total_duration/3600)//3)}", inline=False)
 
             try:   
                 usersCollection = db.users
