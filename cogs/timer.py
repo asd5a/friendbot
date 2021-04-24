@@ -191,7 +191,7 @@ class Timer(commands.Cog):
         # if is not a campaign add the selected tier to the message title and inform the users about the possible commands (signup, add player, remove player, add guild)
         if not isCampaign:
             prepEmbed.title = f"{game} (Tier {roleArray.index(role)})"
-            prepEmbed.description = f"**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Set guild**: {commandPrefix}timer guild #guild1, #guild2, #guild3"
+            prepEmbed.description = f"**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Add guild(s)**: {commandPrefix}timer guild #guild1, #guild2"
 
         else:
             # otherwise give an appropriate title and inform about the limited commands list (signup, add player, remove player)
@@ -412,7 +412,7 @@ class Timer(commands.Cog):
                                 break
                                 
                         if not invalidChannel:
-                            prepEmbed.description = f"Guilds: {', '.join([g.mention for g in guildsList])}\n**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Set guild**: {commandPrefix}timer guild #guild1, #guild2"
+                            prepEmbed.description = f"Guilds: {', '.join([g.mention for g in guildsList])}\n**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Add guild(s)**: {commandPrefix}timer guild #guild1, #guild2"
                     else:
                         await channel.send(f"I couldn't find any mention of a guild. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2```") 
 
