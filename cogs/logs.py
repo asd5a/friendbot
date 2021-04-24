@@ -250,7 +250,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     
     #new noodle total
     noodleFinal = noodles + noodlesGained
-    noodleFinalString = "Final :star:: " + str(noodleFinal) 
+    noodleFinalString = "Total :star:: " + str(noodleFinal) 
 
     # if the game received rewards
     if role != "": 
