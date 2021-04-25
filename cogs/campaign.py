@@ -193,7 +193,7 @@ class Campaign(commands.Cog):
                 else: 
                     campaignEmbedmsg = await channel.send(embed=campaignEmbed)
         else:
-            await channel.send("You need a user profile to create a campaign. Use ```$user``` in one of the log channels.")
+            await channel.send("You need a user profile to create a campaign. Use the `$user` command in one of the log channels.")
         return
 
     #@commands.cooldown(1, 5, type=commands.BucketType.member)
@@ -226,23 +226,23 @@ class Campaign(commands.Cog):
         campaignRecords = campaignCollection.find_one({"Channel ID": {"$regex": f"{campaignName.id}", '$options': 'i' }})
 
         if not campaignRecords:
-            await channel.send(f"{campaignName.mention} doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
+            await channel.send(f"**{campaignName.mention}** doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
             return
 
         if campaignRecords['Campaign Master ID'] != str(author.id):
-            await channel.send(f"You cannot add users to this campaign because you are not the campaign master of {campaignRecords['Name']}")
+            await channel.send(f"You cannot add users to this campaign because you are not the Campaign Master of **{campaignRecords['Name']}**.")
             return
         
         roles = [r.name for r in user[0].roles]
         if "D&D Friend" not in roles:
-            await channel.send(f"You cannot add users to this campaign because they have not applied yet.")
+            await channel.send(f"***{user[0].display_name}*** needs to apply for membership to the server before they can be added to a campaign! Please have them apply for membership and then use this command again. See section :two: of #how-to-play for more information on applying for membership.")
             return
             
             
         usersCollection = db.users
         userRecords = usersCollection.find_one({"User ID": str(user[0].id)})  
         if not userRecords:
-            await channel.send(f" {user[0].display_name} needs to establish a user entry first using $user in a log channel.")
+            await channel.send(f"***{user[0].display_name}*** needs to establish a user profile before they can be added to a campaign! Please have them use the `$user` command in a log channel and then use this command again.")
             return
         if 'Campaigns' not in userRecords:
             userRecords['Campaigns'] = {campaignRecords['Name'] : {"Time" : 0, "Sessions" : 0} }
@@ -309,7 +309,7 @@ class Campaign(commands.Cog):
             return
         
         if campaignRecords['Campaign Master ID'] != str(author.id):
-            await channel.send(f"You cannot remove users from this campaign because you are not the Campaign Master of {campaignRecords['Name']}")
+            await channel.send(f"You cannot remove users from this campaign because you are not the Campaign Master of **{campaignRecords['Name']}**.")
             return
         user_roles = [r.name for r in user[0].roles]
         if campaignRecords["Name"] not in user_roles:
@@ -412,7 +412,7 @@ class Campaign(commands.Cog):
         usersCollection = db.users
         dm_record_check = list(usersCollection.find({"User ID": str(author.id)}))
         if len(dm_record_check) < 1:
-            await channel.send(f"The DM has no DB record. Use ```$user``` in a log channel.")
+            await channel.send(f"The DM has no DB record. Use the `$user` command in a log channel.")
             self.timer.get_command('prep').reset_cooldown(ctx)
             return 
         dmRecord = dm_record_check[0]
@@ -996,7 +996,7 @@ class Campaign(commands.Cog):
                 stopEmbed.add_field(name=key, value=temp, inline=False)
             if 'Noodles' not in dmChar['DB Entry']:
                 dmChar['DB Entry']['Noodles'] = 0
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}\Final :star:: {dmChar['DB Entry']['Noodles']+int((total_duration/3600)//3)}", inline=False)
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}\nTotal :star:: {dmChar['DB Entry']['Noodles']+int((total_duration/3600)//3)}", inline=False)
 
             try:   
                 usersCollection = db.users
