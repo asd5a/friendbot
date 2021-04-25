@@ -4,8 +4,12 @@ import requests
 import re
 from discord.utils import get        
 from discord.ext import commands
+from cogs.admin import liner_dic
 from bfunc import db, commandPrefix,  alphaEmojis, roleArray, checkForChar, noodleRoleArray, callAPI, traceBack, numberEmojis, settingsRecord
 from math import floor
+
+
+
 
 class Shop(commands.Cog):
     def __init__ (self, bot):
@@ -20,7 +24,11 @@ class Shop(commands.Cog):
     async def shop(self, ctx):	
         shopCog = self.bot.get_cog('Shop')
         pass
-
+        
+    # temporary command that verifies updates to shop one liners
+    @commands.command()
+    async def wop(self, ctx):
+        print(liner_dic)
     async def cog_command_error(self, ctx, error):
         msg = None
 

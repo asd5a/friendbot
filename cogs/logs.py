@@ -1056,6 +1056,7 @@ class Log(commands.Cog):
                             guild_dic[g["Mention"]] = g
                         err_message = ""
                         for guildChannel in ctx.message.channel_mentions:
+                            
                             m = guildChannel.mention
                             # filter player list by guild
                             gPlayers = [p for p in players.values() if "Guild" in p and 
@@ -1117,7 +1118,8 @@ class Log(commands.Cog):
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
                         
-          
+                        
+    
     
     @session.group()
     async def ddmrw(self, ctx):	

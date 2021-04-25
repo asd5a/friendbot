@@ -10,7 +10,9 @@ import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar
+from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic
+
+
 
 
 def admin_or_owner():
@@ -109,6 +111,34 @@ class Admin(commands.Cog, name="Admin"):
             global settingsRecord
             settingsRecord["ddmrw"] = True
             await ctx.channel.send("Let the games begin!")
+    
+    @commands.command()
+    async def zoop(self, ctx):
+        file1 = open('find.txt', 'r', encoding="utf8")
+        lines = file1.readlines()
+        out = []
+        for line in lines:
+            print(line)
+            if line.strip():
+                out.append({"Text" : line.strip()})
+        result = db.liners_find.insert_many(out)
+        print(result.inserted_ids)
+        
+        
+    # temporary command that verifies updates to one liners
+    @commands.command()
+    @admin_or_owner()
+    async def wip(self, ctx):
+        print(liner_dic)
+        
+    # command that allows one to update each field of the liners dictionary
+    @commands.command()
+    @admin_or_owner()
+    async def updateLiners(self, ctx):
+        # get all entries of the relevant DB and extract the Text field and compile as a list and assign to the dic
+        liner_dic["Find"] = list([line["Text"] for line in db.liners_find.find()])
+        liner_dic["Meme"] = list([line["Text"] for line in db.liners_meme.find()])
+        liner_dic["Craft"] = list([line["Text"] for line in db.liners_craft.find()])
 
     @commands.command()
     async def endDDMRW(self, ctx):
@@ -996,7 +1026,7 @@ class Admin(commands.Cog, name="Admin"):
                         "Messages" : {"781360780162760765": "Roll20", "781360787854852106": "Foundry"},
                         "Emotes" : {"Roll20" : "<:adorabat:733763021008273588>" , "Foundry": "🗡️"}}}
 
-            db.settings.insert_one(settings)
+            #db.settings.insert_one(settings)
             await ctx.channel.send(content=f"Settings have been updated in the DB.")
     
         except Exception as e:

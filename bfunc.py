@@ -570,6 +570,11 @@ settings = db.settings
 
 global settingsRecord
 settingsRecord = list(settings.find())[0]
+# get all entries of the relevant DB and extract the Text field and compile as a list and assign to the dic
+liner_dic = {"Find" : list([line["Text"] for line in db.liners_find.find()]),
+             "Meme" : list([line["Text"] for line in db.liners_meme.find()]),
+             "Craft" : list([line["Text"] for line in db.liners_craft.find()])}
+
 
 # API_URL = ('https://api.airtable.com/v0/appF4hiT6A0ISAhUu/'+ 'races')
 # # API_URL += '?offset=' + 'itr4Z54rnNABYW8jj/recr2ss2DkyF4Q84X' 
