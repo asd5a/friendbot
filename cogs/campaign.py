@@ -433,8 +433,15 @@ class Campaign(commands.Cog):
 
         # otherwise give an appropriate title and inform about the limited commands list (signup, add player, remove player)
         prepEmbed.title = f"{game} (Campaign)"
-        prepEmbed.description = f"**DM Signup**: {commandPrefix}campaign timer signup \n**Player Signup**: {commandPrefix}campaign timer signup\n**Add to roster**: {commandPrefix}campaign timer add @player\n**Remove from roster**: {commandPrefix}campaign timer remove @player"
-        
+        prepEmbed.description = f"""**Command Checklist**
+1. **Players sign up**: {commandPrefix}campaign timer signup
+2. **DM adds or removes players (optional)**:
+   • **Add**: {commandPrefix}campaign timer add @player
+   • **Remove**: {commandPrefix}campaign timer remove @player
+3. **DM cancels or starts the campaign session**:
+   • **Cancel**: {commandPrefix}campaign timer cancel
+   • **Start**: {commandPrefix}campaign timer start"""
+
          #set up the special field for the DM character
         prepEmbed.add_field(name = f"{author.display_name} **(DM)**", value = author.mention)
         
@@ -448,7 +455,7 @@ class Campaign(commands.Cog):
             prepEmbed.add_field(name=p.display_name, value='Has not yet signed up for the campaign.', inline=False)
         playerRoster = [author] + playerRoster
         #set up a field to inform the DM on how to start the timer or how to get help with it
-        prepEmbed.set_footer(text= f"If enough players have signed up, use the following command to start the timer: `{commandPrefix}campaign timer start`\nUse the following command to see a list of campaign commands: `{commandPrefix}help campaign`")
+        prepEmbed.set_footer(text= f"Use the following command to see a list of campaign commands: {commandPrefix}help campaign")
 
         # if it is a campaign or the previous message somehow failed then the prepEmbedMsg would not exist yet send we now send another message
         prepEmbedMsg = await channel.send(embed=prepEmbed)
@@ -642,7 +649,7 @@ class Campaign(commands.Cog):
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
-            stampEmbed.set_footer(text=f'#{ctx.channel}\nType `{commandPrefix}help campaign` for help with a running timer.')
+            stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of campaign commands: {commandPrefix}help campaign')
             stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
 
             for u in userList["Players"].values():
@@ -929,7 +936,15 @@ class Campaign(commands.Cog):
             msgAfter = False
             
             # we need separate advice strings if there are no rewards
-            stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}campaign timer addme\n# Removing Yourself\n   {commandPrefix}campaign timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}campaign timer add @player\n# Removing Players\n   {commandPrefix}campaign timer remove @player\n# Stopping the Timer\n   {commandPrefix}campaign timer stop```'
+            stampHelp = f"""```md
+[Command][Checklist]
+1. **DM adds a player or they join late**:
+   • **DM adds**: {commandPrefix}campaign timer add @player
+   • **Player joins**: {commandPrefix}campaign timer addme
+2. **DM removes a player or they leave early**:
+   • **DM removes**: {commandPrefix}campaign timer remove @player
+   • **Player leaves**: {commandPrefix}campaign timer removeme
+3. **DM stops the campaign session**: {commandPrefix}campaign timer stop```"""
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):
@@ -1283,7 +1298,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
             else:
                 print("Success")
-                sessionLogEmbed.set_footer(text=f"Game ID: {num}\n✅ Log approved! The DM has received their Noodles and time and the players have received their time.")
+                sessionLogEmbed.set_footer(text=f"Game ID: {num}\n✅ Log approved! The DM has received their Noodle(s) and time and the players have received their time.")
                 await editMessage.edit(embed=sessionLogEmbed)
                 
                 await ctx.channel.send("The session has been approved.")
