@@ -944,7 +944,7 @@ class Campaign(commands.Cog):
 2. **DM removes a player or they leave early**:
    • **DM removes**: {commandPrefix}campaign timer remove @player
    • **Player leaves**: {commandPrefix}campaign timer removeme
-3. **DM stops the campaign session**: {commandPrefix}campaign timer stop"""
+3. **DM stops the campaign session**: {commandPrefix}campaign timer stop```"""
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):
