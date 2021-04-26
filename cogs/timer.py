@@ -1651,7 +1651,7 @@ class Timer(commands.Cog):
 4. **DM awards Reward Items**: {commandPrefix}timer reward @player "reward item1, reward item2, [...]"
 5. **DM revokes Reward Items**: {commandPrefix}timer undo rewards
 6. **Character Dies (removed by DM)**: {commandPrefix}timer death @player
-7. **DM stops the one-shot**: {commandPrefix}timer stop"""
+7. **DM stops the one-shot**: {commandPrefix}timer stop```"""
             else:
                 stampHelp = f"""```md
 [Command][Checklist]
@@ -1665,7 +1665,7 @@ class Timer(commands.Cog):
 4. **DM awards Reward Items**: {commandPrefix}timer reward @player "reward item1, reward item2, [...]"
 5. **DM revokes Reward Items**: {commandPrefix}timer undo rewards
 6. **Character Dies (removed by DM)**: {commandPrefix}timer death @player
-7. **DM stops the one-shot**: {commandPrefix}timer stop"""
+7. **DM stops the one-shot**: {commandPrefix}timer stop```"""
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):
