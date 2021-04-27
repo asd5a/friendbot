@@ -191,28 +191,32 @@ class Timer(commands.Cog):
         # if is not a campaign add the selected tier to the message title and inform the users about the possible commands (signup, add player, remove player, add guild)
         if not isCampaign:
             prepEmbed.title = f"{game} (Tier {roleArray.index(role)})"
-            prepEmbed.description = f"""**Command Checklist**
-1. **Players and DM sign up**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
-2. **DM adds guild(s) (optional)**: {commandPrefix}timer guild #guild1, #guild2
-3. **DM adds or removes players (optional)**:
-   • **Add**: {commandPrefix}timer add @player
-   • **Remove**: {commandPrefix}timer remove @player
-4. **DM cancels or starts the one-shot**:
-   • **Cancel**: {commandPrefix}timer cancel
-   • **Start**: {commandPrefix}timer start"""
+            prepEmbed.description = f"""__**Command Checklist**__
+**1. Players and DM sign up:**
+{commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
+**2. DM adds guild(s) (optional):**
+{commandPrefix}timer guild #guild1, #guild2
+**3. DM adds or removes players (optional):**
+• **Add**: {commandPrefix}timer add @player
+• **Remove**: {commandPrefix}timer remove @player
+**4. DM cancels or starts the one-shot:**
+• **Cancel**: {commandPrefix}timer cancel
+• **Start**: {commandPrefix}timer start"""
 
         else:
             # otherwise give an appropriate title and inform about the limited commands list (signup, add player, remove player)
             prepEmbed.title = f"{game} (Campaign)"
-            prepEmbed.description = f"""**Command Checklist**
-1. **Players and DM sign up**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
-2. **DM adds guild(s) (optional)**: {commandPrefix}timer guild #guild1, #guild2
-3. **DM adds or removes players (optional)**:
-   • **Add**: {commandPrefix}timer add @player
-   • **Remove**: {commandPrefix}timer remove @player
-4. **DM cancels or starts the one-shot**:
-   • **Cancel**: {commandPrefix}timer cancel
-   • **Start**: {commandPrefix}timer start"""
+            prepEmbed.description = f"""__**Command Checklist**__
+**1. Players and DM sign up:**
+{commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
+**2. DM adds guild(s) (optional):**
+{commandPrefix}timer guild #guild1, #guild2
+**3. DM adds or removes players (optional):**
+• **Add**: {commandPrefix}timer add @player
+• **Remove**: {commandPrefix}timer remove @player
+**4. DM cancels or starts the one-shot:**
+• **Cancel**: {commandPrefix}timer cancel
+• **Start**: {commandPrefix}timer start"""
 
         #setup a variable to store the string showing the current roster for the game
         rosterString = ""
@@ -1639,33 +1643,35 @@ class Timer(commands.Cog):
             
             # we need separate advice strings if there are no rewards
             if role != "":
-                stampHelp = f"""```md
-[Command][Checklist]
-1. **Player uses an item**: - item
-2. **DM adds a player or they join late**:
-   • **DM adds**: {commandPrefix}timer add @player
-   • **Player joins**: {commandPrefix}timer addme
-3. **DM removes a player or they leave early**:
-   • **DM removes**: {commandPrefix}timer remove @player
-   • **Player leaves**: {commandPrefix}timer removeme
-4. **DM awards Reward Items**: {commandPrefix}timer reward @player "reward item1, reward item2, [...]"
-5. **DM revokes Reward Items**: {commandPrefix}timer undo rewards
-6. **Character Dies (removed by DM)**: {commandPrefix}timer death @player
-7. **DM stops the one-shot**: {commandPrefix}timer stop```"""
+                stampHelp = f"""```yaml
+Command Checklist
+- - - - - - - - -
+1. Player uses an item: - item
+2. DM adds a player or they join late:
+   • DM adds: $timer add @player
+   • Player joins: $timer addme
+3. DM removes a player or they leave early:
+   • DM removes: $timer remove @player
+   • Player leaves: $timer removeme
+4. DM awards Reward Items: $timer reward @player "reward item1, reward item2, [...]"
+5. DM revokes Reward Items: $timer undo rewards
+6. DM removes a dead character: $timer death @player
+7. DM stops the one-shot: $timer stop```"""
             else:
-                stampHelp = f"""```md
-[Command][Checklist]
-1. **Player uses an item**: - item
-2. **DM adds a player or they join late**:
-   • **DM adds**: {commandPrefix}timer add @player
-   • **Player joins**: {commandPrefix}timer addme
-3. **DM removes a player or they leave early**:
-   • **DM removes**: {commandPrefix}timer remove @player
-   • **Player leaves**: {commandPrefix}timer removeme
-4. **DM awards Reward Items**: {commandPrefix}timer reward @player "reward item1, reward item2, [...]"
-5. **DM revokes Reward Items**: {commandPrefix}timer undo rewards
-6. **Character Dies (removed by DM)**: {commandPrefix}timer death @player
-7. **DM stops the one-shot**: {commandPrefix}timer stop```"""
+                stampHelp = f"""```yaml
+Command Checklist
+- - - - - - - - -
+1. Player uses an item: - item
+2. DM adds a player or they join late:
+   • DM adds: $timer add @player
+   • Player joins: $timer addme
+3. DM removes a player or they leave early:
+   • DM removes: $timer remove @player
+   • Player leaves: $timer removeme
+4. DM awards Reward Items: $timer reward @player "reward item1, reward item2, [...]"
+5. DM revokes Reward Items: $timer undo rewards
+6. DM removes a dead character: $timer death @player
+7. DM stops the one-shot: $timer stop```"""
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):
