@@ -312,7 +312,11 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTp.title = 'TP Commands'
 
-    helpEmbedTp.add_field(name=f'▫️ Acquiring a Magic Item', value=f'{commandPrefix}tp buy "character name" "magic item"', inline=False)
+    helpEmbedTp.add_field(name=f'▫️ Finding a Magic Item', value=f'{commandPrefix}tp find "character name" "magic item"', inline=False)
+
+    helpEmbedTp.add_field(name=f'▫️ Crafting a Magic Item', value=f'{commandPrefix}tp craft "character name" "magic item"', inline=False)
+
+    helpEmbedTp.add_field(name=f'▫️ Memeing a Magic Item', value=f'{commandPrefix}tp meme "character name" "magic item"', inline=False)
 
     helpEmbedTp.add_field(name=f'▫️ Discarding an Incomplete Magic Item', value=f'{commandPrefix}tp discard "character name"', inline=False)
 
