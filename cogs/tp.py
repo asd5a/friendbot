@@ -838,8 +838,11 @@ class Tp(commands.Cog):
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @tp.command()
-    async def buy(self, ctx): # prints the format for the replacement commands.
-        msg = f"Please use this format:\n```yaml\n{commandPrefix}tp find \"character name\" \"magic item\"\n{commandPrefix}tp craft \"character name\" \"magic item\"\n{commandPrefix}tp meme \"character name\" \"magic item\"```\n"
+    async def buy(self, ctx, charName = "", mItem = ""): # prints the format for the replacement commands.
+        if mItem == "":
+            mItem = "magic item"
+        
+        msg = f"Please use this format:\n```yaml\n{commandPrefix}tp find \"{charName+'character name'*(not charName)}\" \"{mItem}\"\n{commandPrefix}tp craft \"{charName+'character name'*(not charName)}\" \"{mItem}\"\n{commandPrefix}tp meme \"{charName+'character name'*(not charName)}\" \"{mItem}\"```\n"
         ctx.command.reset_cooldown(ctx)
         await ctx.channel.send(msg)
 
