@@ -4,8 +4,9 @@ import requests
 import re
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import db, commandPrefix, numberEmojis, roleArray, callAPI, checkForChar, traceBack, alphaEmojis, settingsRecord
+from bfunc import db, commandPrefix, numberEmojis, roleArray, callAPI, checkForChar, traceBack, alphaEmojis, settingsRecord, liner_dic
 import traceback as traces
+from random import *
 
 class Tp(commands.Cog):
     def __init__ (self, bot):
@@ -48,8 +49,12 @@ class Tp(commands.Cog):
              return
              
         if msg:
-            if ctx.command.name == "buy":
-                msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp buy \"character name\" \"magic item\"```\n"
+            if ctx.command.name == "find": #changed error message
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp find \"character name\" \"magic item\"```\n"
+            elif ctx.command.name == "craft":
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp craft \"character name\" \"magic item\"```\n"
+            elif ctx.command.name == "meme":
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp meme \"character name\" \"magic item\"```\n"
             elif ctx.command.name == "discard":
                 msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp discard \"character name\"```\n"
             elif ctx.command.name == "abandon":
@@ -368,9 +373,7 @@ class Tp(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 return
     
-    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
-    @tp.command()
-    async def buy(self, ctx , charName, mItem):
+    async def acquireKernel(self, ctx , charName, mItem, source, sourcePast, sourceString, oneLiner):
 
         channel = ctx.channel
         author = ctx.author
@@ -379,7 +382,7 @@ class Tp(commands.Cog):
         tpCog = self.bot.get_cog('Tp')
         #find a character matching with charName using the function in bfunc
         charRecords, tpEmbedmsg = await checkForChar(ctx, charName, tpEmbed)
-
+            
         if charRecords:
             #functions to make sure that only the intended user can respond
             def tpChoiceEmbedCheck(r, u):
@@ -463,26 +466,26 @@ class Tp(commands.Cog):
                         break
 
                 # display the cost of the item to the user
-                tpEmbed.title = f"Acquiring a Magic Item: {charRecords['Name']}"
+                tpEmbed.title = f"{sourceString}: {charRecords['Name']}"
                 
                 # if the user doesnt have the resources for the purchases, inform them and cancel
                 if not haveTP and float(charRecords['GP']) < gpNeeded:
-                    await channel.send(f"You do not have enough Tier {tierNum} TP or GP to acquire **{mRecord['Name']}**!")
+                    await channel.send(f"You do not have enough Tier {tierNum} TP or GP to {source} **{mRecord['Name']}**!")
                     ctx.command.reset_cooldown(ctx)
                     return
                   
                 # get confirmation from the user for the purchase
                 elif not haveTP:
                     if tpBank == [0] * 5:
-                        tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or GP?\n\n You have **no TP** and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} GP (gold pieces)\n\n❌: Cancel"                 
+                        tpEmbed.description = f"Do you want to {source} **{mRecord['Name']}** with TP or GP?\n\n You have **no TP** and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} GP (gold pieces)\n\n❌: Cancel"                 
                     else:
-                        tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
+                        tpEmbed.description = f"Do you want to {source} **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
 
                 elif float(charRecords['GP']) < gpNeeded:
-                    tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: ~~{mRecord['GP']} GP (gold pieces)~~ You do not have enough GP.\n\n❌: Cancel"                 
+                    tpEmbed.description = f"Do you want to {source} **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: ~~{mRecord['GP']} GP (gold pieces)~~ You do not have enough GP.\n\n❌: Cancel"                 
 
                 else:
-                    tpEmbed.description = f"Do you want to acquire **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: {mRecord['GP']} GP (gold pieces)\n\n❌: Cancel"                 
+                    tpEmbed.description = f"Do you want to {source} **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: {mRecord['GP']} GP (gold pieces)\n\n❌: Cancel"                 
                 
                 if tpEmbedmsg:
                     await tpEmbedmsg.edit(embed=tpEmbed)
@@ -527,9 +530,9 @@ class Tp(commands.Cog):
                             refundTP = float(tpSplit[0])
                             charRecords['Current Item'] = "None"
                             #confirm with the user on the purchase
-                            tpEmbed.description = f"Are you sure you want to acquire **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\nNote: you will be refunded the TP you have already spent on this item ({refundTP} TP). \n\n✅: Yes\n\n❌: Cancel"
+                            tpEmbed.description = f"Are you sure you want to {source} **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\nNote: you will be refunded the TP you have already spent on this item ({refundTP} TP). \n\n✅: Yes\n\n❌: Cancel"
                         else:
-                            tpEmbed.description = f"Are you sure you want to acquire **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\n✅: Yes\n\n❌: Cancel"
+                            tpEmbed.description = f"Are you sure you want to {source} **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\n✅: Yes\n\n❌: Cancel"
 
                     # If user decides to buy item with TP:
                     elif tReaction.emoji == '1️⃣':
@@ -570,7 +573,7 @@ class Tp(commands.Cog):
                                 if currentMagicItems == list():
                                     charRecords['Current Item'] = 'None'
 
-                        tpEmbed.description = f"Are you sure you want to acquire **{mRecord['Name']}** for **{mRecord['TP']} TP**?\n\n{tpSplit[0]}/{tpSplit[1]} → {newTP}\n\nLeftover T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n✅: Yes\n\n❌: Cancel"
+                        tpEmbed.description = f"Are you sure you want to {source} **{mRecord['Name']}** for **{mRecord['TP']} TP**?\n\n{tpSplit[0]}/{tpSplit[1]} → {newTP}\n\nLeftover T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n✅: Yes\n\n❌: Cancel"
 
                     # If not complete, leave in current items, otherwise add to magic item list / consuambles
                     if 'Complete' not in newTP and tReaction.emoji == '1️⃣':
@@ -671,16 +674,17 @@ class Tp(commands.Cog):
                                 print ('MONGO ERROR: ' + str(e))
                                 tpEmbedmsg = await channel.send(embed=None, content=f"Uh oh, looks like something went wrong. Try again using the same command!")
                             else:
+                                outputLiner = oneLiner.replace("<magic item>", str(mRecord['Name']))
                                 if newTP:
                                     if "Complete" in newTP:
-                                        tpEmbed.description = f"You have acquired **{mRecord['Name']}** for {mRecord['TP']} TP! :tada:\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n"
+                                        tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['TP']} TP! :tada:\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n"
                                     else:
                                         tpEmbed.description = f"You have put TP towards **{mRecord['Name']}** but still need to spend more TP in order to complete it!\n\nCurrent progress: {newTP}\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n"
                                 elif newGP:
                                     if refundTP:
-                                        tpEmbed.description = f"You have acquired **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP'] + refundTP} (refunded {refundTP})"
+                                        tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP'] + refundTP} (refunded {refundTP})"
                                     else:
-                                        tpEmbed.description = f"You have acquired **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n"
+                                        tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n"
                                 await tpEmbedmsg.edit(embed=tpEmbed)
                                 ctx.command.reset_cooldown(ctx)
 
@@ -801,6 +805,46 @@ class Tp(commands.Cog):
                         tpEmbed.description = f"**{currentItem}** has been discarded!\n\nCurrent Item(s): {', '.join(currentItemList)}"
                         await tpEmbedmsg.edit(embed=tpEmbed)
                         ctx.command.reset_cooldown(ctx)
+
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @tp.command()
+    async def find(self, ctx , charName, mItem): 
+        # Assigns 4 variables that are then passed to the buy command. These variables are used to change the text to a one-liner system.
+        source = "find"
+        sourceString = "Find a Magic Item"
+        sourcePast = "found"
+        oneLiner = sample(liner_dic["Find"], 1)[0] # Random one-liner assigned from the corresponding collection
+        await self.acquireKernel(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
+
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @tp.command()
+    async def craft(self, ctx , charName, mItem):
+
+        source = "craft"
+        sourceString = "Craft a Magic Item"
+        sourcePast = "crafted"
+        oneLiner = sample(liner_dic["Craft"], 1)[0]
+        await self.acquireKernel(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
+
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @tp.command()
+    async def meme(self, ctx , charName, mItem):
+
+        source = "meme"
+        sourceString = "Meme a Magic Item"
+        sourcePast = "memed"
+        oneLiner = sample(liner_dic["Meme"], 1)[0]
+        await self.acquireKernel(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
+
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @tp.command()
+    async def buy(self, ctx, charName = "", mItem = ""): # prints the format for the replacement commands.
+        if mItem == "":
+            mItem = "magic item"
+        
+        msg = f"Please use this format:\n```yaml\n{commandPrefix}tp find \"{charName+'character name'*(not charName)}\" \"{mItem}\"\n{commandPrefix}tp craft \"{charName+'character name'*(not charName)}\" \"{mItem}\"\n{commandPrefix}tp meme \"{charName+'character name'*(not charName)}\" \"{mItem}\"```\n"
+        ctx.command.reset_cooldown(ctx)
+        await ctx.channel.send(msg)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @tp.command()

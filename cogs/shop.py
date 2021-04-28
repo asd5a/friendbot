@@ -25,10 +25,6 @@ class Shop(commands.Cog):
         shopCog = self.bot.get_cog('Shop')
         pass
         
-    # temporary command that verifies updates to shop one liners
-    @commands.command()
-    async def wop(self, ctx):
-        print(liner_dic)
     async def cog_command_error(self, ctx, error):
         msg = None
 
