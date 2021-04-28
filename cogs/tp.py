@@ -49,8 +49,12 @@ class Tp(commands.Cog):
              return
              
         if msg:
-            if ctx.command.name == "buy": #changed error message
-                msg += f"This command has superceded by another. Please follow this format:\n```yaml\n{commandPrefix}tp find/craft/meme \"character name\" \"magic item\"```\n"
+            if ctx.command.name == "find": #changed error message
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp find \"character name\" \"magic item\"```\n"
+            elif ctx.command.name == "craft":
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp craft \"character name\" \"magic item\"```\n"
+            elif ctx.command.name == "meme":
+                msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp meme \"character name\" \"magic item\"```\n"
             elif ctx.command.name == "discard":
                 msg += f"Please follow this format:\n```yaml\n{commandPrefix}tp discard \"character name\"```\n"
             elif ctx.command.name == "abandon":
@@ -369,10 +373,7 @@ class Tp(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 return
     
-    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
-    @tp.command()
-    @commands.has_any_role('A d m i n') # a bit unprofessional, but it was a quick fix.
-    async def buy(self, ctx , charName, mItem, source, sourcePast, sourceString, oneLiner):
+    async def acquireKernel(self, ctx , charName, mItem, source, sourcePast, sourceString, oneLiner):
 
         channel = ctx.channel
         author = ctx.author
@@ -813,7 +814,7 @@ class Tp(commands.Cog):
         sourceString = "Find a Magic Item"
         sourcePast = "found"
         oneLiner = sample(liner_dic["Find"], 1)[0] # Random one-liner assigned from the corresponding collection
-        await self.buy(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
+        await self.acquireKernel(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @tp.command()
@@ -823,18 +824,24 @@ class Tp(commands.Cog):
         sourceString = "Craft a Magic Item"
         sourcePast = "crafted"
         oneLiner = sample(liner_dic["Craft"], 1)[0]
-        await self.buy(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
+        await self.acquireKernel(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @tp.command()
     async def meme(self, ctx , charName, mItem):
 
-        source = "find (meme)"
+        source = "meme"
         sourceString = "Meme a Magic Item"
-        sourcePast = "found"
+        sourcePast = "memed"
         oneLiner = sample(liner_dic["Meme"], 1)[0]
-        await self.buy(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
+        await self.acquireKernel(ctx, charName, mItem, source, sourcePast, sourceString, oneLiner)
 
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @tp.command()
+    async def buy(self, ctx): # prints the format for the replacement commands.
+        msg = f"Please use this format:\n```yaml\n{commandPrefix}tp find \"character name\" \"magic item\"\n{commandPrefix}tp craft \"character name\" \"magic item\"\n{commandPrefix}tp meme \"character name\" \"magic item\"```\n"
+        ctx.command.reset_cooldown(ctx)
+        await ctx.channel.send(msg)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @tp.command()
