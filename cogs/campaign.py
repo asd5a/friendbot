@@ -435,7 +435,7 @@ class Campaign(commands.Cog):
         prepEmbed.title = f"{game} (Campaign)"
         prepEmbed.description = f"""__**Command Checklist**__
 **1. Players sign up:**
-{commandPrefix}campaign timer signup
+• {commandPrefix}campaign timer signup
 **2. DM adds or removes players (optional):**
 • **Add**: {commandPrefix}campaign timer add @player
 • **Remove**: {commandPrefix}campaign timer remove @player
