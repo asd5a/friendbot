@@ -841,8 +841,10 @@ class Tp(commands.Cog):
     async def buy(self, ctx, charName = "", mItem = ""): # prints the format for the replacement commands.
         if mItem == "":
             mItem = "magic item"
+        if charName == "":
+            charName = "character name"
         
-        msg = f"This command has been reworked and will be removed in the future. Please use one of the formats below: \n```yaml\n{commandPrefix}tp find \"{charName+'character name'*(not charName)}\" \"{mItem}\"\n{commandPrefix}tp craft \"{charName+'character name'*(not charName)}\" \"{mItem}\"\n{commandPrefix}tp meme \"{charName+'character name'*(not charName)}\" \"{mItem}\"```\n"
+        msg = f"This command has been reworked and will be removed in the future. Please use one of the formats below: \n```yaml\n{commandPrefix}tp find \"{charName}\" \"{mItem}\"\n{commandPrefix}tp craft \"{charName}\" \"{mItem}\"\n{commandPrefix}tp meme \"{charName}\" \"{mItem}\"```\n"
         ctx.command.reset_cooldown(ctx)
         await ctx.channel.send(msg)
 
