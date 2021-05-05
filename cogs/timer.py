@@ -863,7 +863,7 @@ __**Command Checklist**__
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
-            stampEmbed.set_footer(text=f'#{ctx.channel}\nType `{commandPrefix}help timer2` for help with a running timer.')
+            stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of running timer commands: $help timer2')
             stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
 
             
@@ -1662,9 +1662,9 @@ __**Command Checklist**__
 Command Checklist
 - - - - - - - - -
 1. Player uses an item: - item
-2. DM adds a player or they join late:
-   • DM adds: $timer add @player
-   • Player joins: $timer addme
+2. DM adds themselves or a player or a player joins late:
+   • DM adds: $timer add @player "character name" "consumable1, consumable2, [...]"
+   • Player joins: $timer addme "character name" "consumable1, consumable2, [...]"
 3. DM removes a player or they leave early:
    • DM removes: $timer remove @player
    • Player leaves: $timer removeme
@@ -1677,10 +1677,10 @@ Command Checklist
 Command Checklist
 - - - - - - - - -
 1. Player uses an item: - item
-2. DM adds a player or they join late:
-   • DM adds: $timer add @player
-   • Player joins: $timer addme
-3. DM removes a player or they leave early:
+2. DM adds themselves or a player or a player joins late:
+   • DM adds: $timer add @player "character name" "consumable1, consumable2, [...]"
+   • Player joins: $timer addme "character name" "consumable1, consumable2, [...]"
+3. DM removes a player or a player leaves early:
    • DM removes: $timer remove @player
    • Player leaves: $timer removeme
 4. DM awards Reward Items: $timer reward @player "reward item1, reward item2, [...]"
