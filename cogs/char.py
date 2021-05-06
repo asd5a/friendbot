@@ -49,8 +49,8 @@ class Character(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'char':
                 msg = ":warning: You're missing the character name in the command.\n"
-            elif error.param.name == 'new_race':
-                msg = ":warning: You're missing the new race in the command.\n"
+            elif error.param.name == 'new_flavor':
+                msg = ":warning: You're missing the new race/class/background in the command.\n"
             elif error.param.name == "name":
                 msg = ":warning: You're missing the name for the character you want to create or respec.\n"
             elif error.param.name == "newname":
@@ -80,7 +80,7 @@ class Character(commands.Cog):
             elif ctx.command.name == "retire":
                 msg += f'Please follow this format:\n```yaml\n{commandPrefix}retire "character name"```\n'
             elif ctx.command.name == "reflavor":
-                msg += f'Please follow this format:\n```yaml\n{commandPrefix}reflavor "character name"```\n'
+                msg += f'Please follow this format:\n```yaml\n{commandPrefix}reflavor race/class/background "character name"```\n'
             elif ctx.command.name == "death":
                 msg += f'Please follow this format:\n```yaml\n{commandPrefix}death "character name"```\n'
             elif ctx.command.name == "inventory":
@@ -2629,9 +2629,14 @@ class Character(commands.Cog):
                 for charDict in charDictTiers[n]:
                     tempCharString = charString
                     char_race = charDict['Race']
+                    char_class = charDict['Class']
                     if "Reflavor" in charDict:
-                        char_race = f"{charDict['Reflavor']} ({char_race})"
-                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {charDict['Class']}\n"
+                        rfarray = charDict['Reflavor']
+                        if 'race' in rfarray:
+                            char_race = f"{rfarray['race']} | {char_race}"
+                        if 'class' in rfarray:
+                            char_class = f"{rfarray['class']} | {char_class}"
+                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {char_class}\n"
 
                     if 'Guild' in charDict:
                         charString += f"---Guild: *{charDict['Guild']}*\n"
@@ -2729,12 +2734,17 @@ class Character(commands.Cog):
             if 'Image' in charDict:
                 charEmbed.set_thumbnail(url=charDict['Image'])
             char_race = charDict['Race']
+            char_class = charDict['Class']
             if "Reflavor" in charDict:
-                char_race = f"{charDict['Reflavor']} ({char_race})"
+                rfarray = charDict['Reflavor']
+                if 'race' in rfarray:
+                    char_race = f"{rfarray['race']} | {char_race}"
+                if 'class' in rfarray:
+                    char_class = f"{rfarray['class']} | {char_class}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
-            description = f"{nick_string}{char_race}\n{charDict['Class']}\n"
+            description = f"{nick_string}{char_race}\n{char_class}\n"
             
             charLevel = charDict['Level']
             if charLevel < 5:
@@ -2965,8 +2975,16 @@ class Character(commands.Cog):
             footer = f"To view your character's inventory, type the following command: {commandPrefix}inv {charDict['Name']}"
             
             char_race = charDict['Race']
+            char_class = charDict['Class']
+            char_background = charDict['Background']
             if "Reflavor" in charDict:
-                char_race = f"{charDict['Reflavor']} ({char_race})"
+                rfarray = charDict['Reflavor']
+                if 'race' in rfarray:
+                    char_race = f"{rfarray['race']} | {char_race}"
+                if 'class' in rfarray:
+                    char_class = f"{rfarray['class']} | {char_class}"
+                if 'background' in rfarray:
+                    char_background = f"{rfarray['background']} | {char_background}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
@@ -2974,7 +2992,7 @@ class Character(commands.Cog):
             if "Alignment" in charDict and charDict['Alignment'] != "":
                 alignment_string = f"Alignment: {charDict['Alignment']}\n"
                 
-            description = f"{nick_string}{char_race}\n{charDict['Class']}\n{charDict['Background']}\n{alignment_string}One-shots Played: {charDict['Games']}\n"
+            description = f"{nick_string}{char_race}\n{char_class}\n{char_background}\n{alignment_string}One-shots Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
                 description +=  f"Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
@@ -3180,13 +3198,28 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
+    @commands.has_any_role('A d m i n')
+    @commands.command(aliases=['wop'])
+    async def updatedatabase(self, ctx): #moves the Reflavor value in every character that has one to a new Reflavor dictionary under New Race
+
+        for line in db.players.find({ "Reflavor": { "$exists": 'true' } }):
+            db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"race": line["Reflavor"]}}}])
+            
+        await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
+        
+    
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @commands.command(aliases=['rf'])
-    async def reflavor(self,ctx, char, *, new_race):
-        if( len(new_race) > 20 or len(new_race) <1):
+    async def reflavor(self,ctx, rtype, char, *, new_flavor):
+        if( len(new_flavor) > 20 or len(new_flavor) <1):
             await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
             return
-
-    
+        rtype = rtype.lower()      
+        if(rtype != "race" and rtype != "background" and rtype != "class"): #makes sure that the user put in a valid reflavor type, in a messy way that doesn't fit the format of our other error messages.
+            await ctx.channel.send(content=f'***{rtype}*** is an invalid reflavor type.')
+            return
+            
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
@@ -3196,19 +3229,15 @@ class Character(commands.Cog):
 
         if infoRecords:
             charID = infoRecords['_id']
-            data = {
-                'Reflavor': new_race
-            }
-
+            
             try:
-                playersCollection = db.players
-                playersCollection.update_one({'_id': charID}, {"$set": data})
+                db.players.update_one({'_id': charID}, {"$set": {'Reflavor.'+rtype: new_flavor}})
             except Exception as e:
                 print ('MONGO ERROR: ' + str(e))
-                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
+                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try reflavoring your character again.")
             else:
                 print('Success')
-                await ctx.channel.send(content=f'I have updated the race for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+                await ctx.channel.send(content=f'I have updated the {rtype} for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
