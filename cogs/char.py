@@ -3218,6 +3218,9 @@ class Character(commands.Cog):
     #@commands.command(aliases=['rf'])
     async def reflavorKernel(self,ctx, char, rtype, new_flavor):
              
+        if( len(new_flavor) > 20 or len(new_flavor) <1):
+            await ctx.channel.send(content=f'The new {rtype.lower()} must be between 1 and 20 symbols.')
+            return
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
@@ -3240,9 +3243,6 @@ class Character(commands.Cog):
     @is_log_channel()
     @reflavor.command()
     async def race(self,ctx, char, *, new_flavor):
-        if( len(new_flavor) > 20 or len(new_flavor) <1):
-            await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
-            return
         
         rtype = "Race"
         await self.reflavorKernel(ctx, char, rtype, new_flavor)
@@ -3251,9 +3251,6 @@ class Character(commands.Cog):
     @is_log_channel()
     @reflavor.command(aliases=['class'])
     async def classes(self,ctx, char, *, new_flavor):
-        if( len(new_flavor) > 20 or len(new_flavor) <1):
-            await ctx.channel.send(content=f'The new class must be between 1 and 20 symbols.')
-            return
         
         rtype = "Class"
         await self.reflavorKernel(ctx, char, rtype, new_flavor)
@@ -3262,9 +3259,6 @@ class Character(commands.Cog):
     @is_log_channel()
     @reflavor.command()
     async def background(self,ctx, char, *, new_flavor):
-        if( len(new_flavor) > 20 or len(new_flavor) <1):
-            await ctx.channel.send(content=f'The new background must be between 1 and 20 symbols.')
-            return
         
         rtype = "Background"
         await self.reflavorKernel(ctx, char, rtype, new_flavor)
