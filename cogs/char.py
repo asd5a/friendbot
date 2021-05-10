@@ -34,6 +34,11 @@ class Character(commands.Cog):
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"] or
                     ctx.channel.id == 564994370416410624)
         return commands.check(predicate) 
+        
+    @commands.group(aliases=['rf'], case_insensitive=True)
+    async def reflavor(self, ctx):	
+        pass
+    
     async def cog_command_error(self, ctx, error):
         msg = None
         
@@ -2632,10 +2637,10 @@ class Character(commands.Cog):
                     char_class = charDict['Class']
                     if "Reflavor" in charDict:
                         rfarray = charDict['Reflavor']
-                        if 'race' in rfarray:
-                            char_race = f"{rfarray['race']} | {char_race}"
-                        if 'class' in rfarray:
-                            char_class = f"{rfarray['class']} | {char_class}"
+                        if 'Race' in rfarray:
+                            char_race = f"{rfarray['Race']} | {char_race}"
+                        if 'Class' in rfarray:
+                            char_class = f"{rfarray['Class']} | {char_class}"
                     charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {char_class}\n"
 
                     if 'Guild' in charDict:
@@ -2737,10 +2742,10 @@ class Character(commands.Cog):
             char_class = charDict['Class']
             if "Reflavor" in charDict:
                 rfarray = charDict['Reflavor']
-                if 'race' in rfarray:
-                    char_race = f"{rfarray['race']} | {char_race}"
-                if 'class' in rfarray:
-                    char_class = f"{rfarray['class']} | {char_class}"
+                if 'Race' in rfarray:
+                    char_race = f"{rfarray['Race']} | {char_race}"
+                if 'Class' in rfarray:
+                    char_class = f"{rfarray['Class']} | {char_class}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
@@ -2979,12 +2984,12 @@ class Character(commands.Cog):
             char_background = charDict['Background']
             if "Reflavor" in charDict:
                 rfarray = charDict['Reflavor']
-                if 'race' in rfarray:
-                    char_race = f"{rfarray['race']} | {char_race}"
-                if 'class' in rfarray:
-                    char_class = f"{rfarray['class']} | {char_class}"
-                if 'background' in rfarray:
-                    char_background = f"{rfarray['background']} | {char_background}"
+                if 'Race' in rfarray:
+                    char_race = f"{rfarray['Race']} | {char_race}"
+                if 'Class' in rfarray:
+                    char_class = f"{rfarray['Class']} | {char_class}"
+                if 'Background' in rfarray:
+                    char_background = f"{rfarray['Background']} | {char_background}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
@@ -3203,30 +3208,22 @@ class Character(commands.Cog):
     async def updatedatabase(self, ctx): #moves the Reflavor value in every character that has one to a new Reflavor dictionary under New Race
 
         for line in db.players.find({ "Reflavor": { "$exists": 'true' } }):
-            db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"race": line["Reflavor"]}}}])
+            db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"Race": line["Reflavor"]}}}])
             
         await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
         
-    
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
-    @commands.command(aliases=['rf'])
-    async def reflavor(self,ctx, rtype, char, *, new_flavor):
-        if( len(new_flavor) > 20 or len(new_flavor) <1):
-            await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
-            return
-        rtype = rtype.lower()      
-        if(rtype != "race" and rtype != "background" and rtype != "class"): #makes sure that the user put in a valid reflavor type, in a messy way that doesn't fit the format of our other error messages.
-            await ctx.channel.send(content=f'***{rtype}*** is an invalid reflavor type.')
-            return
-            
+     
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
+    #@is_log_channel()
+    #@commands.command(aliases=['rf'])
+    async def reflavorKernel(self,ctx, char, rtype, new_flavor):
+             
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
         charEmbed = discord.Embed()
 
         infoRecords, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
-
         if infoRecords:
             charID = infoRecords['_id']
             
@@ -3238,6 +3235,39 @@ class Character(commands.Cog):
             else:
                 print('Success')
                 await ctx.channel.send(content=f'I have updated the {rtype} for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+    
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @reflavor.command()
+    async def race(self,ctx, char, *, new_flavor):
+        if( len(new_flavor) > 20 or len(new_flavor) <1):
+            await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
+            return
+        
+        rtype = "Race"
+        await self.reflavorKernel(ctx, char, rtype, new_flavor)
+        
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @reflavor.command(aliases=['class'])
+    async def classes(self,ctx, char, *, new_flavor):
+        if( len(new_flavor) > 20 or len(new_flavor) <1):
+            await ctx.channel.send(content=f'The new class must be between 1 and 20 symbols.')
+            return
+        
+        rtype = "Class"
+        await self.reflavorKernel(ctx, char, rtype, new_flavor)
+        
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @reflavor.command()
+    async def background(self,ctx, char, *, new_flavor):
+        if( len(new_flavor) > 20 or len(new_flavor) <1):
+            await ctx.channel.send(content=f'The new background must be between 1 and 20 symbols.')
+            return
+        
+        rtype = "Background"
+        await self.reflavorKernel(ctx, char, rtype, new_flavor)
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()

@@ -212,11 +212,11 @@ class Admin(commands.Cog, name="Admin"):
         i = 0
         while i < len(rfarray):
             if 'race' in rfarray[i]:
-                raceList.append(rfarray[i]['race'])
+                raceList.append(rfarray[i]['Race'])
             if 'class' in rfarray[i]:
-                classList.append(rfarray[i]['class'])
+                classList.append(rfarray[i]['Class'])
             if 'background' in rfarray[i]:
-                backgroundList.append(rfarray[i]['background'])
+                backgroundList.append(rfarray[i]['Background'])
             i += 1
         await ctx.channel.send("**Races:**")
         await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in raceList])))).items()]))
