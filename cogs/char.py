@@ -1004,6 +1004,18 @@ class Character(commands.Cog):
                             if not reqFufill:
                                 msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{' and '.join(reqFufillList)}**!\n"
         
+        if msg:
+            if charEmbedmsg and charEmbedmsg != "Fail":
+                await charEmbedmsg.delete()
+            elif charEmbedmsg == "Fail":
+                msg = ":warning: You have either cancelled the command or a value was not found."
+            await ctx.channel.send(f'There were error(s) when creating your character:\n{msg}')
+
+            self.bot.get_command('create').reset_cooldown(ctx)
+            return 
+        
+        if 'Max Stats' not in charDict:
+            charDict['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
         charClass = charDict["Class"]
         subclasses = []
         if '/' in charClass:
@@ -1045,15 +1057,7 @@ class Character(commands.Cog):
         if hpRecords:
             charDict['HP'] = await characterCog.calcHP(ctx,hpRecords,charDict,lvl)
         
-        if msg:
-            if charEmbedmsg and charEmbedmsg != "Fail":
-                await charEmbedmsg.delete()
-            elif charEmbedmsg == "Fail":
-                msg = ":warning: You have either cancelled the command or a value was not found."
-            await ctx.channel.send(f'There were error(s) when creating your character:\n{msg}')
-
-            self.bot.get_command('create').reset_cooldown(ctx)
-            return 
+        
         
         charLevel = charDict['Level']
         tierNum = 5

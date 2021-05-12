@@ -89,10 +89,8 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
     gp= 0
     tp = {}
     charLevel = level
-    print(level)
     while(cp>0):
         
-        print("CP",cp)
         # Level 20 characters haves access to exclusive items
         # create a string representing which tier the character is in in order to create/manipulate the appropriate TP entry in the DB
         tierTP = f"T{tier} TP"
@@ -108,21 +106,17 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
             charLevel = 17
         elif charLevel < 20:
             charLevel = 20
-        print("level CP", levelCP)
-        
+            
         if levelCP + leftCP + cp > cpThreshHoldArray[tier-1]:
-            print("TH", cpThreshHoldArray[tier-1])
             consideredCP = cpThreshHoldArray[tier-1] - (levelCP + leftCP)
             leftCP = 0
         else:
             consideredCP = cp
-        print("con ",consideredCP)
         cp -=  consideredCP
         tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
         gp += consideredCP * tier_reward_dictionary[tier-1][0]
         tier += 1
             
-    print([gainedCP, tp, int(gp)])
     return [gainedCP, tp, int(gp)]
     
     
@@ -156,7 +150,6 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
 
     #restructure the query to be more regEx friendly
   
-    print(query)
     
     invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "}", "^", ">", "<", "|"]
 
@@ -171,7 +164,6 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
     query = query.replace('+', '\\+')
     query = query.replace('.', '\\.')
 
-    print(query)
     
     #I am not sure of the difference in behavior beside the extended Grouped search
     if singleItem:
@@ -226,7 +218,6 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
                               ],
                             }
          
-        print(filterDic)           
         # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
         #  collection.find(collection.find(filterDic)) does not work for he could not read
         # https://cdn.discordapp.com/attachments/663504216135958558/735695855667118080/New_Project_-_2020-07-22T231158.186.png
@@ -417,7 +408,6 @@ async def checkForGuild(ctx, name, guildEmbed="" ):
     collection = db.guilds
     guildRecords = list(collection.find({"Name": {"$regex": name, '$options': 'i' }}))
 
-    print(guildRecords)
 
     if guildRecords == list():
         await channel.send(content=f'I was not able to find a guild named "**{name}**". Please check your spelling and try again.')
