@@ -211,11 +211,11 @@ class Admin(commands.Cog, name="Admin"):
         backgroundList = []
         i = 0
         while i < len(rfarray):
-            if 'race' in rfarray[i]:
+            if 'Race' in rfarray[i]:
                 raceList.append(rfarray[i]['Race'])
-            if 'class' in rfarray[i]:
+            if 'Class' in rfarray[i]:
                 classList.append(rfarray[i]['Class'])
-            if 'background' in rfarray[i]:
+            if 'Background' in rfarray[i]:
                 backgroundList.append(rfarray[i]['Background'])
             i += 1
         await ctx.channel.send("**Races:**")

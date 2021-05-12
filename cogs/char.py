@@ -3208,7 +3208,8 @@ class Character(commands.Cog):
     async def updatedatabase(self, ctx): #moves the Reflavor value in every character that has one to a new Reflavor dictionary under New Race
 
         for line in db.players.find({ "Reflavor": { "$exists": 'true' } }):
-            db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"Race": line["Reflavor"]}}}])
+            if type(line) == str:
+                db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"Race": line["Reflavor"]}}}])
             
         await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
         
