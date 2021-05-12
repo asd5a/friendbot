@@ -1019,7 +1019,7 @@ class Character(commands.Cog):
             tempSub = ""
             if '(' and ')' in charClass:
                 tempSub = charClass[charClass.find("(")+1:charClass.find(")")]
-            subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':charLevel})
+            subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':lvl})
         #Special stat bonuses (Barbarian cap / giant soul sorc)
         specialCollection = db.special
         specialRecords = list(specialCollection.find())
@@ -3246,7 +3246,7 @@ class Character(commands.Cog):
     async def updatedatabase(self, ctx): #moves the Reflavor value in every character that has one to a new Reflavor dictionary under New Race
 
         for line in db.players.find({ "Reflavor": { "$exists": 'true' } }):
-            if type(line) == str:
+            if type(line["Reflavor"]) == str:
                 db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"Race": line["Reflavor"]}}}])
             
         await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
@@ -5236,7 +5236,20 @@ class Character(commands.Cog):
               charEmbed.description = f"{race}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
 
         return featsChosen, charStats, charEmbedmsg        
+    def get_embed_length(embed):
+        # embed would be the discord.Embed instance
+        fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
 
+        fields.extend([field.name for field in embed.fields])
+        fields.extend([field.value for field in embed.fields])
+
+        total = ""
+        for item in fields:
+            # If we str(discord.Embed.Empty) we get 'Embed.Empty', when
+            # we just want an empty string...
+            total += str(item) if str(item) != 'Embed.Empty' else ''
+
+        return(len(total))
 
 def setup(bot):
     bot.add_cog(Character(bot))
