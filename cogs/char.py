@@ -2779,11 +2779,11 @@ class Character(commands.Cog):
             char_race = charDict['Race']
             char_class = charDict['Class']
             if "Reflavor" in charDict:
-                rfarray = charDict['Reflavor']
-                if 'Race' in rfarray:
-                    char_race = f"{rfarray['Race']} | {char_race}"
-                if 'Class' in rfarray:
-                    char_class = f"{rfarray['Class']} | {char_class}"
+                rfdict = charDict['Reflavor']
+                if 'Race' in rfdict and rfdict['Race'] != "":
+                    char_race = f"{rfdict['Race']} | {char_race}"
+                if 'Class' in rfdict and rfdict['Class'] != "":
+                    char_class = f"{rfdict['Class']} | {char_class}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
@@ -3021,13 +3021,13 @@ class Character(commands.Cog):
             char_class = charDict['Class']
             char_background = charDict['Background']
             if "Reflavor" in charDict:
-                rfarray = charDict['Reflavor']
-                if 'Race' in rfarray:
-                    char_race = f"{rfarray['Race']} | {char_race}"
-                if 'Class' in rfarray:
-                    char_class = f"{rfarray['Class']} | {char_class}"
-                if 'Background' in rfarray:
-                    char_background = f"{rfarray['Background']} | {char_background}"
+                rfdict = charDict['Reflavor']
+                if 'Race' in rfdict and rfdict['Race'] != "":
+                    char_race = f"{rfdict['Race']} | {char_race}"
+                if 'Class' in rfdict and rfdict['Class'] != "":
+                    char_class = f"{rfdict['Class']} | {char_class}"
+                if 'Background' in rfdict and rfdict['Background'] != "":
+                    char_background = f"{rfdict['Background']} | {char_background}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
@@ -3257,7 +3257,7 @@ class Character(commands.Cog):
     #@commands.command(aliases=['rf'])
     async def reflavorKernel(self,ctx, char, rtype, new_flavor):
              
-        if( len(new_flavor) > 20 or len(new_flavor) <1):
+        if( len(new_flavor) > 20):
             await ctx.channel.send(content=f'The new {rtype.lower()} must be between 1 and 20 symbols.')
             return
         channel = ctx.channel
@@ -3281,7 +3281,7 @@ class Character(commands.Cog):
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
     @reflavor.command()
-    async def race(self,ctx, char, *, new_flavor):
+    async def race(self,ctx, char, *, new_flavor=""):
         
         rtype = "Race"
         await self.reflavorKernel(ctx, char, rtype, new_flavor)
@@ -3289,7 +3289,7 @@ class Character(commands.Cog):
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
     @reflavor.command(aliases=['class'])
-    async def classes(self,ctx, char, *, new_flavor):
+    async def classes(self,ctx, char, *, new_flavor=""):
         
         rtype = "Class"
         await self.reflavorKernel(ctx, char, rtype, new_flavor)
@@ -3297,7 +3297,7 @@ class Character(commands.Cog):
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
     @reflavor.command()
-    async def background(self,ctx, char, *, new_flavor):
+    async def background(self,ctx, char, *, new_flavor=""):
         
         rtype = "Background"
         await self.reflavorKernel(ctx, char, rtype, new_flavor)
