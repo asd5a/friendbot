@@ -193,9 +193,9 @@ class Timer(commands.Cog):
             prepEmbed.title = f"{game} (Tier {roleArray.index(role)})"
             prepEmbed.description = f"""__**Command Checklist**__
 **1. Players and DM sign up:**
-{commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
+• {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
 **2. DM adds guild(s) (optional):**
-{commandPrefix}timer guild #guild1, #guild2
+• {commandPrefix}timer guild #guild1, #guild2
 **3. DM adds or removes players (optional):**
 • **Add**: {commandPrefix}timer add @player
 • **Remove**: {commandPrefix}timer remove @player
@@ -208,9 +208,9 @@ class Timer(commands.Cog):
             prepEmbed.title = f"{game} (Campaign)"
             prepEmbed.description = f"""__**Command Checklist**__
 **1. Players and DM sign up:**
-{commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
+• {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
 **2. DM adds guild(s) (optional):**
-{commandPrefix}timer guild #guild1, #guild2
+• {commandPrefix}timer guild #guild1, #guild2
 **3. DM adds or removes players (optional):**
 • **Add**: {commandPrefix}timer add @player
 • **Remove**: {commandPrefix}timer remove @player
@@ -433,7 +433,22 @@ class Timer(commands.Cog):
                                 break
                                 
                         if not invalidChannel:
-                            prepEmbed.description = f"Guilds: {', '.join([g.mention for g in guildsList])}\n**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Add guild(s)**: {commandPrefix}timer guild #guild1, #guild2"
+                            prepEmbed.description = f"""**Guilds**: {', '.join([g.mention for g in guildsList])}\n
+__**Command Checklist**__
+**1. Players and DM sign up:**
+• {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
+**2. DM adds guild(s) (optional):**
+• {commandPrefix}timer guild #guild1, #guild2
+**3. DM adds or removes players (optional):**
+• **Add**: {commandPrefix}timer add @player
+• **Remove**: {commandPrefix}timer remove @player
+**4. DM cancels or starts the one-shot:**
+• **Cancel**: {commandPrefix}timer cancel
+• **Start**: {commandPrefix}timer start\n"""
+
+# The code below is the old code for the above, I'm keeping it just in case.
+# Guilds: {', '.join([g.mention for g in guildsList])}\n**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Add guild(s)**: {commandPrefix}timer guild #guild1, #guild2"
+
                     else:
                         await channel.send(f"I couldn't find any mention of a guild. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2```") 
 
@@ -848,7 +863,7 @@ class Timer(commands.Cog):
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
-            stampEmbed.set_footer(text=f'#{ctx.channel}\nType `{commandPrefix}help timer2` for help with a running timer.')
+            stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of running timer commands: $help timer2')
             stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
 
             
@@ -1147,8 +1162,8 @@ class Timer(commands.Cog):
                                     major += 1
                             
                             # set up error messages based on the allowed item counts inserted appropriately
-                            rewardMajorErrorString = f"You cannot award any more **Major** reward items.\nTotal rewarded so far:\n**({major-len(blocking_list_additions['Major'])-1}/{rewardMajorLimit})** Major Rewards \n**({minor-len(blocking_list_additions['Minor'])}/{rewardMinorLimit-rewardMajorLimit})** Minor Rewards"
-                            rewardMinorErrorString = f"You cannot award any more **Minor** reward items.\nTotal rewarded so far:\n**({major-len(blocking_list_additions['Major'])}/{rewardMajorLimit})** Major Rewards \n**({minor-len(blocking_list_additions['Minor'])-1}/{rewardMinorLimit-rewardMajorLimit})** Minor Rewards"
+                            rewardMajorErrorString = f"You cannot award any more **Major** reward items.\n```md\nTotal rewarded so far:\n({major-len(blocking_list_additions['Major'])-1}/{rewardMajorLimit}) Major Rewards \n({minor-len(blocking_list_additions['Minor'])}/{rewardMinorLimit-rewardMajorLimit}) Minor Rewards"
+                            rewardMinorErrorString = f"You cannot award any more **Minor** reward items.\n```md\nTotal rewarded so far:\n({major-len(blocking_list_additions['Major'])}/{rewardMajorLimit}) Major Rewards \n({minor-len(blocking_list_additions['Minor'])-1}/{rewardMinorLimit-rewardMajorLimit}) Minor Rewards"
 
                             if rewardUser == dmChar[0]:
                                 if chooseOr:
@@ -1216,7 +1231,7 @@ class Timer(commands.Cog):
                     dmChar[5][1][player_type]["Minor"] += blocking_list_additions["Minor"]
                     # on completion inform the users that of the success and of the current standings with rewards
                     if not resume:
-                        await ctx.channel.send(content=f"You have awarded ***{rewardUser.display_name}*** the following reward items: **{item_list_string}**.\n```Total rewarded so far:\n({major}/{rewardMajorLimit}) Major Reward Items\n({minor}/{rewardMinorLimit-rewardMajorLimit}) Minor Reward Items\n({dmMajor}/{dmMajorLimit}) DM Major Reward Items\n({dmMinor}/{dmMinorLimit-dmMajorLimit}) DM Minor Reward Items```")
+                        await ctx.channel.send(content=f"You have awarded ***{rewardUser.display_name}*** the following reward items: **{item_list_string}**.\n```md\nTotal rewarded so far:\n({major}/{rewardMajorLimit}) Major Reward Items\n({minor}/{rewardMinorLimit-rewardMajorLimit}) Minor Reward Items\n({dmMajor}/{dmMajorLimit}) DM Major Reward Items\n({dmMinor}/{dmMinorLimit-dmMajorLimit}) DM Minor Reward Items```")
                     
                 else:
                     if not resume:
@@ -1647,9 +1662,9 @@ class Timer(commands.Cog):
 Command Checklist
 - - - - - - - - -
 1. Player uses an item: - item
-2. DM adds a player or they join late:
-   • DM adds: $timer add @player
-   • Player joins: $timer addme
+2. DM adds themselves or a player or a player joins late:
+   • DM adds: $timer add @player "character name" "consumable1, consumable2, [...]"
+   • Player joins: $timer addme "character name" "consumable1, consumable2, [...]"
 3. DM removes a player or they leave early:
    • DM removes: $timer remove @player
    • Player leaves: $timer removeme
@@ -1662,10 +1677,10 @@ Command Checklist
 Command Checklist
 - - - - - - - - -
 1. Player uses an item: - item
-2. DM adds a player or they join late:
-   • DM adds: $timer add @player
-   • Player joins: $timer addme
-3. DM removes a player or they leave early:
+2. DM adds themselves or a player or a player joins late:
+   • DM adds: $timer add @player "character name" "consumable1, consumable2, [...]"
+   • Player joins: $timer addme "character name" "consumable1, consumable2, [...]"
+3. DM removes a player or a player leaves early:
    • DM removes: $timer remove @player
    • Player leaves: $timer removeme
 4. DM awards Reward Items: $timer reward @player "reward item1, reward item2, [...]"
