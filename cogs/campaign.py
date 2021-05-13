@@ -551,8 +551,8 @@ class Campaign(commands.Cog):
                         # remove the player from the roster
                         playerRoster.remove(removeUser)
                         # remove the player from the signed up players
-                        if removeUser in signedPlayers["Players"]:
-                                del signedPlayers["Players"][removeUser.id]
+                        if removeUser.id in signedPlayers["Players"]:
+                            del signedPlayers["Players"][removeUser.id]
                     else:
                         await channel.send('You cannot remove yourself from the timer.')
 

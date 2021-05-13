@@ -34,6 +34,11 @@ class Character(commands.Cog):
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"] or
                     ctx.channel.id == 564994370416410624)
         return commands.check(predicate) 
+        
+    @commands.group(aliases=['rf'], case_insensitive=True)
+    async def reflavor(self, ctx):	
+        pass
+    
     async def cog_command_error(self, ctx, error):
         msg = None
         
@@ -49,8 +54,8 @@ class Character(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'char':
                 msg = ":warning: You're missing the character name in the command.\n"
-            elif error.param.name == 'new_race':
-                msg = ":warning: You're missing the new race in the command.\n"
+            elif error.param.name == 'new_flavor':
+                msg = ":warning: You're missing the new race/class/background in the command.\n"
             elif error.param.name == "name":
                 msg = ":warning: You're missing the name for the character you want to create or respec.\n"
             elif error.param.name == "newname":
@@ -80,7 +85,7 @@ class Character(commands.Cog):
             elif ctx.command.name == "retire":
                 msg += f'Please follow this format:\n```yaml\n{commandPrefix}retire "character name"```\n'
             elif ctx.command.name == "reflavor":
-                msg += f'Please follow this format:\n```yaml\n{commandPrefix}reflavor "character name"```\n'
+                msg += f'Please follow this format:\n```yaml\n{commandPrefix}reflavor race/class/background "character name"```\n'
             elif ctx.command.name == "death":
                 msg += f'Please follow this format:\n```yaml\n{commandPrefix}death "character name"```\n'
             elif ctx.command.name == "inventory":
@@ -968,9 +973,6 @@ class Character(commands.Cog):
 
                 hpRecords.append({'Level':cc['Level'], 'Subclass': cc['Subclass'], 'Name': cc['Class']['Name'], 'Hit Die Max': cc['Class']['Hit Die Max'], 'Hit Die Average':cc['Class']['Hit Die Average']})
 
-            if hpRecords:
-                charDict['HP'] = await characterCog.calcHP(ctx,hpRecords,charDict,lvl)
-
             # Multiclass Requirements
             if '/' in cclass and len(cRecord) > 1:
                 for m in cRecord:
@@ -1001,7 +1003,7 @@ class Character(commands.Cog):
                                   reqFufillList.append(f"{s} {charDict[s]}")
                             if not reqFufill:
                                 msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{' and '.join(reqFufillList)}**!\n"
-
+        
         if msg:
             if charEmbedmsg and charEmbedmsg != "Fail":
                 await charEmbedmsg.delete()
@@ -1011,6 +1013,51 @@ class Character(commands.Cog):
 
             self.bot.get_command('create').reset_cooldown(ctx)
             return 
+        
+        if 'Max Stats' not in charDict:
+            charDict['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
+        charClass = charDict["Class"]
+        subclasses = []
+        if '/' in charClass:
+            tempClassList = charClass.split(' / ')
+            for t in tempClassList:
+                temp = t.split(' ')
+                tempSub = ""
+                if '(' and ')' in t:
+                    tempSub = t[t.find("(")+1:t.find(")")]
+
+                subclasses.append({'Name':temp[0], 'Subclass':tempSub, 'Level':int(temp[1])})
+        else:
+            tempSub = ""
+            if '(' and ')' in charClass:
+                tempSub = charClass[charClass.find("(")+1:charClass.find(")")]
+            subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':lvl})
+        #Special stat bonuses (Barbarian cap / giant soul sorc)
+        specialCollection = db.special
+        specialRecords = list(specialCollection.find())
+        specialStatStr = ""
+        for s in specialRecords:
+            if 'Bonus Level' in s:
+                for c in subclasses:
+                    if s['Bonus Level'] <= c['Level'] and s['Name'] in f"{c['Name']} ({c['Subclass']})":
+                        if 'MAX' in s['Stat Bonuses']:
+                            statSplit = s['Stat Bonuses'].split('MAX ')[1].split(', ')
+                            for stat in statSplit:
+                                maxSplit = stat.split(' +')
+                                charDict[maxSplit[0]] += int(maxSplit[1])
+                                charDict['Max Stats'][maxSplit[0]] += int(maxSplit[1]) 
+
+                            specialStatStr = f"Level {s['Bonus Level']} {c['Name']} stat bonus unlocked! {s['Stat Bonuses']}"
+
+
+        maxStatStr = ""
+        for sk in charDict['Max Stats'].keys():
+            if charDict[sk] > charDict['Max Stats'][sk]:
+                charDict[sk] = charDict['Max Stats'][sk]
+        if hpRecords:
+            charDict['HP'] = await characterCog.calcHP(ctx,hpRecords,charDict,lvl)
+        
+        
         
         charLevel = charDict['Level']
         tierNum = 5
@@ -2629,9 +2676,14 @@ class Character(commands.Cog):
                 for charDict in charDictTiers[n]:
                     tempCharString = charString
                     char_race = charDict['Race']
+                    char_class = charDict['Class']
                     if "Reflavor" in charDict:
-                        char_race = f"{charDict['Reflavor']} ({char_race})"
-                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {charDict['Class']}\n"
+                        rfarray = charDict['Reflavor']
+                        if 'Race' in rfarray:
+                            char_race = f"{rfarray['Race']} | {char_race}"
+                        if 'Class' in rfarray:
+                            char_class = f"{rfarray['Class']} | {char_class}"
+                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {char_class}\n"
 
                     if 'Guild' in charDict:
                         charString += f"---Guild: *{charDict['Guild']}*\n"
@@ -2729,12 +2781,17 @@ class Character(commands.Cog):
             if 'Image' in charDict:
                 charEmbed.set_thumbnail(url=charDict['Image'])
             char_race = charDict['Race']
+            char_class = charDict['Class']
             if "Reflavor" in charDict:
-                char_race = f"{charDict['Reflavor']} ({char_race})"
+                rfdict = charDict['Reflavor']
+                if 'Race' in rfdict and rfdict['Race'] != "":
+                    char_race = f"{rfdict['Race']} | {char_race}"
+                if 'Class' in rfdict and rfdict['Class'] != "":
+                    char_class = f"{rfdict['Class']} | {char_class}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
-            description = f"{nick_string}{char_race}\n{charDict['Class']}\n"
+            description = f"{nick_string}{char_race}\n{char_class}\n"
             
             charLevel = charDict['Level']
             if charLevel < 5:
@@ -2965,16 +3022,24 @@ class Character(commands.Cog):
             footer = f"To view your character's inventory, type the following command: {commandPrefix}inv {charDict['Name']}"
             
             char_race = charDict['Race']
+            char_class = charDict['Class']
+            char_background = charDict['Background']
             if "Reflavor" in charDict:
-                char_race = f"{charDict['Reflavor']} ({char_race})"
+                rfdict = charDict['Reflavor']
+                if 'Race' in rfdict and rfdict['Race'] != "":
+                    char_race = f"{rfdict['Race']} | {char_race}"
+                if 'Class' in rfdict and rfdict['Class'] != "":
+                    char_class = f"{rfdict['Class']} | {char_class}"
+                if 'Background' in rfdict and rfdict['Background'] != "":
+                    char_background = f"{rfdict['Background']} | {char_background}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"Goes By: **{charDict['Nickname']}**\n"
             alignment_string = "Alignment: Unknown\n"
             if "Alignment" in charDict and charDict['Alignment'] != "":
                 alignment_string = f"Alignment: {charDict['Alignment']}\n"
-                
-            description = f"• {nick_string}{char_race}\n• {charDict['Class']}\n• {charDict['Background']}\n• {alignment_string}• One-shots Played: {charDict['Games']}\n"
+
+            description = f"{nick_string}{char_race}\n{char_class}\n{char_background}\n{alignment_string}One-shots Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
                 description +=  f"• Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
@@ -3180,35 +3245,66 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
-    @commands.command(aliases=['rf'])
-    async def reflavor(self,ctx, char, *, new_race):
-        if( len(new_race) > 20 or len(new_race) <1):
-            await ctx.channel.send(content=f'The new race must be between 1 and 20 symbols.')
-            return
+    @commands.has_any_role('A d m i n')
+    @commands.command(aliases=['wop'])
+    async def updatedatabase(self, ctx): #moves the Reflavor value in every character that has one to a new Reflavor dictionary under New Race
 
-    
+        for line in db.players.find({ "Reflavor": { "$exists": 'true' } }):
+            if type(line["Reflavor"]) == str:
+                db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"Race": line["Reflavor"]}}}])
+            
+        await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
+        
+     
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
+    #@is_log_channel()
+    #@commands.command(aliases=['rf'])
+    async def reflavorKernel(self,ctx, char, rtype, new_flavor):
+             
+        if( len(new_flavor) > 20):
+            await ctx.channel.send(content=f'The new {rtype.lower()} must be between 1 and 20 symbols.')
+            return
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
         charEmbed = discord.Embed()
 
         infoRecords, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
-
         if infoRecords:
             charID = infoRecords['_id']
-            data = {
-                'Reflavor': new_race
-            }
-
+            
             try:
-                playersCollection = db.players
-                playersCollection.update_one({'_id': charID}, {"$set": data})
+                db.players.update_one({'_id': charID}, {"$set": {'Reflavor.'+rtype: new_flavor}})
             except Exception as e:
                 print ('MONGO ERROR: ' + str(e))
-                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
+                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try reflavoring your character again.")
             else:
                 print('Success')
-                await ctx.channel.send(content=f'I have updated the race for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+                await ctx.channel.send(content=f'I have updated the {rtype} for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+    
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @reflavor.command()
+    async def race(self,ctx, char, *, new_flavor=""):
+        
+        rtype = "Race"
+        await self.reflavorKernel(ctx, char, rtype, new_flavor)
+        
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @reflavor.command(aliases=['class'])
+    async def classes(self,ctx, char, *, new_flavor=""):
+        
+        rtype = "Class"
+        await self.reflavorKernel(ctx, char, rtype, new_flavor)
+        
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @reflavor.command()
+    async def background(self,ctx, char, *, new_flavor=""):
+        
+        rtype = "Background"
+        await self.reflavorKernel(ctx, char, rtype, new_flavor)
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
@@ -5144,7 +5240,20 @@ class Character(commands.Cog):
               charEmbed.description = f"{race}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
 
         return featsChosen, charStats, charEmbedmsg        
+    def get_embed_length(embed):
+        # embed would be the discord.Embed instance
+        fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
 
+        fields.extend([field.name for field in embed.fields])
+        fields.extend([field.value for field in embed.fields])
+
+        total = ""
+        for item in fields:
+            # If we str(discord.Embed.Empty) we get 'Embed.Empty', when
+            # we just want an empty string...
+            total += str(item) if str(item) != 'Embed.Empty' else ''
+
+        return(len(total))
 
 def setup(bot):
     bot.add_cog(Character(bot))

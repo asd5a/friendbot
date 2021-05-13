@@ -205,7 +205,25 @@ class Admin(commands.Cog, name="Admin"):
         player_list = list(db.players.find(
                {"Reflavor": {"$exists": True}})
             )
-        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Reflavor"].replace("\"", "") for x in player_list])))).items()]))  
+        rfarray = list([line["Reflavor"] for line in player_list]) #puts all the 
+        raceList = []
+        classList = []
+        backgroundList = []
+        i = 0
+        while i < len(rfarray):
+            if 'Race' in rfarray[i]:
+                raceList.append(rfarray[i]['Race'])
+            if 'Class' in rfarray[i]:
+                classList.append(rfarray[i]['Class'])
+            if 'Background' in rfarray[i]:
+                backgroundList.append(rfarray[i]['Background'])
+            i += 1
+        await ctx.channel.send("**Races:**")
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in raceList])))).items()]))
+        await ctx.channel.send("**Classes:**")
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in classList])))).items()]))
+        await ctx.channel.send("**Backgrounds:**")
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in backgroundList])))).items()]))  
     
     @commands.command()
     @commands.has_any_role("Mod Friend")
@@ -897,20 +915,23 @@ class Admin(commands.Cog, name="Admin"):
                 # character level
                 charLevel = int(cRecord['Level'])
                 # since this checks for multiple things, this cannot be avoided
-                tierNum=5
-                # calculate the tier of the rewards
-                if charLevel < 5:
+                
+                if charDict["Level"] < 5:
                     tierNum = 1
-                elif charLevel < 11:
+                elif charDict["Level"] < 11:
                     tierNum = 2
-                elif charLevel < 17:
+                elif charDict["Level"] < 17:
                     tierNum = 3
-                elif charLevel < 20:
+                elif charDict["Level"] < 20:
                     tierNum = 4
+                else:
+                    tierNum = 5
+                
+                # Uses calculateTreasure to determine the rewards from the quest based on the character
+                treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , tierNum, totalTime)
                         
                 consumablesList = items.split(',')
                 rewardList = {"Magic Items": [], "Consumables": [], "Inventory": []}
-                 
                 for query in consumablesList:
                     query = query.strip()
                     # if the player is getting a spell scoll then we need to determine which spell they are going for
@@ -922,9 +943,9 @@ class Admin(commands.Cog, name="Admin"):
                         sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem)
                         
                         # if no spell was found then we inform the user of the failure and stop the command
-                        if not sRecord and not resume:
+                        if not sRecord:
                             await ctx.channel.send(f'''**{query}** belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Reward Item Table, what tier it is, and your spelling.''')
-                            return start, dmChar
+                            return 
 
                         else:
                             # Converts number to ordinal - 1:1st, 2:2nd, 3:3rd...
@@ -949,45 +970,33 @@ class Admin(commands.Cog, name="Admin"):
                         await ctx.channel.send(f'**{query}** does not seem to be a valid reward item.')
                         return 
                     else:
-                       
                         if 'spell scroll' in query.lower():
                             rewardConsumable['Name'] = f"Spell Scroll ({sRecord['Name']})"
                         rewardList[rewardConsumable["Type"]].append(rewardConsumable["Name"])
                 
-                #if we know they didnt have any items, we know that changes could only be additions
-                if(cRecord["Consumables"]=="None"):
-                    # turn the list of added items into the new string
-                    consumablesString = ", ".join(rewardList["Consumables"])
-                else:
-                    consumablesString = cRecord["Consumables"]+(", ".join(rewardList["Consumables"]))
-                    
+                # turn the list of added items into the new string
+                consumablesString = ", ".join(rewardList["Consumables"])
+                   
                 # if the string is empty, turn it into none
                 consumablesString += "None"*(consumablesString=="")
                 
                 # magic items cannot be removed so we only care about addtions
                 # if we have no items and no additions, string is None
-                if(cRecord["Magic Items"]=="None"):
-                    # turn the list of added items into the new string
-                    magicItemString = ", ".join(rewardList["Magic Items"])
-                else:
-                    magicItemString = cRecord["Magic Items"]+(", ".join(rewardList["Magic Items"]))
-                    
+                magicItemString = ", ".join(rewardList["Magic Items"])
+
                 # if the string is empty, turn it into none
                 magicItemString += "None"*(magicItemString=="")
                     
                 
                 # increase the relevant inventory entries and create them if necessary
                 for i in rewardList["Inventory"]:
-                    if i in cRecord["Inventory"]:
-                        cRecord["Inventory"][i] += 1
+                    if i in charDict["Inventory"]:
+                        charDict["Inventory"][i] += 1
                     else:
-                        cRecord["Inventory"][i] = 1
-                
-                player_set = {"Consumables": consumablesString, 
-                                "Magic Items": magicItemString, 
-                                "Inventory" : cRecord["Inventory"]}
-                     
-                    
+                        charDict["Inventory"][i] = 1
+                out = {"Magic Items":magicItemString, "Consumables":consumablesString, "Inventory":charDict["Inventory"]}
+                         
+                        
             else:
                 await ctx.channel.send(content=f"I could not find {charName} in the DB.")        
                 return
