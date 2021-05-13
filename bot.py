@@ -196,7 +196,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedChar.add_field(name=f'▫️ Respecing a Character into a Multiclass', value=f'{commandPrefix}respec "character name" "new character name" "race" "class1 level / class2 level / class3 level / class4 level" "background" STR DEX CON INT WIS CHA', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character\'s Race', value=f'{commandPrefix}reflavor "character name" race name\n[{commandPrefix}rf]', inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character', value=f'{commandPrefix}reflavor race "character name" race name\n{commandPrefix}reflavor class "character name" class name\n{commandPrefix}reflavor background "character name" background name\n[{commandPrefix}rf]', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Adding Extra Names', value=f'{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', inline=False)
 
