@@ -2259,7 +2259,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 
         #in no rewards games characters cannot die or get rewards
         if role != "":
-            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp', 'undo rewards']
+            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp', 'undo rewards', "guild"]
         else:
             timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'stamp']
 
@@ -2340,6 +2340,25 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                         await self.undoConsumables(ctx, msg, startTimes, dmChar)
                         # update the msg with the new stamp
                         stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
+                elif (msg.content.startswith(f'{commandPrefix}timer guild') or msg.content.startswith(f'{commandPrefix}t guild')):
+                    if await self.permissionCheck(msg, author):
+                        guildsList = []
+                        guildCategoryID = settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
+
+                        if (len(msg.channel_mentions) > 2):
+                            await channel.send(f"The number of guilds exceeds two. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1 #guild2```") 
+                        elif msg.channel_mentions != list():
+                            guildsList = msg.channel_mentions
+                            guildRecordsList = []
+                            for g in guildsList:
+                                if g.category_id != guildCategoryID:
+                                    await channel.send(f"***{g}*** is not a guild channel. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2```") 
+                                    guildsList = []
+                                    break
+                                    
+
+                        else:
+                            await channel.send(f"I couldn't find any mention of a guild. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2```") 
 
             except asyncio.TimeoutError:
                 stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)

@@ -441,6 +441,11 @@ class Tp(commands.Cog):
                     ctx.command.reset_cooldown(ctx)
                     return 
                 
+                
+                indefinite = "a"
+                if mRecord['Name'][0].lower() in "aeiou":
+                    indefinite = "an"
+                    
                 # get the tier of the item
                 tierNum = mRecord['Tier']
                 # get the gold cost of the item
@@ -674,7 +679,7 @@ class Tp(commands.Cog):
                                 print ('MONGO ERROR: ' + str(e))
                                 tpEmbedmsg = await channel.send(embed=None, content=f"Uh oh, looks like something went wrong. Try again using the same command!")
                             else:
-                                outputLiner = oneLiner.replace("<magic item>", str(mRecord['Name']))
+                                outputLiner = oneLiner.replace("<magic item>", str(mRecord['Name'])).replace(f"a {str(mRecord['Name'])}", f"{indefinite} {str(mRecord['Name'])}")
                                 if newTP:
                                     if "Complete" in newTP:
                                         tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['TP']} TP! :tada:\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n"

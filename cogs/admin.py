@@ -10,7 +10,7 @@ import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic
+from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic, calculateTreasure
 
 
 
@@ -124,12 +124,6 @@ class Admin(commands.Cog, name="Admin"):
         result = db.liners_find.insert_many(out)
         print(result.inserted_ids)
         
-        
-    # temporary command that verifies updates to one liners
-    @commands.command()
-    @admin_or_owner()
-    async def wip(self, ctx):
-        print(liner_dic)
         
     # command that allows one to update each field of the liners dictionary
     @commands.command()
@@ -660,8 +654,8 @@ class Admin(commands.Cog, name="Admin"):
         await message.add_reaction(emote)
         await ctx.message.delete()
     
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def makeItClean(self, ctx):
         msg = await ctx.channel.send("Are you sure you want to delete basically everything?\n No: ❌\n Yes: ✅")
         author = ctx.author
@@ -694,8 +688,8 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
     
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def deleteStats(self, ctx):
         # if(not self.doubleVerify(ctx, msg)):
             # return
@@ -890,7 +884,7 @@ class Admin(commands.Cog, name="Admin"):
     
     @commands.command()
     @admin_or_owner()
-    async def giveRewards(self, ctx, charName, user, items):
+    async def giveRewards(self, ctx, charName, user, cp: float, items=""):
         msg = ctx.message
         rewardList = msg.raw_mentions
         rewardUser = ""
@@ -901,19 +895,19 @@ class Admin(commands.Cog, name="Admin"):
         
         # if nobody was listed, inform the user
         if rewardList == list():
-            await ctx.channel.send(content=f"I could not find any mention of a user to hand out a reward item.") 
+            await ctx.channel.send(content=f"I could not find any mention of a user to hand out rewards.") 
             #return the unchanged parameters
             return 
         else:
             rewardUser = guild.get_member(rewardList[0])
-            cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, rewardUser, customError=True)
+            charDict, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, rewardUser, customError=True)
             # get the first user mentioned
             
             
             
-            if cRecord:
+            if charDict:
                 # character level
-                charLevel = int(cRecord['Level'])
+                charLevel = int(charDict['Level'])
                 # since this checks for multiple things, this cannot be avoided
                 
                 if charDict["Level"] < 5:
@@ -928,10 +922,18 @@ class Admin(commands.Cog, name="Admin"):
                     tierNum = 5
                 
                 # Uses calculateTreasure to determine the rewards from the quest based on the character
-                treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , tierNum, totalTime)
-                        
-                consumablesList = items.split(',')
+                treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , tierNum, cp*3600)
+                inc_dic = {"GP": treasureArray[2], "CP": treasureArray[0]}
+                inc_dic.update(treasureArray[1])
+                items = items.strip()
+                consumablesList = []
+                if items != "":
+                    consumablesList = items.split(',')
                 rewardList = {"Magic Items": [], "Consumables": [], "Inventory": []}
+                if charDict["Magic Items"] != "None":
+                    rewardList["Magic Items"] += charDict["Magic Items"].split(", ")
+                if charDict["Consumables"] != "None":
+                    rewardList["Consumables"] += charDict["Consumables"].split(", ")
                 for query in consumablesList:
                     query = query.strip()
                     # if the player is getting a spell scoll then we need to determine which spell they are going for
@@ -975,14 +977,14 @@ class Admin(commands.Cog, name="Admin"):
                         rewardList[rewardConsumable["Type"]].append(rewardConsumable["Name"])
                 
                 # turn the list of added items into the new string
-                consumablesString = ", ".join(rewardList["Consumables"])
+                consumablesString = ", ".join(sorted(rewardList["Consumables"]))
                    
                 # if the string is empty, turn it into none
                 consumablesString += "None"*(consumablesString=="")
                 
                 # magic items cannot be removed so we only care about addtions
                 # if we have no items and no additions, string is None
-                magicItemString = ", ".join(rewardList["Magic Items"])
+                magicItemString = ", ".join(sorted(rewardList["Magic Items"]))
 
                 # if the string is empty, turn it into none
                 magicItemString += "None"*(magicItemString=="")
@@ -1001,8 +1003,8 @@ class Admin(commands.Cog, name="Admin"):
                 await ctx.channel.send(content=f"I could not find {charName} in the DB.")        
                 return
         try:
-            db.players.update_one({"_id": cRecord["_id"]}, {"$set": player_set})
-            await ctx.channel.send(content=f"Rewards items have been given.")
+            db.players.update_one({"_id": charDict["_id"]}, {"$set": out, "$inc": inc_dic})
+            await ctx.channel.send(content=f"Rewards have been given.")
     
         except Exception as e:
             traceback.print_exc()
@@ -1123,6 +1125,17 @@ class Admin(commands.Cog, name="Admin"):
             await ctx.channel.send(f'Failed to load extension {cog}.')
             traceback.print_exc()
 
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
+    #@is_log_channel()
+    #@commands.has_any_role('A d m i n')
+    #@commands.command(aliases=['wop'])
+    async def updatedatabase(self, ctx): #moves the Reflavor value in every character that has one to a new Reflavor dictionary under New Race
+
+        for line in db.players.find({ "Reflavor": { "$exists": 'true' } }):
+            if type(line["Reflavor"]) == str:
+                db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"Race": line["Reflavor"]}}}])
+            
+        await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
 
 def setup(bot):
     bot.add_cog(Admin(bot))
