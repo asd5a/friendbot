@@ -3038,12 +3038,12 @@ class Character(commands.Cog):
             alignment_string = "Alignment: Unknown\n"
             if "Alignment" in charDict and charDict['Alignment'] != "":
                 alignment_string = f"Alignment: {charDict['Alignment']}\n"
-                
+
             description = f"{nick_string}{char_race}\n{char_class}\n{char_background}\n{alignment_string}One-shots Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
-                description +=  f"Extra Training: {charDict['Proficiency']}\n"
+                description +=  f"• Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
-                description +=  f"Noodle Training: {charDict['NoodleTraining']}\n"
+                description +=  f"• Noodle Training: {charDict['NoodleTraining']}\n"
             description += f":moneybag: {charDict['GP']} GP\n"
             charLevel = charDict['Level']
             if charLevel < 5:
@@ -3083,8 +3083,8 @@ class Character(commands.Cog):
             tpString = ""
             for i in range (1,6):
                 if f"T{i} TP" in charDict:
-                    tpString += f"**Tier {i} TP**: {charDict[f'T{i} TP']} \n" 
-            charEmbed.add_field(name='TP', value=f"Current TP Item: **{charDict['Current Item']}**\n{tpString}", inline=True)
+                    tpString += f"• Tier {i} TP: {charDict[f'T{i} TP']} \n" 
+            charEmbed.add_field(name='TP', value=f"Current TP Item: {charDict['Current Item']}\n{tpString}", inline=True)
             if 'Guild' in charDict:
                 charEmbed.add_field(name='Guild', value=f"{charDict['Guild']}: Rank {charDict['Guild Rank']}", inline=True)
             charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=False)
@@ -3191,7 +3191,7 @@ class Character(commands.Cog):
 
             charDict['HP'] += totalHPAdd * charLevel
 
-            charEmbed.add_field(name='Stats', value=f":heart: {charDict['HP']} Max HP\n**STR**: {charDict['STR']} \n**DEX**: {charDict['DEX']} \n**CON**: {charDict['CON']} \n**INT**: {charDict['INT']} \n**WIS**: {charDict['WIS']} \n**CHA**: {charDict['CHA']}", inline=False)
+            charEmbed.add_field(name='Stats', value=f":heart: {charDict['HP']} Max HP\n• STR: {charDict['STR']} \n• DEX: {charDict['DEX']} \n• CON: {charDict['CON']} \n• INT: {charDict['INT']} \n• WIS: {charDict['WIS']} \n• CHA: {charDict['CHA']}", inline=False)
             
             charEmbed.set_footer(text=footer)
 
@@ -3845,7 +3845,7 @@ class Character(commands.Cog):
 
                 roleName = await self.levelCheck(ctx, newCharLevel, charName)
                 levelUpEmbed.clear_fields()
-                await levelUpEmbedmsg.edit(content=f":arrow_up:   __**L E V E L   U P!**__\n\n:warning:   **Don't forget to spend your TP!** Use the following command to spend your TP:\n```yaml\n$tp buy \"{charName}\" \"magic item\"```", embed=levelUpEmbed)
+                await levelUpEmbedmsg.edit(content=f":arrow_up:   __**L E V E L   U P!**__\n\n:warning:   **Don't forget to spend your TP!** Use one of the following commands to do so:\n```yaml\n$tp find \"{charName}\" \"magic item\"\n$tp craft \"{charName}\" \"magic item\"\n$tp meme \"{charName}\" \"magic item\"```", embed=levelUpEmbed)
                 
                 if roleName != "":
                     levelUpEmbed.title = f":tada: {roleName} role acquired! :tada:\n" + levelUpEmbed.title
