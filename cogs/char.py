@@ -2631,7 +2631,7 @@ class Character(commands.Cog):
         charEmbed = discord.Embed()
         charEmbedmsg = None
         search_author = author
-        if len(ctx.message.mention)>0 and "Mod Friend" in [role.name for role in author.roles]:
+        if len(ctx.message.mentions)>0 and "Mod Friend" in [role.name for role in author.roles]:
             search_author = ctx.message.mentions[0]
         usersCollection = db.users
         userRecords = usersCollection.find_one({"User ID": str(search_author.id)})
