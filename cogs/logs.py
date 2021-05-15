@@ -1104,7 +1104,7 @@ class Log(commands.Cog):
                     for guildChannel in ctx.message.channel_mentions:
                         
                         # get the DB record of the guild
-                        gRecord  = guildsCollection.find_one({"Channel ID": str(guildChannel.id)})
+                        gRecord  = db.guilds.find_one({"Channel ID": str(guildChannel.id)})
                         if not gRecord:
                             continue
                         guildDBEntry = {}
