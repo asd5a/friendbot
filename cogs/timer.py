@@ -57,7 +57,7 @@ class Timer(commands.Cog):
             
             if msg:
                 if ctx.command.name == "prep":
-                    msg += f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1, @player2, @player3, [...]" quest name```'
+                    msg +=  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1 @player2 [...]" "quest name" #guild-channel-1 #guild-channel-2```'
                 
                 ctx.command.reset_cooldown(ctx)
                 await ctx.channel.send(content=msg)
@@ -75,7 +75,7 @@ class Timer(commands.Cog):
     @commands.cooldown(1, float('inf'), type=commands.BucketType.channel) 
     @commands.has_any_role('D&D Friend', 'Campaign Friend')
     @timer.command()
-    async def prep(self, ctx, userList, *, game):
+    async def prep(self, ctx, userList, game):
         #this checks that only the author's response with one of the Tier emojis allows Tier selection
         #the response is limited to only the embed message
         numberEmojisExtra = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣']
@@ -93,7 +93,7 @@ class Timer(commands.Cog):
         userName = author.name
         guild = ctx.guild
         #information on how to use the command, set up here for ease of reading and repeatability
-        prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1, @player2, @player3, [...]" "quest name"```'
+        prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1 @player2 [...]" "quest name" #guild-channel-1 #guild-channel-2```'
         #check if the current channel is a campaign channel
         isCampaign = "campaign" in channel.category.name.lower()
         #prevent the command if not in a proper channel (game/campaign)
@@ -114,12 +114,7 @@ class Timer(commands.Cog):
             #permit the use of the command again
             self.timer.get_command('prep').reset_cooldown(ctx)
             return
-        #check if the prep command included any channels, the response assumes that this was as a result of trying to add a guild
-        if ctx.message.channel_mentions != list():
-            #inform the user on the proper way of adding guilds to the game
-            await channel.send(f"It looks like you are trying to add a channel/guild to your timer.\nPlease do this during `***{commandPrefix}timer prep***` and not before.\n\n{prepFormat}")
-            self.timer.get_command('prep').reset_cooldown(ctx)
-            return
+
         #create an Embed object to use for user communication and information
         prepEmbed = discord.Embed()
         
@@ -177,21 +172,14 @@ class Timer(commands.Cog):
                 await prepEmbedMsg.clear_reactions()
                 #cancel the command based on user desire
                 if tReaction.emoji == '❌':
-                    await prepEmbedMsg.edit(embed=None, content=f"""Timer cancelled. Use the following command to prepare a timer:\n```yaml\n{commandPrefix}timer prep "@player1, @player2, @player3, [...]" quest name```""")
+                    await prepEmbedMsg.edit(embed=None, content=f"""Timer cancelled. {prepFormat}""")
                     self.timer.get_command('prep').reset_cooldown(ctx)
                     return
                 # otherwise take the role based on which emoji the user reacted with
                 # the array is stored in bfunc and the options are 'New', 'Junior', 'Journey', 'Elite' and 'True' in this order
                 role = roleArray[int(tReaction.emoji[0])]
 
-            
-        #clear the embed message
-        prepEmbed.clear_fields()
-        await prepEmbedMsg.clear_reactions()
-        # if is not a campaign add the selected tier to the message title and inform the users about the possible commands (signup, add player, remove player, add guild)
-        if not isCampaign:
-            prepEmbed.title = f"{game} (Tier {roleArray.index(role)})"
-            prepEmbed.description = f"""__**Command Checklist**__
+        command_checklist_string = f"""__**Command Checklist**__
 **1. Players and DM sign up:**
 • {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
 **2. DM adds guild(s) (optional):**
@@ -203,20 +191,27 @@ class Timer(commands.Cog):
 • **Cancel**: {commandPrefix}timer cancel
 • **Start**: {commandPrefix}timer start"""
 
-        else:
-            # otherwise give an appropriate title and inform about the limited commands list (signup, add player, remove player)
-            prepEmbed.title = f"{game} (Campaign)"
-            prepEmbed.description = f"""__**Command Checklist**__
-**1. Players and DM sign up:**
-• {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
-**2. DM adds guild(s) (optional):**
-• {commandPrefix}timer guild #guild1, #guild2
-**3. DM adds or removes players (optional):**
-• **Add**: {commandPrefix}timer add @player
-• **Remove**: {commandPrefix}timer remove @player
-**4. DM cancels or starts the one-shot:**
-• **Cancel**: {commandPrefix}timer cancel
-• **Start**: {commandPrefix}timer start"""
+        #clear the embed message
+        prepEmbed.clear_fields()
+        await prepEmbedMsg.clear_reactions()
+        # if is not a campaign add the selected tier to the message title and inform the users about the possible commands (signup, add player, remove player, add guild)
+        if not isCampaign:
+            prepEmbed.title = f"{game} (Tier {roleArray.index(role)})"
+            prepEmbed.description = command_checklist_string
+
+        guildsList = []
+        guildCategoryID = settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
+
+        if (len(ctx.message.channel_mentions) > 2):
+            await channel.send(f"The number of guilds exceeds two. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1 #guild2```") 
+        elif ctx.message.channel_mentions != list():
+            for g in ctx.message.channel_mentions:
+                if g.category_id == guildCategoryID:
+                    guildsList.append(g)
+                    break
+                    
+            if guildsList:
+                prepEmbed.description = f"**Guilds**: {', '.join([g.mention for g in guildsList])}\n\n{command_checklist_string}"
 
         #setup a variable to store the string showing the current roster for the game
         rosterString = ""
@@ -247,8 +242,6 @@ class Timer(commands.Cog):
         # set up all the guild related variables
         guildsList = []
         guildsCollection = db.guilds
-        guildRecordsList = []
-        guildBuffs = {}
         
         # create a list of all player and characters they have signed up with
         # this is a nested list where the contained entries are [member object, DB character entry, Consumable list for the game, character DB ID]
@@ -406,7 +399,7 @@ class Timer(commands.Cog):
             #the command that cancels the timer, it does so by ending the command all together                              
             elif (msg.content == f"{commandPrefix}timer cancel" or msg.content == f"{commandPrefix}t cancel"):
                 if await self.permissionCheck(msg, author):
-                    await channel.send(f'Timer cancelled! If you would like to prep a new quest, use the following command:\n```yaml\n{commandPrefix}timer prep "@player1, @player2, @player3, [...]" quest name```') 
+                    await channel.send(f'Timer cancelled! If you would like to prep a new quest {prepFormat.lower()}') 
                     # allow the call of this command again
                     self.timer.get_command('prep').reset_cooldown(ctx)
                     return
@@ -414,7 +407,6 @@ class Timer(commands.Cog):
             elif (msg.content.startswith(f'{commandPrefix}timer guild') or msg.content.startswith(f'{commandPrefix}t guild')):
                 if await self.permissionCheck(msg, author):
                     guildsList = []
-                    guildsListStr = ""
                     guildCategoryID = settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
 
                     if (len(msg.channel_mentions) > 2):
@@ -422,8 +414,6 @@ class Timer(commands.Cog):
                     elif msg.channel_mentions != list():
                         guildsList = msg.channel_mentions
                         invalidChannel = False
-                        guildRecordsList = []
-                        guildsListStr = "Guilds: " 
                         # TODO: Guilds on DM
                         for g in guildsList:
                             if g.category_id != guildCategoryID:
@@ -433,18 +423,7 @@ class Timer(commands.Cog):
                                 break
                                 
                         if not invalidChannel:
-                            prepEmbed.description = f"""**Guilds**: {', '.join([g.mention for g in guildsList])}\n
-__**Command Checklist**__
-**1. Players and DM sign up:**
-• {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"
-**2. DM adds guild(s) (optional):**
-• {commandPrefix}timer guild #guild1, #guild2
-**3. DM adds or removes players (optional):**
-• **Add**: {commandPrefix}timer add @player
-• **Remove**: {commandPrefix}timer remove @player
-**4. DM cancels or starts the one-shot:**
-• **Cancel**: {commandPrefix}timer cancel
-• **Start**: {commandPrefix}timer start\n"""
+                            prepEmbed.description = f"**Guilds**: {', '.join([g.mention for g in guildsList])}\n\n{command_checklist_string}"
 
 # The code below is the old code for the above, I'm keeping it just in case.
 # Guilds: {', '.join([g.mention for g in guildsList])}\n**Signup**: {commandPrefix}timer signup \"character name\" \"consumable1, consumable2, [...]\"\n**Add to roster**: {commandPrefix}timer add @player\n**Remove from roster**: {commandPrefix}timer remove @player\n**Add guild(s)**: {commandPrefix}timer guild #guild1, #guild2"
@@ -2349,7 +2328,6 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                             await channel.send(f"The number of guilds exceeds two. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1 #guild2```") 
                         elif msg.channel_mentions != list():
                             guildsList = msg.channel_mentions
-                            guildRecordsList = []
                             for g in guildsList:
                                 if g.category_id != guildCategoryID:
                                     await channel.send(f"***{g}*** is not a guild channel. Please follow this format and try again:\n```yaml\n{commandPrefix}timer guild #guild1, #guild2```") 

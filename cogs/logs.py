@@ -502,7 +502,6 @@ class Log(commands.Cog):
 
         
         for character in characterDBentries:
-            print(character)
             player = players[str(character["User ID"])]
             # this indicates that the character had died
             if player["Status"] == "Dead":
@@ -528,7 +527,7 @@ class Log(commands.Cog):
                 dmDouble = False
                 
                 
-                treasureArray  = calculateTreasure(player["Level"], player["Character CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+                treasureArray  = calculateTreasure(player["Level"], character["CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
                 
                 if(guild_valid and 
                         guilds[player["Guild"]]["Items"] and 
@@ -657,7 +656,7 @@ class Log(commands.Cog):
             dmDouble = player["DM Double"]
             
             
-            treasureArray  = calculateTreasure(charLevel, player["Character CP"] , dmTierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+            treasureArray  = calculateTreasure(charLevel, character["CP"], dmTierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
                 
                 
             if(guild_valid and 
@@ -1042,7 +1041,8 @@ class Log(commands.Cog):
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
             if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
-                if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or "Mod Friend" in [r.name for r in ctx.author.roles]):
+                mod = "Mod Friend" in [r.name for r in ctx.author.roles]
+                if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or mod):
                 # if the game received rewards
                     if len(sessionInfo["Guilds"].keys()) > 0: 
                         players = sessionInfo["Players"]
@@ -1086,6 +1086,53 @@ class Log(commands.Cog):
                 await ctx.channel.send("This session has already been processed")
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
+            
+    @session.command()
+    async def addGuilds(self, ctx,  num : int, *, guilds):
+    
+        mod = "Mod Friend" in [r.name for r in ctx.author.roles]
+        if(mod):
+            logData = db.logdata
+            sessionInfo = logData.find_one({"Log ID": int(num)})
+            if( sessionInfo):
+                if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
+                    guild_dic = {}
+                    for g in guilds.values():
+                        guild_dic[g["Mention"]] = g
+                    err_message = ""
+                    for guildChannel in ctx.message.channel_mentions:
+                        
+                        # get the DB record of the guild
+                        gRecord  = guildsCollection.find_one({"Channel ID": str(guildChannel.id)})
+                        if not gRecord:
+                            continue
+                        guildDBEntry = {}
+                        guildDBEntry["Status"] = True
+                        guildDBEntry["Rewards"] = False
+                        guildDBEntry["Items"] = False
+                        guildDBEntry["Drive"] = False
+                        guildDBEntry["Mention"] = guildChannel.mention
+                        guildDBEntry["Name"] = gRecord["Name"]
+                        
+                        
+                        mention = guildChannel.mention
+                        if mention not in guild_dic:
+                            try:
+                                db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Guilds."+guild_dic[mention]["Name"]: guildDBEntry}})
+                            except BulkWriteError as bwe:
+                                print(e)
+                        else:
+                            err_message += mention +" already found in game.\n"
+                       
+                    if err_message != "":
+                        await ctx.channel.send(err_message)
+                    await ctx.channel.send("Session updated.")
+                    await generateLog(self, ctx, num)
+
+                else:
+                    await ctx.channel.send("This session has already been processed")
+            else:
+                await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
      
     @commands.has_any_role('Mod Friend', 'Admins')      
     @session.command()

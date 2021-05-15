@@ -66,7 +66,7 @@ class Campaign(commands.Cog):
             
             if msg:
                 if ctx.command.name == "prep":
-                    msg += f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, @player3, [...]" sessionname```'
+                    msg += f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, [...]" "session name"```'
                 
             else:
                 ctx.command.reset_cooldown(ctx)
@@ -354,7 +354,7 @@ class Campaign(commands.Cog):
     @commands.cooldown(1, float('inf'), type=commands.BucketType.channel) 
     @commands.has_any_role('D&D Friend', 'Campaign Friend')
     @timer.command()
-    async def prep(self, ctx, userList, *, game = ""):
+    async def prep(self, ctx, userList, game = ""):
         #this checks that only the author's response with one of the Tier emojis allows Tier selection
         #the response is limited to only the embed message
         
@@ -367,7 +367,7 @@ class Campaign(commands.Cog):
         userName = author.name
         guild = ctx.guild
         #information on how to use the command, set up here for ease of reading and repeatability
-        prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, @player3..." "quest name"(*)```***** - The quest name is optional.'
+        prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, [...]" "session name"(*)```***** - The session name is optional.'
         usersCollection = db.users
         #prevent the command if not in a proper channel (game/campaign)
         if not "campaign" in channel.category.name.lower(): #!= settingsRecord[ctx.guild.id]["Campaign Rooms"]:
@@ -566,7 +566,7 @@ class Campaign(commands.Cog):
             #the command that cancels the timer, it does so by ending the command all together                              
             elif self.startsWithCheck(msg, "cancel"):
                 if await self.permissionCheck(msg, author):
-                    await channel.send(f'Timer cancelled! If you would like to prep a new quest, use the following command:\n```yaml\n{commandPrefix}campaign timer prep```') 
+                    await channel.send(f'Timer cancelled! If you would like to prep a new quest, {prepFormat}') 
                     # allow the call of this command again
                     self.timer.get_command('prep').reset_cooldown(ctx)
                     return

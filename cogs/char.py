@@ -2630,9 +2630,11 @@ class Character(commands.Cog):
         guild = ctx.guild
         charEmbed = discord.Embed()
         charEmbedmsg = None
-
+        search_author = author
+        if len(ctx.msg.mention)>0 and "Mod Friend" in [role.name for role in author.roles]:
+            search_author = ctx.message.mentions[0]
         usersCollection = db.users
-        userRecords = usersCollection.find_one({"User ID": str(author.id)})
+        userRecords = usersCollection.find_one({"User ID": str(search_author.id)})
 
         def userCheck(r,u):
             sameMessage = False
@@ -2641,11 +2643,11 @@ class Character(commands.Cog):
             return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
 
         if not userRecords: 
-            userRecords = {'User ID': str(author.id), 'Games' : 0}
+            userRecords = {'User ID': str(search_author.id), 'Games' : 0}
             usersData = db.users.insert_one(userRecords)  
             await channel.send(f'A user profile has been created.') 
         playersCollection = db.players
-        charRecords = list(playersCollection.find({"User ID": str(author.id)}))
+        charRecords = list(playersCollection.find({"User ID": str(search_author.id)}))
 
         totalGamesPlayed = 0
         pages = 1
@@ -3008,16 +3010,17 @@ class Character(commands.Cog):
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel_or_game()
     @commands.command(aliases=['i', 'char'])
-    async def info(self,ctx, char):
+    async def info(self,ctx, char, mod_override = ""):
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
         roleColors = {r.name:r.colour for r in guild.roles}
         charEmbed = discord.Embed()
         charEmbedmsg = None
-
+        if mod_override:
+            mod = "Mod Friend" in [role.name for role in author.roles]
         statusEmoji = ""
-        charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+        charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed, mod=mod)
         if charDict:
             footer = f"To view your character's inventory, type the following command: {commandPrefix}inv {charDict['Name']}"
             
