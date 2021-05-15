@@ -1119,7 +1119,7 @@ class Log(commands.Cog):
                         mention = guildChannel.mention
                         if mention not in guild_dic:
                             try:
-                                db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Guilds."+guild_dic[mention]["Name"]: guildDBEntry}})
+                                db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Guilds."+gRecord["Name"]: guildDBEntry}})
                             except BulkWriteError as bwe:
                                 print(e)
                         else:
