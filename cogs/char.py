@@ -2654,8 +2654,8 @@ class Character(commands.Cog):
         pageStops = [0]
         charString = ""
         charDictTiers = [[],[],[],[],[]]
-        charEmbed.set_author(name=author, icon_url=author.avatar_url)
-        charEmbed.title = f"{author.display_name}" 
+        charEmbed.set_author(name=search_author, icon_url=search_author.avatar_url)
+        charEmbed.title = f"{search_author.display_name}" 
         if charRecords:
             charRecords = sorted(charRecords, key=lambda k: k['Name']) 
 
