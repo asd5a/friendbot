@@ -1096,6 +1096,7 @@ class Log(commands.Cog):
             sessionInfo = logData.find_one({"Log ID": int(num)})
             if( sessionInfo):
                 if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
+                    guilds = sessionInfo["Guilds"]
                     guild_dic = {}
                     for g in guilds.values():
                         guild_dic[g["Mention"]] = g
