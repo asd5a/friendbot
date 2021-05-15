@@ -3017,6 +3017,7 @@ class Character(commands.Cog):
         roleColors = {r.name:r.colour for r in guild.roles}
         charEmbed = discord.Embed()
         charEmbedmsg = None
+        mod= False
         if mod_override:
             mod = "Mod Friend" in [role.name for role in author.roles]
         statusEmoji = ""
