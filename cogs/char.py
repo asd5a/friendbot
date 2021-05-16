@@ -44,9 +44,7 @@ separator -> text element by which the section texts will be split if they overf
 author -> author of the embed, if one is given the author and profile image will be set
 color -> color for the embed, if one is given the embed will use that color
 footer -> custom footer message, is added to page text
-"""
-
-    
+"""    
 async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author = None, color= None, footer=""):
     
     # storage of the elements that will be displayed on a page
@@ -74,14 +72,18 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
         # separate the text into different line sections until the full text has been split
         while(length>0):
             
-            # get everything to the limit
-            section_text = text[:1000]
-            # ensure that we do not separate mid sentence by splitting at the separator
-            section_text = section_text.rsplit(separator, 1)[0]
-            # then update the text to everything past what we took for the section text
-            text = text[len(section_text)+len(separator):]
-            # update our length running tally
-            length -= len(section_text)+len(separator)
+            if length>1000:
+                # get everything to the limit
+                section_text = text[:1000]
+                # ensure that we do not separate mid sentence by splitting at the separator
+                section_text = section_text.rsplit(separator, 1)[0]
+                # then update the text to everything past what we took for the section text
+                text = text[len(section_text)+len(separator):]
+                # update our length running tally
+                length -= len(section_text)+len(separator)
+            else:
+                section_text = text
+                length = 0
             # track the text length for the page 
             # if there was only one section then do not add a page count
             subtitle = f"{name}"
@@ -97,7 +99,6 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
                 entry_pages.append(entry_list)
                 # reset page tracker
                 entry_list = []
-                print("New page", len(entry_pages))
             
             # add to page
             entry_list.append((subtitle, section_text))
@@ -130,7 +131,6 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
         if msg.id == r.message.id:
             sameMessage = True
         return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
-    print("Pages", pages)
     page = 0
     #add the fields for the page
     for subtitle, section_text in entry_pages[page]:
@@ -2534,12 +2534,6 @@ class Character(commands.Cog):
         charEmbed = discord.Embed()
         charEmbedmsg = None
         contents = []
-        def userCheck(r,u):
-            sameMessage = False
-            if charEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
-
         mod= False
         if mod_override:
             mod = "Mod Friend" in [role.name for role in author.roles]
@@ -2566,7 +2560,6 @@ class Character(commands.Cog):
                 spellBookString = ""
                 for s in charDict['Spellbook']:
                     spellBookString += f"• {s['Name']} ({s['School']})\n" 
-                charEmbed.add_field(name='Spellbook', value=spellBookString, inline=False)
                 contents.append(("Spellbook", spellBookString, False))
             if 'Ritual Book' in charDict:
                 ritualBookString = ""
@@ -2683,19 +2676,12 @@ class Character(commands.Cog):
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
-        charEmbed = discord.Embed()
-        charEmbedmsg = None
         search_author = author
+        contents = []
         if len(ctx.message.mentions)>0 and "Mod Friend" in [role.name for role in author.roles]:
             search_author = ctx.message.mentions[0]
         usersCollection = db.users
         userRecords = usersCollection.find_one({"User ID": str(search_author.id)})
-
-        def userCheck(r,u):
-            sameMessage = False
-            if charEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
 
         if not userRecords: 
             userRecords = {'User ID': str(search_author.id), 'Games' : 0}
@@ -2705,12 +2691,8 @@ class Character(commands.Cog):
         charRecords = list(playersCollection.find({"User ID": str(search_author.id)}))
 
         totalGamesPlayed = 0
-        pages = 1
-        pageStops = [0]
         charString = ""
         charDictTiers = [[],[],[],[],[]]
-        charEmbed.set_author(name=search_author, icon_url=search_author.avatar_url)
-        charEmbed.title = f"{search_author.display_name}" 
         if charRecords:
             charRecords = sorted(charRecords, key=lambda k: k['Name']) 
 
@@ -2745,79 +2727,42 @@ class Character(commands.Cog):
                     if 'Guild' in charDict:
                         charString += f"---Guild: *{charDict['Guild']}*\n"
 
-                    if len(charString) > (768 * pages):
-                        pageStops.append(len(tempCharString))
-                        pages += 1
         else:
             charString = "None"
-            
-        pageStops.append(len(charString))
+
 
         if 'Games' in userRecords:
             totalGamesPlayed += userRecords['Games']
         if 'Double' in userRecords and userRecords["Double"]>0:
-            charEmbed.add_field(name="Double Reward", inline=False, value=f"""Your next **{userRecords["Double"]}** games will have double rewards.""")
-
+            
+            contents.append((f"Double Reward", f"Your next **{userRecords['Double']}** games will have double rewards.", False))
 
         if "Guilds" in userRecords:
             guildNoodles = "• "
             guildNoodles += "\n• ".join(userRecords["Guilds"])
-            charEmbed.add_field(name="Guilds",  inline=False, value=f"""You have created **{len(userRecords["Guilds"])}** guilds:\n {guildNoodles}""")
+            
+            contents.append((f"Guilds", f"You have created **{len(userRecords['Guilds'])}** guilds:\n {guildNoodles}", False))
 
         if "Campaigns" in userRecords:
             campaignString = ""
             for u, v in userRecords['Campaigns'].items():
                 campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, {timeConversion(v['Time'])}\n"
 
-            charEmbed.add_field(name='Campaigns', value=campaignString, inline=False)
-        
+            
+            contents.append((f"Campaigns", campaignString, False))
 
         if 'Noodles' in userRecords:
-            charEmbed.description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: {userRecords['Noodles']}\n"
+            description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: {userRecords['Noodles']}\n"
         else:
-            charEmbed.description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: 0 (Try hosting sessions to receive Noodles!)\n"
+            description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: 0 (Try hosting sessions to receive Noodles!)\n"
     
-        charEmbed.description += f"Total Characters: {len(charRecords)}\nTier 1 Characters: {len(charDictTiers[0])}\nTier 2 Characters: {len(charDictTiers[1])}\nTier 3 Characters: {len(charDictTiers[2])}\nTier 4 Characters: {len(charDictTiers[3])}\nTier 5 Characters: {len(charDictTiers[4])}"
+        description += f"Total Characters: {len(charRecords)}\nTier 1 Characters: {len(charDictTiers[0])}\nTier 2 Characters: {len(charDictTiers[1])}\nTier 3 Characters: {len(charDictTiers[2])}\nTier 4 Characters: {len(charDictTiers[3])}\nTier 5 Characters: {len(charDictTiers[4])}"
 
-        userEmbedList = [charEmbed]
-        page = 0
-        userEmbedList[0].set_footer(text=f"Page {page+1} of {pages}")
-        if pages > 1:
-            for p in range(len(pageStops)-1):
-                if p != 0:
-                    userEmbedList.append(discord.Embed())
-                userEmbedList[p].add_field(name=f'Characters - p. {p+1}:', value=charString[pageStops[p]:pageStops[p+1]], inline=False)
+        contents.insert(0, (f"General Information",description, False))
+        
+        contents.append((f"Characters", charString, False))
 
-        else:
-            charEmbed.add_field(name=f'Characters', value=charString, inline=False)
-
-        if not charEmbedmsg:
-            charEmbedmsg = await ctx.channel.send(embed=charEmbed)
-        else:
-            await charEmbedmsg.edit(embed=charEmbed)
-
-        while pages > 1:
-            await charEmbedmsg.add_reaction(left) 
-            await charEmbedmsg.add_reaction(right)
-            try:
-                hReact, hUser = await self.bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
-            except asyncio.TimeoutError:
-                await charEmbedmsg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
-                await charEmbedmsg.clear_reactions()
-                await charEmbedmsg.add_reaction('💤')
-                return
-            else:
-                if hReact.emoji == left:
-                    page -= 1
-                    if page < 0:
-                        page = len(userEmbedList) - 1
-                if hReact.emoji == right:
-                    page += 1
-                    if page > len(userEmbedList) - 1:
-                        page = 0
-                userEmbedList[page].set_footer(text=f"Page {page+1} of {pages}")
-                await charEmbedmsg.edit(embed=userEmbedList[page]) 
-                await charEmbedmsg.clear_reactions()
+        await paginate(ctx, self.bot, f"{search_author.display_name}" , contents, separator="\n", author = search_author)
    
             
     @commands.cooldown(1, 5, type=commands.BucketType.member)
