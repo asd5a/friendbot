@@ -13,6 +13,171 @@ from discord.ext import commands
 from urllib.parse import urlparse 
 from bfunc import numberEmojis, alphaEmojis, commandPrefix, left,right,back, db, callAPI, checkForChar, timeConversion, traceBack, tier_reward_dictionary, cp_bound_array, calculateTreasure, settingsRecord
 
+
+def get_embed_length(embed):
+    # embed would be the discord.Embed instance
+    fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
+
+    fields.extend([field.name for field in embed.fields])
+    fields.extend([field.value for field in embed.fields])
+
+    total = ""
+    for item in fields:
+        
+        # If we str(discord.Embed.Empty) we get 'Embed.Empty', when
+        # we just want an empty string...
+        total += str(item) if str(item) != 'Embed.Empty' else ''
+
+    return(len(total))
+    
+"""
+Paginate is a function that given a list of text contents turns them into an embed menu system displaying them while creating pagination when required
+ctx -> command call context
+bot -> bot object which is being interacted with
+title -> title for the embed object
+contents -> a list of tuples of the form (Section Title, Section Text, New Page?)
+    Section Title is what the field title will be
+    Section Text is the value for the field and is split if it exceeds the field size limit
+    New Page? is a boolean that indicates if a new page should be created for this section
+msg -> The message which will contain the embed, if none is given a new message will be created
+separator -> text element by which the section texts will be split if they overflow, defaults to "\n"
+author -> author of the embed, if one is given the author and profile image will be set
+color -> color for the embed, if one is given the embed will use that color
+footer -> custom footer message, is added to page text
+"""
+
+    
+async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author = None, color= None, footer=""):
+    
+    # storage of the elements that will be displayed on a page
+    entry_pages =[]
+    
+    # length of main title
+    title_length = len(title)
+    
+    # sample worst case footer length
+    footer_text_sample = len(f"{footer}\nPage 100 of 100")
+    
+    # go over each required content piece and split it into the different groups
+    # currently different content elements are separated by page
+    
+    entry_list = []
+    set_length = 0
+    for name, text, new_page in contents:
+        # how many parts are there for this section
+        parts = 1
+        
+        # storage of entries for a single page
+        name_length = len(name)
+        length = len(text)
+        
+        # separate the text into different line sections until the full text has been split
+        while(length>0):
+            
+            # get everything to the limit
+            section_text = text[:1000]
+            # ensure that we do not separate mid sentence by splitting at the separator
+            section_text = section_text.rsplit(separator, 1)[0]
+            # then update the text to everything past what we took for the section text
+            text = text[len(section_text)+len(separator):]
+            # update our length running tally
+            length -= len(section_text)+len(separator)
+            # track the text length for the page 
+            # if there was only one section then do not add a page count
+            subtitle = f"{name}"
+            if length>0 or parts>1:
+                subtitle = f"{name} - p. {parts}"
+            
+            set_length += len(section_text) + len(subtitle)
+            # check if the content would exceed the page limit    
+            if new_page or (set_length + title_length + footer_text_sample >= 6000):
+                new_page = False
+                set_length = len(section_text) + len(subtitle)
+                # add the page to the storage
+                entry_pages.append(entry_list)
+                # reset page tracker
+                entry_list = []
+                print("New page", len(entry_pages))
+            
+            # add to page
+            entry_list.append((subtitle, section_text))
+            
+            # increase parts
+            parts += 1
+            
+        # add the page to the storage
+        #entry_pages.append(entry_list)
+        
+    entry_pages.append(entry_list)
+    # get page count
+    pages = len(entry_pages)
+    # create embed
+    embed = discord.Embed()
+    
+    embed.title = title
+    if author:
+        embed.set_author(name=author, icon_url=author.avatar_url)
+    if color:
+        embed.color = color
+    if footer:
+        embed.set_footer(text=f"{footer}")
+    # if no preexisting message exists create a new one
+    if not msg:
+        msg = ctx.channel.send(msg, embed = embed)
+    # check that only original user can use the menu
+    def userCheck(r,u):
+        sameMessage = False
+        if msg.id == r.message.id:
+            sameMessage = True
+        return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
+    print("Pages", pages)
+    page = 0
+    #add the fields for the page
+    for subtitle, section_text in entry_pages[page]:
+        embed.add_field(name=subtitle, value=section_text, inline=False)
+    if (pages>1):
+        embed.set_footer(text=f"{footer}\nPage {page+1} of {pages}")
+    await msg.edit(embed=embed) 
+    await msg.clear_reactions()
+    while pages>1:
+        #add navigation
+        await msg.add_reaction(left) 
+        await msg.add_reaction(right)
+        
+        # wait for interaction
+        try:
+            hReact, hUser = await bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
+        # end if no reaction was given in time
+        except asyncio.TimeoutError:
+            await msg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
+            await msg.clear_reactions()
+            await msg.add_reaction('💤')
+            return
+        else:
+            # clear the page
+            embed.clear_fields()
+            
+            # update page based on navigation
+            if hReact.emoji == left:
+                page -= 1
+                if page < 0:
+                    page = (pages -1)
+            elif hReact.emoji == right:
+                page += 1
+                if page > (pages -1 ):
+                    page = 0
+            
+            #add the fields for the page
+            for subtitle, section_text in entry_pages[page]:
+                embed.add_field(name=subtitle, value=section_text, inline=False)
+                
+            if (pages>1):
+                embed.set_footer(text=f"{footer}\nPage {page+1} of {pages}")
+            await msg.edit(embed=embed) 
+            await msg.clear_reactions()
+                
+    
+
 class Character(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
@@ -38,6 +203,7 @@ class Character(commands.Cog):
     @commands.group(aliases=['rf'], case_insensitive=True)
     async def reflavor(self, ctx):	
         pass
+    
     
     async def cog_command_error(self, ctx, error):
         msg = None
@@ -4209,6 +4375,7 @@ class Character(commands.Cog):
         statsEmbedmsg = await ctx.channel.send(embed=statsEmbed)
         for num in range(0,7): await statsEmbedmsg.add_reaction(alphaEmojis[num])
         try:
+            
             tReaction, tUser = await self.bot.wait_for("reaction_add", check=statsEmbedCheck , timeout=60)
         except asyncio.TimeoutError:
             await statsEmbedmsg.delete()
@@ -4217,28 +4384,22 @@ class Character(commands.Cog):
             return
         else:
             statsEmbed.description = ""
-
+        
+        contents = []
         # Lets the user choose a category to view stats
         if tReaction.emoji == alphaEmojis[0] or tReaction.emoji == alphaEmojis[1]:
         
-            
-            dmEmbed = discord.Embed()
-            
-            dmEmbed.description = "**DM Hosting Information**"
             
             identity_strings = ["Monthly", "Month"]
             if tReaction.emoji == alphaEmojis[1]:
                 identity_strings = ["Server", "Server"]
                 statRecords = statRecordsLife
-            dmPages = 0
             if statRecords is None:
-                statsEmbed.add_field(name="Monthly Quest Stats", value="There have been 0 one-shots played this month. Check back later!", inline=False)
+                contents.append(("Monthly Quest Stats", "There have been 0 one-shots played this month. Check back later!", False))
             else:
                 # Iterate through each DM and track tiers + total
                 if "DM" in statRecords:
                     
-                    dmPages = 1
-                    dmPageStops = [0]
                     for k,v in statRecords['DM'].items():
                         dmMember = guild.get_member(int(k))
                         if dmMember is None:
@@ -4256,10 +4417,7 @@ class Character(commands.Cog):
                        
                         # Total Number of Games per DM
                         statsString += f"Total: {totalGames}\n"
-                        if len(statsString) > (768 * dmPages):
-                            dmPageStops.append(len(statsString))
-                            dmPages += 1
-                    dmPageStops.append(len(statsString))
+                    
 
 
               
@@ -4273,8 +4431,6 @@ class Character(commands.Cog):
                 
                 # Games By Guild
                 if "Guilds" in statRecords:
-                    gPages = 1
-                    gPageStops = [0]
                     guildGamesString = ""
                     guild_data_0s = ["GQ", "GQM", "GQNM", "GQDM", "DM Sparkles", "Player Sparkles", "Joins"]
                     for gk, gv in statRecords["Guilds"].items():
@@ -4284,18 +4440,11 @@ class Character(commands.Cog):
                         
                         guildGamesString += f"• {gk}"    
                         guildGamesString += f": {gv['GQ']}\n"
-                        if len(guildGamesString) > (768 * gPages):
-                            gPageStops.append(len(guildGamesString))
-                            gPages += 1
-                    gPageStops.append(len(guildGamesString))
-
-                    if gPages > 1:
-                        for p in range(len(gPageStops)-1):
-                            statsEmbed.add_field(name=f'Guilds - p. {p+1}', value=guildGamesString[gPageStops[p]:gPageStops[p+1]], inline=False)
-                    else:
-                        statsEmbed.add_field(name=f'Guild Quests (Total: {gq_sum})', value=guildGamesString, inline=False)
+                    
+                    contents.append((f"Guilds", guildGamesString, False))
+                    
                 if "Campaigns" in statRecords:
-                    statsEmbed.add_field(name=f'Campaigns', value=f"Sessions: {statRecords['Campaigns']}", inline=False)
+                    contents.append((f"Campaigns", f"Sessions: {statRecords['Campaigns']}", False))
                 
                 if "Life" in statRecords:
                     monthStart = datetime.now().replace(day = 14).replace(month = 1).replace(year = 2021)
@@ -4310,19 +4459,12 @@ class Character(commands.Cog):
                     avgString += f"Average Number of Players per Game: {(int(statRecords['Players']  / superTotal *100) /100.0)}\n" 
                     avgString += f"Average Game Time: {timeConversion(statRecords['Playtime'] / superTotal)}\n"
                     avgString += f"Average Games Per Day: {(int(superTotal / (max((datetime.now()-monthStart).days, 1))*100) /100.0)}\n"
-                    statsEmbed.add_field(name="Averages", value=avgString, inline=False) 
-
-                if statsString:
                     
-                    if dmPages > 1:
-                        for p in range(len(dmPageStops)-1):
-                            if dmPageStops[p+1] > dmPageStops[p]:
-                                dmEmbed.add_field(name=f'One-shots by DM - p. {p+1}', value=statsString[dmPageStops[p]:dmPageStops[p+1]], inline=False)
-                    else:
-                        dmEmbed.add_field(name="One-shots by DM", value=statsString, inline=False)
+                    contents.append((f"Averages", avgString, False))
+
 
                 # Number of games by total and by tier
-                statsTotalString += f"**{identity_strings[0]} Stats**\nTotal One-shots for the {identity_strings[1]}: {superTotal}\n" 
+                statsTotalString += f"Total One-shots for the {identity_strings[1]}: {superTotal}\n" 
                 if superTotal > 0:
                     statsTotalString += f'Guild Quest % (Out of Total Quests): {round((gq_sum / superTotal)* 100,2) }%\n'                   
                 for i in range (0,6):
@@ -4337,44 +4479,17 @@ class Character(commands.Cog):
                     statsTotalString += f"Total Number of Players: {statRecords['Players']}\n"
                 if 'Unique Players' in statRecords and 'Playtime' in statRecords:
                     statsTotalString += f"Number of Unique Players: {len(statRecords['Unique Players'])}\n"
-                statsEmbed.description = statsTotalString
                 
-                embedArray = [statsEmbed, dmEmbed]
-                embedArray_len = len([statsEmbed, dmEmbed])
-                
-                page = 0
-                embedArray[page].set_footer(text=f"Page {page+1} of {embedArray_len}")
-                await statsEmbedmsg.clear_reactions()
-                await statsEmbedmsg.edit(embed=statsEmbed)
-                while True:
-                    await statsEmbedmsg.add_reaction(left) 
-                    await statsEmbedmsg.add_reaction(right)
-                    try:
-                        hReact, hUser = await self.bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
-                    except asyncio.TimeoutError:
-                        await statsEmbedmsg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
-                        await statsEmbedmsg.clear_reactions()
-                        await statsEmbedmsg.add_reaction('💤')
-                        return
-                    else:
-                        if hReact.emoji == left:
-                            page -= 1
-                            if page < 0:
-                                page = (embedArray_len -1)
-                        if hReact.emoji == right:
-                            page += 1
-                            if page > (embedArray_len -1 ):
-                                page = 0
-                        embedArray[page].set_footer(text=f"Page {page+1} of {embedArray_len}")
-                        await statsEmbedmsg.edit(embed=embedArray[page]) 
-                        await statsEmbedmsg.clear_reactions()
+                contents.insert(0, (f"{identity_strings[0]} Stats", statsTotalString, False))
+                if statsString:
+                    contents.append(("One-shots by DM", statsString, True))
+                await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg)
                 
           
         # Below are lifetime stats which consists of character data
         # Lifetime Class Stats
         elif tReaction.emoji == alphaEmojis[2]: 
-            cPages = 1
-            cPageStops = [0]
+            
             charString = ""
             srClass = collections.OrderedDict(sorted(statRecordsLife['Class'].items()))
             for k, v in srClass.items():
@@ -4383,138 +4498,59 @@ class Character(commands.Cog):
                     if vk != 'Count':
                         charString += f"• {vk}: {vv}\n"
                 charString += f"━━━━━\n"
-                if len(charString) > (768 * cPages):
-                    cPageStops.append(len(charString))
-                    cPages += 1
-            cPageStops.append(len(charString))
             if not charString:
                 charString = "No stats yet."
-            if cPages > 1:
-                for p in range(len(cPageStops)-1):
-                    statsEmbed.add_field(name=f"Character Class Stats (Lifetime) p. {p+1}", value=charString[cPageStops[p]:cPageStops[p+1]], inline=False)  
-            else:
-                statsEmbed.add_field(name="Character Class Stats (Lifetime)", value=charString, inline=False)  
-
+            contents.append(("Character Class Stats (Lifetime)", charString, False))
+            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "━━━━━\n")
         # Lifetime race stats
         elif tReaction.emoji == alphaEmojis[3]:
-            rPages = 1
-            rPageStops = [0]
             raceString = ""
             srRace = collections.OrderedDict(sorted(statRecordsLife['Race'].items()))
             for k, v in srRace.items():
                 raceString += f"{k}: {v}\n"
-                if len(raceString) > (768 * rPages):
-                    rPageStops.append(len(raceString))
-                    rPages += 1
-
-            rPageStops.append(len(raceString))
 
             if not raceString:
                 raceString = "No stats yet."
-            if rPages > 1:
-                for p in range(len(rPageStops)-1):
-                    statsEmbed.add_field(name=f"Character Race Stats (Lifetime) p. {p+1}", value=raceString[rPageStops[p]:rPageStops[p+1]], inline=False)  
-            else:
-                statsEmbed.add_field(name="Character Race Stats (Lifetime)", value=raceString, inline=True)  
+            
+            contents.append(("Character Race Stats (Lifetime)", raceString, False))
+            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
 
         # Lifetime background Stats
         elif tReaction.emoji == alphaEmojis[4]:
-            bPages = 1
-            bPageStops = [0]
             bgString = ""
             srBg = collections.OrderedDict(sorted(statRecordsLife['Background'].items()))
 
             for k, v in srBg.items():
                 bgString += f"{k}: {v}\n"
-                if len(bgString) > (768 * bPages):
-                    bPageStops.append(len(bgString))
-                    bPages += 1
 
-            bPageStops.append(len(bgString))
             if not bgString:
                 bgString = "No stats yet."
-            if bPages > 1:
-                for p in range(len(bPageStops)-1):
-                    statsEmbed.add_field(name=f"Character Background Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
-            else:
-                statsEmbed.add_field(name="Character Background Stats (Lifetime)", value=bgString, inline=False)  
+                
+            contents.append(("Character Background Stats (Lifetime)", bgString, False))
+            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
         # Lifetime Feats Stats
         elif tReaction.emoji == alphaEmojis[5]:
-            bPages = 1
-            bPageStops = [0]
             bgString = ""
             srBg = collections.OrderedDict(sorted(statRecordsLife['Feats'].items()))
 
             for k, v in srBg.items():
                 bgString += f"{k}: {v}\n"
-                if len(bgString) > (768 * bPages):
-                    bPageStops.append(len(bgString))
-                    bPages += 1
-
-            bPageStops.append(len(bgString))
 
             if not bgString:
                 bgString = "No stats yet."
-            if bPages > 1:
-                for p in range(len(bPageStops)-1):
-                    statsEmbed.add_field(name=f"Character Feats Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
-            else:
-                statsEmbed.add_field(name="Character Feats Stats (Lifetime)", value=bgString, inline=False)  
+            contents.append(("Character Feats Stats (Lifetime)", bgString, False))
+            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
         # Lifetime Magic Items Stats
         elif tReaction.emoji == alphaEmojis[6]:
-            bPages = 1
-            bPageStops = [0]
             bgString = ""
             srBg = collections.OrderedDict(sorted(statRecordsLife['Magic Items'].items()))
 
             for k, v in srBg.items():
-                lastEntry = False
                 bgString += f"{k}: {v}\n"
-                if len(bgString) > (768 * bPages):
-                    bPageStops.append(len(bgString))
-                    bPages += 1
-                    lastEntry = True
-            if(not lastEntry):
-                bPageStops.append(len(bgString))
-
             if not bgString:
                 bgString = "No stats yet."
-            if bPages > 1:
-                for p in range(min(len(bPageStops)-1, 5)):
-                    statsEmbed.add_field(name=f"Character Magic Items Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
-            else:
-                statsEmbed.add_field(name="Character Magic Items Stats (Lifetime)", value=bgString, inline=False)  
-            await statsEmbedmsg.clear_reactions()
-            await statsEmbedmsg.edit(embed=statsEmbed)
-            subpages= 5
-            page = 0
-            while bPages >= subpages:
-                await statsEmbedmsg.add_reaction(left) 
-                await statsEmbedmsg.add_reaction(right)
-                try:
-                    hReact, hUser = await self.bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
-                except asyncio.TimeoutError:
-                    await statsEmbedmsg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
-                    await statsEmbedmsg.clear_reactions()
-                    await statsEmbedmsg.add_reaction('💤')
-                    return
-                else:
-                    if hReact.emoji == left:
-                        page -= 1
-                        if page < 0:
-                            page = (len(bPageStops) -1) // subpages
-                    if hReact.emoji == right:
-                        page += 1
-                        if page > (len(bPageStops) -1 ) // subpages:
-                            page = 0
-                    statsEmbed.clear_fields()
-                    for p in range(subpages*page, subpages*page+min(len(bPageStops)-1-page*subpages, subpages)):
-                        statsEmbed.add_field(name=f"Character Magic Items Stats (Lifetime) p. {p+1}", value=bgString[bPageStops[p]:bPageStops[p+1]], inline=False)  
-            
-                    statsEmbed.set_footer(text=f"Page {subpages*page+1} of {bPages}")
-                    await statsEmbedmsg.edit(embed=statsEmbed) 
-                    await statsEmbedmsg.clear_reactions()
-            return
+            contents.append(("Character Magic Item Stats (Lifetime)", bgString, False))
+            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
         
         
         
@@ -5234,20 +5270,7 @@ class Character(commands.Cog):
               charEmbed.description = f"{race}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
 
         return featsChosen, charStats, charEmbedmsg        
-    def get_embed_length(embed):
-        # embed would be the discord.Embed instance
-        fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
-
-        fields.extend([field.name for field in embed.fields])
-        fields.extend([field.value for field in embed.fields])
-
-        total = ""
-        for item in fields:
-            # If we str(discord.Embed.Empty) we get 'Embed.Empty', when
-            # we just want an empty string...
-            total += str(item) if str(item) != 'Embed.Empty' else ''
-
-        return(len(total))
+    
 
 def setup(bot):
     bot.add_cog(Character(bot))

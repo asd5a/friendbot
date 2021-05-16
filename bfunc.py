@@ -41,7 +41,7 @@ async def traceBack (ctx,error,silent=False):
 
     # the verbosity is how large of a traceback to make
     # more specifically, it's the amount of levels up the traceback goes from the exception source
-    verbosity = 3
+    verbosity = -4
 
     # 'traceback' is the stdlib module, `import traceback`.
     lines = traceback.format_exception(etype,error, trace, verbosity)
