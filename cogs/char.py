@@ -123,7 +123,7 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
         embed.set_footer(text=f"{footer}")
     # if no preexisting message exists create a new one
     if not msg:
-        msg = ctx.channel.send(msg, embed = embed)
+        msg = await ctx.channel.send(msg, embed = embed)
     # check that only original user can use the menu
     def userCheck(r,u):
         sameMessage = False
@@ -2526,67 +2526,56 @@ class Character(commands.Cog):
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel_or_game()
     @commands.command(aliases=['bag','inv'])
-    async def inventory(self,ctx, char):
+    async def inventory(self,ctx, char, mod_override=""):
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
         roleColors = {r.name:r.colour for r in guild.roles}
         charEmbed = discord.Embed()
         charEmbedmsg = None
-
+        contents = []
         def userCheck(r,u):
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
                 sameMessage = True
             return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
 
+        mod= False
+        if mod_override:
+            mod = "Mod Friend" in [role.name for role in author.roles]
         statusEmoji = ""
-        charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+        charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed, mod=mod)
         if charDict:
             footer = f"To view your character's info, type the following command: {commandPrefix}info {charDict['Name']}"
             charLevel = charDict['Level']
             if charLevel < 5:
                 role = 1
-                charEmbed.colour = (roleColors['Junior Friend'])
+                color = (roleColors['Junior Friend'])
             elif charLevel < 11:
                 role = 2
-                charEmbed.colour = (roleColors['Journeyfriend'])
+                color = (roleColors['Journeyfriend'])
             elif charLevel < 17:
                 role = 3
-                charEmbed.colour = (roleColors['Elite Friend'])
+                color = (roleColors['Elite Friend'])
             elif charLevel < 21:
                 role = 4
-                charEmbed.colour = (roleColors['True Friend'])
+                color = (roleColors['True Friend'])
 
             # Show Spellbook in inventory
             if 'Spellbook' in charDict:
-                sPages = 1
-                sPageStops = [0]
                 spellBookString = ""
                 for s in charDict['Spellbook']:
                     spellBookString += f"• {s['Name']} ({s['School']})\n" 
-                    if len(spellBookString) > (768 * sPages):
-                        sPageStops.append(len(spellBookString))
-                        sPages += 1
-                sPageStops.append(len(spellBookString))
-                if sPages > 1:
-                    for p in range(len(sPageStops)-1):
-                        if(sPageStops[p+1] > sPageStops[p]):
-                            charEmbed.add_field(name=f'Spellbook- p. {p+1}', value=spellBookString[sPageStops[p]:sPageStops[p+1]], inline=False)
-                else:
-                    charEmbed.add_field(name='Spellbook', value=spellBookString, inline=False)
-
+                charEmbed.add_field(name='Spellbook', value=spellBookString, inline=False)
+                contents.append(("Spellbook", spellBookString, False))
             if 'Ritual Book' in charDict:
                 ritualBookString = ""
                 for s in charDict['Ritual Book']:
                     ritualBookString += f"• {s['Name']} ({s['School']})\n" 
-                charEmbed.add_field(name='Ritual Book', value=ritualBookString, inline=False)
+                contents.append(("Ritual Book", ritualBookString, False))
 
     
             # Show Consumables in inventory.
-            cPages = 1
-            cPageStops = [0]
-
             consumesString = ""
             consumesCount = collections.Counter(charDict['Consumables'].split(', '))
             for k, v in consumesCount.items():
@@ -2595,22 +2584,10 @@ class Character(commands.Cog):
                 else:
                     consumesString += f"• {k} x{v}\n"
 
-                if len(consumesString) > (768 * cPages):
-                    cPageStops.append(len(consumesString))
-                    cPages += 1
+
+            contents.append(("Consumables", consumesString, False))
             
-            cPageStops.append(len(consumesString))
-
-            if cPages > 1:
-                for p in range(len(cPageStops)-1):
-                    if(cPageStops[p+1] > cPageStops[p]):
-                        charEmbed.add_field(name=f'Consumables - p. {p+1}', value=consumesString[cPageStops[p]:cPageStops[p+1]], inline=False)
-            else:
-                charEmbed.add_field(name='Consumables', value=consumesString, inline=False)
-
             # Show Magic items in inventory.
-            mPages = 1
-            mPageStops = [0]
 
             miString = ""
             miArray = collections.Counter(charDict['Magic Items'].split(', '))
@@ -2624,23 +2601,10 @@ class Character(commands.Cog):
                     miString += f"• {m}\n"
                 else:
                     miString += f"• {m} x{v}\n"
-
-                if len(miString) > (768 * mPages):
-                    mPageStops.append(len(miString))
-                    mPages += 1
-
-            mPageStops.append(len(miString))
-            if mPages > 1:
-                for p in range(len(mPageStops)-1):
-                    if(mPageStops[p+1] > mPageStops[p]):
-                        charEmbed.add_field(name=f'Magic Items - p. {p+1}', value=miString[mPageStops[p]:mPageStops[p+1]], inline=False)
-            else:
-                charEmbed.add_field(name='Magic Items', value=miString, inline=False)
-
+            contents.append((f"Magic Items", miString, False))
 
             charDictAuthor = guild.get_member(int(charDict['User ID']))
-            charEmbed.title = f"{charDict['Name']} (Lv {charLevel}): Inventory"
-            charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.avatar_url)
+            
             if charDict['Inventory'] != 'None':
                 typeDict = {}
                 invCollection = db.shop
@@ -2697,93 +2661,18 @@ class Character(commands.Cog):
                 for k, v in typeDict.items():
                     v.sort()
                     vString = ''.join(v)
-                    if len(vString) > 1024:
-                        vArray = vString.split("\n")
-                        vPageStops = [0]
-                        vPages = 1
-                        vString = ""
+                    contents.append((f"{k}", vString, False))
+                        
 
-                        for v in vArray:
-                            vString += v + "\n"
-                            if len(vString) > (768 * vPages):
-                                vPageStops.append(len(vString))
-                                vPages += 1
-
-                        vPageStops.append(len(vString))
-                        if vPages > 1  and vPageStops[-1] > vPageStops[-2]:
-                            for p in range(len(vPageStops)-1):
-                                charEmbed.add_field(name=f'{k} - p. {p+1}', value=vString[vPageStops[p]:vPageStops[p+1]], inline=False)
-
-                    else:
-                        charEmbed.add_field(name=k, value=vString, inline=False)
             if "Collectibles" in charDict:
                 vString = ""
                 for k, v in charDict["Collectibles"].items():
-                        vString += f'• {k} x{v}\n'
-                vPages = 0
-                vPageStops = [0]
-                if len(vString) > 1024:
-                    vArray = vString.split("\n")
-                    vPages = 1
-                    vString = ""
-
-                    for v in vArray:
-                        vString += v + "\n"
-                        if len(vString) > (768 * vPages):
-                            vPageStops.append(len(vString))
-                            vPages += 1
-
-                    vPageStops.append(len(vString))
-                if vPages > 1  and vPageStops[-1] > vPageStops[-2]:
-                    for p in range(len(vPageStops)-1):
-                        charEmbed.add_field(name=f'{k} - p. {p+1}', value=vString[vPageStops[p]:vPageStops[p+1]], inline=False)
-
-                else:
-                    charEmbed.add_field(name="Collectibles", value=vString, inline=False)
+                    vString += f'• {k} x{v}\n'
+                
+                contents.append((f"Collectibles", vString, False))
             
-            embedList = [discord.Embed()]
-            pages = 1
-            if len(charEmbed) > 2048:
-                charEmbedDict = charEmbed.to_dict()
-                for f in charEmbedDict['fields']:
-                    if len(embedList[pages - 1]) > 2048:
-                        pages += 1
-                        embedList.append(discord.Embed())
-                    embedList[pages - 1].add_field(name=f["name"], value=f["value"] ,inline=False)
-            else:
-                 embedList[0] = charEmbed
+            await paginate(ctx, self.bot, f"{charDict['Name']} (Lv {charLevel}): Inventory", contents, msg=charEmbedmsg, separator="\n", author = charDictAuthor, color= color, footer=footer)
 
-
-            page = 0
-            embedList[0].set_footer(text=f"{footer}\nPage {page+1} of {pages}")
-
-            if not charEmbedmsg:
-                charEmbedmsg = await ctx.channel.send(embed=embedList[0])
-            else:
-                await charEmbedmsg.edit(embed=embedList[0])
-
-            while pages > 1:
-                await charEmbedmsg.add_reaction(left) 
-                await charEmbedmsg.add_reaction(right)
-                try:
-                    hReact, hUser = await self.bot.wait_for("reaction_add", check=userCheck, timeout=30.0)
-                except asyncio.TimeoutError:
-                    await charEmbedmsg.edit(content=f"Your user menu has timed out! I'll leave this page open for you. If you need to cycle through the menu again then use the same command!")
-                    await charEmbedmsg.clear_reactions()
-                    await charEmbedmsg.add_reaction('💤')
-                    return
-                else:
-                    if hReact.emoji == left:
-                        page -= 1
-                        if page < 0:
-                            page = len(embedList) - 1
-                    if hReact.emoji == right:
-                        page += 1
-                        if page > len(embedList) - 1:
-                            page = 0
-                    embedList[page].set_footer(text=f"{footer}\nPage {page+1} of {pages}")
-                    await charEmbedmsg.edit(embed=embedList[page]) 
-                    await charEmbedmsg.clear_reactions()
 
             self.bot.get_command('inv').reset_cooldown(ctx)
 
