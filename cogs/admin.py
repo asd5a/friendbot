@@ -235,6 +235,29 @@ class Admin(commands.Cog, name="Admin"):
             out = out[len(x):]
             length -= len(x)
         await ctx.channel.send(content=out)
+        
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def rewardStats(self, ctx):
+        game_list = list(db.logdata.find(
+               {"Tier": 3})
+            )
+        lst = []
+        for x in game_list:
+            for p in x["Players"].values():
+                #if p["Level"] == 20:
+                    lst.extend(p["Consumables"]["Add"])
+        
+        out ="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(lst))).items()])
+        
+        length = len(out)
+        while(length>2000):
+            x = out[:2000]
+            x = x.rsplit("\n", 1)[0]
+            await ctx.channel.send(content=x)
+            out = out[len(x):]
+            length -= len(x)
+        await ctx.channel.send(content=out)
     
     @commands.command()
     @admin_or_owner()

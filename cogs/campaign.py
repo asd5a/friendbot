@@ -113,7 +113,7 @@ class Campaign(commands.Cog):
                 info_string += f"• Time: {timeConversion(player['Campaigns'][campaignRecords['Name']]['Time'])}\n"
                 info_string += f"• Sessions: {player['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
                 info_string += f"• Active Member: {player['Campaigns'][campaignRecords['Name']]['Active']}"
-                infoEmbed.add_field(name=f"**{member.display_name}**:", value = info_string, inline = False)
+                infoEmbed.add_field(name=f"**{member_name}**:", value = info_string, inline = False)
         infoEmbed.description = description_string
         
         member = ctx.guild.get_member(int(master['User ID']))

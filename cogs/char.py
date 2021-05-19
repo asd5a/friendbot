@@ -4760,13 +4760,6 @@ class Character(commands.Cog):
                         return None, None, None
                 asi = alphaEmojis.index(tReaction.emoji)
 
-                # May not need this at all due to choice omitting maxes
-                # if (int(charStats[statNames[asi]]) + 1 > charStats['Max Stats'][statNames[asi]]):
-                #     await charEmbedmsg.delete()
-                #     await channel.send(f"You cannot increase your character's {statNames[asi]} above your maximum of {charStats['Max Stats'][statNames[asi]]}. Please try creating your character again.")
-                #     self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                #     return None, None, None
-
                 charStats[asiList[asi]] = int(charStats[asiList[asi]]) + 1
                 charEmbed.set_field_at(0,name=f"ASI First Stat", value=f"{alphaEmojis[asi]}: {asiList[asi]}", inline=False)
                 if ctx.invoked_with == "levelup":
@@ -4803,12 +4796,6 @@ class Character(commands.Cog):
                         self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                         return None, None, None
                 asi = alphaEmojis.index(tReaction.emoji)
-
-                # May not need this at all due to choice omitting maxes
-                # if (int(charStats[statNames[asi]]) + 1 > charStats['Max Stats'][statNames[asi]]):
-                #     await channel.send(f"You cannot increase your character's {statNames[asi]} above your MAX {charStats['Max Stats'][statNames[asi]]}. Please try creating your character again.")
-                #     self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                #     return None, None, None
 
                 charStats[asiList[asi]] = int(charStats[asiList[asi]]) + 1
                 if ctx.invoked_with == "levelup":
