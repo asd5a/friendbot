@@ -247,7 +247,7 @@ class Character(commands.Cog):
             if ctx.command.name == "create":
                 msg += f'Please follow this format:\n```yaml\n{commandPrefix}create "name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```\n'
             elif ctx.command.name == "respec":
-                msg += f'Please follow this format:\n```yaml\n{commandPrefix}respec "name" "new name" "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```\n'
+                msg += f'Please follow this format:\n```yaml\n{commandPrefix}respec "name" "new name" "race" "class" "background" STR DEX CON INT WIS CHA```\n'
             elif ctx.command.name == "retire":
                 msg += f'Please follow this format:\n```yaml\n{commandPrefix}retire "character name"```\n'
             elif ctx.command.name == "reflavor":
