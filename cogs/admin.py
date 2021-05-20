@@ -378,6 +378,28 @@ class Admin(commands.Cog, name="Admin"):
             traceback.print_exc()
             
     @commands.command()
+    @commands.has_any_role('Mod Friend')
+    async def permitRespec(self, ctx, charName):
+        charEmbed = discord.Embed()
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
+        channel = ctx.channel
+        if not cRecord:
+            await channel.send(content=f'I was not able to find the character ***"{charName}"***!')
+            return False
+
+        if charEmbedmsg:
+            await charEmbedmsg.delete()
+            
+        try:
+            db.players.update_one(
+               {"Name": cRecord["Name"], "User ID": cRecord["User ID"]}, {"$set" : {"Respecc": 1}}
+            )
+            await channel.send(content=f"Successfully updated {cRecord['Name']}.")
+    
+        except Exception as e:
+            traceback.print_exc()
+            
+    @commands.command()
     @admin_or_owner()
     async def ritRework(self, ctx):
         try:
@@ -390,8 +412,8 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
             
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def removeAllGID(self, ctx):
         msg = await ctx.channel.send("Are you sure you want to remove every GID entry from characters in the database?\n No: ❌\n Yes: ✅")
         author = ctx.author
@@ -409,8 +431,8 @@ class Admin(commands.Cog, name="Admin"):
             traceback.print_exc()
     
     
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def removeAllPlayers(self, ctx):
         msg = ctx.channel.send("Are you sure you want to remove every character in the database?\n No: ❌\n Yes: ✅")
         author = ctx.author
@@ -426,8 +448,8 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
       
-    @commands.command()      
-    @admin_or_owner()
+    #@commands.command()      
+    #@admin_or_owner()
     async def removeUserCharacters(self, ctx, userID):
         msg = await ctx.channel.send("Are you sure you want to remove every character in the database?\n No: ❌\n Yes: ✅")
         author = ctx.author
@@ -1032,8 +1054,8 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
     
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def uploadSettings(self, ctx):
         try:
             settings = {
