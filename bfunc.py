@@ -266,6 +266,11 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
         records.remove(group_to_remove)
     #append the new entries
     records += faux_entries
+    if table == "rit":
+        # get all minor reward item results
+        all_minors = list([record["Name"] for record in filter(lambda record: record["Minor/Major"]== "Minor", records)])
+        records = filter(lambda record: record["Minor/Major"]!= "Major" or record["Name"] not in all_minors, records)
+
     
     #sort all items alphabetically 
     records = sorted(records, key = sortingEntryAndList)    
@@ -310,7 +315,10 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
                 apiEmbedmsg = await channel.send(embed=apiEmbed)
             else:
                 await apiEmbedmsg.edit(embed=apiEmbed)
-
+            # if len(records) <= 5:
+                # for i in range(0, len(records)):
+                    # await apiEmbedmsg.add_reaction(alphaEmojis[i])
+                
             await apiEmbedmsg.add_reaction('❌')
 
             try:
