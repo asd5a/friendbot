@@ -125,3 +125,4 @@ dmypy.json
 .DS_Store
 secret.py
 client_secret.json
+find.txt

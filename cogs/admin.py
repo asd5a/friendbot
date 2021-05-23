@@ -6,10 +6,13 @@ from discord.utils import get
 from discord.ext import commands
 import sys
 import traceback
+import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar
+from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic, calculateTreasure
+
+
 
 
 def admin_or_owner():
@@ -108,6 +111,28 @@ class Admin(commands.Cog, name="Admin"):
             global settingsRecord
             settingsRecord["ddmrw"] = True
             await ctx.channel.send("Let the games begin!")
+    
+    @commands.command()
+    async def zoop(self, ctx):
+        file1 = open('find.txt', 'r', encoding="utf8")
+        lines = file1.readlines()
+        out = []
+        for line in lines:
+            print(line)
+            if line.strip():
+                out.append({"Text" : line.strip()})
+        result = db.liners_find.insert_many(out)
+        print(result.inserted_ids)
+        
+        
+    # command that allows one to update each field of the liners dictionary
+    @commands.command()
+    @admin_or_owner()
+    async def updateLiners(self, ctx):
+        # get all entries of the relevant DB and extract the Text field and compile as a list and assign to the dic
+        liner_dic["Find"] = list([line["Text"] for line in db.liners_find.find()])
+        liner_dic["Meme"] = list([line["Text"] for line in db.liners_meme.find()])
+        liner_dic["Craft"] = list([line["Text"] for line in db.liners_craft.find()])
 
     @commands.command()
     async def endDDMRW(self, ctx):
@@ -143,6 +168,97 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
             
+    @commands.command()
+    @admin_or_owner()
+    async def updateInventory(self, ctx, oldName, newName):
+        player_list = db.players.find(
+               {"Inventory."+oldName: {"$exists": True}}
+            )
+        renameData = list(map(lambda item: UpdateOne({'_id': item['_id']}, {"$inc" : {"Inventory."+newName : item["Inventory"][oldName]}, "$unset" : {"Inventory."+oldName : 1}}), player_list))
+        
+        try:
+            if(len(renameData)>0):
+                db.players.bulk_write(renameData)
+        except BulkWriteError as bwe:
+            print(bwe.details)
+            # if it fails, we need to cancel and use the error details
+            return
+        await ctx.channel.send(content=f"Successfully renamed {oldName} to {newName} of {len(player_list)} player inventories")
+            
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def alignmentList(self, ctx):
+        player_list = list(db.players.find(
+               {"Alignment": {"$exists": True}})
+            )
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Alignment"].replace("\"", "") for x in player_list])))).items()]))  
+    
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def reflavorList(self, ctx):
+        player_list = list(db.players.find(
+               {"Reflavor": {"$exists": True}})
+            )
+        rfarray = list([line["Reflavor"] for line in player_list]) #puts all the 
+        raceList = []
+        classList = []
+        backgroundList = []
+        i = 0
+        while i < len(rfarray):
+            if 'Race' in rfarray[i]:
+                raceList.append(rfarray[i]['Race'])
+            if 'Class' in rfarray[i]:
+                classList.append(rfarray[i]['Class'])
+            if 'Background' in rfarray[i]:
+                backgroundList.append(rfarray[i]['Background'])
+            i += 1
+        await ctx.channel.send("**Races:**")
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in raceList])))).items()]))
+        await ctx.channel.send("**Classes:**")
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in classList])))).items()]))
+        await ctx.channel.send("**Backgrounds:**")
+        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in backgroundList])))).items()]))  
+    
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def nicknameList(self, ctx):
+        player_list = list(db.players.find(
+               {"Nickname": {"$exists": True}})
+            )
+        out ="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Nickname"].replace("\"", "") for x in player_list])))).items()])
+        
+        length = len(out)
+        while(length>2000):
+            x = out[:2000]
+            x = x.rsplit("\n", 1)[0]
+            await ctx.channel.send(content=x)
+            out = out[len(x):]
+            length -= len(x)
+        await ctx.channel.send(content=out)
+        
+    @commands.command()
+    @commands.has_any_role("Mod Friend")
+    async def rewardStats(self, ctx):
+        game_list = list(db.logdata.find(
+               {"Tier": 3})
+            )
+        lst = []
+        for x in game_list:
+            for p in x["Players"].values():
+                #if p["Level"] == 20:
+                    lst.extend(p["Consumables"]["Add"])
+        
+        out ="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(lst))).items()])
+        
+        length = len(out)
+        while(length>2000):
+            x = out[:2000]
+            x = x.rsplit("\n", 1)[0]
+            await ctx.channel.send(content=x)
+            out = out[len(x):]
+            length -= len(x)
+        await ctx.channel.send(content=out)
+    
     @commands.command()
     @admin_or_owner()
     async def printTierItems(self, ctx, tier: int, tp: int):
@@ -203,7 +319,6 @@ class Admin(commands.Cog, name="Admin"):
                         out += i["Grouped"]
                     else:
                         out += i["Name"]
-                    print(i)
                     out += f"\n"
             length = len(out)
             while(length>2000):
@@ -263,6 +378,28 @@ class Admin(commands.Cog, name="Admin"):
             traceback.print_exc()
             
     @commands.command()
+    @commands.has_any_role('Mod Friend')
+    async def permitRespec(self, ctx, charName):
+        charEmbed = discord.Embed()
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
+        channel = ctx.channel
+        if not cRecord:
+            await channel.send(content=f'I was not able to find the character ***"{charName}"***!')
+            return False
+
+        if charEmbedmsg:
+            await charEmbedmsg.delete()
+            
+        try:
+            db.players.update_one(
+               {"Name": cRecord["Name"], "User ID": cRecord["User ID"]}, {"$set" : {"Respecc": 1}}
+            )
+            await channel.send(content=f"Successfully updated {cRecord['Name']}.")
+    
+        except Exception as e:
+            traceback.print_exc()
+            
+    @commands.command()
     @admin_or_owner()
     async def ritRework(self, ctx):
         try:
@@ -275,8 +412,8 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
             
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def removeAllGID(self, ctx):
         msg = await ctx.channel.send("Are you sure you want to remove every GID entry from characters in the database?\n No: ❌\n Yes: ✅")
         author = ctx.author
@@ -294,8 +431,8 @@ class Admin(commands.Cog, name="Admin"):
             traceback.print_exc()
     
     
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def removeAllPlayers(self, ctx):
         msg = ctx.channel.send("Are you sure you want to remove every character in the database?\n No: ❌\n Yes: ✅")
         author = ctx.author
@@ -311,8 +448,8 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
       
-    @commands.command()      
-    @admin_or_owner()
+    #@commands.command()      
+    #@admin_or_owner()
     async def removeUserCharacters(self, ctx, userID):
         msg = await ctx.channel.send("Are you sure you want to remove every character in the database?\n No: ❌\n Yes: ✅")
         author = ctx.author
@@ -324,13 +461,47 @@ class Admin(commands.Cog, name="Admin"):
             count = db.players.delete_many(
                {"User ID": userID}
             )
-            print(count)
             await msg.edit(content=f"Successfully deleted {count.deleted_count} characters.")
     
         except Exception as e:
             traceback.print_exc()        
-    
+    @commands.command()
+    @admin_or_owner()
+    async def generateBoard(self, ctx):
+                                        
+        all_users = list(db.users.find( {"Noodles": {"$gt":0}}))
+        all_users.sort(key = lambda x: x["Noodles"], reverse=True)
+        all_messages = []
+        curr_message = ""
+        count = 0
+        new_stuff = False
+        
+        symbol_count_fix = [0,0,0]
+        for u in all_users:
+            crown_count = u['Noodles']//100
+            big_star_count = (u['Noodles']%100)//10
+            star_count = u['Noodles']%10
+            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} {'👑'*(crown_count)}{'🌟'*big_star_count}{'⭐'* star_count}\n"
+            symbol_count_fix[0] +=crown_count
+            symbol_count_fix[1] +=big_star_count
+            symbol_count_fix[2] +=star_count
+            if len(curr_message) >1900-19*symbol_count_fix[0] - 19*symbol_count_fix[1] - 19*symbol_count_fix[2]:
+                count += 1
+                next_message = await ctx.channel.send(str(count))
+                all_messages.append([next_message, curr_message])
+                curr_message = ""
+                new_stuff = False
+                symbol_count_fix = [0,0,0]
+            else:
+                new_stuff = True
+        if new_stuff:
+            count += 1
+            next_message = await ctx.channel.send(str(count))
+            all_messages.append([next_message, curr_message])
             
+        for m in all_messages:
+            await m[0].edit(content=m[1])
+        
     @commands.command()
     @admin_or_owner()
     async def moveItem(self, ctx, item, tier: int, tp: int):
@@ -351,7 +522,6 @@ class Admin(commands.Cog, name="Admin"):
         
         try:
             targetTierInfoItem = db.mit.find_one( {"TP": tp, "Tier": tier})
-            print(targetTierInfoItem)
             updatedGP = rRecord["GP"]
             if(targetTierInfoItem):
                 updatedGP = targetTierInfoItem["GP"]
@@ -366,8 +536,6 @@ class Admin(commands.Cog, name="Admin"):
             await traceBack(ctx,e)
             return
         
-        print(returnData)
-        
         refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
         
         try:
@@ -378,25 +546,75 @@ class Admin(commands.Cog, name="Admin"):
             # if it fails, we need to cancel and use the error details
             return
         await moveEmbedmsg.edit(content="Completed")
+        
+    @commands.command()
+    @admin_or_owner()
+    async def snapGuild(self, ctx, guild):
+        guildChannel = ctx.message.channel_mentions
+
+        if guildChannel == list():
+            await ctx.channel.send(f"You must provide a guild channel.")
+            return 
+        channel = guildChannel[0]
+        
+        guildRecords = db.guilds.find_one({"Channel ID": str(channel.id)})
+        
+        moveEmbed = discord.Embed()
+        moveEmbedmsg = None
+        
+        moveEmbedmsg = await  ctx.channel.send(content=f"Are you sure you want to move and refund {guildRecords['Name']}?\n No: ❌\n Yes: ✅")
+        
+        author = ctx.author
+        
+        if(not await self.doubleVerify(ctx, moveEmbedmsg)):
+            return
+        costs = [0, 1000, 4000, 7000]
+        returnData =[]
+        player_list = list(db.players.find( {"Guild": guildRecords["Name"]}))
+        
+        for p in player_list:
+            tier = 1
+            if p["Level"] >= 17:
+                tier = 4
+            elif p["Level"] >= 11:
+                tier = 3
+            elif p["Level"] >= 5:
+                tier = 2
+            # refund each rank and delete entries
+            returnData.append({"_id": p["_id"], "fields": {"$inc" : {"GP": costs[p["Guild Rank"]-1]+200*tier}, "$unset": {"Guild": 1, "Guild Rank": 1}}})
+        try:
+            db.guilds.delete_one( {"_id": guildRecords["_id"]})
+        except Exception as e:
+            print("ERRORpr", e)
+            traceback.print_exc()
+            await traceBack(ctx,e)
+            return
+        refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
+        
+        try:
+            if(len(refundData)>0):
+                db.players.bulk_write(refundData)
+        except BulkWriteError as bwe:
+            print(bwe.details)
+            # if it fails, we need to cancel and use the error details
+            return
+        
+        await moveEmbedmsg.edit(content="Completed")    
+    
     
     def characterEntryItemRemovalUpdate(self, ctx, rRecord, category, refundTier, tp):
         characters = list( db.players.find({"Current Item": {"$regex": f".*?{rRecord['Name']}"}}))
         returnData = []
-        print(rRecord)
         for char in characters:
-            print(char["Name"])
             items = char[category].split(", ")
             removeItem = None
             refundTP = 0
             for item in items:
-                print(item)
                 nameSplit = item.split("(")
                 if(nameSplit[0].strip() == rRecord["Name"]):
                     removeItem = item
                     refundTP = float(nameSplit[1].split("/")[0])
                     
-            print("Remove: ", removeItem)
-            
             if(refundTier in char):
                 refundTP += char[refundTier]
             if not removeItem:
@@ -412,8 +630,6 @@ class Admin(commands.Cog, name="Admin"):
 
             if("Grouped" in rRecord):
                 groupedPair = rRecord["Grouped"]+" : "+rRecord["Name"]
-                print(list(char["Grouped"]))
-                print(groupedPair)
                 updatedGrouped = list(char["Grouped"])
                 updatedGrouped.remove(groupedPair)
                 entry["fields"]["$set"]["Grouped"] = updatedGrouped
@@ -546,8 +762,8 @@ class Admin(commands.Cog, name="Admin"):
         await message.add_reaction(emote)
         await ctx.message.delete()
     
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def makeItClean(self, ctx):
         msg = await ctx.channel.send("Are you sure you want to delete basically everything?\n No: ❌\n Yes: ✅")
         author = ctx.author
@@ -580,8 +796,8 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
     
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def deleteStats(self, ctx):
         # if(not self.doubleVerify(ctx, msg)):
             # return
@@ -747,7 +963,6 @@ class Admin(commands.Cog, name="Admin"):
                     charDict["Inventory"][i] = 1
             out = {"Magic Items":magicItemString, "Consumables":consumablesString, "Inventory":charDict["Inventory"]}
             charDict["Transfer Set"] = out
-            print(charDict)
         try:
             db.players.insert_one(charDict)
             await ctx.channel.send(content=f"Transfer Character has been created.")
@@ -777,7 +992,7 @@ class Admin(commands.Cog, name="Admin"):
     
     @commands.command()
     @admin_or_owner()
-    async def giveRewards(self, ctx, charName, user, items):
+    async def giveRewards(self, ctx, charName, user, cp: float, items=""):
         msg = ctx.message
         rewardList = msg.raw_mentions
         rewardUser = ""
@@ -788,34 +1003,45 @@ class Admin(commands.Cog, name="Admin"):
         
         # if nobody was listed, inform the user
         if rewardList == list():
-            await ctx.channel.send(content=f"I could not find any mention of a user to hand out a reward item.") 
+            await ctx.channel.send(content=f"I could not find any mention of a user to hand out rewards.") 
             #return the unchanged parameters
             return 
         else:
             rewardUser = guild.get_member(rewardList[0])
-            cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, rewardUser, customError=True)
+            charDict, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, rewardUser, customError=True)
             # get the first user mentioned
             
             
             
-            if cRecord:
+            if charDict:
                 # character level
-                charLevel = int(cRecord['Level'])
+                charLevel = int(charDict['Level'])
                 # since this checks for multiple things, this cannot be avoided
-                tierNum=5
-                # calculate the tier of the rewards
-                if charLevel < 5:
+                
+                if charDict["Level"] < 5:
                     tierNum = 1
-                elif charLevel < 11:
+                elif charDict["Level"] < 11:
                     tierNum = 2
-                elif charLevel < 17:
+                elif charDict["Level"] < 17:
                     tierNum = 3
-                elif charLevel < 20:
+                elif charDict["Level"] < 20:
                     tierNum = 4
-                        
-                consumablesList = items.split(',')
+                else:
+                    tierNum = 5
+                
+                # Uses calculateTreasure to determine the rewards from the quest based on the character
+                treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , tierNum, cp*3600)
+                inc_dic = {"GP": treasureArray[2], "CP": treasureArray[0]}
+                inc_dic.update(treasureArray[1])
+                items = items.strip()
+                consumablesList = []
+                if items != "":
+                    consumablesList = items.split(',')
                 rewardList = {"Magic Items": [], "Consumables": [], "Inventory": []}
-                 
+                if charDict["Magic Items"] != "None":
+                    rewardList["Magic Items"] += charDict["Magic Items"].split(", ")
+                if charDict["Consumables"] != "None":
+                    rewardList["Consumables"] += charDict["Consumables"].split(", ")
                 for query in consumablesList:
                     query = query.strip()
                     # if the player is getting a spell scoll then we need to determine which spell they are going for
@@ -827,9 +1053,9 @@ class Admin(commands.Cog, name="Admin"):
                         sRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'spells', spellItem)
                         
                         # if no spell was found then we inform the user of the failure and stop the command
-                        if not sRecord and not resume:
+                        if not sRecord:
                             await ctx.channel.send(f'''**{query}** belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Reward Item Table, what tier it is, and your spelling.''')
-                            return start, dmChar
+                            return 
 
                         else:
                             # Converts number to ordinal - 1:1st, 2:2nd, 3:3rd...
@@ -854,57 +1080,45 @@ class Admin(commands.Cog, name="Admin"):
                         await ctx.channel.send(f'**{query}** does not seem to be a valid reward item.')
                         return 
                     else:
-                       
                         if 'spell scroll' in query.lower():
                             rewardConsumable['Name'] = f"Spell Scroll ({sRecord['Name']})"
                         rewardList[rewardConsumable["Type"]].append(rewardConsumable["Name"])
                 
-                #if we know they didnt have any items, we know that changes could only be additions
-                if(cRecord["Consumables"]=="None"):
-                    # turn the list of added items into the new string
-                    consumablesString = ", ".join(rewardList["Consumables"])
-                else:
-                    consumablesString = cRecord["Consumables"]+(", ".join(rewardList["Consumables"]))
-                    
+                # turn the list of added items into the new string
+                consumablesString = ", ".join(sorted(rewardList["Consumables"]))
+                   
                 # if the string is empty, turn it into none
                 consumablesString += "None"*(consumablesString=="")
                 
                 # magic items cannot be removed so we only care about addtions
                 # if we have no items and no additions, string is None
-                if(cRecord["Magic Items"]=="None"):
-                    # turn the list of added items into the new string
-                    magicItemString = ", ".join(rewardList["Magic Items"])
-                else:
-                    magicItemString = cRecord["Magic Items"]+(", ".join(rewardList["Magic Items"]))
-                    
+                magicItemString = ", ".join(sorted(rewardList["Magic Items"]))
+
                 # if the string is empty, turn it into none
                 magicItemString += "None"*(magicItemString=="")
                     
                 
                 # increase the relevant inventory entries and create them if necessary
                 for i in rewardList["Inventory"]:
-                    if i in cRecord["Inventory"]:
-                        cRecord["Inventory"][i] += 1
+                    if i in charDict["Inventory"]:
+                        charDict["Inventory"][i] += 1
                     else:
-                        cRecord["Inventory"][i] = 1
-                
-                player_set = {"Consumables": consumablesString, 
-                                "Magic Items": magicItemString, 
-                                "Inventory" : cRecord["Inventory"]}
-                     
-                    
+                        charDict["Inventory"][i] = 1
+                out = {"Magic Items":magicItemString, "Consumables":consumablesString, "Inventory":charDict["Inventory"]}
+                         
+                        
             else:
                 await ctx.channel.send(content=f"I could not find {charName} in the DB.")        
                 return
         try:
-            db.players.update_one({"_id": cRecord["_id"]}, {"$set": player_set})
-            await ctx.channel.send(content=f"Rewards items have been given.")
+            db.players.update_one({"_id": charDict["_id"]}, {"$set": out, "$inc": inc_dic})
+            await ctx.channel.send(content=f"Rewards have been given.")
     
         except Exception as e:
             traceback.print_exc()
     
-    @commands.command()
-    @admin_or_owner()
+    #@commands.command()
+    #@admin_or_owner()
     async def uploadSettings(self, ctx):
         try:
             settings = {
@@ -931,7 +1145,7 @@ class Admin(commands.Cog, name="Admin"):
                         "Messages" : {"781360780162760765": "Roll20", "781360787854852106": "Foundry"},
                         "Emotes" : {"Roll20" : "<:adorabat:733763021008273588>" , "Foundry": "🗡️"}}}
 
-            db.settings.insert_one(settings)
+            #db.settings.insert_one(settings)
             await ctx.channel.send(content=f"Settings have been updated in the DB.")
     
         except Exception as e:
@@ -982,7 +1196,6 @@ class Admin(commands.Cog, name="Admin"):
             await traceBack(ctx,e)
             return
         
-        print(returnData)
         
         refundData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), returnData))
         
@@ -1020,14 +1233,26 @@ class Admin(commands.Cog, name="Admin"):
             await ctx.channel.send(f'Failed to load extension {cog}.')
             traceback.print_exc()
 
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
+    #@is_log_channel()
+    #@commands.has_any_role('A d m i n')
+    #@commands.command(aliases=['wop'])
+    async def updatedatabase(self, ctx): #moves the Reflavor value in every character that has one to a new Reflavor dictionary under New Race
+
+        for line in db.players.find({ "Reflavor": { "$exists": 'true' } }):
+            if type(line["Reflavor"]) == str:
+                db.players.update_one({"Reflavor": line["Reflavor"]}, [{"$set": {"Reflavor": {"Race": line["Reflavor"]}}}])
+            
+        await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
 
 def setup(bot):
     bot.add_cog(Admin(bot))
 
 
 
-# Secret Admin/Dev-only Commands
+#### Secret Admin/Dev-only Commands
 
+## Note: these commands are not case-sensitive and are only capitalized to emphasize the name of the commands.
 
 # $removeCharacter "character name"
     # Deletes a character from the database.
@@ -1038,23 +1263,32 @@ def setup(bot):
 # $updateSettings
     # Updates the "settingsRecord" variable with the current dnd.settings collection database entry without requiring a restart.
 
-# $genLod ID
+# $session genLog ID
     # Updates the specified session log with the corresponding dnd.logdata collection database entry.
 
 # $printTierItems tier TP
     # Prints a list of magic items in the specified tier and TP.
 
-# $printrewarditems tier
+# $printRewardItems tier
     # Prints a list of reward items in the specified tier.
 
-# $tpupdate tier TP newTP
+# $tpUpdate tier TP newTP
     # Updates all magic items in the specified tier and TP to the new TP value.
 
-# $goldupdate tier TP newGP
+# $goldUpdate tier TP newGP
     # Updates all magic items int he specified tier and TP to the new GP value.
 
 # $moveItem "item" tier TP
     # Moves the specified magic item to the specified tier and TP and refunds all characters with partial TP towards it. It does not refund completed items and is mostly non-functional.
+
+# $guild rename "new name" #guild-channel
+    # Renames a guild in the following sub-databases: guilds.db (the guild entry itself), players.db (each individual character entry that is part of the guild), stats.db (monthly and lifetime quest tracking), and users.db (which displays the Noodle role used to create the guild).
+
+# $snapGuild #channel
+    # Removes the guild entry in guilds.db, refunds all GP spent joining the guild and upgrading guild ranks, and removes all instances of it from individual entries in players.db. It leaves stats untouched and doesn't refund the Guildmaster's Noodle role in guilds.db.
+
+# $generateBoard
+    # Posts a list of all users that have a Noodle count in descending order.
 
 # $send channelID message
     # Forces Bot Friend to send a message in the specified channel.

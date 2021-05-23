@@ -5,6 +5,24 @@ from discord.ext import commands
 from bfunc import  numberEmojis, numberEmojisMobile, commandPrefix, checkForChar, checkForGuild, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
 from datetime import datetime, timezone,timedelta
 
+async def pin_control(self, ctx, goal):
+        author = ctx.author
+        channel = ctx.channel
+        infoMessage = await channel.send(f"You have 60 seconds to react to the message you want to {ctx.invoked_with} with the 📌 emoji (`:pushpin:`)!")
+        def pinnedEmbedCheck(event):
+            return str(event.emoji) == '📌' and event.user_id == author.id
+        try:
+            event = await self.bot.wait_for("raw_reaction_add", check=pinnedEmbedCheck , timeout=60)
+        except asyncio.TimeoutError:
+            await infoMessage.edit(content=f'The `{ctx.invoked_with}` command has timed out! Try again.')
+            return
+        message = await channel.fetch_message(event.message_id)
+        await (getattr(message, goal))()
+        await ctx.message.delete()
+        await infoMessage.edit(content = f"You have successfully {ctx.invoked_with}ned the message! This message will self-destruct in 10 seconds.")            
+        await asyncio.sleep(10) 
+        await infoMessage.delete()
+
 class Guild(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
@@ -12,13 +30,19 @@ class Guild(commands.Cog):
        
     def is_log_channel():
         async def predicate(ctx):
-            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
+            return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or
+                    ctx.channel.category_id == 698784680488730666)
+        return commands.check(predicate)
+    def is_guild_channel():
+        async def predicate(ctx):
+            return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
         return commands.check(predicate)
     def is_game_channel():
         async def predicate(ctx):
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"] or
-                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"])
+                    ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"]or
+                    ctx.channel.category_id == 698784680488730666)
         return commands.check(predicate)
         
     @commands.group(aliases=['g'], case_insensitive=True)
@@ -350,6 +374,9 @@ class Guild(commands.Cog):
                 guildMemberStrList = []
                 guildMemberStr = ""
                 for g in guildMembers:
+                    g_member = guild.get_member(int(g['User ID']))
+                    if not g_member:
+                        continue
                     next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
                     if len(guildMemberStr) +len(next_member_str)>1000:
                         guildMemberStrList.append(guildMemberStr)
@@ -790,6 +817,88 @@ class Guild(commands.Cog):
                     await guildEmbedmsg.edit(embed=guildEmbed)
                 else:
                     guildEmbedmsg = await channel.send(embed=guildEmbed)
-                
+
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @guild.command()
+    @commands.has_any_role('A d m i n')
+    async def rename(self,ctx, newName, channelName=""):
+        channel = ctx.channel
+        
+        guildChannel = ctx.message.channel_mentions 
+        if guildChannel == list():  # checks to see if a channel was mentioned
+            await ctx.channel.send(f"You are missing the guild channel.")
+            return 
+        guildChannel = guildChannel[0]
+
+        try:
+            guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)}) #finds the guild that has the same Channel ID as the channel mention.
+            if not guildRecords:
+                await ctx.channel.send(f"No guild was found.")
+                return 
+            
+            #collects the important variables
+            oldName = guildRecords['Name']
+            noodleUsed = guildRecords['Noodle Used']
+            
+            #update guild log
+            guildCollection = db.guilds
+            guildCollection.update_one({"Name": guildRecords['Name']}, {"$set": {'Name':newName}}) # updates the guild with the new name
+                  
+            #update player logs
+            playersCollection = db.players
+            playersCollection.update_many({'Guild': oldName}, {"$set": {'Guild': newName}})
+            
+            #update noodle
+            entryStr = "%s: %s" % (oldName, noodleUsed)
+            newStr = "%s: %s" % (newName, noodleUsed)
+            db.users.update_one({"Guilds": entryStr}, {"$set": {"Guilds.$": newStr}})
+            
+            #update stats
+            db.stats.update_many({}, {"$rename": {'Guilds.'+oldName: 'Guilds.'+newName}})
+        except Exception as e:
+            print ('MONGO ERROR: ' + str(e))
+            
+            await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please renaming the guild again.")
+        else:
+            print('Success')
+            await ctx.channel.send(f"You have successfully renamed {oldName} to {newName}!")
+            
+    
+    @guild.command()
+    @is_guild_channel()
+    @commands.has_any_role('Guildmaster')
+    async def pin(self,ctx):
+        async with ctx.channel.typing():
+            
+            await pin_control(self, ctx, "pin")
+            async for message in ctx.channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel after the command to delete.
+                if message.type != ctx.message.type:
+                    await message.delete()
+                    break
+        
+
+    @guild.command()
+    @is_guild_channel()
+    @commands.has_any_role('Guildmaster')
+    async def unpin(self,ctx):
+        async with ctx.channel.typing():
+            await pin_control(self, ctx, "unpin")
+    
+    
+    
+    @guild.command()
+    @is_guild_channel()
+    @commands.has_any_role('Guildmaster')
+    async def topic(self, ctx, *, messageTopic= ""):
+        channel = ctx.channel
+        await ctx.message.delete()  
+        await ctx.channel.edit(topic=messageTopic)
+        print('Success')
+        resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your guild! This message will self-destruct in 10 seconds.")
+        await asyncio.sleep(10) 
+        await resultMessage.delete()
+        
+        
 def setup(bot):
     bot.add_cog(Guild(bot))

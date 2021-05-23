@@ -41,7 +41,7 @@ async def traceBack (ctx,error,silent=False):
 
     # the verbosity is how large of a traceback to make
     # more specifically, it's the amount of levels up the traceback goes from the exception source
-    verbosity = 10
+    verbosity = -4
 
     # 'traceback' is the stdlib module, `import traceback`.
     lines = traceback.format_exception(etype,error, trace, verbosity)
@@ -53,12 +53,11 @@ async def traceBack (ctx,error,silent=False):
 
     if not silent:
         await dorfer.send(f"```{traceback_text}```\n")
-        await ctx.channel.send(f"Uh oh, looks like this is some unknown error I have ran into. {ctx.guild.get_member(203948352973438995).mention} has been notified.")
+        await ctx.channel.send(f"Uh oh, looks like this is some unknown error I have ran into. {dorfer.mention} has been notified.")
     raise error
 
 
 def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guildDouble=False, playerDouble=False, dmDouble=False):
-
     # calculate the CP gained during the game
     cp = ((seconds) // 1800) / 2
     cp_multiplier = 1 + guildDouble + playerDouble + dmDouble
@@ -90,10 +89,8 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
     gp= 0
     tp = {}
     charLevel = level
-    print(level)
     while(cp>0):
         
-        print("CP",cp)
         # Level 20 characters haves access to exclusive items
         # create a string representing which tier the character is in in order to create/manipulate the appropriate TP entry in the DB
         tierTP = f"T{tier} TP"
@@ -109,21 +106,17 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
             charLevel = 17
         elif charLevel < 20:
             charLevel = 20
-        print("level CP", levelCP)
-        
+            
         if levelCP + leftCP + cp > cpThreshHoldArray[tier-1]:
-            print("TH", cpThreshHoldArray[tier-1])
             consideredCP = cpThreshHoldArray[tier-1] - (levelCP + leftCP)
             leftCP = 0
         else:
             consideredCP = cp
-        print("con ",consideredCP)
         cp -=  consideredCP
         tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
         gp += consideredCP * tier_reward_dictionary[tier-1][0]
         tier += 1
             
-    print([gainedCP, tp, int(gp)])
     return [gainedCP, tp, int(gp)]
     
     
@@ -157,7 +150,6 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
 
     #restructure the query to be more regEx friendly
   
-    print(query)
     
     invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "}", "^", ">", "<", "|"]
 
@@ -172,7 +164,6 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
     query = query.replace('+', '\\+')
     query = query.replace('.', '\\.')
 
-    print(query)
     
     #I am not sure of the difference in behavior beside the extended Grouped search
     if singleItem:
@@ -227,7 +218,6 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
                               ],
                             }
          
-        print(filterDic)           
         # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
         #  collection.find(collection.find(filterDic)) does not work for he could not read
         # https://cdn.discordapp.com/attachments/663504216135958558/735695855667118080/New_Project_-_2020-07-22T231158.186.png
@@ -276,6 +266,11 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
         records.remove(group_to_remove)
     #append the new entries
     records += faux_entries
+    if table == "rit":
+        # get all minor reward item results
+        all_minors = list([record["Name"] for record in filter(lambda record: record["Minor/Major"]== "Minor", records)])
+        records = filter(lambda record: record["Minor/Major"]!= "Major" or record["Name"] not in all_minors, records)
+
     
     #sort all items alphabetically 
     records = sorted(records, key = sortingEntryAndList)    
@@ -320,7 +315,10 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
                 apiEmbedmsg = await channel.send(embed=apiEmbed)
             else:
                 await apiEmbedmsg.edit(embed=apiEmbed)
-
+            # if len(records) <= 5:
+                # for i in range(0, len(records)):
+                    # await apiEmbedmsg.add_reaction(alphaEmojis[i])
+                
             await apiEmbedmsg.add_reaction('❌')
 
             try:
@@ -418,7 +416,6 @@ async def checkForGuild(ctx, name, guildEmbed="" ):
     collection = db.guilds
     guildRecords = list(collection.find({"Name": {"$regex": name, '$options': 'i' }}))
 
-    print(guildRecords)
 
     if guildRecords == list():
         await channel.send(content=f'I was not able to find a guild named "**{name}**". Please check your spelling and try again.')
@@ -571,6 +568,11 @@ settings = db.settings
 
 global settingsRecord
 settingsRecord = list(settings.find())[0]
+# get all entries of the relevant DB and extract the Text field and compile as a list and assign to the dic
+liner_dic = {"Find" : list([line["Text"] for line in db.liners_find.find()]),
+             "Meme" : list([line["Text"] for line in db.liners_meme.find()]),
+             "Craft" : list([line["Text"] for line in db.liners_craft.find()])}
+
 
 # API_URL = ('https://api.airtable.com/v0/appF4hiT6A0ISAhUu/'+ 'races')
 # # API_URL += '?offset=' + 'itr4Z54rnNABYW8jj/recr2ss2DkyF4Q84X' 

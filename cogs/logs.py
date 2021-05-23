@@ -68,7 +68,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     
     userIDs.append(str(dm["ID"]))
     
-    print(userIDs)
     # the db entry of every character
     if characterDBentries == None:
         characterDBentries = playersCollection.find({"_id": {"$in": characterIDs}})
@@ -146,7 +145,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             # if there were no rewards we only care about the time
             treasureString = timeConversion(duration) 
         groupString = ""
-        groupString += guildDouble * "Guild "
+        groupString += guildDouble * "2xR "
         groupString += playerDouble * "Fanatic "
             
         groupString += f'{role} Friend {"Full"*(player["CP"]==dm["CP"])+"Partial"*(not player["CP"]==dm["CP"])} Rewards:\n{treasureString}'
@@ -161,7 +160,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                 # otherwise add the new players
                 allRewardStrings[treasureString] += [player] 
         else:
-            print(groupString, "\n", allRewardStrings)
             # check if the full rewards have already been added, if yes create it and add the players
             if groupString in allRewardStrings:
                 allRewardStrings[groupString] += [player]
@@ -198,7 +196,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             dmRole = 'Ascended'
             
         duration = player["CP"]*3600
-        print(duration)
         if role != "":
             guild_valid =("Guild" in player and 
                             player["Guild"] in guilds and 
@@ -225,7 +222,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             
             dmDouble = player["DM Double"] and sessionInfo["DDMRW"]
             
-            dm_double_string += guildDouble * "Guild "
+            dm_double_string += guildDouble * "2xR "
             dm_double_string += playerDouble * "Fanatic "
             dm_double_string += dmDouble * "DDMRW "
             
@@ -250,6 +247,10 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     
     #update noodle role if dm
     noodleString = "Current :star:: " + str(noodles)
+    
+    #new noodle total
+    noodleFinal = noodles + noodlesGained
+    noodleFinalString = "Total :star:: " + str(noodleFinal) 
 
     # if the game received rewards
     if role != "": 
@@ -291,7 +292,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             # for every guild in the game
             for name, g in guilds.items():
                 
-                guildsListStr += "\n"+(g["Drive"]*"**Recruitment Drive** ")+g["Mention"]
+                guildsListStr += "\n"+(g["Drive"]*"**Recruitment Drive** ")+(g["Rewards"]*"**2xR** ")+(g["Items"]*"**2xI** ")+g["Mention"]
                 # get the DB record of the guild
                 #filter player list by guild
                 gPlayers = [p for p in players.values() if "Guild" in p and p["Guild"]==name]
@@ -302,15 +303,44 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                     
                     gain += sparklesGained*int("Guild" in dm and dm["Guild"] == name)
                     guildRewardsStr += f"{g['Name']}: +{int(gain)} :sparkles:\n"
-
+        
+        noodleCongrats = ""
+        if noodles < 210 and noodleFinal >= 210:
+            noodleCongrats = "Congratulations! You have reached Eternal Noodle!"
+        elif noodles < 150 and noodleFinal >= 150:
+            noodleCongrats = "Congratulations! You have reached Immortal Noodle!"
+        elif noodles < 100 and noodleFinal >= 100:
+            noodleCongrats = "Congratulations! You have reached Ascended Noodle!"
+        elif noodles < 60 and noodleFinal >= 60:
+            noodleCongrats = "Congratulations! You have reached True Noodle!"
+        elif noodles < 30 and noodleFinal >= 30:
+            noodleCongrats = "Congratulations! You have reached Elite Noodle!"
+        elif noodles < 10 and noodleFinal >= 10:
+            noodleCongrats = "Congratulations! You have reached Good Noodle!"
+        elif noodles < 1 and noodleFinal >= 1:
+            noodleCongrats = "Congratulations on hosting your first game!"
+        
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
         sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
+        await editMessage.clear_reactions()
         if sessionInfo["Status"] == "Approved":
             status_text = "✅ Log approved! The DM and players have received their rewards and their characters can be used in further one-shots."
         elif sessionInfo["Status"] == "Denied":
             status_text = "❌ Log Denied! Characters have been cleared"
-        sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}")
+            noodleCongrats = ""
+        elif sessionInfo["Status"] == "Pending":
+            status_text = "❔ Log Pending! DM has been messaged due to session log issues."
+            
+            await editMessage.add_reaction('<:nipatya:408137844972847104>')
+        
+        sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}\n{noodleCongrats}")
+        if noodleCongrats:
+            await editMessage.add_reaction('🎉')
+            await editMessage.add_reaction('🎊')
+            await editMessage.add_reaction('🥳')
+            await editMessage.add_reaction('🍾')
+            await editMessage.add_reaction('🥂')
         
         # add the field for the DM's player rewards
         dm_text = "**No Character**"
@@ -319,7 +349,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         if("Character ID" in dm):
             dm_text = f"{dm['Character Name']} {', '.join(dmRewardsList)}"
             dm_name_text = f"DM {dm_double_string}Rewards (Tier {dm_tier_num}):\n**{dmtreasureArray[0]} CP, {sum(dmtreasureArray[1].values())} TP, {dmtreasureArray[2]} GP**\n"
-        sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{'Gained :star:: ' + str(noodlesGained)} \n{noodleString}", name=dm_name_text)
+        sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{noodleString}\n{'Gained :star:: ' + str(noodlesGained)} \n{noodleFinalString}", name=dm_name_text)
         
         # if there are guild rewards then add a field with relevant information
         if guildRewardsStr != "":
@@ -401,7 +431,7 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
             
-        if sessionInfo["Status"] != "Processing":
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
             await ctx.channel.send("This session has already been processed")
             return
         if ctx.author.id == int(sessionInfo["DM"]["ID"]):
@@ -441,14 +471,13 @@ class Log(commands.Cog):
         userIDs.append(str(dm["ID"]))
         
         # the db entry of every character
-        characterDBentries = playersCollection.find({"_id": {"$in": characterIDs}})
+        characterDBentries = list(playersCollection.find({"_id": {"$in": characterIDs}}))
         
         # the db entry of every user
         userDBentries = usersCollection.find({"User ID": {"$in": userIDs}})
     
         # the db entry of every guild
         guildDBentries = guildCollection.find({"Name": {"$in": guildIDs}})
-        print("GUILD", guildDBentries)
         guildDBEntriesDic = {}
         for g in guildDBentries:
             guildDBEntriesDic[g["Name"]] = g
@@ -471,8 +500,6 @@ class Log(commands.Cog):
         for u in userDBentries:
             userDBEntriesDic[u["User ID"]] = u
 
-        #print(characterDBentries)
-        print(players)
         
         for character in characterDBentries:
             player = players[str(character["User ID"])]
@@ -500,7 +527,7 @@ class Log(commands.Cog):
                 dmDouble = False
                 
                 
-                treasureArray  = calculateTreasure(player["Level"], player["Character CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+                treasureArray  = calculateTreasure(player["Level"], character["CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
                 
                 if(guild_valid and 
                         guilds[player["Guild"]]["Items"] and 
@@ -561,7 +588,10 @@ class Log(commands.Cog):
                         del character["Inventory"][i]
                 
                 # set up all db values that need to be incremented
-                increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1}
+                increment = {"CP":  treasureArray[0], 
+                            "GP":  treasureArray[2],
+                            "Games": 1,
+                            "Event Token" : 0}
                 # for every TP tier value that was gained create the increment field
                 for k,v in treasureArray[1].items():
                     increment[k] = v
@@ -570,7 +600,6 @@ class Log(commands.Cog):
                                 "Inventory" : character["Inventory"], 
                                 "Drive" : []}
                 for g in guilds.values():
-                    print("DRIVE", g)
                     if g["Drive"] and player["CP"]>= 3:
                         player_set["Drive"]=g["Name"]
                 
@@ -579,12 +608,9 @@ class Log(commands.Cog):
                                     "$set": player_set}}
                 if(player["Status"] == "Dead"):
                     del charRewards["fields"]["$inc"]["Games"]
-                    print("charRewards 1", charRewards)
                     deathDic = {"inc": increment.copy(), "set": charRewards["fields"]["$set"]}
                     charRewards["fields"]["$inc"] = {"Games": 1}
                     charRewards["fields"]["$set"] = {"Death": deathDic}
-                    print("death", deathDic)
-                    print("charRewards 2", charRewards)
                 playerUpdates.append(charRewards)
                 
         dmRewardsList = []
@@ -596,7 +622,6 @@ class Log(commands.Cog):
             
             duration = player["CP"] * 3600
             # the db entry of every character
-            print(dm)
             character = playersCollection.find_one({"_id": dm["Character ID"]})
             charLevel = int(dm['Level'])
             # calculate the tier of the DM character
@@ -631,7 +656,7 @@ class Log(commands.Cog):
             dmDouble = player["DM Double"]
             
             
-            treasureArray  = calculateTreasure(charLevel, player["Character CP"] , dmTierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+            treasureArray  = calculateTreasure(charLevel, character["CP"], dmTierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
                 
                 
             if(guild_valid and 
@@ -692,7 +717,7 @@ class Log(commands.Cog):
                     del character["Inventory"][i]
             
             # set up all db values that need to be incremented
-            increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1}
+            increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1, "Event Token": 0}
             # for every TP tier value that was gained create the increment field
             for k,v in treasureArray[1].items():
                 increment[k] = v
@@ -749,7 +774,6 @@ class Log(commands.Cog):
                                                    {"$inc": {"Games": 1, "Reputation": int(gain- reputationCost), "Total Reputation": gain}}))
         
         del players[dm["ID"]]
-        
         try:
             end = sessionInfo["End"]
             start = sessionInfo["Start"]
@@ -760,7 +784,6 @@ class Log(commands.Cog):
             statsIncrement ={"Games": 1, "Playtime": totalDuration, 'Players': len(players.keys())}
             statsAddToSet = {}
             for name in [g["Name"] for g in guilds.values() if g["Status"]]:
-                print(guilds[name])
                 # Track how many guild quests there were
                 statsIncrement["Guilds."+name+".GQ"] = 1
                 statsIncrement["Guilds."+name+".GQM"] = 0
@@ -810,14 +833,13 @@ class Log(commands.Cog):
             usersCollection.update_one({'User ID': str(dm["ID"])}, {"$set": {'User ID':str(dm["ID"])}, "$inc": {'Games': 1, 'Noodles': noodlesGained, 'Double': -1*dm["Double"]}}, upsert=True)
             playersCollection.bulk_write(timerData)
             
-            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in players.items()])
+            usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in {character["User ID"] : players[character["User ID"] ] for character in characterDBentries}.items()])
             usersCollection.bulk_write(usersData)
             
             logData.update_one({"_id": sessionInfo["_id"]}, {"$set" : {"Status": "Approved"}})
             sessionInfo["Status"]="Approved"
             
             if guildsData != list():
-                print(guildsData)
                 # do a bulk write for the guild data
                 db.guilds.bulk_write(guildsData)
             
@@ -849,19 +871,20 @@ class Log(commands.Cog):
             print('Success')
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
-        noodles += noodlesGained
-        noodleString = ""
         if dmUser:
+            dmEntry = usersCollection.find_one({"User ID" : str(dm["ID"])})
+            noodles = dmEntry["Noodles"]
+            noodleString = ""
             dmRoleNames = [r.name for r in dmUser.roles]
             # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
             if noodles >= 210:
                 if 'Eternal Noodle' not in dmRoleNames:
                     noodleRole = get(guild.roles, name = 'Eternal Noodle')
                     await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
-                    if 'Ascended Noodle' in dmRoleNames:
+                    if 'Immortal Noodle' in dmRoleNames:
                         await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
                     noodleString += "\n**Eternal Noodle** role received! :tada:"
-            if noodles >= 150:
+            elif noodles >= 150:
                 if 'Immortal Noodle' not in dmRoleNames:
                     noodleRole = get(guild.roles, name = 'Immortal Noodle')
                     await dmUser.add_roles(noodleRole, reason=f"Hosted 150 sessions. This user has 150+ Noodles.")
@@ -914,7 +937,7 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
         
-        if sessionInfo["Status"] != "Processing":
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
             await ctx.channel.send("This session has already been processed")
             return
         if ctx.message.author.id == int(sessionInfo["DM"]["ID"]):
@@ -1017,22 +1040,23 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
-                if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or "Mod Friend" in [r.name for r in ctx.author.roles]):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
+                mod = "Mod Friend" in [r.name for r in ctx.author.roles]
+                if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or mod):
                 # if the game received rewards
                     if len(sessionInfo["Guilds"].keys()) > 0: 
                         players = sessionInfo["Players"]
                         players[sessionInfo["DM"]["ID"]] = sessionInfo["DM"]
                         guilds = sessionInfo["Guilds"]
-                        print("Drives", [g["Drive"] for g in guilds.values()])
                         if unique and ((len(ctx.message.channel_mentions) > 1) or any([g["Drive"] for g in guilds.values()])):
-                            await ctx.channel.send("The Recruitment Drive Guild Boon can only be used on by one guild per guild quest.")
+                            await ctx.channel.send("The Recruitment Drive Guild Boon can only be used by one guild per guild quest.")
                             return
                         guild_dic = {}
                         for g in guilds.values():
                             guild_dic[g["Mention"]] = g
                         err_message = ""
                         for guildChannel in ctx.message.channel_mentions:
+                            
                             m = guildChannel.mention
                             # filter player list by guild
                             gPlayers = [p for p in players.values() if "Guild" in p and 
@@ -1040,7 +1064,6 @@ class Log(commands.Cog):
                                             guilds[p["Guild"]]["Mention"] == m
                                             and  p["CP"]>= 3 and p['Guild Rank'] > 1]
                             if(len(gPlayers) >= min_members):
-                                print(guilds)
                                 if guildChannel.mention in guild_dic:
                                     try:
                                         db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Guilds."+guild_dic[m]["Name"]+"."+target: goal}})
@@ -1063,6 +1086,54 @@ class Log(commands.Cog):
                 await ctx.channel.send("This session has already been processed")
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
+            
+    @session.command()
+    async def addGuilds(self, ctx,  num : int, *, guilds):
+    
+        mod = "Mod Friend" in [r.name for r in ctx.author.roles]
+        if(mod):
+            logData = db.logdata
+            sessionInfo = logData.find_one({"Log ID": int(num)})
+            if( sessionInfo):
+                if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
+                    guilds = sessionInfo["Guilds"]
+                    guild_dic = {}
+                    for g in guilds.values():
+                        guild_dic[g["Mention"]] = g
+                    err_message = ""
+                    for guildChannel in ctx.message.channel_mentions:
+                        
+                        # get the DB record of the guild
+                        gRecord  = db.guilds.find_one({"Channel ID": str(guildChannel.id)})
+                        if not gRecord:
+                            continue
+                        guildDBEntry = {}
+                        guildDBEntry["Status"] = True
+                        guildDBEntry["Rewards"] = False
+                        guildDBEntry["Items"] = False
+                        guildDBEntry["Drive"] = False
+                        guildDBEntry["Mention"] = guildChannel.mention
+                        guildDBEntry["Name"] = gRecord["Name"]
+                        
+                        
+                        mention = guildChannel.mention
+                        if mention not in guild_dic:
+                            try:
+                                db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Guilds."+gRecord["Name"]: guildDBEntry}})
+                            except BulkWriteError as bwe:
+                                print(e)
+                        else:
+                            err_message += mention +" already found in game.\n"
+                       
+                    if err_message != "":
+                        await ctx.channel.send(err_message)
+                    await ctx.channel.send("Session updated.")
+                    await generateLog(self, ctx, num)
+
+                else:
+                    await ctx.channel.send("This session has already been processed")
+            else:
+                await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
      
     @commands.has_any_role('Mod Friend', 'Admins')      
     @session.command()
@@ -1073,12 +1144,17 @@ class Log(commands.Cog):
     @session.command()
     async def approveDDMRW(self, ctx,  num : int):
         await self.session_set(ctx, num, "DDMRW", True)
+    
+    @commands.has_any_role('Mod Friend', 'Admins')
+    @session.command()
+    async def pending(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Status", "Pending")
         
     async def session_set(self, ctx, num : int, target, goal):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( True or sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 try:
                     db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {target: goal}})
                 except BulkWriteError as bwe:
@@ -1090,7 +1166,8 @@ class Log(commands.Cog):
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
                         
-          
+                        
+    
     
     @session.group()
     async def ddmrw(self, ctx):	
@@ -1110,7 +1187,7 @@ class Log(commands.Cog):
         logData =db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or "Mod Friend" in [r.name for r in ctx.author.roles] and sessionInfo["DDMRW"]):
                     try:
                         db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"DM.DM Double": goal}})
@@ -1142,7 +1219,7 @@ class Log(commands.Cog):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
-            if( sessionInfo["Status"] == "Processing"):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"):
                 if sessionInfo["Role"] != "": 
                     players = sessionInfo["Players"]
                     players[sessionInfo["DM"]["ID"]] = sessionInfo["DM"]
@@ -1214,8 +1291,7 @@ class Log(commands.Cog):
         sessionInfo = logData.find_one({"Log ID": int(num)})
         if( sessionInfo):
             if (str(ctx.author.id) == sessionInfo["DM"]["ID"] or 
-                "Mod Friend" in [r.name for r in ctx.author.roles] and 
-                sessionInfo["DDMRW"]):
+                "Mod Friend" in [r.name for r in ctx.author.roles]):
                 pass
                  
             else:
@@ -1226,19 +1302,24 @@ class Log(commands.Cog):
             return
         sessionLogEmbed = editMessage.embeds[0]
 
-        if sessionInfo["Status"] == "Processing":
+        if sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
             summaryIndex = sessionLogEmbed.description.find('General Summary**:')
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"General Summary**:\n" + editString+"\n"
         else:
             sessionLogEmbed.description += "\n"+editString
         try:
             await editMessage.edit(embed=sessionLogEmbed)
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will delete your message and this one in 30 seconds.\n\n:warning: **DO NOT DELETE YOUR OWN MESSAGE.** :warning:")
-            await asyncio.sleep(30) 
-            await ctx.message.delete()
-            await delMessage.delete()
         except Exception as e:
             delMessage = await ctx.channel.send(content=f"The maximum length of the session log summary is 2048 symbols. Please reduce the length of your summary.")
+        else:
+            try:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
+            except Exception as e:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
+        
+        await asyncio.sleep(30) 
+        await ctx.message.delete()
+        await delMessage.delete()
         
         
         

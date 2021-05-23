@@ -7,19 +7,25 @@ import decimal
 import random
 import discord
 import asyncio
+from cogs.guild import pin_control
 from discord.utils import get        
 from discord.ext import commands
 from math import ceil, floor
 from itertools import product      
 from datetime import datetime, timezone,timedelta
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
+from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, roleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
+
+
+def campaign_channel_check(channel):
+    return "campaign" in str(channel.category.name).lower()
 
 class Campaign(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
        
+
     @commands.group(aliases=['c'], case_insensitive=True)
     async def campaign(self, ctx):	
         pass
@@ -60,7 +66,7 @@ class Campaign(commands.Cog):
             
             if msg:
                 if ctx.command.name == "prep":
-                    msg += f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, @player3, [...]" sessionname```'
+                    msg += f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, [...]" "session name"```'
                 
             else:
                 ctx.command.reset_cooldown(ctx)
@@ -84,7 +90,6 @@ class Campaign(commands.Cog):
         channel = campaignChannel[0]
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)})
-        print(campaignRecords)
         if not campaignRecords:
             await channel.send(f"No campaign could be found for this channel.")
             return 
@@ -108,7 +113,7 @@ class Campaign(commands.Cog):
                 info_string += f"• Time: {timeConversion(player['Campaigns'][campaignRecords['Name']]['Time'])}\n"
                 info_string += f"• Sessions: {player['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
                 info_string += f"• Active Member: {player['Campaigns'][campaignRecords['Name']]['Active']}"
-                infoEmbed.add_field(name=f"**{member.display_name}**:", value = info_string, inline = False)
+                infoEmbed.add_field(name=f"**{member_name}**:", value = info_string, inline = False)
         infoEmbed.description = description_string
         
         member = ctx.guild.get_member(int(master['User ID']))
@@ -152,7 +157,6 @@ class Campaign(commands.Cog):
             return 
         campaignCollection = db.campaigns
         campaignRecords = campaignCollection.find_one({"Name": {"$regex": campaignName, '$options': 'i' }})
-        print(campaignRecords)
         if campaignRecords:
             await channel.send(f"Another campaign by this name has already been created.")
             return 
@@ -189,13 +193,12 @@ class Campaign(commands.Cog):
                 else: 
                     campaignEmbedmsg = await channel.send(embed=campaignEmbed)
         else:
-            await channel.send("You need a user profile to create a campaign. Use ```$user``` in one of the log channels.")
+            await channel.send("You need a user profile to create a campaign. Use the `$user` command in one of the log channels.")
         return
 
     #@commands.cooldown(1, 5, type=commands.BucketType.member)
     @campaign.command()
     async def add(self,ctx, user, campaignName):
-        print("ssssss", campaignName)
         channel = ctx.channel
         author = ctx.author
         campaignEmbed = discord.Embed()
@@ -223,17 +226,23 @@ class Campaign(commands.Cog):
         campaignRecords = campaignCollection.find_one({"Channel ID": {"$regex": f"{campaignName.id}", '$options': 'i' }})
 
         if not campaignRecords:
-            await channel.send(f"{campaignName.mention} doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
+            await channel.send(f"**{campaignName.mention}** doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
             return
 
         if campaignRecords['Campaign Master ID'] != str(author.id):
-            await channel.send(f"You cannot add users to this campaign because you are not the campaign master of {campaignRecords['Name']}")
+            await channel.send(f"You cannot add users to this campaign because you are not the Campaign Master of **{campaignRecords['Name']}**.")
             return
-
+        
+        roles = [r.name for r in user[0].roles]
+        if "D&D Friend" not in roles:
+            await channel.send(f"***{user[0].display_name}*** needs to apply for membership to the server before they can be added to a campaign! Please have them apply for membership and then use this command again. See section :two: of #how-to-play for more information on applying for membership.")
+            return
+            
+            
         usersCollection = db.users
         userRecords = usersCollection.find_one({"User ID": str(user[0].id)})  
         if not userRecords:
-            await channel.send(f" {user[0].display_name} needs to establish a user entry first using $user in a log channel.")
+            await channel.send(f"***{user[0].display_name}*** needs to establish a user profile before they can be added to a campaign! Please have them use the `$user` command in a log channel and then use this command again.")
             return
         if 'Campaigns' not in userRecords:
             userRecords['Campaigns'] = {campaignRecords['Name'] : {"Time" : 0, "Sessions" : 0} }
@@ -243,6 +252,8 @@ class Campaign(commands.Cog):
         userRecords['Campaigns'][campaignRecords['Name']]["Active"] = True
 
         await user[0].add_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
+        if not any([role in roles for role in ["New Friend", "Junior Friend", "Journeyfriend", "Elite Friend", "True Friend", "Ascended Friend"]]):
+            await user[0].add_roles(get(guild.roles, name = "Junior Friend"), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
 
         try:
             usersCollection.update_one({'_id': userRecords['_id']}, {"$set": {"Campaigns": userRecords['Campaigns']}}, upsert=True)
@@ -296,9 +307,17 @@ class Campaign(commands.Cog):
         if not campaignRecords:
             await channel.send(f"`{campaignName}` doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
             return
-
+        
         if campaignRecords['Campaign Master ID'] != str(author.id):
-            await channel.send(f"You cannot remove users from this campaign because you are not the Campaign Master of {campaignRecords['Name']}")
+            await channel.send(f"You cannot remove users from this campaign because you are not the Campaign Master of **{campaignRecords['Name']}**.")
+            return
+        user_roles = [r.name for r in user[0].roles]
+        if campaignRecords["Name"] not in user_roles:
+            await channel.send(f"The user does not have the campaign role to remove.")
+            return  
+        user_entry = usersCollection.find_one({'User ID': str(user[0].id), f"Campaigns.{campaignRecords['Name']}" : {"$exists" : True}})
+        if not user_entry:
+            await channel.send(f"`{user[0].display_name}` could not be found as part of the campaign.")
             return
         try:
             usersCollection.update_one({'User ID': str(user[0].id)}, {"$set": {f"Campaigns.{campaignRecords['Name']}.Active": False}}, upsert=True)
@@ -314,7 +333,6 @@ class Campaign(commands.Cog):
         return
     @campaign.group(aliases=['t'])
     async def timer(self, ctx):	
-        print(datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p"))
         pass
 
     @timer.command()
@@ -336,7 +354,7 @@ class Campaign(commands.Cog):
     @commands.cooldown(1, float('inf'), type=commands.BucketType.channel) 
     @commands.has_any_role('D&D Friend', 'Campaign Friend')
     @timer.command()
-    async def prep(self, ctx, userList, *, game = ""):
+    async def prep(self, ctx, userList, game = ""):
         #this checks that only the author's response with one of the Tier emojis allows Tier selection
         #the response is limited to only the embed message
         
@@ -349,7 +367,7 @@ class Campaign(commands.Cog):
         userName = author.name
         guild = ctx.guild
         #information on how to use the command, set up here for ease of reading and repeatability
-        prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, @player3..." "quest name"(*)```***** - The quest name is optional.'
+        prepFormat =  f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, [...]" "session name"(*)```***** - The session name is optional.'
         usersCollection = db.users
         #prevent the command if not in a proper channel (game/campaign)
         if not "campaign" in channel.category.name.lower(): #!= settingsRecord[ctx.guild.id]["Campaign Rooms"]:
@@ -394,7 +412,7 @@ class Campaign(commands.Cog):
         usersCollection = db.users
         dm_record_check = list(usersCollection.find({"User ID": str(author.id)}))
         if len(dm_record_check) < 1:
-            await channel.send(f"The DM has no DB record. Use ```$user``` in a log channel.")
+            await channel.send(f"The DM has no DB record. Use the `$user` command in a log channel.")
             self.timer.get_command('prep').reset_cooldown(ctx)
             return 
         dmRecord = dm_record_check[0]
@@ -415,8 +433,16 @@ class Campaign(commands.Cog):
 
         # otherwise give an appropriate title and inform about the limited commands list (signup, add player, remove player)
         prepEmbed.title = f"{game} (Campaign)"
-        prepEmbed.description = f"**DM Signup**: {commandPrefix}campaign timer signup \n**Player Signup**: {commandPrefix}campaign timer signup\n**Add to roster**: {commandPrefix}campaign timer add @player\n**Remove from roster**: {commandPrefix}campaign timer remove @player"
-        
+        prepEmbed.description = f"""__**Command Checklist**__
+**1. Players sign up:**
+• {commandPrefix}campaign timer signup
+**2. DM adds or removes players (optional):**
+• **Add**: {commandPrefix}campaign timer add @player
+• **Remove**: {commandPrefix}campaign timer remove @player
+**3. DM cancels or starts the campaign session:**
+• **Cancel**: {commandPrefix}campaign timer cancel
+• **Start**: {commandPrefix}campaign timer start"""
+
          #set up the special field for the DM character
         prepEmbed.add_field(name = f"{author.display_name} **(DM)**", value = author.mention)
         
@@ -430,7 +456,7 @@ class Campaign(commands.Cog):
             prepEmbed.add_field(name=p.display_name, value='Has not yet signed up for the campaign.', inline=False)
         playerRoster = [author] + playerRoster
         #set up a field to inform the DM on how to start the timer or how to get help with it
-        prepEmbed.set_footer(text= f"If enough players have signed up, use the following command to start the timer: `{commandPrefix}campaign timer start`\nUse the following command to see a list of campaign commands: `{commandPrefix}help campaign`")
+        prepEmbed.set_footer(text= f"Use the following command to see a list of campaign commands: {commandPrefix}help campaign")
 
         # if it is a campaign or the previous message somehow failed then the prepEmbedMsg would not exist yet send we now send another message
         prepEmbedMsg = await channel.send(embed=prepEmbed)
@@ -456,7 +482,6 @@ class Campaign(commands.Cog):
         for x in product(timerAlias, timerCommands):
             timerCombined.append(f"{commandPrefix}campaign {x[0]} {x[1]}")
             timerCombined.append(f"{commandPrefix}c {x[0]} {x[1]}")
-        print(timerCombined)
         """
         This is the heart of the command, this section runs continuously until the start command is used to change the looping variable
         during this process the bot will wait for any message that contains one of the commands listed in timerCombined above 
@@ -476,7 +501,6 @@ class Campaign(commands.Cog):
             The signup command has different behaviors if the signup is from the DM, a player or campaign player
             
             """
-            print("React")
             if self.startsWithCheck(msg, "signup"):
                 # if the message author is the one who started the timer, call signup with the special DM moniker
                 # the character is extracted from the message in the signup command 
@@ -493,7 +517,6 @@ class Campaign(commands.Cog):
                 else:
                     await channel.send(f"***{msg.author.display_name}***, you must be on the player roster in order to signup.")
                 
-                print(signedPlayers)
 
             # similar issues arise as mentioned above about wrongful calls
             elif self.startsWithCheck(msg, "add"):
@@ -501,7 +524,6 @@ class Campaign(commands.Cog):
                     # this simply checks the message for the user that is being added, the Member object is returned
                     addUser = await self.addDuringPrep(ctx, msg=msg, prep=True)
                     #failure to add a user does not have an error message if no user is being added
-                    print(playerRoster)
                     if addUser is None:
                         pass
                     elif addUser not in playerRoster:
@@ -519,8 +541,7 @@ class Campaign(commands.Cog):
                 if await self.permissionCheck(msg, author):
                     # this simply checks the message for the user that is being added, the Member object is returned
                     removeUser = await self.removeDuringPrep(ctx, msg=msg, start=playerRoster, prep=True)
-                    print (removeUser)
-                    print(playerRoster)
+
                     if removeUser is None:
                         pass
                     #check if the user is not the DM
@@ -530,8 +551,8 @@ class Campaign(commands.Cog):
                         # remove the player from the roster
                         playerRoster.remove(removeUser)
                         # remove the player from the signed up players
-                        if removeUser in signedPlayers["Players"]:
-                                del signedPlayers["Players"][removeUser.id]
+                        if removeUser.id in signedPlayers["Players"]:
+                            del signedPlayers["Players"][removeUser.id]
                     else:
                         await channel.send('You cannot remove yourself from the timer.')
 
@@ -545,7 +566,7 @@ class Campaign(commands.Cog):
             #the command that cancels the timer, it does so by ending the command all together                              
             elif self.startsWithCheck(msg, "cancel"):
                 if await self.permissionCheck(msg, author):
-                    await channel.send(f'Timer cancelled! If you would like to prep a new quest, use the following command:\n```yaml\n{commandPrefix}campaign timer prep```') 
+                    await channel.send(f'Timer cancelled! If you would like to prep a new quest, {prepFormat}') 
                     # allow the call of this command again
                     self.timer.get_command('prep').reset_cooldown(ctx)
                     return
@@ -574,7 +595,7 @@ class Campaign(commands.Cog):
             signupFormat = f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer signup```'
             # create an embed object
             # This is only true if this is during a campaign, in that case there are no characters or consumables
-            if char is None: 
+            if char is None and author.id != ctx.author.id: 
                 usersCollection = db.users
                 # grab the DB records of the first user with the ID of the author
                 userRecord = usersCollection.find_one({"User ID": str(author.id)})
@@ -629,16 +650,10 @@ class Campaign(commands.Cog):
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
-            stampEmbed.set_footer(text=f'#{ctx.channel}\nType `{commandPrefix}help campaign` for help with a running timer.')
+            stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of campaign commands: {commandPrefix}help campaign')
             stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
 
-            print('USERLIST')
-            print(userList)
-            
-
             for u in userList["Players"].values():
-                print('USER')
-                print(u)
                 stampEmbed.add_field(name=f"**{u['Member'].display_name}**", value=u['Member'].mention, inline=False)
             
 
@@ -746,8 +761,6 @@ class Campaign(commands.Cog):
                     return start
             userInfo["Latest Join"] = startTime
             userInfo["State"] = "Partial"
-            print("UUUUUU", userInfo)
-            print(start)
             return start
     """
     This command is used to add players to the prep list or the running timer
@@ -778,7 +791,6 @@ class Campaign(commands.Cog):
             else:
                 # get the first ( and only ) mentioned user 
                 return addList[0]
-            print(start)
             return start
     
     async def addDuringTimer(self,ctx, *, msg, role="", start=None,resume=False, dmChar=None, campaignRecords = None):
@@ -835,7 +847,6 @@ class Campaign(commands.Cog):
             else:
                 user_dic["State"] = "Removed"
                 user_dic["Duration"] += endTime - user_dic["Latest Join"] 
-                print("DDDDDDDDDDDD", user_dic["Duration"])
                 if not resume:
                     await ctx.channel.send(content=f"***{user}***, you have been removed from the timer.")
 
@@ -911,7 +922,6 @@ class Campaign(commands.Cog):
             # reset the fields in the embed object
             embed.clear_fields()
 
-            print(start)
             # fore every entry in the timer dictionary we need to perform calculations
             for key, v in start["Players"].items():
                 if v["State"] == "Full":
@@ -927,7 +937,16 @@ class Campaign(commands.Cog):
             msgAfter = False
             
             # we need separate advice strings if there are no rewards
-            stampHelp = f'```md\n[Player][Commands]\n# Adding Yourself\n   {commandPrefix}campaign timer addme\n# Removing Yourself\n   {commandPrefix}campaign timer removeme\n\n[DM][Commands]\n# Adding Players\n   {commandPrefix}campaign timer add @player\n# Removing Players\n   {commandPrefix}campaign timer remove @player\n# Stopping the Timer\n   {commandPrefix}campaign timer stop```'
+            stampHelp = f"""```yaml
+Command Checklist
+- - - - - - - - -
+1. DM adds a player or they join late:
+   • DM adds: {commandPrefix}campaign timer add @player
+   • Player joins: {commandPrefix}campaign timer addme
+2. DM removes a player or they leave early:
+   • DM removes: {commandPrefix}campaign timer remove @player
+   • Player leaves: {commandPrefix}campaign timer removeme
+3. DM stops the campaign session: {commandPrefix}campaign timer stop```"""
             # check if the current message is the last message in the chat
             # this checks the 1 message after the current message, which if there is none will return an empty list therefore msgAfter remains False
             async for message in ctx.channel.history(after=embedMsg, limit=1):
@@ -969,7 +988,10 @@ class Campaign(commands.Cog):
             logChannel = ctx.channel
             stopEmbed.clear_fields()
             stopEmbed.set_footer(text=stopEmbed.Empty)
-            stopEmbed.description = f"**{game}**\nDate: {datestart} EDT\nPut your summary here."
+            dateend = datetime.fromtimestamp(end).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
+            totalDuration = timeConversion(end - startTime)
+
+            stopEmbed.description = f"**{game}**\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\nPut your summary here."
 
             playerData = []
             campaignCollection = db.campaigns
@@ -989,7 +1011,9 @@ class Campaign(commands.Cog):
                     "Campaigns."+campaignRecord["Name"]+".Sessions" :1}
                     playerData.append(v)
                 stopEmbed.add_field(name=key, value=temp, inline=False)
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\n", inline=False)
+            if 'Noodles' not in dmChar['DB Entry']:
+                dmChar['DB Entry']['Noodles'] = 0
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}\nTotal :star:: {dmChar['DB Entry']['Noodles']+int((total_duration/3600)//3)}", inline=False)
 
             try:   
                 usersCollection = db.users
@@ -1001,7 +1025,6 @@ class Campaign(commands.Cog):
                                                  'Noodles': int((total_duration/3600)//3)}}}, upsert=True)
                 # update the player entries in bulk
                 usersData = list(map(lambda item: UpdateOne({'_id': item["DB Entry"]['_id']}, {'$set': {campaignRecord["Name"]+" inc" : item["inc"]}}, upsert=True), playerData))
-                print(usersData)
                 usersCollection.bulk_write(usersData)
             except BulkWriteError as bwe:
                 print(bwe.details)
@@ -1014,7 +1037,7 @@ class Campaign(commands.Cog):
                 stopEmbed.set_footer(text=f"Placeholder, if this remains remember the wise words DO NOT PANIC and get a towel.")
                 session_msg = await ctx.channel.send(embed=stopEmbed)
                 
-                modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Logs"])
+                modChannel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Mod Campaign Logs"])
                 modEmbed = discord.Embed()
                 modEmbed.description = f"""A campaign session log was just posted for {ctx.channel.mention}.
 
@@ -1033,7 +1056,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 for e in ["🚧", "📝", "✅", "❌"]:
                     await modMessage.add_reaction(e)
                 print('Success')  
-                stopEmbed.set_footer(text=f"Game ID: {session_msg.id}")
+                stopEmbed.set_footer(text=f"Game ID: {session_msg.id}\nLog is being processed. If you have appended a summary to your campaign session log more than 24 hours after the session ended, message a Mod with a link to your campaign session log to get it approved.")
+
                 
                 print('Success')  
                 await session_msg.edit(embed=stopEmbed)
@@ -1103,7 +1127,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         
         #repeat this entire chunk until the stop command is given
         while not timerStopped:
-            print("On Cooldown Before Command:", self.timer.get_command(ctx.invoked_with).is_on_cooldown(ctx))
             try:
                 msg = await self.bot.wait_for('message', timeout=60.0, check=lambda m: (any(x in m.content for x in timerCombined)) and m.channel == channel)
                 #transfer ownership of the timer
@@ -1111,7 +1134,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 # it invokes the stop command with the required information, explanations for the parameters can be found in the documentation
                 # the 'end' alias could be removed for minimal efficiancy increases
                 
-                print(msg.content)
                 if self.startsWithCheck(msg, "stop") or self.startsWithCheck(msg, "end"):
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
@@ -1132,10 +1154,8 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                                 # @player is a protection from people copying the command
                 elif self.startsWithCheck(msg, "add") and '@player' not in msg.content:
-                    print("AAAAAAa")
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
-                        print("BBBBBBBBB")
                         # update the startTimes with the new added player
                         await self.addDuringTimer(ctx, start=startTimes, role=role, msg=msg, dmChar = dmChar, campaignRecords = campaignRecords)
                         # update the msg with the new stamp
@@ -1154,8 +1174,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
             else:
                 pass
-            print("On Cooldown After Command:", self.timer.get_command(ctx.invoked_with).is_on_cooldown(ctx))
-          
+            
     @campaign.command()
     async def log(self, ctx, num : int, *, editString=""):
         # The real Bot
@@ -1167,13 +1186,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         channel = ctx.channel # 728456783466725427 737076677238063125
         
 
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await channel.send('Try this command in a campaign channel! ')
-                return
+
+        if not campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await channel.send('Try this command in a campaign channel! ')
+            return
                 
         try:
             editMessage = await channel.fetch_message(num)
@@ -1190,7 +1207,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
 
         if not ("✅" in sessionLogEmbed.footer.text or "❌" in sessionLogEmbed.footer.text):
             summaryIndex = max(sessionLogEmbed.description.find('\nSummary: '),sessionLogEmbed.description.find('Put your summary here.'))
-            print(summaryIndex)
             sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex] + "\nSummary: " + editString+"\n"
         else:
             sessionLogEmbed.description += "\n" + editString+"\n"
@@ -1198,10 +1214,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             await editMessage.edit(embed=sessionLogEmbed)
         except Exception as e:
             delMessage = await ctx.channel.send(content=f"Your session log caused an error with Discord, most likely from length.")
-        try:
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
-        except Exception as e:
-            delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
+        else:
+            try:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\n```{editString}```\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
+            except Exception as e:
+                delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
         await asyncio.sleep(20) 
         await delMessage.delete()
         await ctx.message.delete() 
@@ -1213,15 +1230,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         if not (ctx.message.channel_mentions == list()):
             channel = ctx.message.channel_mentions[0] 
         
-        
-
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await ctx.channel.send('Channel is not a campaign channel! ')
-                return
+        if not campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await ctx.channel.send('Channel is not a campaign channel! ')
+            return
                 
         try:
             editMessage = await channel.fetch_message(num)
@@ -1241,7 +1253,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             charData = []
 
             for log in sessionLogEmbed.fields:
-                print("   AAAAa   ", log)
                 for i in "\<>@#&!:":
                     log.value = log.value.replace(i, "")
                 
@@ -1260,46 +1271,92 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             if ctx.author.id == int(dmID):
                 await ctx.channel.send("You cannot approve your own log.")
                 return
-            print(charData)
             usersCollection = db.users
             userRecordsList = list(usersCollection.find({"User ID" : {"$in": charData }}))
             campaignCollection = db.campaigns
             # get the record of the campaign for the current channel
             campaignRecord = list(campaignCollection.find({"Channel ID": str(channel.id)}))[0]
-            print(userRecordsList)
             data = []
             for charDict in userRecordsList:
                 if f'{campaignRecord["Name"]} inc' in charDict:
                     charRewards = charDict[f'{campaignRecord["Name"]} inc']
-                    print("SSSSSSSSSSSSSSSSs", charRewards)
                     data.append({'_id': charDict['_id'], "fields": {"$inc": charRewards, "$unset": {f'{campaignRecord["Name"]} inc': 1} }})
 
             playersData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), data))
             
+            desc = sessionLogEmbed.description
+            date_find = re.search("Start\\*\\*: (.*?) ", desc)
 
-            print(playersData)
             try:
                 if len(data) > 0:
                     usersCollection.bulk_write(playersData)
                 campaignCollection.update_one({"_id": campaignRecord["_id"]}, {"$inc" : {"Sessions" : 1}})
                 db.stats.update_one({"Life": 1}, {"$inc" : {"Campaigns" : 1}})
-                desc = sessionLogEmbed.description
-                print(desc)
-                date_find = re.search("Date: (.*?) ", desc)
-                print("DATAEEEEEEEEEEEEEEE",date_find)
                 if date_find:
                     month_year_splits = date_find[1].split("-")
-                    print(f"{month_year_splits[0]}-{month_year_splits[2]}")
                     db.stats.update_one({"Date": f"{month_year_splits[0]}-{month_year_splits[2]}"}, {"$inc" : {"Campaigns" : 1}})
             except Exception as e:
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
             else:
                 print("Success")
-                sessionLogEmbed.set_footer(text=sessionLogEmbed.footer.text + "\n✅ Log approved! The DM has received their Noodles and time and the players have received their time.")
+                sessionLogEmbed.set_footer(text=f"Game ID: {num}\n✅ Log approved! The DM has received their Noodle(s) and time and the players have received their time.")
                 await editMessage.edit(embed=sessionLogEmbed)
                 
                 await ctx.channel.send("The session has been approved.")
+            guild = ctx.guild
+            dmUser = ctx.guild.get_member(int(dmID))
+            if dmUser:
+                
+                dmEntry = usersCollection.find_one({"User ID" : str(dmID)})
+                noodles = dmEntry["Noodles"]
+                noodleString = ""
+                dmRoleNames = [r.name for r in dmUser.roles]
+                # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
+                if noodles >= 210:
+                    if 'Eternal Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Eternal Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
+                        if 'Immortal Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
+                        noodleString += "\n**Eternal Noodle** role received! :tada:"
+                elif noodles >= 150:
+                    if 'Immortal Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Immortal Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 150 sessions. This user has 150+ Noodles.")
+                        if 'Ascended Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'Ascended Noodle'))
+                        noodleString += "\n**Immortal Noodle** role received! :tada:"
+                elif noodles >= 100:
+                    if 'Ascended Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Ascended Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 100 sessions. This user has 100+ Noodles.")
+                        if 'True Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'True Noodle'))
+                        noodleString += "\n**Ascended Noodle** role received! :tada:"
+
+                elif noodles >= 60:
+                    if 'True Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'True Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 60 sessions. This user has 60+ Noodles.")
+                        if 'Elite Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'Elite Noodle'))
+                        noodleString += "\n**True Noodle** role received! :tada:"
+                
+                elif noodles >= 30:
+                    if 'Elite Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Elite Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 30 sessions. This user has 30+ Noodles.")
+                        if 'Good Noodle' in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = 'Good Noodle'))
+                        noodleString += "\n**Elite Noodle** role received! :tada:"
+
+                elif noodles >= 10:
+                    if 'Good Noodle' not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = 'Good Noodle')
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted 10 sessions. This user has 10+ Noodles.")
+                        noodleString += "\n**Good Noodle** role received! :tada:"
+      
         else:
             await ctx.channel.send('Log has already been processed! ')
             
@@ -1312,13 +1369,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             channel = ctx.message.channel_mentions[0] 
         
 
-        if not "campaign" in str(channel.category.name).lower():
-            if str(channel.id) in settingsRecord['Test Channel IDs'] or channel.id in [728456736956088420, 757685149461774477, 757685177907413092]:
-                pass
-            else: 
-                #inform the user of the correct location to use the command and how to use it
-                await ctx.channel.send('Channel is not a campaign channel! ')
-                return
+        if not campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await ctx.channel.send('Channel is not a campaign channel! ')
+            return
                 
         
         try:
@@ -1339,12 +1393,11 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             charData = []
 
             for log in sessionLogEmbed.fields:
-                print("   AAAAa   ", log)
                 for i in "\<>@#&!:":
                     log.value = log.value.replace(i, "")
-                
-                logItems = log.value.split(' | ')
 
+                logItems = log.value.split('\n')
+                
                 if "DM" in log.name:
                     dmID = logItems[0].strip()
                     charData.append(dmID)
@@ -1356,7 +1409,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             if ctx.author.id == int(dmID):
                 await ctx.channel.send("You cannot deny your own log.")
                 return
-            print(charData)
             campaignCollection = db.campaigns
             # get the record of the campaign for the current channel
             campaignRecord = list(campaignCollection.find({"Channel ID": str(channel.id)}))[0]      
@@ -1370,12 +1422,69 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
             else:
                 print("Success")
-                sessionLogEmbed.set_footer(text=sessionLogEmbed.footer.text + "\n❌ Log complete! The DM may still edit the summary log if they wish.")
+                sessionLogEmbed.set_footer(text=f"Game ID: {num}\n❌ Log complete! The DM may still edit the summary log if they wish.")
                 await editMessage.edit(embed=sessionLogEmbed)
                 await ctx.channel.send("The session has been denied.")
         else:
             await ctx.channel.send('Log has already been processed! ')
+
+    async def campaign_check(self, ctx):
+        channel = ctx.channel
+        author = ctx.author
+        if not campaign_channel_check(channel):
+            #inform the user of the correct location to use the command and how to use it
+            await channel.send('Try this command in a campaign channel! ')
+            return False
+        
+        campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
+        if not campaignRecords:
+            return False
+        if str(author.id) != campaignRecords['Campaign Master ID']:
+            await channel.send(f"You are not the campaign owner!")
+            return False
+        return True
+
+    @campaign.command()
+    @commands.has_any_role('Campaign Master')
+    async def pin(self,ctx):
+        
+        if not await self.campaign_check(ctx):
+            return
+        
+        
+        async with ctx.channel.typing():
             
+            await pin_control(self, ctx, "pin")
+            async for message in ctx.channel.history(after=ctx.message): #searches for and deletes any non-default messages in the channel to delete, including the message saying that something was pinned.
+                if message.type != ctx.message.type:
+                    await message.delete()
+
+        
+    @campaign.command()
+    @commands.has_any_role('Campaign Master')
+    async def unpin(self,ctx):
+        
+        if not await self.campaign_check(ctx):
+            return
+        
+        async with ctx.channel.typing():
+            await pin_control(self, ctx, "unpin")
+    
+    @campaign.command()
+    @commands.has_any_role('Campaign Master')
+    async def topic(self, ctx, *, messageTopic = ""): # channelName=""
+        
+        if not await self.campaign_check(ctx):
+            return
+        
+        await ctx.channel.edit(topic=messageTopic)
+        print('Success')
+        await ctx.message.delete()
+
+        resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your campaign! This message will self-destruct in 10 seconds.")
+        await asyncio.sleep(10) 
+        await resultMessage.delete()
+
     
 def setup(bot):
     bot.add_cog(Campaign(bot))
