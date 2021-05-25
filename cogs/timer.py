@@ -931,10 +931,10 @@ class Timer(commands.Cog):
                 for u, v in startcopy.items():
                     if 'Full Rewards' in u:
                         totalDurationTime = (time.time() - float(u.split(':')[1]) + 3600 * 0) // 60 #Set multiplier to wanted hour shift 
-                        if totalDurationTime < 180:
+                        if totalDurationTime < 180: #Allows rewards to be handed out if less than 3 hours, gives specific message mentioning that they will be denied if the game lasts less than 3 hours.
                             if not resume:
-                              await ctx.channel.send(content=f"You cannot award any reward items if the quest is under three hours.") 
-                            return start, dmChar
+                              await ctx.channel.send(content=f"Because this is less than 3 hours into the game, the consumables will be denied if the game ends before 3 hours.")
+                            #return start, dmChar
 
                     for item in v:
                         if dmChar[0] == rewardUser:
@@ -1813,6 +1813,12 @@ Command Checklist
                 await ctx.channel.send(content=f"The session was less than 30 minutes and therefore was not counted.")
                 
                 return
+                
+            #if hoursPlayed < 3: Here's what I got 
+                #self.timer.get_command('prep').reset_cooldown(ctx)
+                #msg = ""
+                #await self.undoConsumables(ctx, msg, startTimes, dmChar)
+                
             # check if the game has rewards
             if role != "":
                 # post a session log entry in the log channel
