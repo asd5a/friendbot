@@ -752,7 +752,7 @@ class Timer(commands.Cog):
     start -> a dictionary of strings and player list pairs, the strings are made out of the kind of reward and the duration and the value is a list of players entries (format can be found as the return value in signup)
     resume -> if this command has been called during the resume phase
     """
-    async def undoConsumables(self, ctx, msg,start, dmChar, resume=False): 
+    async def undoConsumables(self, ctx, start, dmChar, resume=False): 
         if ctx.invoked_with == 'prep' or ctx.invoked_with == "resume":
             channel = ctx.channel
             # search through all entries for the player entry of the player
@@ -1814,10 +1814,8 @@ Command Checklist
                 
                 return
                 
-            #if hoursPlayed < 3: Here's what I got 
-                #self.timer.get_command('prep').reset_cooldown(ctx)
-                #msg = ""
-                #await self.undoConsumables(ctx, msg, startTimes, dmChar)
+            if hoursPlayed < 3: Here's what I got 
+                await self.undoConsumables(ctx, startTimes, dmChar)
                 
             # check if the game has rewards
             if role != "":
@@ -2322,7 +2320,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                     # check if the author of the message has the right permissions for this command
                     if await self.permissionCheck(msg, author):
                         # update the startTimes with the new added player
-                        await self.undoConsumables(ctx, msg, startTimes, dmChar)
+                        await self.undoConsumables(ctx, startTimes, dmChar)
                         # update the msg with the new stamp
                         stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 elif (msg.content.startswith(f'{commandPrefix}timer guild') or msg.content.startswith(f'{commandPrefix}t guild')):
