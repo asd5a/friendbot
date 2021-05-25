@@ -78,12 +78,11 @@ class Timer(commands.Cog):
     async def prep(self, ctx, userList, game):
         #this checks that only the author's response with one of the Tier emojis allows Tier selection
         #the response is limited to only the embed message
-        numberEmojisExtra = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣']
         def startEmbedcheck(r, u):
             sameMessage = False
             if  prepEmbedMsg.id == r.message.id:
                 sameMessage = True
-            return (r.emoji in numberEmojisExtra[:6] or str(r.emoji) == '❌') and u == author and sameMessage
+            return (r.emoji in alphaEmojis[:6] or str(r.emoji) == '❌') and u == author and sameMessage
         #simplifying access to various variables
         channel = ctx.channel
         author = ctx.author
@@ -138,7 +137,13 @@ class Timer(commands.Cog):
             return
 
         # set up the user communication for tier selection, this is done even if norewards is selected
-        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", value=f"{numberEmojisExtra[0]} Tutorial One-shot (Level 1)\n {numberEmojisExtra[1]} Junior Friend (Level 1-4)\n{numberEmojisExtra[2]} Journeyfriend (Level 5-10)\n{numberEmojisExtra[3]} Elite Friend (Level 11-16)\n{numberEmojisExtra[4]} True Friend (Level 17-19)\n{numberEmojisExtra[5]} Ascended Friend (Level 17+)\n", inline=False)
+        prepEmbed.add_field(name=f"React with [A-F] for the tier of your quest: **{game}**.\n", 
+                            value=f"""{alphaEmojis[0]} Tutorial One-shot (Level 1)
+        {alphaEmojis[1]} Junior Friend (Level 1-4)
+        {alphaEmojis[2]} Journeyfriend (Level 5-10)
+        {alphaEmojis[3]} Elite Friend (Level 11-16)
+        {alphaEmojis[4]} True Friend (Level 17-19)
+        {alphaEmojis[5]} Ascended Friend (Level 17+)\n""", inline=False)
         # the discord name is used for listing the owner of the timer
         prepEmbed.set_author(name=userName, icon_url=author.avatar_url)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
@@ -151,7 +156,7 @@ class Timer(commands.Cog):
                 #create the message to begin talking to the user
                 prepEmbedMsg = await channel.send(embed=prepEmbed)
                 # the emojis for the user to react with
-                for num in range(0,6): await prepEmbedMsg.add_reaction(numberEmojisExtra[num])
+                for num in range(0,6): await prepEmbedMsg.add_reaction(alphaEmojis[num])
                 await prepEmbedMsg.add_reaction('❌')
                 # get the user who reacted and what they reacted with, this has already been limited to the proper emoji's and proper user
                 tReaction, tUser = await self.bot.wait_for("reaction_add", check=startEmbedcheck, timeout=60)
@@ -177,7 +182,7 @@ class Timer(commands.Cog):
                     return
                 # otherwise take the role based on which emoji the user reacted with
                 # the array is stored in bfunc and the options are 'New', 'Junior', 'Journey', 'Elite' and 'True' in this order
-                role = roleArray[int(tReaction.emoji[0])]
+                role = roleArray[alphaEmojis.index(tReaction.emoji)]
 
         command_checklist_string = f"""__**Command Checklist**__
 **1. Players and DM sign up:**

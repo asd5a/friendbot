@@ -1395,7 +1395,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             for log in sessionLogEmbed.fields:
                 for i in "\<>@#&!:":
                     log.value = log.value.replace(i, "")
-                
+
                 logItems = log.value.split('\n')
                 
                 if "DM" in log.name:

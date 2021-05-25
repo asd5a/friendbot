@@ -490,6 +490,8 @@ class Character(commands.Cog):
                     error_name = campaignChannels[0].mention
                 if not campaignFind:
                     msg += f":warning: I could not find {error_name} in your records!\n"
+                elif not timeTransfer:
+                    msg += f":warning: I could not find a time amount in your command!\n"
                 else:
                     def convert_to_seconds(s):
                         return int(s[:-1]) * seconds_per_unit[s[-1]]
@@ -498,8 +500,13 @@ class Character(commands.Cog):
                     lowerTimeString = timeTransfer.lower()
                     l = list((re.findall('.*?[hm]', lowerTimeString)))
                     totalTime = 0
-                    for timeItem in l:
-                        totalTime += convert_to_seconds(timeItem)
+                    try:
+                        for timeItem in l:
+                            totalTime += convert_to_seconds(timeItem)
+                    except Exception as e:
+                        msg += f":warning: I could not find a number in your time amount!\n"
+                        totalTime = 0
+                        
                     if userRecords["Campaigns"][campaignKey]["Time"]< 3600*4 or totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
                         msg += f":warning: You do not have enough hours to transfer from {campaignChannels[0].mention}!\n"
                     else:
@@ -1272,7 +1279,6 @@ class Character(commands.Cog):
             for k,v in charDict['Inventory'].items():
                 charDictInvString += f"• {k} x{v}\n"
             charEmbed.add_field(name='Starting Equipment', value=charDictInvString, inline=False)
-            charEmbed.set_footer(text= charEmbed.Empty)
 
 
         def charCreateCheck(r, u):
@@ -3088,7 +3094,8 @@ class Character(commands.Cog):
             for i in range (1,6):
                 if f"T{i} TP" in charDict:
                     tpString += f"• Tier {i} TP: {charDict[f'T{i} TP']} \n" 
-            charEmbed.add_field(name='TP', value=f"Current TP Item: {charDict['Current Item']}\n{tpString}", inline=True)
+            if tpString:
+                charEmbed.add_field(name='TP', value=f"{tpString}", inline=True)
             if 'Guild' in charDict:
                 charEmbed.add_field(name='Guild', value=f"{charDict['Guild']}: Rank {charDict['Guild Rank']}", inline=True)
             charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=False)
@@ -3248,11 +3255,6 @@ class Character(commands.Cog):
                 await ctx.channel.send(content=f'I have updated the image for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
     
     
-        
-     
-    #@commands.cooldown(1, 5, type=commands.BucketType.member)
-    #@is_log_channel()
-    #@commands.command(aliases=['rf'])
     async def reflavorKernel(self,ctx, char, rtype, new_flavor):
              
         if( len(new_flavor) > 20):
@@ -3404,7 +3406,12 @@ class Character(commands.Cog):
             charClass = infoRecords['Class']
             cpSplit= infoRecords['CP']
             charLevel = infoRecords['Level']
-            charStats = {'STR':infoRecords['STR'], 'DEX':infoRecords['DEX'], 'CON':infoRecords['CON'], 'INT':infoRecords['INT'], 'WIS':infoRecords['WIS'], 'CHA':infoRecords['CHA']}
+            charStats = {'STR':infoRecords['STR'], 
+                        'DEX':infoRecords['DEX'], 
+                        'CON':infoRecords['CON'], 
+                        'INT':infoRecords['INT'], 
+                        'WIS':infoRecords['WIS'], 
+                        'CHA':infoRecords['CHA']}
             charHP = infoRecords['HP']
             charFeats = infoRecords['Feats']
             freeSpells = [0] * 9
@@ -3475,7 +3482,7 @@ class Character(commands.Cog):
                         sameMessage = False
                         if levelUpEmbedmsg.id == r.message.id:
                             sameMessage = True
-                        return sameMessage and ((str(r.emoji) == '✅' and chooseClassString != "") or (str(r.emoji) == '🚫') or (str(r.emoji) == '❌')) and u == author
+                        return sameMessage and ((str(r.emoji) == '✅' and multi_error == "") or (str(r.emoji) == '🚫') or (str(r.emoji) == '❌')) and u == author
                 def alphaEmbedCheck(r, u):
                         sameMessage = False
                         if levelUpEmbedmsg.id == r.message.id:
@@ -3533,19 +3540,24 @@ class Character(commands.Cog):
                             chooseClassString += f"{alphaEmojis[alphaIndex]}: {cRecord['Name']}\n"
                             alphaIndex += 1
                             classes.append(cRecord['Name'])
-
-
+                multi_error = ""
                 # New Multiclass
-                if chooseClassString != "":
-                    levelUpEmbed.add_field(name="Would you like to choose a new multiclass?", value='✅: Yes\n\n🚫: No\n\n❌: Cancel')
-                else:
-                    levelUpEmbed.add_field(name="""~~Would you like to choose a new multiclass?~~\nThere are no classes available to multiclass into. Please react with "No" to proceed.""", value='~~✅: Yes~~\n\n🚫: No\n\n❌: Cancel')
+                if baseClass['Name'] in failMulticlassList:
+                    multi_error = f"You cannot multiclass right now because your base class, **{baseClass['Name']}**, requires at least **{baseClass['Multiclass']}**.\nCurrent stats: **STR**: {charStats['STR']} **DEX**: {charStats['DEX']} **CON**: {charStats['CON']} **INT**: {charStats['INT']} **WIS**: {charStats['WIS']} **CHA**: {charStats['CHA']}"
+                elif chooseClassString == "":
+                    multi_error = "There are no classes available to multiclass into. "
+                    
+                if multi_error != ""
+                    levelUpEmbed.add_field(name=f"""~~Would you like to choose a new multiclass?~~{multi_error}\nPlease react with "No" to proceed.""", value='~~✅: Yes~~\n\n🚫: No\n\n❌: Cancel')
 
+                else:
+                    levelUpEmbed.add_field(name="Would you like to choose a new multiclass?", value='✅: Yes\n\n🚫: No\n\n❌: Cancel')
+                
                 if not levelUpEmbedmsg:
                     levelUpEmbedmsg = await channel.send(embed=levelUpEmbed)
                 else:
                     await levelUpEmbedmsg.edit(embed=levelUpEmbed)
-                if chooseClassString != "":
+                if multi_error == ""
                     await levelUpEmbedmsg.add_reaction('✅')
                 await levelUpEmbedmsg.add_reaction('🚫')
                 await levelUpEmbedmsg.add_reaction('❌')
@@ -3565,13 +3577,7 @@ class Character(commands.Cog):
                         return
                     elif tReaction.emoji == '✅':
                         levelUpEmbed.clear_fields()
-                        if baseClass['Name'] in failMulticlassList:
-                            await levelUpEmbedmsg.edit(embed=None, content=f"You cannot multiclass right now because your base class, **{baseClass['Name']}**, requires at least **{baseClass['Multiclass']}**.\nCurrent stats: **STR**: {charStats['STR']} **DEX**: {charStats['DEX']} **CON**: {charStats['CON']} **INT**: {charStats['INT']} **WIS**: {charStats['WIS']} **CHA**: {charStats['CHA']}")
-
-                            await levelUpEmbedmsg.clear_reactions()
-                            self.bot.get_command('levelup').reset_cooldown(ctx)
-                            return
-
+                        
                         levelUpEmbed.add_field(name="Pick a new class that you would like to multiclass into.", value=chooseClassString)
 
                         await levelUpEmbedmsg.edit(embed=levelUpEmbed)
@@ -3939,7 +3945,7 @@ class Character(commands.Cog):
                 sameMessage = False
                 if charEmbedmsg.id == r.message.id:
                     sameMessage = True
-                return sameMessage and ((r.emoji in numberEmojis[:min(len(mList), 9)]) or (str(r.emoji) == '❌')) and u == author
+                return sameMessage and ((r.emoji in alphaEmojis[:min(len(mList), 9)]) or (str(r.emoji) == '❌')) and u == author
 
             mList = []
             mString = ""
@@ -3950,7 +3956,7 @@ class Character(commands.Cog):
                 if m.lower() in k.lower():
                     if k not in [a.split(' [')[0] for a in attuned]:
                         mList.append(k)
-                        mString += f"{numberEmojis[numI]} {k} \n"
+                        mString += f"{alphaEmojis[numI]} {k} \n"
                         numI += 1
                 if numI > 8:
                     break
@@ -3980,7 +3986,7 @@ class Character(commands.Cog):
                         return None,charEmbed, charEmbedmsg
                 charEmbed.clear_fields()
                 await charEmbedmsg.clear_reactions()
-                m = mList[int(tReaction.emoji[0]) - 1]
+                m = mList[alphaEmojis.index(tReaction.emoji)]
 
             elif len(mList) == 1:
                 m = mList[0]
@@ -4072,7 +4078,7 @@ class Character(commands.Cog):
                 sameMessage = False
                 if charEmbedmsg.id == r.message.id:
                     sameMessage = True
-                return sameMessage and ((r.emoji in numberEmojis[:min(len(mList), 9)]) or (str(r.emoji) == '❌')) and u == author
+                return sameMessage and ((r.emoji in alphaEmojis[:min(len(mList), 9)]) or (str(r.emoji) == '❌')) and u == author
 
             mList = []
             mString = ""
@@ -4082,7 +4088,7 @@ class Character(commands.Cog):
             for k in charRecords['Attuned'].split(', '):
                 if m.lower() in k.lower().split(' [')[0]:
                     mList.append(k.lower().split(' [')[0])
-                    mString += f"{numberEmojis[numI]} {k} \n"
+                    mString += f"{alphaEmojis[numI]} {k} \n"
                     numI += 1
                 if numI > 8:
                     break
@@ -4111,7 +4117,7 @@ class Character(commands.Cog):
                         return None,charEmbed, charEmbedmsg
                 charEmbed.clear_fields()
                 await charEmbedmsg.clear_reactions()
-                m = mList[int(tReaction.emoji[0]) - 1]
+                m = mList[alphaEmojis.index(tReaction.emoji)]
 
             elif len(mList) == 1:
                 m = mList[0]
@@ -4158,295 +4164,7 @@ class Character(commands.Cog):
                     await channel.send(f"You successfully unattuned from **{mRecord['Name']}**!")
                     
 
-    @commands.command()
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @stats_special()
-    async def stats(self,ctx, month = None, year = None):                
-        statsCollection = db.stats
-        currentDate = datetime.now().strftime("%b-%y")
-        if not year:
-            year = currentDate.split("-")[1]
-        if month:
-            if month.isnumeric() and int(month)>0 and int(month) < 13:
-                currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
-                
-            else:
-                await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
-                ctx.command.reset_cooldown(ctx)
-                return
-                    
-        statRecords = statsCollection.find_one({"Date": currentDate})
-        statRecordsLife = statsCollection.find_one({"Life": 1})
-        guild=ctx.guild
-        channel = ctx.channel
-
-        statsEmbed = discord.Embed()
-        statsEmbedmsg = None
-        statsEmbed.title = f'Stats' 
-
-        statsTotalString = ""
-        guildsString = ""
-        superTotal = 0
-        avgString = ""
-        statsString = ""
-        charString = ""
-        raceString = ""
-        bgString = ""
-        author = ctx.author
-
-        def statsEmbedCheck(r, u):
-            sameMessage = False
-            if statsEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and ((r.emoji in alphaEmojis[:7]) or (str(r.emoji) == '❌')) and u == author
-        
-        def userCheck(r,u):
-            sameMessage = False
-            if statsEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
-        statsEmbed.description = f"Please choose a category:\n{alphaEmojis[0]}: Monthly Stats\n{alphaEmojis[1]}: Lifetime Main Stats\n{alphaEmojis[2]}: Lifetime Class Stats\n{alphaEmojis[3]}: Lifetime Race Stats\n{alphaEmojis[4]}: Lifetime Background Stats\n{alphaEmojis[5]}: Lifetime Feat Stats\n{alphaEmojis[6]}: Lifetime Magic Items Stats"
-        statsEmbedmsg = await ctx.channel.send(embed=statsEmbed)
-        for num in range(0,7): await statsEmbedmsg.add_reaction(alphaEmojis[num])
-        try:
-            
-            tReaction, tUser = await self.bot.wait_for("reaction_add", check=statsEmbedCheck , timeout=60)
-        except asyncio.TimeoutError:
-            await statsEmbedmsg.delete()
-            await channel.send(f'Stats cancelled. Try again using the same command!')
-            ctx.command.reset_cooldown(ctx)
-            return
-        else:
-            statsEmbed.description = ""
-        
-        contents = []
-        # Lets the user choose a category to view stats
-        if tReaction.emoji == alphaEmojis[0] or tReaction.emoji == alphaEmojis[1]:
-        
-            
-            identity_strings = ["Monthly", "Month"]
-            if tReaction.emoji == alphaEmojis[1]:
-                identity_strings = ["Server", "Server"]
-                statRecords = statRecordsLife
-            if statRecords is None:
-                contents.append(("Monthly Quest Stats", "There have been 0 one-shots played this month. Check back later!", False))
-            else:
-                # Iterate through each DM and track tiers + total
-                if "DM" in statRecords:
-                    
-                    for k,v in statRecords['DM'].items():
-                        dmMember = guild.get_member(int(k))
-                        if dmMember is None:
-                            statsString += f"<@!{k}>" + " - "
-                            # continue
-                        else:
-                            statsString += dmMember.mention + " - "
-                        totalGames = 0
-                        for i in range (0,6):
-                            if f'T{i}' not in v:
-                                statsString += f"T{i}: 0 | "
-                            else:
-                                statsString += f"T{i}: {v[f'T{i}']} | " 
-                                totalGames += v[f'T{i}']
-                       
-                        # Total Number of Games per DM
-                        statsString += f"Total: {totalGames}\n"
-                    
-
-
-              
-                # Total number of Games for the month
-                if "Games" in statRecords:
-                    superTotal += statRecords["Games"]
-
-                gq_sum = 0
-                if "GQ Total" in statRecords:
-                    gq_sum = statRecords["GQ Total"]
-                
-                # Games By Guild
-                if "Guilds" in statRecords:
-                    guildGamesString = ""
-                    guild_data_0s = ["GQ", "GQM", "GQNM", "GQDM", "DM Sparkles", "Player Sparkles", "Joins"]
-                    for gk, gv in statRecords["Guilds"].items():
-                        for data_key in guild_data_0s:
-                            if not data_key in gv:
-                                gv[data_key] = 0
-                        
-                        guildGamesString += f"• {gk}"    
-                        guildGamesString += f": {gv['GQ']}\n"
-                    
-                    contents.append((f"Guilds", guildGamesString, False))
-                    
-                if "Campaigns" in statRecords:
-                    contents.append((f"Campaigns", f"Sessions: {statRecords['Campaigns']}", False))
-                
-                if "Life" in statRecords:
-                    monthStart = datetime.now().replace(day = 14).replace(month = 1).replace(year = 2021)
-                elif month:
-                    
-                    monthStart = datetime.now().replace(year=2000+int(year), month= int(month), day=1) -  timedelta(days=1)
-                else:
-                    monthStart = datetime.now().replace(day = 1)
-                
-                # Stat for average player and average play time
-                if 'Players' in statRecords and 'Playtime' in statRecords:
-                    avgString += f"Average Number of Players per Game: {(int(statRecords['Players']  / superTotal *100) /100.0)}\n" 
-                    avgString += f"Average Game Time: {timeConversion(statRecords['Playtime'] / superTotal)}\n"
-                    avgString += f"Average Games Per Day: {(int(superTotal / (max((datetime.now()-monthStart).days, 1))*100) /100.0)}\n"
-                    
-                    contents.append((f"Averages", avgString, False))
-
-
-                # Number of games by total and by tier
-                statsTotalString += f"Total One-shots for the {identity_strings[1]}: {superTotal}\n" 
-                if superTotal > 0:
-                    statsTotalString += f'Guild Quest % (Out of Total Quests): {round((gq_sum / superTotal)* 100,2) }%\n'                   
-                for i in range (0,6):
-                    if f'T{i}' not in statRecords:
-                        statsTotalString += f"Tier {i} One-shots for the {identity_strings[1]}: 0\n"
-                    else: 
-                        statsTotalString += f"Tier {i} One-shots for the {identity_strings[1]}: {statRecords[f'T{i}']}\n"
-
-
-                if 'Players' in statRecords and 'Playtime' in statRecords:
-                    statsTotalString += f"Total Hours Played: {timeConversion(statRecords['Playtime'])}\n"
-                    statsTotalString += f"Total Number of Players: {statRecords['Players']}\n"
-                if 'Unique Players' in statRecords and 'Playtime' in statRecords:
-                    statsTotalString += f"Number of Unique Players: {len(statRecords['Unique Players'])}\n"
-                
-                contents.insert(0, (f"{identity_strings[0]} Stats", statsTotalString, False))
-                if statsString:
-                    contents.append(("One-shots by DM", statsString, True))
-                await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg)
-                
-          
-        # Below are lifetime stats which consists of character data
-        # Lifetime Class Stats
-        elif tReaction.emoji == alphaEmojis[2]: 
-            
-            charString = ""
-            srClass = collections.OrderedDict(sorted(statRecordsLife['Class'].items()))
-            for k, v in srClass.items():
-                charString += f"**{k}**: {v['Count']}\n"
-                for vk, vv in collections.OrderedDict(sorted(v.items())).items():
-                    if vk != 'Count':
-                        charString += f"• {vk}: {vv}\n"
-                charString += f"━━━━━\n"
-            if not charString:
-                charString = "No stats yet."
-            contents.append(("Character Class Stats (Lifetime)", charString, False))
-            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "━━━━━\n")
-        # Lifetime race stats
-        elif tReaction.emoji == alphaEmojis[3]:
-            raceString = ""
-            srRace = collections.OrderedDict(sorted(statRecordsLife['Race'].items()))
-            for k, v in srRace.items():
-                raceString += f"{k}: {v}\n"
-
-            if not raceString:
-                raceString = "No stats yet."
-            
-            contents.append(("Character Race Stats (Lifetime)", raceString, False))
-            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
-
-        # Lifetime background Stats
-        elif tReaction.emoji == alphaEmojis[4]:
-            bgString = ""
-            srBg = collections.OrderedDict(sorted(statRecordsLife['Background'].items()))
-
-            for k, v in srBg.items():
-                bgString += f"{k}: {v}\n"
-
-            if not bgString:
-                bgString = "No stats yet."
-                
-            contents.append(("Character Background Stats (Lifetime)", bgString, False))
-            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
-        # Lifetime Feats Stats
-        elif tReaction.emoji == alphaEmojis[5]:
-            bgString = ""
-            srBg = collections.OrderedDict(sorted(statRecordsLife['Feats'].items()))
-
-            for k, v in srBg.items():
-                bgString += f"{k}: {v}\n"
-
-            if not bgString:
-                bgString = "No stats yet."
-            contents.append(("Character Feats Stats (Lifetime)", bgString, False))
-            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
-        # Lifetime Magic Items Stats
-        elif tReaction.emoji == alphaEmojis[6]:
-            bgString = ""
-            srBg = collections.OrderedDict(sorted(statRecordsLife['Magic Items'].items()))
-
-            for k, v in srBg.items():
-                bgString += f"{k}: {v}\n"
-            if not bgString:
-                bgString = "No stats yet."
-            contents.append(("Character Magic Item Stats (Lifetime)", bgString, False))
-            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
-        
-        
-        
-    @commands.command()
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @stats_special()
-    async def fanatic(self,ctx, month = None, year = None):                
-        statsCollection = db.stats
-        currentDate = datetime.now().strftime("%b-%y")
-        if not year:
-            year = currentDate.split("-")[1]
-        if month:
-            if month.isnumeric() and int(month)>0 and int(month) < 13:
-                currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
-                
-            else:
-                await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
-                ctx.command.reset_cooldown(ctx)
-                return
-        statRecords = statsCollection.find_one({"Date": currentDate})
-        guild=ctx.guild
-        channel = ctx.channel
-
-        statsEmbed = discord.Embed()
-        statsEmbedmsg = None
-        statsEmbed.title = f'Fanatic Competition' 
-
-        friendString = ""
-        guildString = ""
-        author = ctx.author
-
-        
-        if statRecords is None or "DM" not in statRecords:
-            statsEmbed.add_field(name="Fanatic Stats", value="There have been 0 valid one-shots played this month. Check back later!", inline=False)
-        else:
-            friend_list = []
-            guild_list = []
-            
-            dm_dictionary = statRecords['DM']
-            # Iterate through each DM and track tiers + total
-            for k,v in dm_dictionary.items():
-                dmMember = guild.get_member(int(k))
-                if dmMember is None:
-                    continue
-                if "Friend" in v:
-                    friend_list.append({"Member": dmMember, "Count": v["Friend"]})
-                if "Guild Fanatic" in v:
-                    guild_list.append({"Member": dmMember, "Count": v["Guild Fanatic"]})
-            friend_list.sort(key = lambda x: -x["Count"])
-            
-            guild_list.sort(key = lambda x: -x["Count"])
-            
-            for f in friend_list:
-                friendString += f"{f['Member'].mention}: {f['Count']} Points\n"
-            for g in guild_list:
-                guildString += f"{g['Member'].mention}: {g['Count']} Points\n"
-            if friendString:
-                statsEmbed.add_field(name=f"Friend Fanatic", value=friendString, inline=True) 
-            if guildString: 
-                statsEmbed.add_field(name=f"Guild Fanatic", value=guildString, inline=True)  
-                
-        await ctx.channel.send(embed=statsEmbed)
+    
 
     async def calcHP (self, ctx, classes, charDict, lvl):
         # classes = sorted(classes, key = lambda i: i['Hit Die Max'],reverse=True) 
@@ -4516,7 +4234,7 @@ class Character(commands.Cog):
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
                 sameMessage = True
-            return sameMessage and ((r.emoji in numberEmojis[:len(statSplit)]) or (str(r.emoji) == '❌')) and u == author
+            return sameMessage and ((r.emoji in alphaEmojis[:len(statSplit)]) or (str(r.emoji) == '❌')) and u == author
 
         if rRecord:
             statsBonus = rRecord['Modifiers'].replace(" ", "").split(',')
@@ -4528,14 +4246,14 @@ class Character(commands.Cog):
                     statSplit = s[:len(s)-2].replace(" ", "").split('/')
                     statSplitString = ""
                     for num in range(len(statSplit)):
-                        statSplitString += f'{numberEmojis[num]}: {statSplit[num]}\n'
+                        statSplitString += f'{alphaEmojis[num]}: {statSplit[num]}\n'
                     try:
-                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose between {s}. React [1-{len(statSplit)}] below with the stat(s) you would like to choose.", value=statSplitString, inline=False)
+                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose between {s}. React [A-{alphaEmojis[len(statSplit)]}] below with the stat(s) you would like to choose.", value=statSplitString, inline=False)
                         if charEmbedmsg:
                             await charEmbedmsg.edit(embed=charEmbed)
                         else: 
                             charEmbedmsg = await channel.send(embed=charEmbed)
-                        for num in range(0,len(statSplit)): await charEmbedmsg.add_reaction(numberEmojis[num])
+                        for num in range(0,len(statSplit)): await charEmbedmsg.add_reaction(alphaEmojis[num])
                         await charEmbedmsg.add_reaction('❌')
                         tReaction, tUser = await self.bot.wait_for("reaction_add", check=slashCharEmbedcheck, timeout=60)
                     except asyncio.TimeoutError:
@@ -4550,7 +4268,7 @@ class Character(commands.Cog):
                             self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                             return None, None
                     await charEmbedmsg.clear_reactions()
-                    s = statSplit[int(tReaction.emoji[0]) - 1] + s[-2:]
+                    s = statSplit[alphaEmojis.index(tReaction.emoji)] + s[-2:]
 
                 if 'STR' in s:
                     statsArray[0] += int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
@@ -4574,7 +4292,7 @@ class Character(commands.Cog):
                 elif 'AOU' in s or 'ANY' in s:
                     try:
                         anyList = dict()
-                        anyCheck = [int(charL) for charL in s if charL.isnumeric()][0] #int(s[len(s)-1])
+                        anyCheck = [int(charL) for charL in s if charL.isnumeric()][0]
                         anyAmount = int(s[len(s)-1])
                         anyList = {charEmbedmsg.id:set()}
                         uniqueStatStr = ""
@@ -4584,15 +4302,15 @@ class Character(commands.Cog):
                             uniqueArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
 
                         for u in range(0,len(uniqueArray)):
-                            uniqueStatStr += f'{numberEmojis[u]}: {uniqueArray[u]}\n'
-                            uniqueReacts.append(numberEmojis[u])
+                            uniqueStatStr += f'{alphaEmojis[u]}: {uniqueArray[u]}\n'
+                            uniqueReacts.append(alphaEmojis[u])
 
                         charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose {anyCheck} extra stats to increase by {anyAmount}. React below with the stat(s) you would like to choose.", value=uniqueStatStr, inline=False)
                         if charEmbedmsg:
                             await charEmbedmsg.edit(embed=charEmbed)
                         else: 
                             charEmbedmsg = await channel.send(embed=charEmbed)
-                        for num in range(0,len(uniqueArray)): await charEmbedmsg.add_reaction(numberEmojis[num])
+                        for num in range(0,len(uniqueArray)): await charEmbedmsg.add_reaction(alphaEmojis[num])
                         await charEmbedmsg.add_reaction('❌')
                         tReaction, tUser = await self.bot.wait_for("reaction_add", check=anyCharEmbedcheck, timeout=60)
                         
@@ -4614,11 +4332,11 @@ class Character(commands.Cog):
                     await charEmbedmsg.clear_reactions()
                     if 'AOU' in s:
                         for s in anyList[charEmbedmsg.id]:
-                            statsArray[allStatsArray.index(uniqueArray.pop(int(s[0]) - 1))] += anyAmount
+                            statsArray[allStatsArray.index(uniqueArray.pop(alphaEmojis.index(tReaction.emoji)))] += anyAmount
                     else:
 
                         for s in anyList[charEmbedmsg.id]:
-                            statsArray[(int(s[0]) - 1)] += anyAmount
+                            statsArray[(alphaEmojis.index(tReaction.emoji))] += anyAmount
             return statsArray, charEmbedmsg
 
     async def chooseSubclass(self, ctx, subclassesList, charClass, charEmbed, charEmbedmsg):
@@ -4671,17 +4389,11 @@ class Character(commands.Cog):
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
                 sameMessage = True
-            return sameMessage and ((r.emoji in numberEmojis[:2]) or (str(r.emoji) == '❌')) and u == author
+            return sameMessage and ((r.emoji in alphaEmojis[:2]) or (str(r.emoji) == '❌')) and u == author
         
         def asiCharEmbedCheck(r, u):
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and ((r.emoji in alphaEmojis[:asiIndex]) or (str(r.emoji) == '❌')) and u == author
-
-        def asiCharEmbedCheck2(r, u):
-            sameMessage = False
-            if charEmbedmsg2.id == r.message.id:
                 sameMessage = True
             return sameMessage and ((r.emoji in alphaEmojis[:asiIndex]) or (str(r.emoji) == '❌')) and u == author
 
@@ -4699,12 +4411,12 @@ class Character(commands.Cog):
             charEmbed.clear_fields()
             if f != 'Extra Feat':
                 try:
-                    charEmbed.add_field(name=f"Your level allows you to pick an Ability Score Improvement or a feat. Please react with 1 or 2 for your level {f} ASI/feat.", value=f"{numberEmojis[0]}: Ability Score Improvement\n{numberEmojis[1]}: Feat\n", inline=False)
+                    charEmbed.add_field(name=f"Your level allows you to pick an Ability Score Improvement or a feat. Please react with 1 or 2 for your level {f} ASI/feat.", value=f"{alphaEmojis[0]}: Ability Score Improvement\n{alphaEmojis[1]}: Feat\n", inline=False)
                     if charEmbedmsg:
                         await charEmbedmsg.edit(embed=charEmbed)
                     else: 
                         charEmbedmsg = await channel.send(embed=charEmbed)
-                    for num in range(0,2): await charEmbedmsg.add_reaction(numberEmojis[num])
+                    for num in range(0,2): await charEmbedmsg.add_reaction(alphaEmojis[num])
                     await charEmbedmsg.add_reaction('❌')
                     charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
 
@@ -4721,89 +4433,55 @@ class Character(commands.Cog):
                         self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                         return None, None, None
 
-                choice = int(tReaction.emoji[0])
+                choice = alphaEmojis.index(tReaction.emoji)
                 await charEmbedmsg.clear_reactions()
 
             else:
-                choice = 2
+                choice = 1
+            if choice == 0:
+                charEmbed.clear_fields() 
+                for num in range(0,2):
+                    try:   
+                        statsString = ""
+                        asiString = ""
+                        asiList = []
+                        asiIndex = 0
+                        for n in range(0,6):
+                            if (int(charStats[statNames[n]]) + 1 <= charStats['Max Stats'][statNames[n]]):
+                                statsString += f"{statNames[n]}: **{charStats[statNames[n]]}** "
+                                asiString += f"{alphaEmojis[asiIndex]}: {statNames[n]}\n"
+                                asiList.append(statNames[n])
+                                asiIndex += 1
+                            else:
+                                statsString += f"{statNames[n]}: **{charStats[statNames[n]]}** (MAX) "
 
-            if choice == 1:
-                try:
-                    charEmbed.clear_fields()    
-                    statsString = ""
-                    asiString = ""
-                    asiList = []
-                    asiIndex = 0
-                    for n in range(0,6):
-                        if (int(charStats[statNames[n]]) + 1 <= charStats['Max Stats'][statNames[n]]):
-                            statsString += f"{statNames[n]}: **{charStats[statNames[n]]}** "
-                            asiString += f"{alphaEmojis[asiIndex]}: {statNames[n]}\n"
-                            asiList.append(statNames[n])
-                            asiIndex += 1
-                        else:
-                            statsString += f"{statNames[n]}: **{charStats[statNames[n]]}** (MAX) "
-
-                    charEmbed.add_field(name=f"{statsString}\nReact to choose your first stat for your ASI:", value=asiString, inline=False)
-                    await charEmbedmsg.edit(embed=charEmbed)
-                    await charEmbedmsg.add_reaction('❌')
-                    tReaction, tUser = await self.bot.wait_for("reaction_add", check=asiCharEmbedCheck, timeout=60)
-                except asyncio.TimeoutError:
-                    await charEmbedmsg.delete()
-                    await channel.send(f'Character creation timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
-                    self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                    return None, None, None
-                else:
-                    if tReaction.emoji == '❌':
-                        await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
-                        await charEmbedmsg.clear_reactions()
+                        charEmbed.add_field(name=f"{statsString}\nReact to choose a stat for your ASI:", value=asiString, inline=False)
+                        await charEmbedmsg.edit(embed=charEmbed)
+                        for num in range(0,len(asiList)): 
+                            await charEmbedmsg.add_reaction(alphaEmojis[num])
+                        await charEmbedmsg.add_reaction('❌')
+                        tReaction, tUser = await self.bot.wait_for("reaction_add", check=asiCharEmbedCheck, timeout=60)
+                    except asyncio.TimeoutError:
+                        await charEmbedmsg.delete()
+                        await channel.send(f'Character creation timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
                         self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                         return None, None, None
-                asi = alphaEmojis.index(tReaction.emoji)
+                    else:
+                        if tReaction.emoji == '❌':
+                            await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
+                            await charEmbedmsg.clear_reactions()
+                            self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+                            return None, None, None
+                    asi = alphaEmojis.index(tReaction.emoji)
 
-                charStats[asiList[asi]] = int(charStats[asiList[asi]]) + 1
-                charEmbed.set_field_at(0,name=f"ASI First Stat", value=f"{alphaEmojis[asi]}: {asiList[asi]}", inline=False)
-                if ctx.invoked_with == "levelup":
-                     charEmbed.description = f"{race}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
-
-                try:
-                    statsString = ""
-                    asiString = ""
-                    asiIndex = 0
-                    asiList = []
-                    for n in range(0,6):
-                        if (int(charStats[statNames[n]]) + 1 <= charStats['Max Stats'][statNames[n]]):
-                            statsString += f"{statNames[n]}: **{charStats[statNames[n]]}** "
-                            asiString += f"{alphaEmojis[asiIndex]}: {statNames[n]}\n"
-                            asiList.append(statNames[n])
-                            asiIndex += 1
-                        else:
-                            statsString += f"{statNames[n]}: **{charStats[statNames[n]]}** (MAX) "
-                        
-                    charEmbed.add_field(name=f"{statsString}\nReact to choose your second stat for your ASI:", value=asiString, inline=False)
-                    charEmbedmsg2 = await channel.send(embed=charEmbed)
-                    await charEmbedmsg2.add_reaction('❌')
-                    tReaction, tUser = await self.bot.wait_for("reaction_add", check=asiCharEmbedCheck2, timeout=60)
-                except asyncio.TimeoutError:
-                    await charEmbedmsg2.delete()
-                    await channel.send(f'Character creation timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
-                    self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                    return None, None, None
-                else:
-                    if tReaction.emoji == '❌':
-                        await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
-                        await charEmbedmsg.clear_reactions()
-                        await charEmbedmsg2.delete()
-                        self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                        return None, None, None
-                asi = alphaEmojis.index(tReaction.emoji)
-
-                charStats[asiList[asi]] = int(charStats[asiList[asi]]) + 1
-                if ctx.invoked_with == "levelup":
-                     charEmbed.description = f"{race}: {charClass}\n**STR**: {charStats['STR']} **DEX**: {charStats['DEX']} **CON**: {charStats['CON']} **INT**: {charStats['INT']} **WIS**: {charStats['WIS']} **CHA**: {charStats['CHA']}"
-                await charEmbedmsg2.delete()
-                await charEmbedmsg.clear_reactions()
-
-            elif choice == 2:
+                    charStats[asiList[asi]] = int(charStats[asiList[asi]]) + 1
+                    if ctx.invoked_with == "levelup":
+                         charEmbed.description = f"{race}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
+                    charEmbed.clear_fields()
+                    charEmbed.add_field(name=f"ASI First Stat", value=f"{alphaEmojis[asi]}: {asiList[asi]}", inline=False)
+                    
+                    await charEmbedmsg.clear_reactions()
+            elif choice == 1:
                 if featChoices == list():
                     fRecords, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg,'feats')
                     for feat in fRecords:
@@ -4834,7 +4512,6 @@ class Character(commands.Cog):
                             if 'Class Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Class Restriction'].split(', ')]
                                 for c in cRecord:
-                                    print(c)
                                     if ctx.invoked_with.lower() == "create" or ctx.invoked_with.lower() == "respec":
                                         if c['Class']['Name'] in featsList or c['Subclass'] in featsList:
                                             meetsRestriction = True
@@ -5044,7 +4721,7 @@ class Character(commands.Cog):
                     sameMessage = False
                     if charEmbedmsg.id == r.message.id:
                         sameMessage = True
-                    return sameMessage and ((r.emoji in numberEmojis[:len(featBonusList)]) or (str(r.emoji) == '❌')) and u == author
+                    return sameMessage and ((r.emoji in alphaEmojis[:len(featBonusList)]) or (str(r.emoji) == '❌')) and u == author
 
                 if 'Stat Bonuses' in featPicked:
                     featBonus = featPicked['Stat Bonuses']
@@ -5055,14 +4732,14 @@ class Character(commands.Cog):
                             featBonusList = statNames
                         featBonusString = ""
                         for num in range(len(featBonusList)):
-                            featBonusString += f'{numberEmojis[num]}: {featBonusList[num]}\n'
+                            featBonusString += f'{alphaEmojis[num]}: {featBonusList[num]}\n'
 
                         try:
                             charEmbed.clear_fields()    
                             charEmbed.set_footer(text= charEmbed.Empty)
                             charEmbed.add_field(name=f"The {featPicked['Name']} feat lets you choose between {featBonus}. React with [1-{len(featBonusList)}] below with the stat(s) you would like to choose.", value=featBonusString, inline=False)
                             await charEmbedmsg.edit(embed=charEmbed)
-                            for num in range(0,len(featBonusList)): await charEmbedmsg.add_reaction(numberEmojis[num])
+                            for num in range(0,len(featBonusList)): await charEmbedmsg.add_reaction(alphaEmojis[num])
                             await charEmbedmsg.add_reaction('❌')
                             tReaction, tUser = await self.bot.wait_for("reaction_add", check=slashFeatEmbedcheck, timeout=60)
                         except asyncio.TimeoutError:
@@ -5077,7 +4754,7 @@ class Character(commands.Cog):
                                 self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                                 return None, None, None
                         await charEmbedmsg.clear_reactions()
-                        charStats[featBonusList[int(tReaction.emoji[0]) - 1]] = int(charStats[featBonusList[int(tReaction.emoji[0]) - 1]]) + int(featBonus[-1:])
+                        charStats[featBonusList[alphaEmojis.index(tReaction.emoji)]] = int(charStats[featBonusList[alphaEmojis.index(tReaction.emoji)]]) + int(featBonus[-1:])
                             
                     else:
                         featBonusList = featBonus.split(', ')
