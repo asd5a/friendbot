@@ -1819,8 +1819,8 @@ Command Checklist
                 
                 return
                 
-            if hoursPlayed < 3: Here's what I got 
-                await self.undoConsumables(ctx, startTimes, dmChar)
+            if hoursPlayed < 3: 
+                await self.undoConsumables(ctx, start, dmChar)
                 
             # check if the game has rewards
             if role != "":
