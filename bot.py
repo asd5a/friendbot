@@ -87,7 +87,7 @@ async def help(ctx, *, pageString=''):
         sameMessage = False
         if helpMsg.id == r.message.id:
             sameMessage = True
-        return (r.emoji in numberEmojis[:numPages]) and u == ctx.author and sameMessage
+        return (r.emoji in alphaEmojis[:numPages]) and u == ctx.author and sameMessage
 
     helpEmbedMenu = discord.Embed()
     helpEmbedGen = discord.Embed()
@@ -129,15 +129,15 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedMenu.title = 'Bot Friend Commands - Table of Contents'
     helpEmbedMenu.description = 'Please react to the group of commands you would like to see and gain more knowledge about.'
-    helpEmbedMenu.add_field(name=f"1️⃣ General Commands\n{commandPrefix}help gen", value="Various commands which don't fit into any other section.", inline=False)
-    helpEmbedMenu.add_field(name=f"2️⃣ Character Commands\n{commandPrefix}help char", value="How to manage your character(s).", inline=False)
-    helpEmbedMenu.add_field(name=f"3️⃣ TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
-    helpEmbedMenu.add_field(name=f"4️⃣ Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
-    helpEmbedMenu.add_field(name=f"5️⃣ Guild Commands\n{commandPrefix}help guild", value="How to be a member of a guild or manage one.", inline=False)
-    helpEmbedMenu.add_field(name=f"6️⃣ Pre-Quest Timer Commands\n{commandPrefix}help timer1", value="How to prepare and sign up to a timer for a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"7️⃣ Running Timer Commands\n{commandPrefix}help timer2", value="How to do various things while hosting or participating in a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"8️⃣ Post-Quest Timer Commands\n{commandPrefix}help timer3", value="How to do various things after the completion of a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"9️⃣ Campaign Commands\n{commandPrefix}help campaign", value="How to create, host, and participate in a campaign.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[0]}General Commands\n{commandPrefix}help gen", value="Various commands which don't fit into any other section.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[1]}Character Commands\n{commandPrefix}help char", value="How to manage your character(s).", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[2]}TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[3]}Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[4]}Guild Commands\n{commandPrefix}help guild", value="How to be a member of a guild or manage one.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[5]}Pre-Quest Timer Commands\n{commandPrefix}help timer1", value="How to prepare and sign up to a timer for a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[6]}Running Timer Commands\n{commandPrefix}help timer2", value="How to do various things while hosting or participating in a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[7]}Post-Quest Timer Commands\n{commandPrefix}help timer3", value="How to do various things after the completion of a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[8]}Campaign Commands\n{commandPrefix}help campaign", value="How to create, host, and participate in a campaign.", inline=False)
 
 
 
@@ -428,7 +428,7 @@ async def help(ctx, *, pageString=''):
 
     helpMsg = await ctx.channel.send(embed=helpList[page])
     if page == 0:
-        for num in range(0,numPages-1): await helpMsg.add_reaction(numberEmojis[num])
+        for num in range(0,numPages-1): await helpMsg.add_reaction(alphaEmojis[num])
 
 # THIS ERROR MESSAGE WILL NEED TO BE CHANGED TO ACCOMMODATE THE NEW COMMANDS.
     try:
@@ -439,7 +439,7 @@ async def help(ctx, *, pageString=''):
         await helpMsg.add_reaction('💤')
         return
     else:
-        await helpMsg.edit(embed=helpList[int(hReact.emoji[0])])
+        await helpMsg.edit(embed=helpList[alphaEmojis.index(hReact.emoji)+1])
         await helpMsg.clear_reactions()
 
 
