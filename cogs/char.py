@@ -1355,7 +1355,6 @@ class Character(commands.Cog):
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
         else:
-            print('Success')
             if charEmbedmsg:
                 await charEmbedmsg.clear_reactions()
                 await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! :tada: You have created ***{charDict['Name']}***!")
@@ -2208,7 +2207,6 @@ class Character(commands.Cog):
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
         else:
-            print('Success')
             if charEmbedmsg:
                 await charEmbedmsg.clear_reactions()
                 await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! You have respecced your character!")
@@ -2365,7 +2363,6 @@ class Character(commands.Cog):
                         print ('MONGO ERROR: ' + str(e))
                         charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try retiring your character again.")
                     else:
-                        print('Success')
                         if charEmbedmsg:
                             await charEmbedmsg.clear_reactions()
                             await charEmbedmsg.edit(embed=None, content =f"Congratulations! You have retired ***{charDict['Name']}***. ")
@@ -2493,7 +2490,6 @@ class Character(commands.Cog):
                                 print ('MONGO ERROR: ' + str(e))
                                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try retiring your character again.")
                             else:
-                                print('Success')
                                 if charEmbedmsg:
                                     await charEmbedmsg.clear_reactions()
                                     await charEmbedmsg.edit(embed=None, content ="Congratulations! You have retired your character.")
@@ -2520,7 +2516,6 @@ class Character(commands.Cog):
                         print ('MONGO ERROR: ' + str(e))
                         charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
                     else:
-                        print("Success")
                         if charEmbedmsg:
                             await charEmbedmsg.clear_reactions()
                             await charEmbedmsg.edit(embed=None, content= surviveString)
@@ -3251,7 +3246,6 @@ class Character(commands.Cog):
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
             else:
-                print('Success')
                 await ctx.channel.send(content=f'I have updated the image for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
     
     
@@ -3275,7 +3269,6 @@ class Character(commands.Cog):
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try reflavoring your character again.")
             else:
-                print('Success')
                 await ctx.channel.send(content=f'I have updated the {rtype} for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
@@ -3331,7 +3324,6 @@ class Character(commands.Cog):
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
             else:
-                print('Success')
                 await ctx.channel.send(content=f'I have updated the alignment for ***{infoRecords["Name"]}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
     
     
@@ -3364,7 +3356,6 @@ class Character(commands.Cog):
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
             else:
-                print('Success')
                 await ctx.channel.send(content=f'I have updated the name for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
             
     def name_check(self, name, author):
@@ -3669,7 +3660,6 @@ class Character(commands.Cog):
 
                             charClass = charClass.replace(f"{lvlClass} {subclasses[alphaEmojis.index(tReaction.emoji)]['Level'] - 1}", f"{lvlClass} {subclasses[alphaEmojis.index(tReaction.emoji)]['Level']}")
                             levelUpEmbed.description = f"{infoRecords['Race']}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
-                print(subclasses, lvlClass)
                 # Choosing a subclass
                 subclassCheckClass = subclasses[[s['Name'] for s in subclasses].index(lvlClass)]
 
@@ -3840,8 +3830,7 @@ class Character(commands.Cog):
                 except Exception as e:
                     print ('MONGO ERROR: ' + str(e))
                     charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
-                else:
-                    print("Success")
+
 
                 roleName = await self.levelCheck(ctx, newCharLevel, charName)
                 levelUpEmbed.clear_fields()
