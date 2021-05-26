@@ -482,7 +482,7 @@ class Character(commands.Cog):
                     error_name = campaignName
                 else:
                     for key in userRecords["Campaigns"].keys():
-                        if key.lower() == (campaignChannels[0].name.replace('-', ' ')):
+                        if key.lower().replace(",", "") == (campaignChannels[0].name.replace('-', ' ')):
                             campaignFind = True
                             campaignKey = key
                             break
