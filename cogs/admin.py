@@ -725,7 +725,7 @@ class Admin(commands.Cog, name="Admin"):
     @commands.command()
     @admin_or_owner()
     async def rebuild(self, ctx):
-        characters = list( db.players.find({}))
+        characters = list( db.players.find({"Item Spend" : {"$exists" : false}}))
         mass_updates = []
         count = 0
         refunded = 0
