@@ -360,7 +360,6 @@ class Character(commands.Cog):
           'CHA': int(sCha),
           'Alignment': 'Unknown',
           'CP' : 0,
-          'Current Item': 'None',
           'GP': 0,
           'Magic Items': 'None',
           'Consumables': 'None',
@@ -1247,7 +1246,6 @@ class Character(commands.Cog):
         charEmbed.title = f"{charDict['Name']} (Lv {charDict['Level']}): {charDict['CP']}/{cp_bound_array[tierNum-1][1]} CP"
         charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} " + (campaignTransferSuccess * ("\n**Transfered from:** " + campaignKey))
 
-        charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
         
         for x in range(1,6):
             if tpBank[x-1]>0:
@@ -2086,7 +2084,6 @@ class Character(commands.Cog):
         charEmbed.title = f"{charDict['Name']} (Lv {charDict['Level']}): {charDict['CP']}/{cp_bound_array[tierNum-1][1]} CP"
         charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} "
 
-        charEmbed.add_field(name='Current TP Item', value=charDict['Current Item'], inline=True)
         
         for key, amount in bankTP.items():
             if  amount > 0:

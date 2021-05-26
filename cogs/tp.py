@@ -449,7 +449,6 @@ class Tp(commands.Cog):
                 # get the gold cost of the item
                 gpNeeded = mRecord['GP']
                 #get the list of all items currently being worked towards
-                currentMagicItems = charRecords['Current Item'].split(', ')
 
                 tpBank = [0,0,0,0,0]
                 tpBankString = ""
