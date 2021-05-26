@@ -3543,12 +3543,12 @@ class Character(commands.Cog):
                 multi_error = ""
                 # New Multiclass
                 if baseClass['Name'] in failMulticlassList:
-                    multi_error = f"You cannot multiclass right now because your base class, **{baseClass['Name']}**, requires at least **{baseClass['Multiclass']}**.\nCurrent stats: **STR**: {charStats['STR']} **DEX**: {charStats['DEX']} **CON**: {charStats['CON']} **INT**: {charStats['INT']} **WIS**: {charStats['WIS']} **CHA**: {charStats['CHA']}"
+                    multi_error = f"You cannot multiclass right now because your base class, **{baseClass['Name']}**, requires at least **{baseClass['Multiclass']}**.\nCurrent stats: **STR**: {charStats['STR']} **DEX**: {charStats['DEX']} **CON**: {charStats['CON']} **INT**: {charStats['INT']} **WIS**: {charStats['WIS']} **CHA**: {charStats['CHA']}\n"
                 elif chooseClassString == "":
-                    multi_error = "There are no classes available to multiclass into. "
+                    multi_error = "There are no classes available to multiclass into. \n"
                     
-                if multi_error != ""
-                    levelUpEmbed.add_field(name=f"""~~Would you like to choose a new multiclass?~~{multi_error}\nPlease react with "No" to proceed.""", value='~~✅: Yes~~\n\n🚫: No\n\n❌: Cancel')
+                if multi_error != "":
+                    levelUpEmbed.add_field(name=f"""~~Would you like to choose a new multiclass?~~\nPlease react with "No" to proceed.""", value=f'{multi_error}✅: ~~Yes~~\n\n🚫: No\n\n❌: Cancel')
 
                 else:
                     levelUpEmbed.add_field(name="Would you like to choose a new multiclass?", value='✅: Yes\n\n🚫: No\n\n❌: Cancel')
@@ -3557,7 +3557,7 @@ class Character(commands.Cog):
                     levelUpEmbedmsg = await channel.send(embed=levelUpEmbed)
                 else:
                     await levelUpEmbedmsg.edit(embed=levelUpEmbed)
-                if multi_error == ""
+                if multi_error == "":
                     await levelUpEmbedmsg.add_reaction('✅')
                 await levelUpEmbedmsg.add_reaction('🚫')
                 await levelUpEmbedmsg.add_reaction('❌')
