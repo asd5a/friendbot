@@ -132,9 +132,6 @@ class Guild(commands.Cog):
         guildNameStr = (guildName.lower().replace(',', '').replace('.', '').replace(' ', '').replace('-', ''))
         
         guildChannelStr = (guildChannel[0].name.replace('-', ''))
-        print(roleStr)
-        print(guildNameStr)
-        print(guildChannelStr)
         if guildChannelStr != guildNameStr:
             await channel.send(f"The guild: ***{guildName}*** does not match the guild channel ***{guildChannel[0].name}***. Please try the command again with the correct channel.")
             return 
@@ -312,7 +309,6 @@ class Guild(commands.Cog):
             currentDate = datetime.now().strftime("%b-%y")
             guild_stats = db.stats.find_one({"Date": currentDate, "Guilds."+guildRecords['Name'] : {"$exists" : True}})
             guild_life_stats = db.stats.find_one({"Life": 1})
-            print("S", guild_stats)
             guild_stats_string = ""
             gv = {}
             if not guild_stats:
@@ -347,7 +343,6 @@ class Guild(commands.Cog):
                 pass
             else:
                 gv = guild_life_stats["Guilds"][guildRecords['Name']]
-            print(gv)
             guild_data_0s = ["GQ", "GQM", "GQNM", "GQDM", "DM Sparkles", "Player Sparkles", "Joins"]
             for data_key in guild_data_0s:
                 if not data_key in gv:
@@ -799,9 +794,6 @@ class Guild(commands.Cog):
 
             playersCollection = db.players
             guildAmount = list(playersCollection.find({"User ID": str(author.id), "Guild": {"$regex": charRecords['Guild'], '$options': 'i' }}))
-            print(guildAmount)
-            print(len(guildAmount))
-            print(charRecords["Guild"])
             # If there is only one of user's character in the guild remove the role.
             if (len(guildAmount) <= 1):
                 await author.remove_roles(get(guild.roles, name = charRecords['Guild']), reason=f"Left guild {charRecords['Guild']}")

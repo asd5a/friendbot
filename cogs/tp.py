@@ -321,7 +321,6 @@ class Tp(commands.Cog):
                                 oldStatBonus = int(mRecord["Predecessor"]['Stat Bonuses'][upgrade_stage].split(' +')[1])
                                 maxSplit = statSplit[0].split(' ')
                                 oldStat = charRecords[maxSplit[1]]
-                                print(charRecords[maxSplit[1]], oldStatBonus, oldStat)
                                 #Increase stats from Manual/Tome and add to max stats. 
                                 if "MAX" in statSplit[0]:
                                     charRecords[maxSplit[1]] += int(statSplit[1]) -  oldStatBonus

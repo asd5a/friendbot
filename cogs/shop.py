@@ -285,7 +285,6 @@ class Shop(commands.Cog):
         # Iterate through character's inventory to see which items would match the query
         else:
             for k in charRecords['Inventory'].keys():
-                print(k)
                 if buyItem.lower() in k.lower():
                     # update the disambiguation trackers
                     buyList.append(k)
