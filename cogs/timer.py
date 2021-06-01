@@ -1043,11 +1043,11 @@ class Timer(commands.Cog):
                             tierNum -= 1
 
                     
-                    dmMajorLimit += floor((totalDurationTimeMultiplier -1) / 2)
-                    dmMinorLimit += (totalDurationTimeMultiplier -1)
+                    dmMajorLimit += max(floor((totalDurationTimeMultiplier -1) / 2), 0)
+                    dmMinorLimit += max((totalDurationTimeMultiplier -1), 0)
                     
-                    rewardMajorLimit += floor((totalDurationTimeMultiplier -1) / 2)
-                    rewardMinorLimit += (totalDurationTimeMultiplier -1)
+                    rewardMajorLimit += max(floor((totalDurationTimeMultiplier -1) / 2), 0)
+                    rewardMinorLimit += max((totalDurationTimeMultiplier -1), 0)
                     if dmMnc:
                         dmMinorLimit += dmMajorLimit
                         dmMajorLimit = 0
@@ -1146,8 +1146,8 @@ class Timer(commands.Cog):
                                     major += 1
                             
                             # set up error messages based on the allowed item counts inserted appropriately
-                            rewardMajorErrorString = f"You cannot award any more **Major** reward items.\n```md\nTotal rewarded so far:\n({major-len(blocking_list_additions['Major'])-1}/{rewardMajorLimit}) Major Rewards \n({minor-len(blocking_list_additions['Minor'])}/{rewardMinorLimit-rewardMajorLimit}) Minor Rewards"
-                            rewardMinorErrorString = f"You cannot award any more **Minor** reward items.\n```md\nTotal rewarded so far:\n({major-len(blocking_list_additions['Major'])}/{rewardMajorLimit}) Major Rewards \n({minor-len(blocking_list_additions['Minor'])-1}/{rewardMinorLimit-rewardMajorLimit}) Minor Rewards"
+                            rewardMajorErrorString = f"You cannot award any more **Major** reward items.\n```md\nTotal rewarded so far:\n({major-len(blocking_list_additions['Major'])-1}/{rewardMajorLimit}) Major Rewards \n({minor-len(blocking_list_additions['Minor'])}/{rewardMinorLimit-rewardMajorLimit}) Minor Rewards```"
+                            rewardMinorErrorString = f"You cannot award any more **Minor** reward items.\n```md\nTotal rewarded so far:\n({major-len(blocking_list_additions['Major'])}/{rewardMajorLimit}) Major Rewards \n({minor-len(blocking_list_additions['Minor'])-1}/{rewardMinorLimit-rewardMajorLimit}) Minor Rewards```"
 
                             if rewardUser == dmChar[0]:
                                 if chooseOr:

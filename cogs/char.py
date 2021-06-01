@@ -606,7 +606,7 @@ class Character(commands.Cog):
                             # change the query to be an accurate representation
                             r = f"Spell Scroll ({ordinal(sRecord['Level'])} Level)"
 
-                    reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r, tier = tierNum) 
+                    reRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg, 'rit',r, tier = tierNum, filter_rit = False) 
 
                     if charEmbedmsg == "Fail":
                         return

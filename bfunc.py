@@ -126,9 +126,8 @@ apiEmbed -> the embed element that the calling function will be using
 apiEmbedmsg -> the message that will contain apiEmbed
 table -> the table in the database that should be searched in, most common tables are RIT, MIT and SHOP
 query -> the word which will be searched for in the "Name" property of elements, adjustments were made so that also a special property "Grouped" also gets searched
-singleItem -> if only one item should be returned
 """
-async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, singleItem=False, tier=5, exact=False):
+async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, tier=5, exact=False, filter_rit=True):
     
     #channel and author of the original message creating this call
     channel = ctx.channel
@@ -165,14 +164,38 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
     query = query.replace('.', '\\.')
 
     
-    #I am not sure of the difference in behavior beside the extended Grouped search
-    if singleItem:
-        records = list(collection.find({"Name": {"$regex": query, '$options': 'i' }}))
+    #search through the table for an element were the Name or Grouped property contain the query
+    if table == "spells":
+        filterDic = {"Name": {"$regex": query, '$options': 'i' }, 'Level': {'$gt':0}}
+    elif table == "rit" or table == "mit":
+        filterDic = {"$or": [
+                        {
+                          "Name": {
+                            "$regex": query,
+                            #make the check case-insensitively
+                            "$options": "i"
+                          }
+                        },
+                        {
+                          "Grouped": {
+                            "$regex": query,
+                            "$options": "i"
+                          }
+                        }
+                      ],
+                      'Tier': {'$lt':tier+1}}
     else:
-        #search through the table for an element were the Name or Grouped property contain the query
-        if table == "spells":
-            filterDic = {"Name": {"$regex": query, '$options': 'i' }, 'Level': {'$gt':0}}
-        elif table == "rit" or table == "mit":
+        if(exact):
+            filterDic = {"$or": [
+                            {
+                              "Name": query
+                            },
+                            {
+                              "Grouped": query
+                            }
+                          ],
+                        }
+        else:
             filterDic = {"$or": [
                             {
                               "Name": {
@@ -188,40 +211,12 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
                               }
                             }
                           ],
-                          'Tier': {'$lt':tier+1}}
-        else:
-            if(exact):
-                filterDic = {"$or": [
-                                {
-                                  "Name": query
-                                },
-                                {
-                                  "Grouped": query
-                                }
-                              ],
-                            }
-            else:
-                filterDic = {"$or": [
-                                {
-                                  "Name": {
-                                    "$regex": query,
-                                    #make the check case-insensitively
-                                    "$options": "i"
-                                  }
-                                },
-                                {
-                                  "Grouped": {
-                                    "$regex": query,
-                                    "$options": "i"
-                                  }
-                                }
-                              ],
-                            }
-         
-        # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
-        #  collection.find(collection.find(filterDic)) does not work for he could not read
-        # https://cdn.discordapp.com/attachments/663504216135958558/735695855667118080/New_Project_-_2020-07-22T231158.186.png
-        records = list(collection.find(filterDic))
+                        }
+     
+    # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
+    #  collection.find(collection.find(filterDic)) does not work for he could not read
+    # https://cdn.discordapp.com/attachments/663504216135958558/735695855667118080/New_Project_-_2020-07-22T231158.186.png
+    records = list(collection.find(filterDic))
     
     #turn the query into a regex expression
     r = re.compile(query, re.IGNORECASE)
@@ -266,7 +261,7 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
         records.remove(group_to_remove)
     #append the new entries
     records += faux_entries
-    if table == "rit":
+    if filter_rit and table == "rit":
         # get all minor reward item results
         all_minors = list([record["Name"] for record in filter(lambda record: record["Minor/Major"]== "Minor", records)])
         records = filter(lambda record: record["Minor/Major"]!= "Major" or record["Name"] not in all_minors, records)

@@ -200,7 +200,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedChar.add_field(name=f'▫️ Adding Extra Names', value=f'{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Adding Alignment', value=f'{commandPrefix}align "character name" alignment\n[{commandPrefix}aka]', inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Adding Alignment', value=f'{commandPrefix}align "character name" alignment', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Retiring a Character', value=f'{commandPrefix}retire "character name"', inline=False)
 
