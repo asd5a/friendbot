@@ -3981,9 +3981,9 @@ class Character(commands.Cog):
                 return
 
             # Check if magic item's actually exist, and grab properties. (See if they're attuneable)
-            mRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg,'mit', m, True)
+            mRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg,'mit', m)
             if not mRecord:
-                mRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg,'rit', m, True)
+                mRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg,'rit', m)
                 if not mRecord:
                     await channel.send(f"`{m}`belongs to a tier which you do not have access to or it doesn't exist! Check to see if it's on the Magic or Reward Item Table, what tier it is, and your spelling.\n")
                     return
