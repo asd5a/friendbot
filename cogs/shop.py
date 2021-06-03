@@ -661,7 +661,7 @@ class Shop(commands.Cog):
             buyItem = await self.checkInventory(ctx, buyItem, charRecords, shopEmbed, shopEmbedmsg)
             if not buyItem:
                 return
-            bRecord, shopEmbed, shopEmbedmsg = await callAPI(ctx, shopEmbed, shopEmbedmsg,'shop', buyItem, True) 
+            bRecord, shopEmbed, shopEmbedmsg = await callAPI(ctx, shopEmbed, shopEmbedmsg,'shop', buyItem) 
         
             if bRecord:
                 # See if item is a magic item (they are unsellable)

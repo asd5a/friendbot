@@ -244,9 +244,6 @@ class Timer(commands.Cog):
             #otherwise we just edit the contents
             await prepEmbedMsg.edit(embed=prepEmbed)
         
-        # set up all the guild related variables
-        guildsList = []
-        guildsCollection = db.guilds
         
         # create a list of all player and characters they have signed up with
         # this is a nested list where the contained entries are [member object, DB character entry, Consumable list for the game, character DB ID]
