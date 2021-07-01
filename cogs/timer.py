@@ -2175,6 +2175,168 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
             return True
     
     """
+    start -> a dictionary of strings and player list pairs, the strings are made out of the kind of reward and the duration and the value is a list of players entries (format can be found as the return value in signup)
+    resume -> if this is during the resume process
+    dmChar -> the player entry (format [member object, char DB entry, brought consumables, char id, item changes]) of the DM with an added entry [5] as [Noodle Role Name, majors  = 0, minors = 0, dmMajors = 0,dmMinors = 0]
+    """  
+    
+    
+    
+    async def randomRew(self,ctx, msg=None, start="",resume=False, dmChar="", rewardType=None, amount=None):
+        channel = ctx.channel
+        author = ctx.author
+        guild = ctx.guild
+        
+        rewardList = msg.raw_mentions
+        
+        # if nobody was listed, inform the user
+        if rewardList == list():
+            if not resume:
+                await ctx.channel.send(content=f"I could not find any mention of a user to hand out a random item.") 
+            #return the unchanged parameters
+            return start,dmChar #cause error
+        else:
+            # get the first user mentioned
+            rewardUser = guild.get_member(rewardList[0])
+            startcopy = start.copy()
+            userFound = False
+            
+            # if the user getting rewards is the DM we can save time by not going through the loop
+            if rewardUser == dmChar[0] and dmChar[1]=="No Rewards":
+                if not resume:
+                    await ctx.channel.send(content=f"You did not sign up with a character to reward items to.") 
+                #return the unchanged parameters
+                return start,dmChar #cause error
+            elif rewardUser == dmChar[0]: 
+                userFound = True
+                # the player entry of the player getting the item
+                currentItem = dmChar
+                # list of current consumables on the character
+                # [1] in a player entry is the DB entry of the character
+                charConsumableList = currentItem[1]['Consumables'].split(', ')
+                # list of current magical items
+                charMagicList = currentItem[1]['Magic Items'].split(', ')
+                # character level
+                charLevel = int(currentItem[1]['Level'])
+            # since this checks for multiple things, this cannot be avoided
+            for u, v in startcopy.items():
+
+                for item in v:
+                    if dmChar[0] == rewardUser:
+                        break
+                    if item[0] == rewardUser:
+                        userFound = True
+                        # the player entry of the player getting the item
+                        currentItem = item
+                        # list of current consumables on the character
+                        # [1] in a player entry is the DB entry of the character
+                        charConsumableList = currentItem[1]['Consumables'].split(', ')
+                        # list of current magical items
+                        charMagicList = currentItem[1]['Magic Items'].split(', ')
+                        # character level
+                        charLevel = int(currentItem[1]['Level'])
+        
+        
+        # calculate the tier of the rewards
+        tierNum = 5
+        if charLevel < 5:
+            tierNum = 1
+        elif charLevel < 11:
+            tierNum = 2
+        elif charLevel < 17:
+            tierNum = 3
+        elif charLevel < 20:
+            tierNum = 4
+        
+        rewardCollection = db.rit
+        rewardTable = list(rewardCollection.find({"Tier": tierNum, "Minor/Major": rewardType})) #gets the full list of eligible rewards based on input
+        
+        randomItem = random.choice(rewardTable) #picks a random reward
+        rewardString = []
+        
+        rewardConsumable_group_type = "Name"
+        if "Grouped" in randomItem: # used to check for duplicates if the random reward has subtypes, like ammunition
+           rewardConsumable_group_type = "Grouped"
+        
+        player_type = "Players"
+        if rewardUser == dmChar[0]:
+            player_type = "DM"
+        
+        rewardCheck = randomItem
+        
+        # check if the item has already been rewarded to the players
+        if (rewardCheck[rewardConsumable_group_type] in dmChar[5][1][player_type]["Major"] or
+            rewardCheck[rewardConsumable_group_type] in dmChar[5][1][player_type]["Minor"]):
+            return None # returns none, which will cause the command to be repeated to try to get a non-duplicated reward item
+        
+        
+        def spellEmbedCheck(r, u):
+            sameMessage = False
+            if charEmbedmsg.id == r.message.id:
+                sameMessage = True
+            return sameMessage and ((r.emoji in alphaEmojis[:6]) or (str(r.emoji) == '❌')) and u == author
+        
+        #Puts all rewards into an array. Holdover from the out-of-timer command in reward.py
+        for i in range(0,int(amount)):
+            if not isinstance(randomItem['Name'], str): #If one of the items has subchoices, such as ammunition, only one type will be added instead of an array of all the choices
+                temp = random.choice(randomItem['Name'])
+                tempstr = str(temp)
+                rewardString.append(tempstr)
+            elif 'Spell Scroll' in randomItem['Name']: #spell scrolls
+                spell = re.findall(r"\d+", randomItem['Name'])
+                
+                # create an embed object for user communication
+                #extract spell level:
+                spellLevel = int(spell[0])
+                charEmbed = discord.Embed()
+                charEmbed.title = f"{randomItem['Name']}"
+                charEmbed.description = f"What class list would you like the spell scroll to be from?"
+                
+                #Determine if the scroll level is available to half-casters
+                if spellLevel < 6: #all casters list
+                    spellClasses = ["Artificer", "Bard", "Cleric", "Druid", "Ranger", "Paladin", "Sorcerer", "Warlock", "Wizard"]
+                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Artificer\n{alphaEmojis[1]}: Bard\n{alphaEmojis[2]}: Cleric\n{alphaEmojis[3]}: Druid\n{alphaEmojis[4]}: Ranger\n{alphaEmojis[5]}: Paladin\n{alphaEmojis[6]}: Sorcerer\n{alphaEmojis[7]}: Warlock\n{alphaEmojis[8]}: Wizard\n", inline=False)
+                else: #full caster list
+                    spellClasses = ["Bard", "Cleric", "Druid", "Sorcerer", "Warlock", "Wizard"]
+                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Bard\n{alphaEmojis[1]}: Cleric\n{alphaEmojis[2]}: Druid\n{alphaEmojis[3]}: Sorcerer\n{alphaEmojis[4]}: Warlock\n{alphaEmojis[5]}: Wizard\n", inline=False)
+                    
+                charEmbedmsg = await channel.send(embed=charEmbed, content="Testing")
+                await charEmbedmsg.add_reaction('❌')
+                
+                try:
+                    await charEmbedmsg.edit(embed=charEmbed)
+                    await charEmbedmsg.add_reaction('❌')
+                    tReaction, tUser = await self.bot.wait_for("reaction_add", check=spellEmbedCheck, timeout=60)
+                except asyncio.TimeoutError:
+                    await charEmbedmsg.delete()
+                    await channel.send(f'Spell list selection timed out!:\n```yaml\n{commandPrefix}{rewardType} @player```')
+                    self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+                    return None
+                else:
+                    if tReaction.emoji == '❌':
+                        await charEmbedmsg.edit(embed=None, content=f"Spell list selection cancelled. Try again using the same command:\n```yaml\n{commandPrefix}{rewardType} @player```")
+                        await charEmbedmsg.clear_reactions()
+                        self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+                        return None
+                await charEmbedmsg.clear_reactions()
+                
+                classList = spellClasses[alphaEmojis.index(tReaction.emoji)]
+                
+                spellCollection = db.spells
+                
+                output = list(spellCollection.find({"$and": [{"Classes": {"$regex": classList, '$options': 'i' }, "Level": spellLevel}]}))
+                spellReward = random.choice(output) #results in the entire spell's entry
+                spellRewardStr = []
+                spellRewardStr.append(f"Spell Scroll ({spellReward['Name']})") # creates the string that will be sent to $timer reward. Yes, it's in a list. I'm lazy.
+                await charEmbedmsg.delete()
+                rewardString.append(spellRewardStr[0])
+            else:
+                rewardString.append(randomItem['Name'])
+
+        return rewardString
+    
+    
+    """
     This functions runs continuously while the timer is going on and waits for commands to come in and then invokes them itself
     datestart -> the formatted date of when the game started
     startTime -> the specific time that the game started
@@ -2203,7 +2365,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 
         #in no rewards games characters cannot die or get rewards
         if role != "":
-            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp', 'undo rewards']
+            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp', 'undo rewards', 'major', 'minor']
         else:
             timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'stamp']
 
@@ -2269,6 +2431,20 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                     stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 elif (msg.content.startswith(f"{commandPrefix}timer reward") or msg.content.startswith(f"{commandPrefix}t reward")):
                     if await self.permissionCheck(msg, author):
+                        startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar)
+                elif (msg.content.startswith(f"{commandPrefix}timer major") or msg.content.startswith(f"{commandPrefix}t major")): #Random Major
+                    if await self.permissionCheck(msg, author):
+                        rewardItem = None
+                        while rewardItem == None: # This repeats if a duplicate is found.
+                            rewardItem = await self.randomRew(ctx, msg=msg, start=startTimes,dmChar=dmChar, rewardType="Major", amount=1)
+                        msg.content = msg.content + " " + f'"{rewardItem[0]}"'
+                        startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar)
+                elif (msg.content.startswith(f"{commandPrefix}timer minor") or msg.content.startswith(f"{commandPrefix}t minor")): #Random Minor
+                    if await self.permissionCheck(msg, author):
+                        rewardItem = None
+                        while rewardItem == None: # This repeats if a duplicate is found.
+                            rewardItem = await self.randomRew(ctx, msg=msg, start=startTimes,dmChar=dmChar, rewardType="Minor", amount=1)
+                        msg.content = msg.content + " " + f'"{rewardItem[0]}"'
                         startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar)
                 elif (msg.content.startswith(f"{commandPrefix}timer death") or msg.content.startswith(f"{commandPrefix}t death")):
                     if await self.permissionCheck(msg, author):
