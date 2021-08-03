@@ -4,6 +4,95 @@ from discord.ext import commands
 from bfunc import db, alphaEmojis, roleArray, calculateTreasure, timeConversion, commandPrefix, tier_reward_dictionary, checkForChar
 from random import *
 
+async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None, amount=None):
+        channel = ctx.channel
+        author = ctx.author
+        #start="", dmChar=""
+        rewardCollection = db.rit
+        
+        
+        if dmChar == None:
+            rewardTable = list(rewardCollection.find({"Tier": int(tier), "Minor/Major": rewardType}))
+        else:
+            rewardTable = list(rewardCollection.find({"Tier": tier, "Minor/Major": rewardType, "Name": {"$nin": dmChar[5][1][player_type][rewardType]}, "Grouped": {"$nin": dmChar[5][1][player_type][rewardType]}}))
+        
+        if rewardTable == None # Only happens if called from timer and there are no eligible rewards
+            await channel.send(f"Error: You have already given out every tier {tier} {rewardType} reward item on the reward table!")
+            return None
+        
+        if int(amount) > 1:
+            if len(rewardTable) < int(amount): # size restriction check if used from rewardtable, which varies based on tier.
+                await channel.send(f'Error: You requested more {rewardType} reward items than the Tier {tier} table has available!')
+                return None
+        
+        randomItem = sample(rewardTable, int(amount)) # Makes a list of all the randomly chosen items. Includes their entire entry, which is needed for special cases of spell scrolls and ammunition
+        rewardString = []
+                
+        def spellEmbedCheck(r, u):
+            sameMessage = False
+            if charEmbedmsg.id == r.message.id:
+                sameMessage = True
+            return sameMessage and ((r.emoji in alphaEmojis[:6]) or (str(r.emoji) == '❌')) and u == author
+            
+        #Puts all rewards into an array
+        for i in range(0,int(amount)):
+            if not isinstance(randomItem[i]['Name'], str): #If one of the items has subchoices, such as ammunition, only the category will be added instead of an array of all the choices
+                temp = sample(randomItem[i]['Name'], 1)[0]
+                tempstr = str(temp)
+                rewardString.append(tempstr)
+            elif 'Spell Scroll' in randomItem[i]['Name']:
+                spell = re.findall(r"\d+", randomItem[i]['Name'])
+                
+                # create an embed object for user communication
+                #extract spell level:
+                spellLevel = int(spell[0])
+                charEmbed = discord.Embed()
+                charEmbed.title = f"{randomItem[i]['Name']}"
+                charEmbed.description = f"What class list would you like the spell scroll to be from?"
+                
+                #Determine if the scroll level is available to half-casters
+                if spellLevel < 6: #all caster list
+                    spellClasses = ["Artificer", "Bard", "Cleric", "Druid", "Ranger", "Paladin", "Sorcerer", "Warlock", "Wizard"]
+                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Artificer\n{alphaEmojis[1]}: Bard\n{alphaEmojis[2]}: Cleric\n{alphaEmojis[3]}: Druid\n{alphaEmojis[4]}: Ranger\n{alphaEmojis[5]}: Paladin\n{alphaEmojis[6]}: Sorcerer\n{alphaEmojis[7]}: Warlock\n{alphaEmojis[8]}: Wizard\n", inline=False)
+                else: #full caster list
+                    spellClasses = ["Bard", "Cleric", "Druid", "Sorcerer", "Warlock", "Wizard"]
+                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Bard\n{alphaEmojis[1]}: Cleric\n{alphaEmojis[2]}: Druid\n{alphaEmojis[3]}: Sorcerer\n{alphaEmojis[4]}: Warlock\n{alphaEmojis[5]}: Wizard\n", inline=False)
+                    
+                charEmbedmsg = await channel.send(embed=charEmbed, content="Testing")
+                await charEmbedmsg.add_reaction('❌')
+                
+                try:
+                    await charEmbedmsg.edit(embed=charEmbed)
+                    await charEmbedmsg.add_reaction('❌')
+                    tReaction, tUser = await self.bot.wait_for("reaction_add", check=spellEmbedCheck, timeout=60)
+                except asyncio.TimeoutError:
+                    await charEmbedmsg.delete()
+                    await channel.send(f'Spell list selection timed out! Try again using the same command:\n```yaml\n{commandPrefix}{tier}{rewardType}{amount}```')
+                    self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+                    return
+                else:
+                    if tReaction.emoji == '❌':
+                        await charEmbedmsg.edit(embed=None, content=f"Spell list selection cancelled.\n```yaml\n{commandPrefix}{tier}{rewardType}{amount}```")
+                        await charEmbedmsg.clear_reactions()
+                        self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+                        return
+                await charEmbedmsg.clear_reactions()
+                
+                classList = spellClasses[alphaEmojis.index(tReaction.emoji)]
+                
+                spellCollection = db.spells
+                
+                output = list(spellCollection.find({"$and": [{"Classes": {"$regex": classList, '$options': 'i' }, "Level": spellLevel}]}))
+                spellReward = sample(output, 1)[0] # results in the entire spell's entry
+                spellRewardStr = []
+                spellRewardStr.append(f"Spell Scroll ({spellReward['Name']})")
+                await charEmbedmsg.delete()
+                rewardString.append(spellRewardStr[0])
+            else:
+                rewardString.append(randomItem[i]['Name'])
+        
+        return rewardString
+
 class Reward(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
@@ -158,91 +247,8 @@ class Reward(commands.Cog):
             return
     
     
-    # This command is called by the rewardTable command.
-    @commands.command(aliases=['rit'])
-    async def randomReward(self,ctx, tier=None, rewardType=None, amount=None):
-        channel = ctx.channel
-        author = ctx.author
-        
-        rewardCollection = db.rit
-        rewardTable = list(rewardCollection.find({"Tier": int(tier), "Minor/Major": rewardType}))
-        
-        if len(rewardTable) < int(amount): # size restriction check, which varies based on tier.
-            await channel.send(f'Error: You requested more {rewardType} reward items than the Tier {tier} table has available!')
-            return None
-        
-        randomItem = sample(rewardTable, int(amount)) # Makes a list of all the randomly chosen items. Includes their entire entry, which is needed for special cases of spell scrolls and ammunition
-        rewardString = []
-                
-        def spellEmbedCheck(r, u):
-            sameMessage = False
-            if charEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and ((r.emoji in alphaEmojis[:6]) or (str(r.emoji) == '❌')) and u == author
-            
-        #spellLevel = []
-        #Puts all rewards into an array
-        for i in range(0,int(amount)):
-            if not isinstance(randomItem[i]['Name'], str): #If one of the items has subchoices, such as ammunition, only the category will be added instead of an array of all the choices
-                temp = sample(randomItem[i]['Name'], 1)[0]
-                tempstr = str(temp)
-                rewardString.append(tempstr)
-            elif 'Spell Scroll' in randomItem[i]['Name']:
-                spell = re.findall(r"\d+", randomItem[i]['Name'])
-                
-                # create an embed object for user communication
-                #extract spell level:
-                spellLevel = int(spell[0])
-                charEmbed = discord.Embed()
-                charEmbed.title = f"{randomItem[i]['Name']}"
-                charEmbed.description = f"What class list would you like the spell scroll to be from?"
-                
-                #Determine if the scroll level is available to half-casters
-                if spellLevel < 6: #all caster list
-                    spellClasses = ["Artificer", "Bard", "Cleric", "Druid", "Ranger", "Paladin", "Sorcerer", "Warlock", "Wizard"]
-                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Artificer\n{alphaEmojis[1]}: Bard\n{alphaEmojis[2]}: Cleric\n{alphaEmojis[3]}: Druid\n{alphaEmojis[4]}: Ranger\n{alphaEmojis[5]}: Paladin\n{alphaEmojis[6]}: Sorcerer\n{alphaEmojis[7]}: Warlock\n{alphaEmojis[8]}: Wizard\n", inline=False)
-                else: #full caster list
-                    spellClasses = ["Bard", "Cleric", "Druid", "Sorcerer", "Warlock", "Wizard"]
-                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Bard\n{alphaEmojis[1]}: Cleric\n{alphaEmojis[2]}: Druid\n{alphaEmojis[3]}: Sorcerer\n{alphaEmojis[4]}: Warlock\n{alphaEmojis[5]}: Wizard\n", inline=False)
-                    
-                charEmbedmsg = await channel.send(embed=charEmbed, content="Testing")
-                await charEmbedmsg.add_reaction('❌')
-                
-                try:
-                    await charEmbedmsg.edit(embed=charEmbed)
-                    await charEmbedmsg.add_reaction('❌')
-                    tReaction, tUser = await self.bot.wait_for("reaction_add", check=spellEmbedCheck, timeout=60)
-                except asyncio.TimeoutError:
-                    await charEmbedmsg.delete()
-                    await channel.send(f'Spell list selection timed out! Try again using the same command:\n```yaml\n{commandPrefix}{tier}{rewardType}{amount}```')
-                    self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                    return
-                else:
-                    if tReaction.emoji == '❌':
-                        await charEmbedmsg.edit(embed=None, content=f"Spell list selection cancelled.\n```yaml\n{commandPrefix}{tier}{rewardType}{amount}```")
-                        await charEmbedmsg.clear_reactions()
-                        self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                        return
-                await charEmbedmsg.clear_reactions()
-                
-                classList = spellClasses[alphaEmojis.index(tReaction.emoji)]
-                
-                spellCollection = db.spells
-                
-                output = list(spellCollection.find({"$and": [{"Classes": {"$regex": classList, '$options': 'i' }, "Level": spellLevel}]}))
-                spellReward = sample(output, 1)[0] # results in the entire spell's entry
-                spellRewardStr = []
-                spellRewardStr.append(f"Spell Scroll ({spellReward['Name']})")
-                await charEmbedmsg.delete()
-                rewardString.append(spellRewardStr[0])
-            else:
-                rewardString.append(randomItem[i]['Name'])
-
-        return rewardString
-    
-    # This is the command that is executed by the user.
     @commands.command(aliases=['rewardtable'])
-    async def randomRewardTable(self,ctx, tier=None, rewardType=None, size=None):
+    async def randomRewardTable(self,ctx, tier, rewardType, size=1):
         rewardCommand = f"\nPlease follow this format:\n```yaml\n{commandPrefix}rewardtable \"tier\" \"major or minor\" \"# of rewards\"```\n"
         
         channel = ctx.channel
@@ -261,8 +267,8 @@ class Reward(commands.Cog):
             await channel.send(content="The reward type must be major or minor." + rewardCommand)
             return
         
-        if size == None:
-            size = 1
+        #if size == None:
+            #size = 1
         
         tierNum = 0
         if tier == 'junior':
@@ -278,7 +284,8 @@ class Reward(commands.Cog):
         else:
             tierNum = tier
         
-        reward = await self.randomReward(ctx, int(tierNum), rewardType, size)
+        reward = await randomReward(self, ctx, tier=int(tierNum), rewardType=rewardType, amount=size)
+        #reward = await self.randomReward(ctx, int(tierNum), rewardType, size)
         if reward == None:
             return
         
