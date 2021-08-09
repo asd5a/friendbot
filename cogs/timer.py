@@ -1735,12 +1735,12 @@ Command Checklist
             rewardList = list(rewardsCollection.find({"Tier": tierNum}))
             rewardList_lower = list(rewardsCollection.find({"Tier": max(tierNum-1, 1)}))
             
+            # list of players in this entry
+            playerList = []
             # go through the dictionary of times and calculate the rewards of every player
             for startItemKey, startItemValue in start.items():
                 # duration of the play time of this entry
                 duration = 0
-                # list of players in this entry
-                playerList = []
                 # Attach the end time to the key temporarily for the calculations
                 # This doubles up on the end time for people who were last removed from the timer, but since that calculation takes specifically the 1st and 2nd value, this 3rd element will not affect the calculations
                 startItemsList = (startItemKey+ f'?{end}').split(':')
@@ -2009,8 +2009,6 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                 except Exception as e:
                     print ('MONGO ERROR: ' + str(e))
                     charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
-                else:
-                    print('Success')
                 await generateLog(self, ctx, dbEntry["Log ID"], sessionInfo = dbEntry)
             
             

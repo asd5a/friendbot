@@ -8,111 +8,151 @@ from bfunc import roleArray, calculateTreasure, timeConversion, db
 class Apps(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
-    
-    @commands.group(case_insensitive=True)
-    async def app(self, ctx):	
-        pass
-      
-    @app.command()
+    async def cog_command_error(self, ctx, error):
+        msg = None
+        
+        
+        if isinstance(error, commands.BadArgument):
+            # convert string to int failed
+            msg = "Your parameter types were off."
+        
+        elif isinstance(error, commands.CheckFailure):
+            msg = ""
+            return
+        elif isinstance(error, commands.MissingRequiredArgument):
+            msg = "You missed a parameter"
+
+        if msg:
+            
+            await ctx.channel.send(msg)
+        # bot.py handles this, so we don't get traceback called.
+        elif isinstance(error, commands.CommandOnCooldown):
+            return
+        elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
+             return
+
+        # Whenever there's an error with the parameters that bot cannot deduce
+        elif isinstance(error, commands.CommandInvokeError):
+            msg = f'The command is not working correctly. Please try again and make sure the format is correct.'
+            ctx.command.reset_cooldown(ctx)
+            await ctx.channel.send(msg)
+            await traceBack(ctx,error, False)
+        else:
+            ctx.command.reset_cooldown(ctx)
+            await traceBack(ctx,error)
+            
     @commands.has_any_role('Mod Friend', 'A d m i n')
-    async def edit(self, ctx, num, *, editString=""):
-        # The Bot
-        botUser = self.bot.user
-        # App Logs channel 
-        channel = self.bot.get_channel(388591318814949376) 
-
-        msgFound = False
-        async with channel.typing():
-            async for message in channel.history(oldest_first=False):
-                if int(num) == message.id and message.author == botUser:
-                    editMessage = message
-                    msgFound = True
-                    break 
-
-        if not msgFound:
-            delMessage = await ctx.channel.send(content=f"I couldn't find message {num}. Please try again. I will delete your message and this one in 10 seconds.")
-            await asyncio.sleep(10) 
-            await delMessage.delete()
-            await ctx.message.delete() 
+    @commands.command()
+    async def app(self, ctx, response="", message_id :int = 0):	
+    
+        # appchannel
+        #   channelID = 388591318814949376
+        # if ctx.channel.id != 388591318814949376:
+            # return
+            
+        channel = ctx.channel
+        guild = ctx.guild
+        botMsg = await channel.fetch_message(message_id) 
+        botEmbed = botMsg.embeds[0]
+        appDict = botEmbed.to_dict()
+        member_name = appDict['title'].split('-')[1].strip()
+        appMember = guild.get_member_named(member_name)
+        botEmbed.set_footer(text=f"Application Message ID: {botMsg.id}\nMod: {ctx.message.author}")
+        response = response.lower()
+        if appMember is None:
+            channel.send(content=f"Something went wrong. The application could not find the discord name {appDiscord} for application {appNum}. Please delete this message once this is resolved.")
             return
 
-        botEmbed = editMessage.embeds[0]
-        botEmbed.set_footer(text=f"Application Message ID: {editMessage.id}\nMod: {ctx.author}")
+        if 'approve' in response or 'sub18' in response:
+            # Session Channel
+            await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Approved**")
+            await botMsg.clear_reactions()
+            await ctx.message.delete()
 
-        await editMessage.edit(content=editString, embed=botEmbed)
-        delMessage = await ctx.channel.send(content=f"I have edited the message {num}.\n```{editString}```\nPlease double check that the edit is correct. I will now delete your message and this one in 30 seconds.")
-        await asyncio.sleep(30) 
-        await delMessage.delete()
-        await ctx.message.delete() 
-        await editMessage.clear_reactions()
+            if 'sub18' in response:
+                kidRole = get(guild.roles, name = 'Under-18 Friendling')
+                await appMember.add_roles(kidRole, reason="Approved application - the user is under 18.")
+            
+            if db.players.find_one({"User ID" : str(appMember.id), "Level" : {"$gt" : 1}}):
 
-    @commands.Cog.listener()
-    async def on_message(self,msg):
-        def msgCheck(m):
-            sameMessage = False
-            appDict = botMsg.embeds[0].to_dict()
-            appNum = appDict['title'].split('#')[1]
-            if appNum in m.content:
-                sameMessage = True
+                juniorRole = get(guild.roles, name = 'Junior Friend')
 
-            return ('approve #' in m.content.lower() or 'deny #' in m.content.lower() or 'under17 #' in m.content.lower()) and sameMessage
-
+                await appMember.add_roles(juniorRole, reason=f"Approved application - the user has a level 2 or higher character.")
+                
+            
+            newRole = get(guild.roles, name = 'D&D Friend')
+            await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
+            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! The Mod team has approved your application and you have been assigned the appropriate role(s). In order to be pinged for one-shots, you must navigate to the `#role-management` channel and opt into the tiers you would like to be pinged for by reacting to the posts with the appropriate emojis.\n\nIf you have any further questions then please don't hesitate to ask in our `#help-for-players` channel or message a Mod Friend!")
+            
+        elif 'deny' in response:
+            await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Generic)")
+            await botMsg.clear_reactions()
+            await ctx.message.delete()
+            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you are not a good fit for the server. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck! \n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>")
+        elif 'sub17' in response:
+            await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Under 17)")
+            await botMsg.clear_reactions()
+            await ctx.message.delete()
+            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to th **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you did not meet the cut-off age. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck! \n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>")
+    
+    def is_private_channel():
+        async def predicate(ctx):
+            return ctx.channel.type == discord.ChannelType.private
+        return commands.check(predicate)
+        
+    @commands.command()
+    @is_private_channel()
+    @commands.cooldown(1, 60, type=commands.BucketType.user)
+    async def submit(self, ctx, *, response):
+        msg = ctx.message
+        sMessage = await ctx.channel.send(content=f'Hello, {msg.author.name}!\n\nThank you for submitting your membership application to the **D&D Friends** Discord server! It has been forwarded to the Mod team for review. Please give the Mod team at least 24 hours before you message one of them to inquire about the status of your membership application. Once it has been processed, you will receive another message from me with the status of your application and further instructions!')
+                
         # appchannel
-        channelID = 388591318814949376
+        channelID = 734276425875587112
         channel = self.bot.get_channel(channelID)
-        guild = msg.guild
-        if channel and channel.id == channelID and msg.author.name == 'Application Bot Friend':
-            botEmbed = msg.embeds[0]
-            botMsg = await channel.send(embed=botEmbed)
-            await msg.delete()
+        files =None
+        if msg.attachments:
+            files =[]
+            for att in msg.attachments:
+                files.append(await att.to_file())
+        botMsg = await channel.send(f"Incoming Application by {ctx.message.author.mention}", 
+                        files= files)
+        title = f"D&D Friends: Application - {msg.author.name}#{msg.author.discriminator}"
+        footer_text = f"$app approve {botMsg.id}\n"
+        footer_text += f"$app sub18 {botMsg.id}\n"
+        footer_text += f"$app deny {botMsg.id}\n"
+        footer_text += f"$app sub17 {botMsg.id}\n" 
+        
+        embed = discord.Embed()
+        embed.title = title
+        embed.description = response
+        embed.set_author(name=msg.author, icon_url=msg.author.avatar_url)
+        embed.set_footer(text=f"{footer_text}")
+        await botMsg.edit(embed=embed)
+            
+    @commands.command()
+    @is_private_channel()
+    @commands.cooldown(1, 60, type=commands.BucketType.user)
+    async def membership(self, ctx):
+        msg = ctx.message
+         
+            
+        text = """Hello!
 
-            mMessage = await self.bot.wait_for("message", check=msgCheck)
+Thank you for applying for membership to the D&D Friends Discord server. Please copy-paste the following template, answer all questions, and reply to me with your filled out template:
+```$submit
 
-            appDict = botMsg.embeds[0].to_dict()
-            appNum = appDict['title'].split('#')[1] 
-            appDiscord = appDict['fields'][0]['value']
-            appHash = appDiscord.split('#')[1]
-            appAge = appDict['fields'][1]['value']
-            appMember = guild.get_member_named(appDiscord)
-            botEmbed.set_footer(text=f"Application Message ID: {botMsg.id}\nMod: {mMessage.author}")
+**What is your age?**
+• 
 
-            if appMember is None:
-                ctx.channel.send(content=f"Something went wrong. The application could not find the discord name {appDiscord} for application {appNum}. Please delete this message once this is resolved.")
-                return
+**Tell us about yourself! What brings you to the server? How did you find us? How long have you been playing D&D? Which editions have you played (if any)?**
+• 
+```
 
-            if 'approve' in mMessage.content:
-                # Session Channel
-                await botMsg.edit(embed=botEmbed, content=f"{appNum}. {appMember.mention} #{appHash} - **Approved**")
-                await botMsg.clear_reactions()
-                await mMessage.delete()
-
-                if int(appAge) < 18:
-                    kidRole = get(guild.roles, name = 'Under-18 Friendling')
-                    await appMember.add_roles(kidRole, reason="Approved application - the user is under 18.")
+By submitting this membership application, you are consenting to the following:
+• You have read through the rules posted in the #dnd-friends-rules channel on the server and will abide by them at all times.
+• We are not liable for NSFW content in one-shots on the server and participating in one-shots is done at your own discretion as we can't be held liable if you end up in a situation with which you are uncomfortable. Although the public channels on the server are considered a "safe for work" (SFW) environment, we allow anyone to be a DM and host a one-shot on the server. Therefore, we do not have control over what people put in their quests and some quests may contain explicit or adult content, otherwise known as "not safe for work" (NSFW) content. Explicit or adult content in this context is considered to be: violence, gore, disturbing imagery, or otherwise implied risqué themes. However, we do urge those DMs to put a warning on their quest board post if they will be using such content so all players are fairly warned prior to the one-shot."""
+        await ctx.channel.send(content=text)
                 
-                if db.players.find_one({"User ID" : str(appMember.id), "Level" : {"$gt" : 1}}):
-
-                    juniorRole = get(guild.roles, name = 'Junior Friend')
-
-                    await appMember.add_roles(juniorRole, reason=f"Approved application - the user has a level 2 or higher character.")
-                    
-                
-                newRole = get(guild.roles, name = 'D&D Friend')
-                await appMember.add_roles(newRole, reason=f"Approved application - the user has been given the base role.")
-
-                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! The Mod team has approved your application and you have been assigned the appropriate role(s). In order to be pinged for one-shots, you must navigate to the `#role-management` channel and opt into the tiers you would like to be pinged for by reacting to the posts.\n\nIf you have any further questions then please don't hesitate to ask in our #help-for-players channel or message a Mod Friend!")
-
-            elif 'deny' in mMessage.content:
-                await botMsg.edit(embed=botEmbed, content=f"{appNum}. {guild.get_member_named(appDiscord).mention} #{appHash} - **Denied** (Did not read server rules)")
-                await botMsg.clear_reactions()
-                await mMessage.delete()
-                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! Unfortunately, the Mod team has declined your application since you did not consent to possible NSFW content in one-shots or did not read the server rules and agree to abide by them.\n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>\n\nWe hope you find other like-minded people to play D&D with. Good luck!")
-             
-            elif 'under17' in mMessage.content:
-                await botMsg.edit(embed=botEmbed, content=f"{appNum}. {guild.get_member_named(appDiscord).mention} #{appHash} - **Denied** (Under 17)")
-                await botMsg.clear_reactions()
-                await mMessage.delete()
-                await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying to **D&D Friends**! Unfortunately, the **D&D Friends** Mod team has declined your application since you did not meet the cut-off age.\n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>\n\nWe hope you find other like-minded people to play D&D with. Good luck!")
-
 def setup(bot):
     bot.add_cog(Apps(bot))

@@ -47,7 +47,6 @@ bot.remove_command('help')
 async def on_command_error(ctx,error):
     msg = None
     print(ctx.invoked_with)
-    print(ctx.command.parent)
     print(error)
     
     if isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
@@ -158,6 +157,8 @@ async def help(ctx, *, pageString=''):
 # GENERAL COMMANDS ($help general)
 
     helpEmbedGen.title = 'General Commands'
+    
+    helpEmbedGen.add_field(name=f'▫️ Applying for Membership (only available for Direct Messages to Bot Friend)', value=f'{commandPrefix}membership', inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f'{commandPrefix}user', inline=False)
 
@@ -383,7 +384,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedCampaign.add_field(name=f'▫️ Removing Yourself (Player)', value=f'{commandPrefix}campaign timer removeme', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp (Player)', value=f'{commandPrefix}timer removeme', inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp (Player)', value=f'{commandPrefix}campaign timer removeme', inline=False)
 
     helpEmbedCampaign.add_field(name=f'▫️ Creating a Character with a Campaign Transfer', value=f'{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]" #campaign-channel XhYm', inline=False)
 

@@ -867,8 +867,7 @@ class Log(commands.Cog):
         #except Exception as e:
         #    print ('MONGO ERROR: ' + str(e))
         #    charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
-        else:
-            print('Success')
+
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
         if dmUser:
@@ -1005,8 +1004,7 @@ class Log(commands.Cog):
         #except Exception as e:
         #    print ('MONGO ERROR: ' + str(e))
         #    charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
-        else:
-            print('Success')
+
 
     @session.command()
     async def denyGuild(self, ctx,  num : int, *, guilds):

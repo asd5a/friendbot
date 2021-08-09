@@ -45,7 +45,7 @@ author -> author of the embed, if one is given the author and profile image will
 color -> color for the embed, if one is given the embed will use that color
 footer -> custom footer message, is added to page text
 """    
-async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author = None, color= None, footer=""):
+async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author = None, color= None, content="", footer=""):
     
     # storage of the elements that will be displayed on a page
     entry_pages =[]
@@ -58,10 +58,14 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
     
     # go over each required content piece and split it into the different groups
     # currently different content elements are separated by page
+    def unwrap_tuple(name, text, new_page=False, inline=False):
+        return name, text, new_page, inline
     
     entry_list = []
     set_length = 0
-    for name, text, new_page in contents:
+    for data_tuple in contents:
+        name, text, new_page, inline = unwrap_tuple(*data_tuple)
+        
         # how many parts are there for this section
         parts = 1
         
@@ -101,13 +105,12 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
                 entry_list = []
             
             # add to page
-            entry_list.append((subtitle, section_text))
+            entry_list.append((subtitle, section_text, inline))
             
             # increase parts
             parts += 1
             
         # add the page to the storage
-        #entry_pages.append(entry_list)
         
     entry_pages.append(entry_list)
     # get page count
@@ -133,11 +136,11 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
         return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
     page = 0
     #add the fields for the page
-    for subtitle, section_text in entry_pages[page]:
-        embed.add_field(name=subtitle, value=section_text, inline=False)
+    for subtitle, section_text, inline in entry_pages[page]:
+        embed.add_field(name=subtitle, value=section_text, inline=inline)
     if (pages>1):
         embed.set_footer(text=f"{footer}\nPage {page+1} of {pages}")
-    await msg.edit(embed=embed) 
+    await msg.edit(content= content, embed=embed) 
     await msg.clear_reactions()
     while pages>1:
         #add navigation
@@ -168,8 +171,8 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
                     page = 0
             
             #add the fields for the page
-            for subtitle, section_text in entry_pages[page]:
-                embed.add_field(name=subtitle, value=section_text, inline=False)
+            for subtitle, section_text, inline in entry_pages[page]:
+                embed.add_field(name=subtitle, value=section_text, inline=inline)
                 
             if (pages>1):
                 embed.set_footer(text=f"{footer}\nPage {page+1} of {pages}")
@@ -2211,6 +2214,330 @@ class Character(commands.Cog):
                 charEmbedmsg = await channel.send(embed=charEmbed, content=f"Congratulations! You have respecced your character!")
 
         self.bot.get_command('respec').reset_cooldown(ctx)
+    
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @is_log_channel()
+    @commands.command(aliases=['rr'])
+    async def racerespec(self,ctx, name, race, sStr:int, sDex:int, sCon:int, sInt:int, sWis:int, sCha:int):
+        author = ctx.author
+        guild = ctx.guild
+        channel = ctx.channel
+        charEmbed = discord.Embed ()
+        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
+
+        statNames = ['STR','DEX','CON','INT','WIS','CHA']
+        roles = [r.name for r in ctx.author.roles]
+        charDict, charEmbedmsg = await checkForChar(ctx, name, charEmbed)
+        if not charEmbedmsg:
+            charEmbedmsg = await ctx.channel.send(embed=charEmbed)
+        if not charDict:
+            
+            self.bot.get_command('racerespec').reset_cooldown(ctx)
+            return
+        if not "Race Respec" in charDict:
+            await channel.send(content=f"You have not been permitted this kind of respec. Contact a Mod to gain permission.")
+            
+            self.bot.get_command('racerespec').reset_cooldown(ctx)
+            return
+        charID = charDict['_id']
+        charDict['STR'] = int(sStr)
+        charDict['DEX'] = int(sDex)
+        charDict['CON'] = int(sCon)
+        charDict['INT'] = int(sInt)
+        charDict['WIS'] = int(sWis)
+        charDict['CHA'] = int(sCha)
+
+        charDict['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
+
+        lvl = charDict['Level']
+        msg = ""
+
+        if 'Death' in charDict.keys():
+            await channel.send(content=f"You cannot respec a dead character. Use the following command to decide their fate:\n```yaml\n$death \"{charRecords['Name']}\"```")
+            
+            self.bot.get_command('racerespec').reset_cooldown(ctx)
+            return
+        
+        if not race:
+            await channel.send(content=":warning: The race of your character cannot be blank! Please try again.\n")
+            self.bot.get_command('racerespec').reset_cooldown(ctx)
+            return
+        
+        cclass = charDict["Class"]
+        
+        # Stats - Point Buy
+        if msg == "":
+            statsArray = [int(sStr), int(sDex), int(sCon), int(sInt), int(sWis), int(sCha)]
+            
+            totalPoints = 0
+            for s in statsArray:
+                if (13-s) < 0:
+                    totalPoints += ((s - 13) * 2) + 5
+                else:
+                    totalPoints += (s - 8)
+                    
+            if any([s < 8 for s in statsArray]):
+                msg += f":warning: You have at least one stat below the minimum of 8.\n"
+            if totalPoints != 27:
+                msg += f":warning: Your stats do not add up to 27 using point buy ({totalPoints}/27). Remember that you must list your stats before applying racial modifiers! Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
+            
+        
+        
+        # ██████╗░░█████╗░░█████╗░███████╗░░░  ░█████╗░██╗░░░░░░█████╗░░██████╗░██████╗
+        # ██╔══██╗██╔══██╗██╔══██╗██╔════╝░░░  ██╔══██╗██║░░░░░██╔══██╗██╔════╝██╔════╝
+        # ██████╔╝███████║██║░░╚═╝█████╗░░░░░  ██║░░╚═╝██║░░░░░███████║╚█████╗░╚█████╗░
+        # ██╔══██╗██╔══██║██║░░██╗██╔══╝░░██╗  ██║░░██╗██║░░░░░██╔══██║░╚═══██╗░╚═══██╗
+        # ██║░░██║██║░░██║╚█████╔╝███████╗╚█║  ╚█████╔╝███████╗██║░░██║██████╔╝██████╔╝
+        # ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚══════╝░╚╝  ░╚════╝░╚══════╝╚═╝░░╚═╝╚═════╝░╚═════╝░
+        # check race
+        rRecord, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg,'races',race)
+        if not rRecord:
+            msg += f':warning: **{race}** isn\'t on the list or it is banned! Check #allowed-and-banned-content and check your spelling.\n'
+        else:
+            charDict['Race'] = rRecord['Name']
+        
+        characterCog = self.bot.get_cog('Character')
+        # Check Character's class
+        cRecord = []
+        mLevel = lvl
+        for class_text in cclass.split('/'):
+            class_text = class_text.strip()
+            class_data_split = class_text.split(" ")
+            class_name = class_data_split[0]
+            if len(class_data_split)>1 and class_data_split[1].isnumeric():
+                mLevel = int(class_data_split[1])
+            mClass, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg,'classes',class_name, exact=True)
+            m = {'Class': mClass, 'Level':mLevel}
+            cRecord.append(m)
+            
+            m['Subclass'] = 'None'
+            if int(m['Level']) < lvl:
+                className = f'{m["Class"]["Name"]} {m["Level"]}'
+            else:
+                className = f'{m["Class"]["Name"]}'
+
+
+            if "(" in class_text:
+                subclass = class_text.split("(")[1][:-1]
+                m['Subclass'] = f'{className} ({subclass})' 
+
+
+        
+        # ░██████╗████████╗░█████╗░████████╗░██████╗░░░  ███████╗███████╗░█████╗░████████╗░██████╗
+        # ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝░░░  ██╔════╝██╔════╝██╔══██╗╚══██╔══╝██╔════╝
+        # ╚█████╗░░░░██║░░░███████║░░░██║░░░╚█████╗░░░░  █████╗░░█████╗░░███████║░░░██║░░░╚█████╗░
+        # ░╚═══██╗░░░██║░░░██╔══██║░░░██║░░░░╚═══██╗██╗  ██╔══╝░░██╔══╝░░██╔══██║░░░██║░░░░╚═══██╗
+        # ██████╔╝░░░██║░░░██║░░██║░░░██║░░░██████╔╝╚█║  ██║░░░░░███████╗██║░░██║░░░██║░░░██████╔╝
+        # ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░░╚╝  ╚═╝░░░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░
+        # Stats - Point Buy
+        if msg == "":
+            statsArray, charEmbedmsg = await characterCog.pointBuy(ctx, statsArray, rRecord, charEmbed, charEmbedmsg)
+
+            
+            if not statsArray:
+                
+                self.bot.get_command('racerespec').reset_cooldown(ctx)  
+                return
+            charDict["STR"] = statsArray[0]
+            charDict["DEX"] = statsArray[1]
+            charDict["CON"] = statsArray[2]
+            charDict["INT"] = statsArray[3]
+            charDict["WIS"] = statsArray[4]
+            charDict["CHA"] = statsArray[5]
+
+        #Stats - Feats
+        if msg == "":
+            featLevels = []
+            featChoices = []
+            featsChosen = []
+            if "Feat" in rRecord:
+                featLevels.append('Extra Feat')
+            for c in cRecord:
+                if int(c['Level']) > 3:
+                    featLevels.append(4)
+                if 'Fighter' in c['Class']['Name'] and int(c['Level']) > 5:
+                    featLevels.append(6)
+                if int(c['Level']) > 7:
+                    featLevels.append(8)
+                if 'Rogue' in c['Class']['Name'] and int(c['Level']) > 9:
+                    featLevels.append(10)
+                if int(c['Level']) > 11:
+                    featLevels.append(12)
+                if 'Fighter' in c['Class']['Name'] and int(c['Level']) > 13:
+                    featLevels.append(14)
+                if int(c['Level']) > 15:
+                    featLevels.append(16)
+                if int(c['Level']) > 18:
+                    featLevels.append(19)
+
+            featsChosen, statsFeats, charEmbedmsg = await characterCog.chooseFeat(ctx, rRecord['Name'], charDict['Class'], cRecord, featLevels, charEmbed, charEmbedmsg, charDict, "")
+
+            if not featsChosen and not statsFeats and not charEmbedmsg:
+                
+                self.bot.get_command('racerespec').reset_cooldown(ctx)
+                return
+
+            if featsChosen:
+                charDict['Feats'] = featsChosen 
+            else: 
+                charDict['Feats'] = "None" 
+            
+            for key, value in statsFeats.items():
+                charDict[key] = value
+
+
+            #HP
+            hpRecords = []
+            for cc in cRecord:
+                hpRecords.append({'Level':cc['Level'], 'Subclass': cc['Subclass'], 'Name': cc['Class']['Name'], 'Hit Die Max': cc['Class']['Hit Die Max'], 'Hit Die Average':cc['Class']['Hit Die Average']})
+                
+            
+            # Multiclass Requirements
+            if len(cRecord) > 1:
+                for m in cRecord:
+                    reqFufillList = []
+                    statReq = m['Class']['Multiclass'].split(' ')
+                    if m['Class']['Multiclass'] != 'None':
+                        if '/' not in m['Class']['Multiclass'] and '+' not in m['Class']['Multiclass']:
+                            if int(charDict[statReq[0]]) < int(statReq[1]):
+                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{statReq[0]} {charDict[statReq[0]]}**\n"
+
+                        elif '/' in m['Class']['Multiclass']:
+                            statReq[0] = statReq[0].split('/')
+                            reqFufill = False
+                            for s in statReq[0]:
+                                if int(charDict[s]) >= int(statReq[1]):
+                                  reqFufill = True
+                                else:
+                                  reqFufillList.append(f"{s} {charDict[s]}")
+                            if not reqFufill:
+                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{' and '.join(reqFufillList)}**\n"
+
+                        elif '+' in m['Class']['Multiclass']:
+                            statReq[0] = statReq[0].split('+')
+                            reqFufill = True
+                            for s in statReq[0]:
+                                if int(charDict[s]) < int(statReq[1]):
+                                  reqFufill = False
+                                  reqFufillList.append(f"{s} {charDict[s]}")
+                            if not reqFufill:
+                                msg += f":warning: In order to multiclass to or from **{m['Class']['Name']}** you need at least **{m['Class']['Multiclass']}**. Your character only has **{' and '.join(reqFufillList)}**\n"
+
+
+        if msg:
+            if charEmbedmsg and charEmbedmsg != "Fail":
+                await charEmbedmsg.delete()
+            elif charEmbedmsg == "Fail":
+                msg = ":warning: You have either cancelled the command or a value was not found."
+            await ctx.channel.send(f'There were error(s) when creating your character:\n{msg}')
+
+            self.bot.get_command('racerespec').reset_cooldown(ctx)
+            return 
+        
+        if 'Max Stats' not in charDict:
+            charDict['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
+        
+        charClass = charDict["Class"]
+        subclasses = []
+        if '/' in charClass:
+            tempClassList = charClass.split(' / ')
+            for t in tempClassList:
+                temp = t.split(' ')
+                tempSub = ""
+                if '(' and ')' in t:
+                    tempSub = t[t.find("(")+1:t.find(")")]
+
+                subclasses.append({'Name':temp[0], 'Subclass':tempSub, 'Level':int(temp[1])})
+        else:
+            tempSub = ""
+            if '(' and ')' in charClass:
+                tempSub = charClass[charClass.find("(")+1:charClass.find(")")]
+            subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':charLevel})
+        #Special stat bonuses (Barbarian cap / giant soul sorc)
+        specialCollection = db.special
+        specialRecords = list(specialCollection.find())
+        for s in specialRecords:
+            if 'Bonus Level' in s:
+                for c in subclasses:
+                    if s['Bonus Level'] <= c['Level'] and s['Name'] in f"{c['Name']} ({c['Subclass']})":
+                        if 'MAX' in s['Stat Bonuses']:
+                            statSplit = s['Stat Bonuses'].split('MAX ')[1].split(', ')
+                            for stat in statSplit:
+                                maxSplit = stat.split(' +')
+                                charDict[maxSplit[0]] += int(maxSplit[1])
+                                charDict['Max Stats'][maxSplit[0]] += int(maxSplit[1]) 
+
+
+        maxStatStr = ""
+        for sk in charDict['Max Stats'].keys():
+            if charDict[sk] > charDict['Max Stats'][sk]:
+                charDict[sk] = charDict['Max Stats'][sk]
+        if hpRecords:
+            charDict['HP'] = await characterCog.calcHP(ctx,hpRecords,charDict,lvl)
+
+        tierNum = 5
+        # calculate the tier of the rewards
+        if lvl < 5:
+            tierNum = 1
+        elif lvl < 11:
+            tierNum = 2
+        elif lvl < 17:
+            tierNum = 3
+        elif lvl < 20:
+            tierNum = 4
+        charEmbed.clear_fields()    
+        charEmbed.title = f"{charDict['Name']} (Lv {charDict['Level']}): {charDict['CP']}/{cp_bound_array[tierNum-1][1]} CP"
+        charEmbed.description = f"**Race**: {charDict['Race']}\n**Class**: {charDict['Class']}\n**Background**: {charDict['Background']}\n**Max HP**: {charDict['HP']}\n**GP**: {charDict['GP']} "
+        charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=True)
+        charEmbed.add_field(name='Stats', value=f"**STR**: {charDict['STR']} **DEX**: {charDict['DEX']} **CON**: {charDict['CON']} **INT**: {charDict['INT']} **WIS**: {charDict['WIS']} **CHA**: {charDict['CHA']}", inline=False)
+        
+        playersCollection = db.players
+        
+        charEmbed.set_footer(text=f"")
+        def charCreateCheck(r, u):
+            sameMessage = False
+            if charEmbedmsg.id == r.message.id:
+                sameMessage = True
+            return sameMessage and ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author
+        if not charEmbedmsg:
+            charEmbedmsg = await channel.send(embed=charEmbed, content="**Double-check** your character information.\nIf this is correct, please react with one of the following:\n✅ to finish creating your character.\n❌ to cancel. ")
+        else:
+            await charEmbedmsg.edit(embed=charEmbed, content="**Double-check** your character information.\nIf this is correct please react with one of the following:\n✅ to finish creating your character.\n❌ to cancel. ")
+
+        await charEmbedmsg.add_reaction('✅')
+        await charEmbedmsg.add_reaction('❌')
+        try:
+            tReaction, tUser = await self.bot.wait_for("reaction_add", check=charCreateCheck , timeout=60)
+        except asyncio.TimeoutError:
+            await charEmbedmsg.delete()
+            await channel.send(f'Character respec cancelled. Use the following command to try again:\n```yaml\n{commandPrefix}racerespec \"character name\" \"new race\" STR DEX CON INT WIS CHA``````')
+            self.bot.get_command('racerespec').reset_cooldown(ctx)
+            return
+        else:
+            await charEmbedmsg.clear_reactions()
+            if tReaction.emoji == '❌':
+                await charEmbedmsg.edit(embed=None, content=f"Character respec cancelled. Try again using the same command:\n```yaml\n{commandPrefix}racerespec \"character name\" \"new race\" STR DEX CON INT WIS CHA```")
+                await charEmbedmsg.clear_reactions()
+                self.bot.get_command('racerespec').reset_cooldown(ctx)
+                return
+
+        try:
+            if "Race Respec" in charDict:
+                del charDict["Race Respec"]
+            playersCollection.update_one({'_id': charID}, {"$set": charDict, "$unset":{"Race Respec" : 1}}, upsert=True)
+            
+        except Exception as e:
+            print ('MONGO ERROR: ' + str(e))
+            charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
+        else:
+            if charEmbedmsg:
+                await charEmbedmsg.clear_reactions()
+                await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! You have respecced your character!")
+            else: 
+                charEmbedmsg = await channel.send(embed=charEmbed, content=f"Congratulations! You have respecced your character!")
+
+        self.bot.get_command('racerespec').reset_cooldown(ctx)
     
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
@@ -4498,7 +4825,11 @@ class Character(commands.Cog):
                             if 'Class Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Class Restriction'].split(', ')]
                                 for c in cRecord:
-                                    if ctx.invoked_with.lower() == "create" or ctx.invoked_with.lower() == "respec":
+                                    if (ctx.invoked_with.lower() == "create" 
+                                        or ctx.invoked_with.lower() == "respec"
+                                        or ctx.invoked_with.lower() == "rs" 
+                                        or ctx.invoked_with.lower() == "racerespec"
+                                        or ctx.invoked_with.lower() == "rr"):
                                         if c['Class']['Name'] in featsList or c['Subclass'] in featsList:
                                             meetsRestriction = True
                                     else:
@@ -4723,7 +5054,7 @@ class Character(commands.Cog):
                         try:
                             charEmbed.clear_fields()    
                             charEmbed.set_footer(text= charEmbed.Empty)
-                            charEmbed.add_field(name=f"The {featPicked['Name']} feat lets you choose between {featBonus}. React with [1-{len(featBonusList)}] below with the stat(s) you would like to choose.", value=featBonusString, inline=False)
+                            charEmbed.add_field(name=f"The {featPicked['Name']} feat lets you choose between {featBonus}. React with [{alphaEmojis[0]}-{alphaEmojis[len(featBonusList)-1]}] below with the stat(s) you would like to choose.", value=featBonusString, inline=False)
                             await charEmbedmsg.edit(embed=charEmbed)
                             for num in range(0,len(featBonusList)): await charEmbedmsg.add_reaction(alphaEmojis[num])
                             await charEmbedmsg.add_reaction('❌')

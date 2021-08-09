@@ -4,6 +4,7 @@ from discord.utils import get
 from discord.ext import commands
 from bfunc import  numberEmojis, numberEmojisMobile, commandPrefix, checkForChar, checkForGuild, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
 from datetime import datetime, timezone,timedelta
+from cogs.char import paginate
 
 async def pin_control(self, ctx, goal):
         author = ctx.author
@@ -252,8 +253,7 @@ class Guild(commands.Cog):
                     except Exception as e:
                         print ('MONGO ERROR: ' + str(e))
                         guildEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your guild again.")
-                    else:
-                        print('Success')
+
 
                         guildEmbed.title = f"Guild Creation: {guildName}"
                         guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\n{self.creation_cost} GP must be donated in order for the guild to officially open!\n\nAny character who is not in a guild can fund this guild using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" #guild-channel GP```\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info #guild-channel```\nCurrent Guild Funds: {gpNeeded} GP"
@@ -280,14 +280,14 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guildEmbed = discord.Embed()
         guildEmbedmsg = None
-        
         guildChannel = ctx.message.channel_mentions
+        content = []
         if guildChannel == list():
-            await ctx.channel.send(f"You are missing the guild channel.")
-            return 
-        guildChannel = guildChannel[0]
-
-        guildRecords = db.guilds.find_one({"Channel ID": str(guildChannel.id)})
+            guildRecords, guildEmbedmsg = await checkForGuild(ctx, guildName, guildEmbed)
+        else:
+            guildChannel = guildChannel[0]
+            guildRecords = db.guilds.find_one({"Channel ID": str(guild_id)})
+            
         if guildRecords:
             guildRank = ""
             if guildRecords['Total Reputation'] >= 30:
@@ -299,10 +299,8 @@ class Guild(commands.Cog):
             else:
                 guildRank = "Rank 1 (Small)"
 
-            guildEmbed.title = f"{guildRecords['Name']}: {guildRank}" 
-            # Does not list Guildmaster
-            # guildEmbed.add_field (name= 'Guildmaster', value=f"{guild.get_member(int(guildRecords['Guildmaster ID'])).mention} **{guildRecords['Guildmaster']}**\n", inline=False)
-
+            title = f"{guildRecords['Name']}: {guildRank}" 
+           
             playersCollection = db.players
             guildMembers = list(playersCollection.find({"Guild": guildRecords['Name']}))
             
@@ -336,7 +334,17 @@ class Guild(commands.Cog):
             
             guild_stats_string += f"  Guild Members Gained: {gv['Joins']}\n"
             
-            
+            dm_text=""
+            if "DM" in guild_stats:
+                all_guild_dms = list(filter(lambda dm_data: "Guilds" in dm_data[1] and guildRecords['Name'] in dm_data[1]["Guilds"], list(guild_stats["DM"].items())))
+                
+                all_guild_dms.sort(key=lambda dm_data: -dm_data[1]["Guilds"][guildRecords['Name']])
+
+                for i in range(0, min(5, len(all_guild_dms))):
+                    dm_id, dm_data = all_guild_dms[i]
+                    dm_text += f"   <@{dm_id}>: {dm_data['Guilds'][guildRecords['Name']]}\n"
+
+
             guild_life_stats_string = ""
             gv = {}
             if (not "Guilds" in guild_life_stats) or (not guildRecords["Name"] in guild_life_stats["Guilds"]):
@@ -347,6 +355,7 @@ class Guild(commands.Cog):
             for data_key in guild_data_0s:
                 if not data_key in gv:
                     gv[data_key] = 0
+                    
             guild_life_stats_string += f"  Quests: {gv['GQ']}\n"
 
             # Total number of guild quests with a guild member who got rewards
@@ -363,37 +372,49 @@ class Guild(commands.Cog):
             
             guild_life_stats_string += f"  Guild Members Gained: {gv['Joins']}\n"
             
+            dm_text_lifetime=""
+                    
+            if "DM" in guild_life_stats:
+                all_guild_dms = list(filter(lambda dm_data: "Guilds" in dm_data[1] and guildRecords['Name'] in dm_data[1]["Guilds"], 
+                    list(guild_life_stats["DM"].items())))
+                
+                all_guild_dms.sort(key=lambda dm_data: -dm_data[1]["Guilds"][guildRecords['Name']])
+
+                for i in range(0, min(5, len(all_guild_dms))):
+                    dm_id, dm_data = all_guild_dms[i]
+                    dm_text_lifetime += f"   <@{dm_id}>: {dm_data['Guilds'][guildRecords['Name']]}\n"
+
+
             
             if guildMembers != list():
-                
-                guildMemberStrList = []
                 guildMemberStr = ""
                 for g in guildMembers:
                     g_member = guild.get_member(int(g['User ID']))
                     if not g_member:
                         continue
                     next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
-                    if len(guildMemberStr) +len(next_member_str)>1000:
-                        guildMemberStrList.append(guildMemberStr)
-                        guildMemberStr = next_member_str 
-                    else:
-                        guildMemberStr += next_member_str
-                guildMemberStrList.append(guildMemberStr)
-                for out_string in guildMemberStrList:
-                    guildEmbed.add_field(name="Members", value=out_string)
+                    guildMemberStr += next_member_str 
+                content.append(("Members", guildMemberStr, False, True))
             else:
-                guildEmbed.add_field(name="Members", value="There are no guild members currently.")
+                content.append(("Members", "There are no guild members currently.", False, True))
 
             if guildRecords['Funds'] < self.creation_cost:
-                guildEmbed.add_field(name="Funds", value=f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!", inline=False)
+                content.append(("Funds", f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!"))
             else:
-                guildEmbed.add_field(name="Reputation", value=f"Total Reputation: {guildRecords['Total Reputation']} :sparkles:\nBank: {guildRecords['Reputation']} :sparkles:", inline=False)
+                content.append(("Reputation", f"Total Reputation: {guildRecords['Total Reputation']} :sparkles:\nBank: {guildRecords['Reputation']} :sparkles:"))
             guildEmbed.add_field(name="Monthly Stats", value=guild_stats_string, inline=False)
-            guildEmbed.add_field(name="Lifetime Stats", value=guild_life_stats_string, inline=False)
             
+            content.append(("Monthly Stats", guild_stats_string))
+            content.append(("Lifetime Stats", guild_life_stats_string))
+            separate_page = True
+            if dm_text:
+                content.append(("This Month's Top DMs", dm_text, separate_page))
+                separate_page = False
+            if dm_text_lifetime:
+                content.append(("Alltime Top DMs", dm_text_lifetime, separate_page))
 
-            await channel.send(embed=guildEmbed)
-
+            await paginate(ctx, self.bot, title, content, msg = guildEmbedmsg, footer="")
+    
         else:
             await channel.send(f'The ***{guildChannel.mention}*** guild does not exist. Check to see if it is a valid guild and check your spelling.')
             return
@@ -853,7 +874,6 @@ class Guild(commands.Cog):
             
             await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please renaming the guild again.")
         else:
-            print('Success')
             await ctx.channel.send(f"You have successfully renamed {oldName} to {newName}!")
             
     
@@ -886,7 +906,6 @@ class Guild(commands.Cog):
         channel = ctx.channel
         await ctx.message.delete()  
         await ctx.channel.edit(topic=messageTopic)
-        print('Success')
         resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your guild! This message will self-destruct in 10 seconds.")
         await asyncio.sleep(10) 
         await resultMessage.delete()

@@ -81,20 +81,22 @@ class Campaign(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
     @campaign.command()
-    async def info(self, ctx, channel):
+    async def info(self, ctx, channel, full=""):
         campaignChannel = ctx.message.channel_mentions
 
-        if campaignChannel == list():
-            await ctx.channel.send(f"You must provide a campaign channel.")
-            return 
-        channel = campaignChannel[0]
+        channel = ctx.channel
+        if not (campaignChannel == list()):
+            channel = campaignChannel[0] 
         
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)})
         if not campaignRecords:
             await channel.send(f"No campaign could be found for this channel.")
             return 
         playerRecords = list(db.users.find({"Campaigns."+campaignRecords["Name"]: {"$exists": True}}))
-        playerRecords.sort(key=lambda x:not  x["Campaigns"][campaignRecords["Name"]]["Active"])
+        if full:
+            playerRecords.sort(key=lambda x:not  x["Campaigns"][campaignRecords["Name"]]["Active"])
+        else:
+            playerRecords = filter(lambda x:not  x["Campaigns"][campaignRecords["Name"]]["Active"], playerRecords)
         infoEmbed = discord.Embed()
         infoEmbedmsg = None
         master = None
@@ -112,7 +114,8 @@ class Campaign(commands.Cog):
                     member_name = member.display_name
                 info_string += f"• Time: {timeConversion(player['Campaigns'][campaignRecords['Name']]['Time'])}\n"
                 info_string += f"• Sessions: {player['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
-                info_string += f"• Active Member: {player['Campaigns'][campaignRecords['Name']]['Active']}"
+                if full:
+                    info_string += f"• {'In-'* (not player['Campaigns'][campaignRecords['Name']]['Active'])}Active"
                 infoEmbed.add_field(name=f"**{member_name}**:", value = info_string, inline = False)
         infoEmbed.description = description_string
         
@@ -184,7 +187,6 @@ class Campaign(commands.Cog):
                 print ('MONGO ERROR: ' + str(e))
                 campaignEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your campaign again.")
             else:
-                print('Success')
                 campaignEmbed.title = f"Campaign Creation: {campaignName}"
                 campaignEmbed.description = f"{author.name} has created **{campaignName}**!\nRole: {campaignRole[0].mention}\nChannel: {campaignChannel[0].mention}"
                 if campaignEmbedmsg:
@@ -252,8 +254,8 @@ class Campaign(commands.Cog):
         userRecords['Campaigns'][campaignRecords['Name']]["Active"] = True
 
         await user[0].add_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
-        if not any([role in roles for role in ["New Friend", "Junior Friend", "Journeyfriend", "Elite Friend", "True Friend", "Ascended Friend"]]):
-            await user[0].add_roles(get(guild.roles, name = "Junior Friend"), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
+        if not any([role in roles for role in ["Junior Friend", "Journeyfriend", "Elite Friend", "True Friend", "Ascended Friend"]]):
+            await user[0].add_roles(get(guild.roles, name = "Junior Friend"), reason=f"{author.name} added campaign member to {campaignRecords['Name']}")
 
         try:
             usersCollection.update_one({'_id': userRecords['_id']}, {"$set": {"Campaigns": userRecords['Campaigns']}}, upsert=True)
@@ -261,7 +263,6 @@ class Campaign(commands.Cog):
             print ('MONGO ERROR: ' + str(e))
             campaignEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try adding to your campaign again.")
         else:
-            print('Success')
             campaignEmbed.title = f"Campaign: {campaignRecords['Name']}"
             campaignEmbed.description = f"{author.name} has added {user[0].mention} to **{campaignRecords['Name']}**!"
             if campaignEmbedmsg:
@@ -326,7 +327,6 @@ class Campaign(commands.Cog):
             campaignEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try removing from your campaign again.")
         else:
             await user[0].remove_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} remove campaign member from {campaignRecords['Name']}")
-            print('Success')
             campaignEmbed.title = f"Campaign: {campaignRecords['Name']}"
             campaignEmbed.description = f"{author.name} has removed {user[0].mention} from **{campaignRecords['Name']}**!"
             campaignEmbedmsg = await channel.send(embed=campaignEmbed)
@@ -1033,7 +1033,6 @@ Command Checklist
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
             else:
-                print('Success')  
                 stopEmbed.set_footer(text=f"Placeholder, if this remains remember the wise words DO NOT PANIC and get a towel.")
                 session_msg = await ctx.channel.send(embed=stopEmbed)
                 
@@ -1055,15 +1054,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 modMessage = await modChannel.send(embed=modEmbed)
                 for e in ["🚧", "📝", "✅", "❌"]:
                     await modMessage.add_reaction(e)
-                print('Success')  
                 stopEmbed.set_footer(text=f"Game ID: {session_msg.id}\nLog is being processed. If you have appended a summary to your campaign session log more than 24 hours after the session ended, message a Mod with a link to your campaign session log to get it approved.")
 
-                
-                print('Success')  
                 await session_msg.edit(embed=stopEmbed)
                 
-                print('Success')  
-
             # enable the starting timer commands
             self.timer.get_command('prep').reset_cooldown(ctx)
 
@@ -1299,7 +1293,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
             else:
-                print("Success")
                 sessionLogEmbed.set_footer(text=f"Game ID: {num}\n✅ Log approved! The DM has received their Noodle(s) and time and the players have received their time.")
                 await editMessage.edit(embed=sessionLogEmbed)
                 
@@ -1421,7 +1414,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 print ('MONGO ERROR: ' + str(e))
                 charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the command again.")
             else:
-                print("Success")
                 sessionLogEmbed.set_footer(text=f"Game ID: {num}\n❌ Log complete! The DM may still edit the summary log if they wish.")
                 await editMessage.edit(embed=sessionLogEmbed)
                 await ctx.channel.send("The session has been denied.")
@@ -1478,7 +1470,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             return
         
         await ctx.channel.edit(topic=messageTopic)
-        print('Success')
         await ctx.message.delete()
 
         resultMessage = await ctx.channel.send(f"You have successfully updated the topic for your campaign! This message will self-destruct in 10 seconds.")

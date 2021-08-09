@@ -121,8 +121,8 @@ class Admin(commands.Cog, name="Admin"):
             print(line)
             if line.strip():
                 out.append({"Text" : line.strip()})
-        result = db.liners_find.insert_many(out)
-        print(result.inserted_ids)
+        result = db.liners_meme.insert_many(out)
+        print(len(result.inserted_ids))
         
         
     # command that allows one to update each field of the liners dictionary
@@ -133,6 +133,7 @@ class Admin(commands.Cog, name="Admin"):
         liner_dic["Find"] = list([line["Text"] for line in db.liners_find.find()])
         liner_dic["Meme"] = list([line["Text"] for line in db.liners_meme.find()])
         liner_dic["Craft"] = list([line["Text"] for line in db.liners_craft.find()])
+        await ctx.channel.send("Liners Updated")
 
     @commands.command()
     async def endDDMRW(self, ctx):
@@ -393,6 +394,28 @@ class Admin(commands.Cog, name="Admin"):
         try:
             db.players.update_one(
                {"Name": cRecord["Name"], "User ID": cRecord["User ID"]}, {"$set" : {"Respecc": 1}}
+            )
+            await channel.send(content=f"Successfully updated {cRecord['Name']}.")
+    
+        except Exception as e:
+            traceback.print_exc()
+            
+    @commands.command()
+    @commands.has_any_role('Mod Friend')
+    async def permitRaceRespec(self, ctx, charName):
+        charEmbed = discord.Embed()
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
+        channel = ctx.channel
+        if not cRecord:
+            await channel.send(content=f'I was not able to find the character ***"{charName}"***!')
+            return False
+
+        if charEmbedmsg:
+            await charEmbedmsg.delete()
+            
+        try:
+            db.players.update_one(
+               {"Name": cRecord["Name"], "User ID": cRecord["User ID"]}, {"$set" : {"Race Respec": 1}}
             )
             await channel.send(content=f"Successfully updated {cRecord['Name']}.")
     
