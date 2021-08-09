@@ -81,7 +81,7 @@ class Campaign(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
     @campaign.command()
-    async def info(self, ctx, channel, full=""):
+    async def info(self, ctx, channel="", full=""):
         campaignChannel = ctx.message.channel_mentions
 
         channel = ctx.channel
@@ -96,7 +96,7 @@ class Campaign(commands.Cog):
         if full:
             playerRecords.sort(key=lambda x:not  x["Campaigns"][campaignRecords["Name"]]["Active"])
         else:
-            playerRecords = filter(lambda x:not  x["Campaigns"][campaignRecords["Name"]]["Active"], playerRecords)
+            playerRecords = filter(lambda x:  x["Campaigns"][campaignRecords["Name"]]["Active"], playerRecords)
         infoEmbed = discord.Embed()
         infoEmbedmsg = None
         master = None

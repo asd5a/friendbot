@@ -160,8 +160,6 @@ class Stats(commands.Cog):
                        
                         # Total Number of Games per DM
                         statsString += f"Total: {totalGames}\n"
-                    
-                statsString += f"Unique DMs: {len(statRecords['DM'].items())}\n"
 
               
                 # Total number of Games for the month
@@ -222,6 +220,7 @@ class Stats(commands.Cog):
                     statsTotalString += f"Total Number of Players: {statRecords['Players']}\n"
                 if 'Unique Players' in statRecords and 'Playtime' in statRecords:
                     statsTotalString += f"Number of Unique Players: {len(statRecords['Unique Players'])}\n"
+                    statsTotalString += f"Unique DMs: {len(statRecords['DM'].items())}\n"
                 
                 contents.insert(0, (f"{identity_strings[0]} Stats", statsTotalString, False))
                 if statsString:
@@ -243,7 +242,7 @@ class Stats(commands.Cog):
                         charString += f"• {vk}: {vv}\n"
                         counter += vv
 
-                charString += f"• No Sublcass: {v['Count'] - counter}\n"
+                #charString += f"• No Sublcass: {v['Count'] - counter}\n"
                 charString += f"━━━━━\n"
             if not charString:
                 charString = "No stats yet."

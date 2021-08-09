@@ -2453,7 +2453,7 @@ class Character(commands.Cog):
             tempSub = ""
             if '(' and ')' in charClass:
                 tempSub = charClass[charClass.find("(")+1:charClass.find(")")]
-            subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':charLevel})
+            subclasses.append({'Name':charClass, 'Subclass':tempSub, 'Level':lvl})
         #Special stat bonuses (Barbarian cap / giant soul sorc)
         specialCollection = db.special
         specialRecords = list(specialCollection.find())
