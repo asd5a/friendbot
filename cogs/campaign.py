@@ -125,7 +125,6 @@ class Campaign(commands.Cog):
             member_name = member.display_name
         master_text += f"• Time: {timeConversion(master['Campaigns'][campaignRecords['Name']]['Time'])}\n"
         master_text += f"• Sessions: {master['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
-        master_text += f"• Active Member: {master['Campaigns'][campaignRecords['Name']]['Active']}"
         infoEmbed.insert_field_at(0, name=f"**{member_name}** (Campaign Master):", value = master_text, inline = False)
         await ctx.channel.send(embed=infoEmbed)
     
