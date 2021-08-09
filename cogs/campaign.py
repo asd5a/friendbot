@@ -116,7 +116,7 @@ class Campaign(commands.Cog):
                 info_string += f"• Sessions: {player['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
                 if full:
                     active_string = 'Active'
-                    if not player['Campaigns'][campaignRecords['Name']]['Active']):
+                    if (not player['Campaigns'][campaignRecords['Name']]['Active']):
                         active_string = 'Inactive'
                     info_string += f"• {active_string}"
                 infoEmbed.add_field(name=f"**{member_name}**:", value = info_string, inline = False)
