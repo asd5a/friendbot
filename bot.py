@@ -46,8 +46,7 @@ bot.remove_command('help')
 @bot.event
 async def on_command_error(ctx,error):
     msg = None
-    print(ctx.invoked_with)
-    print(error)
+    
     
     if isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
         await ctx.channel.send("There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command. ")
@@ -75,11 +74,12 @@ async def on_command_error(ctx,error):
 
     elif isinstance(error, commands.CommandNotFound):
         await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!')
-
+        return 
     else:
         ctx.command.reset_cooldown(ctx)
         await traceBack(ctx,error)
-
+    print(ctx.invoked_with)
+    print(error)
 @bot.command()
 async def help(ctx, *, pageString=''):
     def helpCheck(r,u):

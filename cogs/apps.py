@@ -108,7 +108,7 @@ class Apps(commands.Cog):
         sMessage = await ctx.channel.send(content=f'Hello, {msg.author.name}!\n\nThank you for submitting your membership application to the **D&D Friends** Discord server! It has been forwarded to the Mod team for review. Please give the Mod team at least 24 hours before you message one of them to inquire about the status of your membership application. Once it has been processed, you will receive another message from me with the status of your application and further instructions!')
                 
         # appchannel
-        channelID = 734276425875587112
+        channelID = 388591318814949376
         channel = self.bot.get_channel(channelID)
         files =None
         if msg.attachments:
