@@ -335,7 +335,7 @@ class Guild(commands.Cog):
             guild_stats_string += f"  Guild Members Gained: {gv['Joins']}\n"
             
             dm_text=""
-            if "DM" in guild_stats:
+            if guild_stats and "DM" in guild_stats:
                 all_guild_dms = list(filter(lambda dm_data: "Guilds" in dm_data[1] and guildRecords['Name'] in dm_data[1]["Guilds"], list(guild_stats["DM"].items())))
                 
                 all_guild_dms.sort(key=lambda dm_data: -dm_data[1]["Guilds"][guildRecords['Name']])
@@ -374,7 +374,7 @@ class Guild(commands.Cog):
             
             dm_text_lifetime=""
                     
-            if "DM" in guild_life_stats:
+            if guild_life_stats and "DM" in guild_life_stats:
                 all_guild_dms = list(filter(lambda dm_data: "Guilds" in dm_data[1] and guildRecords['Name'] in dm_data[1]["Guilds"], 
                     list(guild_life_stats["DM"].items())))
                 
@@ -386,6 +386,22 @@ class Guild(commands.Cog):
 
 
             
+            
+            if guildRecords['Funds'] < self.creation_cost:
+                content.append(("Funds", f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!"))
+            else:
+                content.append(("Reputation", f"Total: {guildRecords['Total Reputation']} :sparkles:\nBank: {guildRecords['Reputation']} :sparkles:"))
+            guildEmbed.add_field(name="Monthly Stats", value=guild_stats_string, inline=False)
+            
+            content.append(("Monthly Stats", guild_stats_string))
+            content.append(("Lifetime Stats", guild_life_stats_string))
+            separate_page = False
+            if dm_text:
+                content.append(("This Month's Top DMs", dm_text, separate_page, True))
+                separate_page = False
+            if dm_text_lifetime:
+                content.append(("Alltime Top DMs", dm_text_lifetime, separate_page, True))
+            
             if guildMembers != list():
                 guildMemberStr = ""
                 for g in guildMembers:
@@ -394,24 +410,9 @@ class Guild(commands.Cog):
                         continue
                     next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
                     guildMemberStr += next_member_str 
-                content.append(("Members", guildMemberStr, False, True))
+                content.append(("Members", guildMemberStr, True, True))
             else:
-                content.append(("Members", "There are no guild members currently.", False, True))
-
-            if guildRecords['Funds'] < self.creation_cost:
-                content.append(("Funds", f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!"))
-            else:
-                content.append(("Reputation", f"Total Reputation: {guildRecords['Total Reputation']} :sparkles:\nBank: {guildRecords['Reputation']} :sparkles:"))
-            guildEmbed.add_field(name="Monthly Stats", value=guild_stats_string, inline=False)
-            
-            content.append(("Monthly Stats", guild_stats_string))
-            content.append(("Lifetime Stats", guild_life_stats_string))
-            separate_page = True
-            if dm_text:
-                content.append(("This Month's Top DMs", dm_text, separate_page))
-                separate_page = False
-            if dm_text_lifetime:
-                content.append(("Alltime Top DMs", dm_text_lifetime, separate_page))
+                content.append(("Members", "There are no guild members currently.", True, True))
 
             await paginate(ctx, self.bot, title, content, msg = guildEmbedmsg, footer="")
     
