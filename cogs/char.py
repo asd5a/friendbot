@@ -3348,6 +3348,7 @@ class Character(commands.Cog):
             mod = "Mod Friend" in [role.name for role in author.roles]
             if ctx.message.mentions:
                 authorCheck =ctx.message.mentions[0]
+                mod=False
         statusEmoji = ""
         charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed, authorCheck = authorCheck, mod=mod)
         if charDict:

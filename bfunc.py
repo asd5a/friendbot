@@ -347,6 +347,7 @@ async def checkForChar(ctx, char, charEmbed="", authorCheck=None, mod=False, cus
 
     if authorCheck != None:
         author = authorCheck
+        mod=False
 
     playersCollection = db.players
 

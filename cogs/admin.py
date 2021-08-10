@@ -385,7 +385,8 @@ class Admin(commands.Cog, name="Admin"):
         authorCheck= None
         if ctx.message.mentions:
             authorCheck =ctx.message.mentions[0]
-        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, authorCheck = authorCheck, mod=True)
+        mod= not authorCheck
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, authorCheck = authorCheck, mod=mod)
         channel = ctx.channel
         if not cRecord:
             await channel.send(content=f'I was not able to find the character ***"{charName}"***!')
@@ -411,7 +412,8 @@ class Admin(commands.Cog, name="Admin"):
         
         if ctx.message.mentions:
             authorCheck =ctx.message.mentions[0]
-        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, authorCheck = authorCheck, mod=True)
+        mod= not authorCheck
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, authorCheck = authorCheck, mod=mod)
         channel = ctx.channel
         if not cRecord:
             await channel.send(content=f'I was not able to find the character ***"{charName}"***!')
