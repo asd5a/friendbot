@@ -283,9 +283,12 @@ class Guild(commands.Cog):
         guildChannel = ctx.message.channel_mentions
         content = []
         if guildChannel == list():
+            guildChannel = ctx.channel
+            guildChannel.mention = guildName
             guildRecords, guildEmbedmsg = await checkForGuild(ctx, guildName, guildEmbed)
         else:
             guildChannel = guildChannel[0]
+            guild_id = guildChannel.id
             guildRecords = db.guilds.find_one({"Channel ID": str(guild_id)})
             
         if guildRecords:
