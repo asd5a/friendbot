@@ -323,21 +323,21 @@ class Guild(commands.Cog):
             for data_key in guild_data_0s:
                 if not data_key in gv:
                     gv[data_key] = 0
-            guild_stats_string += f"  Quests: {gv['GQ']}\n"
+            guild_stats_string += f"• Guild Quests: {gv['GQ']}\n"
 
             # Total number of guild quests with a guild member who got rewards
-            guild_stats_string += f"  Guild Quests with Active Players: {gv['GQM']}\n"
+            guild_stats_string += f"• Guild Quests with Active Members: {gv['GQM']}\n"
 
             # Total number of guild quests with no guild members who got rewards
-            guild_stats_string += f"  Guild Quests with no Active Members: {gv['GQNM']}\n"
+            guild_stats_string += f"• Guild Quests with no Active Members: {gv['GQNM']}\n"
             
-            guild_stats_string += f"   Quests with only Active DM: {gv['GQDM']}\n"
+            guild_stats_string += f"• Guild Quests with only Active DM: {gv['GQDM']}\n"
             
             
-            guild_stats_string += f"  :sparkles: gained by Players: {gv['Player Sparkles']}\n"
-            guild_stats_string += f"  :sparkles: gained by DMs: {gv['DM Sparkles']}\n"
+            guild_stats_string += f"• :sparkles: gained by Members: {gv['Player Sparkles']}\n"
+            guild_stats_string += f"• :sparkles: gained by DMs: {gv['DM Sparkles']}\n"
             
-            guild_stats_string += f"  Guild Members Gained: {gv['Joins']}\n"
+            guild_stats_string += f"• Guild Members Gained: {gv['Joins']}\n"
             
             dm_text=""
             if guild_stats and "DM" in guild_stats:
@@ -361,21 +361,21 @@ class Guild(commands.Cog):
                 if not data_key in gv:
                     gv[data_key] = 0
                     
-            guild_life_stats_string += f"  Quests: {gv['GQ']}\n"
+            guild_life_stats_string += f"• Guild Quests: {gv['GQ']}\n"
 
             # Total number of guild quests with a guild member who got rewards
-            guild_life_stats_string += f"  Guild Quests with Active Players: {gv['GQM']}\n"
+            guild_life_stats_string += f"• Guild Quests with Active Members: {gv['GQM']}\n"
 
             # Total number of guild quests with no guild members who got rewards
-            guild_life_stats_string += f"  Guild Quests with no Active Members: {gv['GQNM']}\n"
+            guild_life_stats_string += f"• Guild Quests with no Active Members: {gv['GQNM']}\n"
             
-            guild_life_stats_string += f"   Quests with only Active DM: {gv['GQDM']}\n"
+            guild_life_stats_string += f"• Guild Quests with only Active DM: {gv['GQDM']}\n"
             
             
-            guild_life_stats_string += f"  :sparkles: gained by Players: {gv['Player Sparkles']}\n"
-            guild_life_stats_string += f"  :sparkles: gained by DMs: {gv['DM Sparkles']}\n"
+            guild_life_stats_string += f"• :sparkles: gained by Members: {gv['Player Sparkles']}\n"
+            guild_life_stats_string += f"• :sparkles: gained by DMs: {gv['DM Sparkles']}\n"
             
-            guild_life_stats_string += f"  Guild Members Gained: {gv['Joins']}\n"
+            guild_life_stats_string += f"• Guild Members Gained: {gv['Joins']}\n"
             
             dm_text_lifetime=""
                     
@@ -395,7 +395,7 @@ class Guild(commands.Cog):
             if guildRecords['Funds'] < self.creation_cost:
                 content.append(("Funds", f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!"))
             else:
-                content.append(("Reputation", f"Total: {guildRecords['Total Reputation']} :sparkles:\nBank: {guildRecords['Reputation']} :sparkles:"))
+                content.append(("Reputation", f"• Lifetime (Total): {guildRecords['Total Reputation']} :sparkles:\n• Bank (Current): {guildRecords['Reputation']} :sparkles:"))
             guildEmbed.add_field(name="Monthly Stats", value=guild_stats_string, inline=False)
             
             content.append(("Monthly Stats", guild_stats_string))
@@ -405,7 +405,7 @@ class Guild(commands.Cog):
                 content.append(("This Month's Top DMs", dm_text, separate_page, True))
                 separate_page = False
             if dm_text_lifetime:
-                content.append(("Alltime Top DMs", dm_text_lifetime, separate_page, True))
+                content.append(("All-time Top DMs", dm_text_lifetime, separate_page, True))
             
             if guildMembers != list():
                 guildMemberStr = ""

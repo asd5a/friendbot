@@ -1326,6 +1326,9 @@ def setup(bot):
 # $removeCharacter "character name"
     # Deletes a character from the database.
 
+# $giveRewards "character name" @user CP "Reward Items"
+    # Gives CP and reward items to a character belonging to a specific user.
+
 # $reload <file name> | $reload misc
     # Hot reloads the specific cog file and updates the commands of the cog to the latest local version while resetting cooldowns and variables. This allows you to change anything in the cog folder without requiring a restart.
 
@@ -1365,8 +1368,22 @@ def setup(bot):
 # $react add/remove channelID messageID :emoji:
     # Forces Bot Friend to add or remove a Unicode emoji as a reaction to the specified message within a channel.
 
-# $uwuize
+# $uwu
     # Translates the previous message into uwu-speak.
 
 # $killbot
     # Forcefully shuts down Bot Friend.
+
+
+
+
+#### Mod-Only Commands
+
+# $permitRespec "character name"
+    # Sets a flag in the database for the specified character to allow them to use the `$respec` command once regardless of their level. Will confirm which character if multiple users have a character by that name.
+
+# $permitRaceRespec "character name"
+    # Sets a flag in the database for the specified character to allow them to use the `$racerespec` command. Will confirm which character if multiple users have a character by that name. Temporary command (August 2021).
+
+# $raceRespec "character name" "new race" STR DEX CON INT WIS CHA
+    # Only functions if `$permitRaceRespec` has been used for the character. Allows the user to respec their character's race, starting ASIs, and any ASIs gained through leveling up. Temporary command (August 2021).
