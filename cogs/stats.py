@@ -185,7 +185,7 @@ class Stats(commands.Cog):
                     contents.append((f"Guilds", guildGamesString, False))
                     
                 if "Campaigns" in statRecords:
-                    contents.append((f"Campaigns", f"Sessions: {statRecords['Campaigns']}", False))
+                    contents.append((f"Campaigns", f"• Sessions: {statRecords['Campaigns']}", False))
                 
                 if "Life" in statRecords:
                     monthStart = datetime.now().replace(day = 14).replace(month = 1).replace(year = 2021)
@@ -197,30 +197,30 @@ class Stats(commands.Cog):
                 
                 # Stat for average player and average play time
                 if 'Players' in statRecords and 'Playtime' in statRecords:
-                    avgString += f"Average Number of Players per Game: {(int(statRecords['Players']  / superTotal *100) /100.0)}\n" 
-                    avgString += f"Average Game Time: {timeConversion(statRecords['Playtime'] / superTotal)}\n"
-                    avgString += f"Average Games Per Day: {(int(superTotal / (max((datetime.now()-monthStart).days, 1))*100) /100.0)}\n"
+                    avgString += f"• Players per One-shot: {(int(statRecords['Players']  / superTotal *100) /100.0)}\n" 
+                    avgString += f"• One-shot Length: {timeConversion(statRecords['Playtime'] / superTotal)}\n"
+                    avgString += f"• One-shots per Day: {(int(superTotal / (max((datetime.now()-monthStart).days, 1))*100) /100.0)}\n"
                     
                     contents.append((f"Averages", avgString, False))
 
 
                 # Number of games by total and by tier
-                statsTotalString += f"Total One-shots for the {identity_strings[1]}: {superTotal}\n" 
+                statsTotalString += f"• One-shots Hosted: {superTotal}\n" 
                 if superTotal > 0:
-                    statsTotalString += f'Guild Quest % (Out of Total Quests): {round((gq_sum / superTotal)* 100,2) }%\n'                   
+                    statsTotalString += f'• Guild Quest %: {round((gq_sum / superTotal)* 100,2) }%\n'                   
                 for i in range (0,6):
                     if f'T{i}' not in statRecords:
-                        statsTotalString += f"Tier {i} One-shots for the {identity_strings[1]}: 0\n"
+                        statsTotalString += f"• Tier {i} One-shots Hosted: 0\n"
                     else: 
-                        statsTotalString += f"Tier {i} One-shots for the {identity_strings[1]}: {statRecords[f'T{i}']}\n"
+                        statsTotalString += f"• Tier {i} One-shots Hosted: {statRecords[f'T{i}']}\n"
 
 
                 if 'Players' in statRecords and 'Playtime' in statRecords:
-                    statsTotalString += f"Total Hours Played: {timeConversion(statRecords['Playtime'])}\n"
-                    statsTotalString += f"Total Number of Players: {statRecords['Players']}\n"
+                    statsTotalString += f"• Hours Played: {timeConversion(statRecords['Playtime'])}\n"
+                    statsTotalString += f"• Total Players: {statRecords['Players']}\n"
                 if 'Unique Players' in statRecords and 'Playtime' in statRecords:
-                    statsTotalString += f"Number of Unique Players: {len(statRecords['Unique Players'])}\n"
-                    statsTotalString += f"Unique DMs: {len(statRecords['DM'].items())}\n"
+                    statsTotalString += f"• Unique Players: {len(statRecords['Unique Players'])}\n"
+                    statsTotalString += f"• Unique DMs: {len(statRecords['DM'].items())}\n"
                 
                 contents.insert(0, (f"{identity_strings[0]} Stats", statsTotalString, False))
                 if statsString:

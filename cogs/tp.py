@@ -473,7 +473,7 @@ class Tp(commands.Cog):
                 
                 # if the user doesnt have the resources for the purchases, inform them and cancel
                 if tpNeeded > 0 and float(charRecords['GP']) < gpNeeded:
-                    await channel.send(f"You do not have enough Tier {tierNum} TP or higher, or GP to {source} **{mRecord['Name']}**!")
+                    await channel.send(f"You do not have enough Tier {tierNum} TP or higher, or GP, to {source} **{mRecord['Name']}**!")
 
                     ctx.command.reset_cooldown(ctx)
                     return
