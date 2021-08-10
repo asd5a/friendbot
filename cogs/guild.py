@@ -282,13 +282,15 @@ class Guild(commands.Cog):
         guildEmbedmsg = None
         guildChannel = ctx.message.channel_mentions
         content = []
+        mention= ""
         if guildChannel == list():
             guildChannel = ctx.channel
-            guildChannel.mention = guildName
+            mention= guildName
             guildRecords, guildEmbedmsg = await checkForGuild(ctx, guildName, guildEmbed)
         else:
             guildChannel = guildChannel[0]
             guild_id = guildChannel.id
+            mention= guildChannel.mention
             guildRecords = db.guilds.find_one({"Channel ID": str(guild_id)})
             
         if guildRecords:
@@ -420,7 +422,7 @@ class Guild(commands.Cog):
             await paginate(ctx, self.bot, title, content, msg = guildEmbedmsg, footer="")
     
         else:
-            await channel.send(f'The ***{guildChannel.mention}*** guild does not exist. Check to see if it is a valid guild and check your spelling.')
+            await channel.send(f'The ***{mention}*** guild does not exist. Check to see if it is a valid guild and check your spelling.')
             return
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
