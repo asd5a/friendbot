@@ -382,7 +382,10 @@ class Admin(commands.Cog, name="Admin"):
     @commands.has_any_role('Mod Friend')
     async def permitRespec(self, ctx, charName):
         charEmbed = discord.Embed()
-        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
+        authorCheck= None
+        if ctx.message.mentions:
+            authorCheck =ctx.message.mentions[0]
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, authorCheck = authorCheck, mod=True)
         channel = ctx.channel
         if not cRecord:
             await channel.send(content=f'I was not able to find the character ***"{charName}"***!')
@@ -404,7 +407,11 @@ class Admin(commands.Cog, name="Admin"):
     @commands.has_any_role('Mod Friend')
     async def permitRaceRespec(self, ctx, charName):
         charEmbed = discord.Embed()
-        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, mod=True)
+        authorCheck= None
+        
+        if ctx.message.mentions:
+            authorCheck =ctx.message.mentions[0]
+        cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, authorCheck = authorCheck, mod=True)
         channel = ctx.channel
         if not cRecord:
             await channel.send(content=f'I was not able to find the character ***"{charName}"***!')

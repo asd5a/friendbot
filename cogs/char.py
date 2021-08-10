@@ -3343,10 +3343,13 @@ class Character(commands.Cog):
         charEmbed = discord.Embed()
         charEmbedmsg = None
         mod= False
+        authorCheck = None
         if mod_override:
             mod = "Mod Friend" in [role.name for role in author.roles]
+            if ctx.message.mentions:
+                authorCheck =ctx.message.mentions[0]
         statusEmoji = ""
-        charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed, mod=mod)
+        charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed, authorCheck = authorCheck, mod=mod)
         if charDict:
             footer = f"To view your character's inventory, type the following command: {commandPrefix}inv {charDict['Name']}"
             
