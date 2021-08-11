@@ -4,7 +4,7 @@ from discord.ext import commands
 from bfunc import db, alphaEmojis, roleArray, calculateTreasure, timeConversion, commandPrefix, tier_reward_dictionary, checkForChar
 from random import *
 
-async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None, amount=None):
+async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None, amount=None, start=None):
         channel = ctx.channel
         author = ctx.author
         #start="", dmChar=""
@@ -16,9 +16,9 @@ async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None
         else:
             rewardTable = list(rewardCollection.find({"Tier": tier, "Minor/Major": rewardType, "Name": {"$nin": dmChar[5][1][player_type][rewardType]}, "Grouped": {"$nin": dmChar[5][1][player_type][rewardType]}}))
         
-        if rewardTable == None # Only happens if called from timer and there are no eligible rewards
-            await channel.send(f"Error: You have already given out every tier {tier} {rewardType} reward item on the reward table!")
-            return None
+        # if rewardTable == None # Only happens if called from timer and there are no eligible rewards
+            # await channel.send(f"Error: You have already given out every tier {tier} {rewardType} reward item on the reward table!")
+            # return None
         
         if int(amount) > 1:
             if len(rewardTable) < int(amount): # size restriction check if used from rewardtable, which varies based on tier.
@@ -67,17 +67,18 @@ async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None
                     tReaction, tUser = await self.bot.wait_for("reaction_add", check=spellEmbedCheck, timeout=60)
                 except asyncio.TimeoutError:
                     await charEmbedmsg.delete()
-                    await channel.send(f'Spell list selection timed out! Try again using the same command:\n```yaml\n{commandPrefix}{tier}{rewardType}{amount}```')
-                    self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                    return
+                    await channel.send(f'Spell list selection timed out! Try again using the same command:\n')
+                    #self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+                    return None
                 else:
                     if tReaction.emoji == '❌':
-                        await charEmbedmsg.edit(embed=None, content=f"Spell list selection cancelled.\n```yaml\n{commandPrefix}{tier}{rewardType}{amount}```")
+                        await charEmbedmsg.edit(embed=None, content=f"Spell list selection cancelled.\n")
                         await charEmbedmsg.clear_reactions()
-                        self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                        return
+                        #self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx) #error
+                        return None
                 await charEmbedmsg.clear_reactions()
-                
+                #```yaml\n{commandPrefix}{tier}{rewardType}{amount}```
+                # ```yaml\n{commandPrefix}{tier}{rewardType}{amount}```
                 classList = spellClasses[alphaEmojis.index(tReaction.emoji)]
                 
                 spellCollection = db.spells
@@ -247,8 +248,8 @@ class Reward(commands.Cog):
             return
     
     
-    @commands.command(aliases=['rewardtable'])
-    async def randomRewardTable(self,ctx, tier, rewardType, size=1):
+    @commands.command()
+    async def random(self,ctx, tier, rewardType, size=1):
         rewardCommand = f"\nPlease follow this format:\n```yaml\n{commandPrefix}rewardtable \"tier\" \"major or minor\" \"# of rewards\"```\n"
         
         channel = ctx.channel

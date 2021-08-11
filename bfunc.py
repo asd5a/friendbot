@@ -41,7 +41,7 @@ async def traceBack (ctx,error,silent=False):
 
     # the verbosity is how large of a traceback to make
     # more specifically, it's the amount of levels up the traceback goes from the exception source
-    verbosity = 6
+    verbosity = -4
 
     # 'traceback' is the stdlib module, `import traceback`.
     lines = traceback.format_exception(etype,error, trace, verbosity)
@@ -53,7 +53,7 @@ async def traceBack (ctx,error,silent=False):
 
     if not silent:
         await dorfer.send(f"```{traceback_text}```\n")
-        await ctx.channel.send(f"Uh oh, looks like this is some unknown error I have ran into. {ctx.guild.get_member(203948352973438995).mention} has been notified.")
+        await ctx.channel.send(f"Uh oh, looks like this is some unknown error I have ran into. {dorfer.mention} has been notified.")
     raise error
 
 
@@ -89,10 +89,8 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
     gp= 0
     tp = {}
     charLevel = level
-    print(level)
     while(cp>0):
         
-        print("CP",cp)
         # Level 20 characters haves access to exclusive items
         # create a string representing which tier the character is in in order to create/manipulate the appropriate TP entry in the DB
         tierTP = f"T{tier} TP"
@@ -108,21 +106,17 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
             charLevel = 17
         elif charLevel < 20:
             charLevel = 20
-        print("level CP", levelCP)
-        
+            
         if levelCP + leftCP + cp > cpThreshHoldArray[tier-1]:
-            print("TH", cpThreshHoldArray[tier-1])
             consideredCP = cpThreshHoldArray[tier-1] - (levelCP + leftCP)
             leftCP = 0
         else:
             consideredCP = cp
-        print("con ",consideredCP)
         cp -=  consideredCP
         tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
         gp += consideredCP * tier_reward_dictionary[tier-1][0]
         tier += 1
             
-    print([gainedCP, tp, int(gp)])
     return [gainedCP, tp, int(gp)]
     
     
@@ -132,9 +126,8 @@ apiEmbed -> the embed element that the calling function will be using
 apiEmbedmsg -> the message that will contain apiEmbed
 table -> the table in the database that should be searched in, most common tables are RIT, MIT and SHOP
 query -> the word which will be searched for in the "Name" property of elements, adjustments were made so that also a special property "Grouped" also gets searched
-singleItem -> if only one item should be returned
 """
-async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, singleItem=False, tier=5, exact=False):
+async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, tier=5, exact=False, filter_rit=True):
     
     #channel and author of the original message creating this call
     channel = ctx.channel
@@ -156,7 +149,6 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
 
     #restructure the query to be more regEx friendly
   
-    print(query)
     
     invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "}", "^", ">", "<", "|"]
 
@@ -171,16 +163,39 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
     query = query.replace('+', '\\+')
     query = query.replace('.', '\\.')
 
-    print(query)
     
-    #I am not sure of the difference in behavior beside the extended Grouped search
-    if singleItem:
-        records = list(collection.find({"Name": {"$regex": query, '$options': 'i' }}))
+    #search through the table for an element were the Name or Grouped property contain the query
+    if table == "spells":
+        filterDic = {"Name": {"$regex": query, '$options': 'i' }, 'Level': {'$gt':0}}
+    elif table == "rit" or table == "mit":
+        filterDic = {"$or": [
+                        {
+                          "Name": {
+                            "$regex": query,
+                            #make the check case-insensitively
+                            "$options": "i"
+                          }
+                        },
+                        {
+                          "Grouped": {
+                            "$regex": query,
+                            "$options": "i"
+                          }
+                        }
+                      ],
+                      'Tier': {'$lt':tier+1}}
     else:
-        #search through the table for an element were the Name or Grouped property contain the query
-        if table == "spells":
-            filterDic = {"Name": {"$regex": query, '$options': 'i' }, 'Level': {'$gt':0}}
-        elif table == "rit" or table == "mit":
+        if(exact):
+            filterDic = {"$or": [
+                            {
+                              "Name": query
+                            },
+                            {
+                              "Grouped": query
+                            }
+                          ],
+                        }
+        else:
             filterDic = {"$or": [
                             {
                               "Name": {
@@ -196,41 +211,12 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
                               }
                             }
                           ],
-                          'Tier': {'$lt':tier+1}}
-        else:
-            if(exact):
-                filterDic = {"$or": [
-                                {
-                                  "Name": query
-                                },
-                                {
-                                  "Grouped": query
-                                }
-                              ],
-                            }
-            else:
-                filterDic = {"$or": [
-                                {
-                                  "Name": {
-                                    "$regex": query,
-                                    #make the check case-insensitively
-                                    "$options": "i"
-                                  }
-                                },
-                                {
-                                  "Grouped": {
-                                    "$regex": query,
-                                    "$options": "i"
-                                  }
-                                }
-                              ],
-                            }
-         
-        print(filterDic)           
-        # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
-        #  collection.find(collection.find(filterDic)) does not work for he could not read
-        # https://cdn.discordapp.com/attachments/663504216135958558/735695855667118080/New_Project_-_2020-07-22T231158.186.png
-        records = list(collection.find(filterDic))
+                        }
+     
+    # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
+    #  collection.find(collection.find(filterDic)) does not work for he could not read
+    # https://cdn.discordapp.com/attachments/663504216135958558/735695855667118080/New_Project_-_2020-07-22T231158.186.png
+    records = list(collection.find(filterDic))
     
     #turn the query into a regex expression
     r = re.compile(query, re.IGNORECASE)
@@ -275,6 +261,11 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
         records.remove(group_to_remove)
     #append the new entries
     records += faux_entries
+    if filter_rit and table == "rit":
+        # get all minor reward item results
+        all_minors = list([record["Name"] for record in filter(lambda record: record["Minor/Major"]== "Minor", records)])
+        records = filter(lambda record: record["Minor/Major"]!= "Major" or record["Name"] not in all_minors, records)
+
     
     #sort all items alphabetically 
     records = sorted(records, key = sortingEntryAndList)    
@@ -319,7 +310,10 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, si
                 apiEmbedmsg = await channel.send(embed=apiEmbed)
             else:
                 await apiEmbedmsg.edit(embed=apiEmbed)
-
+            # if len(records) <= 5:
+                # for i in range(0, len(records)):
+                    # await apiEmbedmsg.add_reaction(alphaEmojis[i])
+                
             await apiEmbedmsg.add_reaction('❌')
 
             try:
@@ -417,7 +411,6 @@ async def checkForGuild(ctx, name, guildEmbed="" ):
     collection = db.guilds
     guildRecords = list(collection.find({"Name": {"$regex": name, '$options': 'i' }}))
 
-    print(guildRecords)
 
     if guildRecords == list():
         await channel.send(content=f'I was not able to find a guild named "**{name}**". Please check your spelling and try again.')
@@ -563,7 +556,7 @@ statuses = [f'D&D Friends | {commandPrefix}help', "We're all friends here!", f"S
 discordClient = discord.Client()
 bot = commands.Bot(command_prefix=commandPrefix, case_insensitive=True, intents = intents)
 
-connection = MongoClient(mongoConnection, ssl=True) 
+connection = MongoClient(mongoConnection, ssl=True, ssl_cert_reqs='CERT_NONE') 
 db = connection.dnd
 
 settings = db.settings

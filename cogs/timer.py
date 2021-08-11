@@ -873,7 +873,7 @@ class Timer(commands.Cog):
     dmChar -> the player entry (format [member object, char DB entry, brought consumables, char id, item changes]) of the DM with an added entry [5] as [Noodle Role Name, majors  = 0, minors = 0, dmMajors = 0,dmMinors = 0]
     """    
 
-    async def reward(self,ctx,msg, start="",resume=False, dmChar="", ):
+    async def reward(self,ctx,msg, start="",resume=False, dmChar="", exact=None):
 
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
             guild = ctx.guild
@@ -1074,8 +1074,11 @@ class Timer(commands.Cog):
    
                         # search for the item in the DB with the function from bfunc
                         # this does disambiguation already so if there are multiple results for the item they will have already selected which one specifically they want
-                        rewardConsumable, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg ,'rit',query, tier=tierNum) 
-                    
+                        
+                        rewardConsumable, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg ,'rit',query, tier=tierNum, exact=exact) 
+                        #rewardConsumable, charEmbed, charEmbedmsg = await callAPI(ctx, charEmbed, charEmbedmsg ,'rit',query, tier=tierNum, exact=True) 
+                        
+                        
                         #if no item could be found, return the unchanged parameters and inform the user
                         if not rewardConsumable:
                             if not resume:
@@ -1086,6 +1089,7 @@ class Timer(commands.Cog):
                             rewardConsumable_group_type = "Name"
                             if "Grouped" in rewardConsumable:
                                rewardConsumable_group_type = "Grouped"
+                            
                             
                             # check if the item has already been rewarded to the player
                             if (rewardConsumable[rewardConsumable_group_type] in dmChar[5][1][player_type]["Major"] or
@@ -2183,7 +2187,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
     
     
     
-    async def randomRew(self,ctx, msg=None, start="",resume=False, dmChar="", rewardType=None, amount=None):
+    async def randomRew(self,ctx, msg=None, start="",resume=False, dmChar="", rewardType=None):
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
@@ -2254,6 +2258,9 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                 
         rewardCollection = db.rit
         randomItem = await randomReward(self, ctx, tier=tierNum, rewardType=rewardType, dmChar=dmChar, player_type=player_type, amount=1)
+        if randomItem == None:
+            await channel.send(f'Try again!\n')
+            return None
         
         return f"{randomItem[0]}"
     
@@ -2356,14 +2363,16 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                         startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar)
                 elif (msg.content.startswith(f"{commandPrefix}timer major") or msg.content.startswith(f"{commandPrefix}t major")): #Random Major
                     if await self.permissionCheck(msg, author):
-                        rewardItem = await self.randomRew(ctx, msg=msg, start=startTimes,dmChar=dmChar, rewardType="Major", amount=1)
-                        msg.content = msg.content + " " + f'"{rewardItem}"'
-                        startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar)
+                        rewardItem = await self.randomRew(ctx, msg=msg, start=startTimes,dmChar=dmChar, rewardType="Major")
+                        if rewardItem is not None:
+                            msg.content = msg.content + " " + f'"{rewardItem}"'
+                            startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar, exact=True)
                 elif (msg.content.startswith(f"{commandPrefix}timer minor") or msg.content.startswith(f"{commandPrefix}t minor")): #Random Minor
                     if await self.permissionCheck(msg, author):
-                        rewardItem = await self.randomRew(ctx, msg=msg, start=startTimes,dmChar=dmChar, rewardType="Minor", amount=1)
-                        msg.content = msg.content + " " + f'"{rewardItem}"'
-                        startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar)
+                        rewardItem = await self.randomRew(ctx, msg=msg, start=startTimes,dmChar=dmChar, rewardType="Minor")
+                        if rewardItem is not None:
+                            msg.content = msg.content + " " + f'"{rewardItem}"'
+                            startTimes,dmChar = await self.reward(ctx, msg=msg, start=startTimes,dmChar=dmChar, exact=True)
                 elif (msg.content.startswith(f"{commandPrefix}timer death") or msg.content.startswith(f"{commandPrefix}t death")):
                     if await self.permissionCheck(msg, author):
                         await ctx.invoke(self.timer.get_command('death'), msg=msg, start=startTimes, role=role)
