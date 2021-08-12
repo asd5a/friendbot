@@ -1,0 +1,22 @@
+In order for you to test your code without having it affect the server you need to set up your own DB.
+To do so, follow these steps.
+
+Setup DB:
+1: Create a https://cloud.mongodb.com/ account.
+2: Create a project and a cluster.
+3: Navigate to the Database Access page and create an admin user for you bot to use.
+Copy down the password because it will be required for the bot to connect.
+4: Navigate to Network Access and add the IP your bot will be running from.
+5: Use https://www.mongodb.com/products/compass to import the entries into your DB.
+Note: There have been issues with the Predecessor field for characters in the exporting process, these can cause issues.
+
+Setup Bot:
+1: For the bot we use the API documented here https://discordpy.readthedocs.io/en/latest/index.html
+Follow the guides there to set up your own bot to test with.
+2: Create your own discord server.
+3: Setup your channels and categories, you will most likely want a similar structure to DnD Friends.
+4: Setup the roles you need for your testing.
+5: Setup the entry in the settings collection to contain the channel ids for your test server.
+6: Start you bot up.
+(7: Improve this guide)
+

@@ -46,9 +46,7 @@ bot.remove_command('help')
 @bot.event
 async def on_command_error(ctx,error):
     msg = None
-    print(ctx.invoked_with)
-    print(ctx.command.parent)
-    print(error)
+    
     
     if isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
         await ctx.channel.send("There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command. ")
@@ -76,18 +74,19 @@ async def on_command_error(ctx,error):
 
     elif isinstance(error, commands.CommandNotFound):
         await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!')
-
+        return 
     else:
         ctx.command.reset_cooldown(ctx)
         await traceBack(ctx,error)
-
+    print(ctx.invoked_with)
+    print(error)
 @bot.command()
 async def help(ctx, *, pageString=''):
     def helpCheck(r,u):
         sameMessage = False
         if helpMsg.id == r.message.id:
             sameMessage = True
-        return (r.emoji in numberEmojis[:numPages]) and u == ctx.author and sameMessage
+        return (r.emoji in alphaEmojis[:numPages]) and u == ctx.author and sameMessage
 
     helpEmbedMenu = discord.Embed()
     helpEmbedGen = discord.Embed()
@@ -129,15 +128,15 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedMenu.title = 'Bot Friend Commands - Table of Contents'
     helpEmbedMenu.description = 'Please react to the group of commands you would like to see and gain more knowledge about.'
-    helpEmbedMenu.add_field(name=f"1️⃣ General Commands\n{commandPrefix}help gen", value="Various commands which don't fit into any other section.", inline=False)
-    helpEmbedMenu.add_field(name=f"2️⃣ Character Commands\n{commandPrefix}help char", value="How to manage your character(s).", inline=False)
-    helpEmbedMenu.add_field(name=f"3️⃣ TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
-    helpEmbedMenu.add_field(name=f"4️⃣ Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
-    helpEmbedMenu.add_field(name=f"5️⃣ Guild Commands\n{commandPrefix}help guild", value="How to be a member of a guild or manage one.", inline=False)
-    helpEmbedMenu.add_field(name=f"6️⃣ Pre-Quest Timer Commands\n{commandPrefix}help timer1", value="How to prepare and sign up to a timer for a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"7️⃣ Running Timer Commands\n{commandPrefix}help timer2", value="How to do various things while hosting or participating in a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"8️⃣ Post-Quest Timer Commands\n{commandPrefix}help timer3", value="How to do various things after the completion of a one-shot.", inline=False)
-    helpEmbedMenu.add_field(name=f"9️⃣ Campaign Commands\n{commandPrefix}help campaign", value="How to create, host, and participate in a campaign.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[0]} General Commands\n{commandPrefix}help gen", value="Various commands which don't fit into any other section.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[1]} Character Commands\n{commandPrefix}help char", value="How to manage your character(s).", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[2]} TP Commands\n{commandPrefix}help tp", value="How to spend TP to acquire magic items.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[3]} Shop Commands\n{commandPrefix}help shop", value="How to spend GP to purchase various things or sell mundane items.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[4]} Guild Commands\n{commandPrefix}help guild", value="How to be a member of a guild or manage one.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[5]} Pre-Quest Timer Commands\n{commandPrefix}help timer1", value="How to prepare and sign up to a timer for a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[6]} Running Timer Commands\n{commandPrefix}help timer2", value="How to do various things while hosting or participating in a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[7]} Post-Quest Timer Commands\n{commandPrefix}help timer3", value="How to do various things after the completion of a one-shot.", inline=False)
+    helpEmbedMenu.add_field(name=f"{alphaEmojis[8]} Campaign Commands\n{commandPrefix}help campaign", value="How to create, host, and participate in a campaign.", inline=False)
 
 
 
@@ -158,14 +157,14 @@ async def help(ctx, *, pageString=''):
 # GENERAL COMMANDS ($help general)
 
     helpEmbedGen.title = 'General Commands'
+    
+    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f'{commandPrefix}help', inline=False)
+
+    helpEmbedGen.add_field(name=f'▫️ Applying for Membership (only available for Direct Messages to Bot Friend)', value=f'{commandPrefix}membership', inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f'{commandPrefix}user', inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Viewing the List of Allowed Races', value=f'{commandPrefix}printRaces', inline=False)
-
-    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f'{commandPrefix}help', inline=False)
-
-    helpEmbedGen.add_field(name=f'▫️ Applying to a One-shot', value=f'{commandPrefix}apply "character name" "consumable1, consumable2, [...]" "magic item1, magic item2, [...]"', inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f'{commandPrefix}reward XhYm tier', inline=False)
 
@@ -196,11 +195,11 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedChar.add_field(name=f'▫️ Respecing a Character into a Multiclass', value=f'{commandPrefix}respec "character name" "new character name" "race" "class1 level / class2 level / class3 level / class4 level" "background" STR DEX CON INT WIS CHA', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character\'s Race', value=f'{commandPrefix}reflavor "character name" race name\n[{commandPrefix}rf]', inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character', value=f'{commandPrefix}reflavor race "character name" race name\n{commandPrefix}reflavor class "character name" class name\n{commandPrefix}reflavor background "character name" background name\n[{commandPrefix}rf]', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Adding Extra Names', value=f'{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Adding Alignment', value=f'{commandPrefix}align "character name" alignment\n[{commandPrefix}aka]', inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Adding Alignment', value=f'{commandPrefix}align "character name" alignment', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Retiring a Character', value=f'{commandPrefix}retire "character name"', inline=False)
 
@@ -217,11 +216,13 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerOne.title = f"Pre-Quest Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
+    helpEmbedTimerOne.add_field(name=f'▫️ Applying to a One-shot', value=f'{commandPrefix}apply "character name" "consumable1, consumable2, [...]" "magic item1, magic item2, [...]"', inline=False)
+
     helpEmbedTimerOne.add_field(name=f'▫️ Signing Up (Player)', value=f'{commandPrefix}timer signup "character name" "consumable1, consumable2, [...]"', inline=False)
 
 # DM COMMANDS
 
-    helpEmbedTimerOne.add_field(name=f'▫️ Preparing the Timer (DM)', value=f'{commandPrefix}timer prep "@player1, @player2, [...]" questname', inline=False)
+    helpEmbedTimerOne.add_field(name=f'▫️ Preparing the Timer (DM)', value=f'{commandPrefix}timer prep "@player1, @player2, [...]" "quest name" #guild-channel-1 #guild-channel-2', inline=False)
 
     helpEmbedTimerOne.add_field(name=f'▫️ Adding Players to the Roster (DM)', value=f'{commandPrefix}timer add @player', inline=False)
 
@@ -246,7 +247,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerTwo.add_field(name=f'▫️ Removing Yourself (Player)', value=f'{commandPrefix}timer removeme', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Checking the Timestamp (Player)', value=f'{commandPrefix}timer removeme', inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Checking the Timestamp (Player)', value=f'{commandPrefix}timer stamp', inline=False)
 
 # DM COMMANDS
 
@@ -312,7 +313,11 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTp.title = 'TP Commands'
 
-    helpEmbedTp.add_field(name=f'▫️ Acquiring a Magic Item', value=f'{commandPrefix}tp buy "character name" "magic item"', inline=False)
+    helpEmbedTp.add_field(name=f'▫️ Finding a Magic Item', value=f'{commandPrefix}tp find "character name" "magic item"', inline=False)
+
+    helpEmbedTp.add_field(name=f'▫️ Crafting a Magic Item', value=f'{commandPrefix}tp craft "character name" "magic item"', inline=False)
+
+    helpEmbedTp.add_field(name=f'▫️ Memeing a Magic Item', value=f'{commandPrefix}tp meme "character name" "magic item"', inline=False)
 
     helpEmbedTp.add_field(name=f'▫️ Discarding an Incomplete Magic Item', value=f'{commandPrefix}tp discard "character name"', inline=False)
 
@@ -379,7 +384,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedCampaign.add_field(name=f'▫️ Removing Yourself (Player)', value=f'{commandPrefix}campaign timer removeme', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp (Player)', value=f'{commandPrefix}timer removeme', inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Checking the Timestamp (Player)', value=f'{commandPrefix}campaign timer stamp', inline=False)
 
     helpEmbedCampaign.add_field(name=f'▫️ Creating a Character with a Campaign Transfer', value=f'{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]" #campaign-channel XhYm', inline=False)
 
@@ -394,7 +399,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedCampaign.add_field(name=f'▫️ Removing Players from a Campaign Roster (DM)', value=f'{commandPrefix}campaign remove @player #campaign-channel', inline=False)
 
-    helpEmbedCampaign.add_field(name=f'▫️ Preparing the Timer (DM)', value=f'{commandPrefix}campaign timer prep "@player1, @player2,#player3, [...]" sessionname', inline=False)
+    helpEmbedCampaign.add_field(name=f'▫️ Preparing the Timer (DM)', value=f'{commandPrefix}campaign timer prep "@player1, @player2, [...]" "session name"', inline=False)
 
     helpEmbedCampaign.add_field(name=f'▫️ Adding Players During a Session (DM)', value=f'{commandPrefix}campaign timer add @player', inline=False)
 
@@ -424,7 +429,7 @@ async def help(ctx, *, pageString=''):
 
     helpMsg = await ctx.channel.send(embed=helpList[page])
     if page == 0:
-        for num in range(0,numPages-1): await helpMsg.add_reaction(numberEmojis[num])
+        for num in range(0,numPages-1): await helpMsg.add_reaction(alphaEmojis[num])
 
 # THIS ERROR MESSAGE WILL NEED TO BE CHANGED TO ACCOMMODATE THE NEW COMMANDS.
     try:
@@ -435,7 +440,7 @@ async def help(ctx, *, pageString=''):
         await helpMsg.add_reaction('💤')
         return
     else:
-        await helpMsg.edit(embed=helpList[int(hReact.emoji[0])])
+        await helpMsg.edit(embed=helpList[alphaEmojis.index(hReact.emoji)+1])
         await helpMsg.clear_reactions()
 
 

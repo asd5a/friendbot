@@ -170,7 +170,6 @@ class Reward(commands.Cog):
                 tier = tierName
             else:
                 tierName = tier.capitalize()
-            print(tierName)
 
             cp = ((totalTime) // 1800) / 2
             tier = tier.lower()
