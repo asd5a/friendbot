@@ -18,8 +18,8 @@ from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_di
 def admin_or_owner():
     async def predicate(ctx):
         
-        role = get(ctx.message.guild.roles, name = "A d m i n")
-        output = (role in ctx.message.author.roles) or ctx.message.author.id in [220742049631174656, 203948352973438995]
+       
+        output = ctx.message.author.id in [220742049631174656, 203948352973438995] or (get(ctx.message.guild.roles, name = "A d m i n") in ctx.message.author.roles)
         return  output
     return commands.check(predicate)
 

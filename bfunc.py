@@ -41,18 +41,25 @@ async def traceBack (ctx,error,silent=False):
 
     # the verbosity is how large of a traceback to make
     # more specifically, it's the amount of levels up the traceback goes from the exception source
-    verbosity = -4
+    verbosity = -6
 
     # 'traceback' is the stdlib module, `import traceback`.
     lines = traceback.format_exception(etype,error, trace, verbosity)
 
     # format_exception returns a list with line breaks embedded in the lines, so let's just stitch the elements together
-    traceback_text = ''.join(lines)
+    traceback_text = ''.join(lines) +f"\n{ctx.message.author.mention}"
 
-    dorfer = ctx.guild.get_member(203948352973438995)
+    dorfer = bot.get_user(203948352973438995)
 
     if not silent:
-        await dorfer.send(f"```{traceback_text}```\n")
+        length = len(traceback_text)
+        while(length>1994):
+            x = traceback_text[:1994]
+            x = x.rsplit("\n", 1)[0]
+            await dorfer.send(content=f"```{x}```")
+            traceback_text = traceback_text[len(x):]
+            length -= len(x)
+        await dorfer.send(content=f"```{traceback_text}```")
         await ctx.channel.send(f"Uh oh, looks like this is some unknown error I have ran into. {dorfer.mention} has been notified.")
     raise error
 
