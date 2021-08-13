@@ -23,6 +23,22 @@ class Misc(commands.Cog):
 
     
 
+    #@commands.cooldown(1, float('inf'), type=commands.BucketType.member)
+    # @commands.command()
+    # async def hohoho(self,ctx):
+        # channel = ctx.channel
+        # outcomes = ["Lump of Coal", "Clockwork Dog", "Cloak of Billowing",
+                    # "Prosthetic Arm", "Arcanloth's Music Box", "Barking Box",
+                    # "Thermal Cube", "Wand of Smiles", "Lock of Trickery", 
+                    # "Pipe of Remembrance", "Wand of Pyrotechnics", "Talking Doll",
+                    # "Tankard of Plenty", "Orb of Gonging", "Crown of the Forest",
+                    # "Pot of Awakening", "Enchanted Three-Dragon Ante Set",
+                    # "Propeller Helm", "Heward's Handy Spice Pouch",
+                    # "Potion of Cold Resistance"]
+        # selection = random.randrange(20) 
+        
+        # await channel.send(content=f"The 20-sided bag of Father Nogmus landed on a {selection+1}!"+"\n"+f"{ctx.author.display_name} reaches into the bag and finds: "+f"`{outcomes[selection]}`")
+
 
     @commands.cooldown(1, 60, type=commands.BucketType.member)
     @admin_or_owner()
@@ -292,19 +308,14 @@ class Misc(commands.Cog):
         if msg.channel.id == sChannelID and not msg.author.bot:
             author = msg.author 
             content = msg.content
-            
-            files =None
-            if msg.attachments:
-                files =[]
-                for att in msg.attachments:
-                    files.append(await att.to_file())
+
             await msg.delete()
-            
+
             vEmbed = discord.Embed()
             vEmbed.set_author(name=author, icon_url=author.avatar_url)
             vEmbed.description = content
 
-            vMessage = await vChannel.send(embed=vEmbed, files=files)
+            vMessage = await vChannel.send(embed=vEmbed)
 
             await vMessage.add_reaction('✅')
             await vMessage.add_reaction('❌')

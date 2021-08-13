@@ -259,14 +259,14 @@ class Tp(commands.Cog):
                       tpBankString += f"{tpBank[x-1]} T{x} TP, " 
                 tpNeeded = float(mRecord['Predecessor']["Costs"][upgrade_stage])
                 tpNeeded_copy = tpNeeded
-                used_tp = {}
+                used_tp = []
                 for tp in range (int(tierNum) - 1, 5):
                     if tpBank[tp] > 0 and tpNeeded > 0:
                         tp += 1
                         tp_reduction = min(charRecords[f"T{tp} TP"],  tpNeeded)
                         charRecords[f"T{tp} TP"] -= tp_reduction
                         tpNeeded -= tp_reduction
-                        used_tp[f"T{tp} TP"] = tp_reduction
+                        used_tp.append(f"T{tp} TP")
 
                 # display the cost of the item to the user
                 tpEmbed.title = f"Upgrading a Magic Item: {charRecords['Name']}"
@@ -276,9 +276,11 @@ class Tp(commands.Cog):
                     await channel.send(f"You do not have enough Tier {tierNum} TP or higher to upgrade **{mRecord['Name']}**!")
                     ctx.command.reset_cooldown(ctx)
                     return
+                newTP = ""
+                mIndex = 0
 
                 newTP = f"Complete! :tada:"
-                used_tp_text = ', '.join([f'{charRecords[tp]} {tp}' for tp in used_tp.keys()])
+                used_tp_text = ', '.join([f'{charRecords[tp]} {tp}' for tp in used_tp])
                 tpEmbed.description = f"Are you sure you want to upgrade **{mRecord['Name']} ({mRecord['Predecessor']['Names'][upgrade_stage]})** to **{mRecord['Name']} ({mRecord['Predecessor']['Names'][upgrade_stage +1]})** for **{tpNeeded_copy} TP**?\n\nLeftover TP: {used_tp_text}\n\n✅: Yes\n\n❌: Cancel"
 
 
@@ -317,14 +319,14 @@ class Tp(commands.Cog):
                                     charRecords['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
 
                                 # statSplit = MAX STAT +X
-                                statSplit = mRecord["Predecessor"]['Stat Bonuses'][upgrade_stage+1].split(' +')
-                                oldStatBonus = int(mRecord["Predecessor"]['Stat Bonuses'][upgrade_stage].split(' +')[1])
+                                statSplit = mRecord["Predecessor"]['Stat Bonuses'][upgrade_stage].split(' +')
                                 maxSplit = statSplit[0].split(' ')
                                 oldStat = charRecords[maxSplit[1]]
+
                                 #Increase stats from Manual/Tome and add to max stats. 
                                 if "MAX" in statSplit[0]:
-                                    charRecords[maxSplit[1]] += int(statSplit[1]) -  oldStatBonus
-                                    charRecords['Max Stats'][maxSplit[1]] += int(statSplit[1]) - oldStatBonus
+                                    charRecords[maxSplit[1]] += int(statSplit[1]) 
+                                    charRecords['Max Stats'][maxSplit[1]] += int(statSplit[1]) 
 
                                 setData[maxSplit[1]] = int(charRecords[maxSplit[1]])
                                 setData['Max Stats'] = charRecords['Max Stats']                           
@@ -347,12 +349,13 @@ class Tp(commands.Cog):
                                     pass
                                 
                             unsetData = {"Dummy Entry" : 1}
-                            for tp, value in used_tp.items():
+                            
+                            for tp in used_tp:
                                 if charRecords[tp] == 0:
                                     unsetData[tp] = 1
                                 else:
                                     setData[tp] = charRecords[tp]
-                                incData[f"Item Spend.{mRecord['Name']}.{tp}"] = value
+                            
                             playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData, "$unset": unsetData, "$inc" : incData})
                             
                         except Exception as e:
@@ -386,7 +389,7 @@ class Tp(commands.Cog):
                 sameMessage = False
                 if tpEmbedmsg.id == r.message.id:
                     sameMessage = True
-                return ((str(r.emoji) == '1️⃣' and tpNeeded <= 0) or (charRecords['GP'] >= gpNeeded and str(r.emoji) == '2️⃣') or (str(r.emoji) == '❌')) and u == author and sameMessage
+                return ((str(r.emoji) == '1️⃣' and haveTP) or (charRecords['GP'] >= gpNeeded and str(r.emoji) == '2️⃣') or (str(r.emoji) == '❌')) and u == author and sameMessage
             def tpEmbedCheck(r, u):
                 sameMessage = False
                 if tpEmbedmsg.id == r.message.id:
@@ -438,16 +441,12 @@ class Tp(commands.Cog):
                     ctx.command.reset_cooldown(ctx)
                     return 
                 
-                
-                indefinite = "a"
-                if mRecord['Name'][0].lower() in "aeiou":
-                    indefinite = "an"
-                    
                 # get the tier of the item
                 tierNum = mRecord['Tier']
                 # get the gold cost of the item
                 gpNeeded = mRecord['GP']
                 #get the list of all items currently being worked towards
+                currentMagicItems = charRecords['Current Item'].split(', ')
 
                 tpBank = [0,0,0,0,0]
                 tpBankString = ""
@@ -457,31 +456,30 @@ class Tp(commands.Cog):
                       tpBank[x-1] = (float(charRecords[f'T{x} TP']))
                       tpBankString += f"{tpBank[x-1]} T{x} TP, " 
 
-                tpNeeded = float(mRecord['TP'])
-                tpNeeded_copy = tpNeeded
-                used_tp = {}
+                haveTP = False
+                lowestTp = 0
+                #get the lowest tier available TP
                 for tp in range (int(tierNum) - 1, 5):
-                    if tpBank[tp] > 0 and tpNeeded > 0:
-                        tp += 1
-                        tp_reduction = min(charRecords[f"T{tp} TP"],  tpNeeded)
-                        charRecords[f"T{tp} TP"] -= tp_reduction
-                        tpNeeded -= tp_reduction
-                        used_tp[f"T{tp} TP"] = tp_reduction
+                    if tpBank[tp] > 0:
+                        haveTP = True
+                        lowestTP = tp + 1 
+                        break
 
                 # display the cost of the item to the user
                 tpEmbed.title = f"{sourceString}: {charRecords['Name']}"
                 
                 # if the user doesnt have the resources for the purchases, inform them and cancel
-                if tpNeeded > 0 and float(charRecords['GP']) < gpNeeded:
-                    await channel.send(f"You do not have enough Tier {tierNum} TP or higher, or GP, to {source} **{mRecord['Name']}**!")
-
+                if not haveTP and float(charRecords['GP']) < gpNeeded:
+                    await channel.send(f"You do not have enough Tier {tierNum} TP or GP to {source} **{mRecord['Name']}**!")
                     ctx.command.reset_cooldown(ctx)
                     return
                   
                 # get confirmation from the user for the purchase
-                elif tpNeeded > 0:
-                    tpEmbed.description = f"Do you want to {source} **{mRecord['Name']}** with TP or GP?\n\n You have don't have enough TP and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} GP (gold pieces)\n\n❌: Cancel"                 
-                    
+                elif not haveTP:
+                    if tpBank == [0] * 5:
+                        tpEmbed.description = f"Do you want to {source} **{mRecord['Name']}** with TP or GP?\n\n You have **no TP** and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} GP (gold pieces)\n\n❌: Cancel"                 
+                    else:
+                        tpEmbed.description = f"Do you want to {source} **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: ~~{mRecord['TP']} TP (Treasure Points)~~ You do not have enough TP.\n2️⃣: {mRecord['GP']} gp (gold pieces)\n\n❌: Cancel"                 
 
                 elif float(charRecords['GP']) < gpNeeded:
                     tpEmbed.description = f"Do you want to {source} **{mRecord['Name']}** with TP or GP?\n\n You have **{tpBankString}** and **{charRecords[f'GP']} GP**.\n\n1️⃣: {mRecord['TP']} TP (Treasure Points)\n2️⃣: ~~{mRecord['GP']} GP (gold pieces)~~ You do not have enough GP.\n\n❌: Cancel"                 
@@ -494,7 +492,7 @@ class Tp(commands.Cog):
                 else:
                     tpEmbedmsg = await channel.send(embed=tpEmbed)
                 # get choice from the user
-                if tpNeeded <= 0:
+                if haveTP:
                     await tpEmbedmsg.add_reaction('1️⃣')
                 if float(charRecords['GP']) >= gpNeeded:
                     await tpEmbedmsg.add_reaction('2️⃣')
@@ -509,6 +507,7 @@ class Tp(commands.Cog):
                     return
                 else:
                     await tpEmbedmsg.clear_reactions()
+                    complete = False
                     newGP = ""
                     newTP = ""
                     refundTP = 0.0
@@ -522,22 +521,64 @@ class Tp(commands.Cog):
                     elif tReaction.emoji == '2️⃣':
                         newGP = round(charRecords['GP'] - gpNeeded,2)
                         #search for the item in the items currently worked towards
-
-                        tpEmbed.description = f"Are you sure you want to {source} **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\n✅: Yes\n\n❌: Cancel"
-
+                        complete = True
+                        if mRecord['Name'] in charRecords['Current Item']:
+                            #grab the matching item
+                            currentMagicItem = re.search('\((\d[^)]+)', charRecords['Current Item']).group(1)
+                            #split the current/needed TP
+                            tpSplit= currentMagicItem.split('/')
+                            refundTP = float(tpSplit[0])
+                            charRecords['Current Item'] = "None"
+                            #confirm with the user on the purchase
+                            tpEmbed.description = f"Are you sure you want to {source} **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\nNote: you will be refunded the TP you have already spent on this item ({refundTP} TP). \n\n✅: Yes\n\n❌: Cancel"
+                        else:
+                            tpEmbed.description = f"Are you sure you want to {source} **{mRecord['Name']}** for **{mRecord['GP']} GP**?\n\nCurrent GP: {charRecords['GP']}\nNew GP: {newGP} GP\n\n✅: Yes\n\n❌: Cancel"
 
                     # If user decides to buy item with TP:
                     elif tReaction.emoji == '1️⃣':
+                        tierNum = lowestTP
+                        tpNeeded = float(mRecord['TP'])
                         mIndex = 0
-                        
-                        newTP = f"Complete! :tada:"
-                        used_tp_text = ', '.join([f'{charRecords[tp]} {tp}' for tp in used_tp.keys()])
-                                
-                        tpEmbed.description = f"Are you sure you want to {source} **{mRecord['Name']}** for **{mRecord['TP']} TP**?\n\nLeftover TP: {used_tp_text}\n\n✅: Yes\n\n❌: Cancel"
+                        # If the character has no invested TP items OR:
+                        # If the character has invested TP items, but the item they are spending it on is not included
+                        if charRecords['Current Item'] == 'None':
+                            tpSplit = [0.0, tpNeeded]
+                            currentMagicItems = [f"{mRecord['Name']} (0/0)"]
+                        elif mRecord['Name'] not in charRecords['Current Item']:
+                            tpSplit = [0.0, tpNeeded]
+                            currentMagicItems.append(f"{mRecord['Name']} (0/0)")
+                            mIndex = len(currentMagicItems) - 1
+                        else:
+                            mIndex = [m.rsplit(' (', 1)[0] for m in currentMagicItems].index(mRecord['Name'])
+                            currentMagicItem = re.search('\((\d[^)]+)', currentMagicItems[mIndex]).group(1)
+                            tpSplit= currentMagicItem.split('/')
+                            tpNeeded = float(tpSplit[1]) - float(tpSplit[0]) 
 
+                        tpResult = tpNeeded - float(charRecords[f"T{tierNum} TP"])
+
+                        # How (xTP/yTP) is calculated. If spent TP is incomplete, else if spending TP completes the item
+                        if tpResult > 0:
+                            newTP = f"{float(tpSplit[1]) - tpResult}/{tpSplit[1]}"
+                            charRecords[f"T{tierNum} TP"] = 0
+                            currentMagicItems[mIndex] = f"{mRecord['Name']} ({newTP})"
+                            charRecords['Current Item'] = ', '.join(currentMagicItems)
+                        else:
+                            newTP = f"{tpSplit[1]}/{tpSplit[1]} - Complete! :tada:"
+                                
+                            complete = True
+                            charRecords[f"T{tierNum} TP"] = abs(float(tpResult))
+                            if currentMagicItems != list():
+                                currentMagicItems.pop(mIndex)
+                                charRecords['Current Item'] = ', '.join(currentMagicItems)
+                                if currentMagicItems == list():
+                                    charRecords['Current Item'] = 'None'
+
+                        tpEmbed.description = f"Are you sure you want to {source} **{mRecord['Name']}** for **{mRecord['TP']} TP**?\n\n{tpSplit[0]}/{tpSplit[1]} → {newTP}\n\nLeftover T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n✅: Yes\n\n❌: Cancel"
 
                     # If not complete, leave in current items, otherwise add to magic item list / consuambles
-                    if charRecords['Magic Items'] == "None":
+                    if 'Complete' not in newTP and tReaction.emoji == '1️⃣':
+                        pass
+                    elif charRecords['Magic Items'] == "None":
                         charRecords['Magic Items'] = mRecord['Name']
                     else:
                         newMagicItems = charRecords['Magic Items'].split(', ')
@@ -546,7 +587,7 @@ class Tp(commands.Cog):
                         charRecords['Magic Items'] = ', '.join(newMagicItems)
                     if("Predecessor" not in charRecords):
                         charRecords["Predecessor"] = {}
-                    if("Predecessor" in mRecord and mRecord["Name"] not in charRecords["Predecessor"]):
+                    if(complete and "Predecessor" in mRecord and mRecord["Name"] not in charRecords["Predecessor"]):
                         charRecords["Predecessor"][mRecord["Name"]] ={"Names" : mRecord["Predecessor"]["Names"], "Stage" : 0}
                     tpEmbed.set_footer(text=tpEmbed.Empty)
                     await tpEmbedmsg.edit(embed=tpEmbed)
@@ -576,23 +617,16 @@ class Tp(commands.Cog):
                                     charRecords["Grouped"].append(mRecord["Grouped"]+" : "+mRecord["Name"])
                                 
                                 
-                                setData = {"Magic Items":charRecords['Magic Items'], "Grouped":charRecords['Grouped'], "Predecessor":charRecords['Predecessor']}
+                                setData = {"Current Item":charRecords['Current Item'], "Magic Items":charRecords['Magic Items'], "Grouped":charRecords['Grouped'], "Predecessor":charRecords['Predecessor']}
                                 statSplit = None
                                 unsetTP = False
-                                
-                                statsAffected = 'Stat Bonuses' in mRecord or ("Predecessor" in mRecord and 'Stat Bonuses' in mRecord["Predecessor"])
-                                
                                 # For the stat books, this will increase the characters stats permanently here.
-                                if 'Attunement' not in mRecord and statsAffected:
+                                if complete and 'Attunement' not in mRecord and 'Stat Bonuses' in mRecord:
                                     if 'Max Stats' not in charRecords:
                                         charRecords['Max Stats'] = {'STR':20, 'DEX':20, 'CON':20, 'INT':20, 'WIS':20, 'CHA':20}
-                                    
+
                                     # statSplit = MAX STAT +X
-                                    if "Predecessor" in mRecord:
-                                        statSplit = mRecord["Predecessor"]['Stat Bonuses'][0].split(' +')
-                                    else:
-                                        statSplit = mRecord['Stat Bonuses'].split(' +')
-                                        
+                                    statSplit = mRecord['Stat Bonuses'].split(' +')
                                     maxSplit = statSplit[0].split(' ')
                                     oldStat = charRecords[maxSplit[1]]
 
@@ -611,26 +645,28 @@ class Tp(commands.Cog):
                                         charRecords['HP'] -= ((int(oldStat) - 10) // 2) * charRecords['Level']
                                         charRecords['HP'] += ((int(charRecords['CON']) - 10) // 2) * charRecords['Level']
                                         setData['HP'] = charRecords['HP']
-                                unsetData = {"Dummy Entry" : 1}
-                            
-                                
-                                if newTP:
-                                
-                                    for tp, value in used_tp.items():
-                                        if charRecords[tp] == 0:
-                                            unsetData[tp] = 1
-                                        else:
-                                            setData[tp] = charRecords[tp]
-                                        setData[f"Item Spend.{mRecord['Name']}.{tp}"] = value
-                                
-                                
-                                elif newGP:
-                                    setData['GP'] = newGP
-                                    setData[f"Item Spend.{mRecord['Name']}.GP"] = gpNeeded
 
-                                playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData, "$unset": unsetData})
-                            
-                                db.stats.update_one({"Life": 1}, {"$inc" : {"Magic Items."+mRecord['Name']: 1}})
+                                if newTP:
+                                    if charRecords[f"T{tierNum} TP"] == 0:
+                                        unsetTP = True
+                                    else:
+                                        setData[f"T{tierNum} TP"] = charRecords[f"T{tierNum} TP"] 
+                                elif newGP:
+                                    if refundTP:
+                                        if f"T{tierNum} TP" not in charRecords:
+                                            charRecords[f"T{tierNum} TP"] = 0 
+
+                                        setData[f"T{tierNum} TP"] = charRecords[f"T{tierNum} TP"] + refundTP 
+                                        setData['GP'] = newGP
+                                    else:
+                                        setData['GP'] = newGP
+
+                                if unsetTP:
+                                    playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData, "$unset": {f"T{tierNum} TP":1}})
+                                else:
+                                    playersCollection.update_one({'_id': charRecords['_id']}, {"$set": setData})
+                                if complete:
+                                    db.stats.update_one({"Life": 1}, {"$inc" : {"Magic Items."+mRecord['Name']: 1}})
                                 
                             except Exception as e:
                                 await traceBack(ctx, e)
@@ -638,12 +674,17 @@ class Tp(commands.Cog):
                                 print ('MONGO ERROR: ' + str(e))
                                 tpEmbedmsg = await channel.send(embed=None, content=f"Uh oh, looks like something went wrong. Try again using the same command!")
                             else:
-                                outputLiner = oneLiner.replace("<magic item>", str(mRecord['Name'])).replace(f"a {str(mRecord['Name'])}", f"{indefinite} {str(mRecord['Name'])}")
+                                outputLiner = oneLiner.replace("<magic item>", str(mRecord['Name']))
                                 if newTP:
-                                    tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['TP']} TP! :tada:\n\nLeftover TP: {used_tp_text}\n\n"
+                                    if "Complete" in newTP:
+                                        tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['TP']} TP! :tada:\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n"
+                                    else:
+                                        tpEmbed.description = f"You have put TP towards **{mRecord['Name']}** but still need to spend more TP in order to complete it!\n\nCurrent progress: {newTP}\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP']}\n\n"
                                 elif newGP:
-                                    tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n"
-
+                                    if refundTP:
+                                        tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n\nCurrent T{tierNum} TP: {charRecords[f'T{tierNum} TP'] + refundTP} (refunded {refundTP})"
+                                    else:
+                                        tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n"
                                 await tpEmbedmsg.edit(embed=tpEmbed)
                                 ctx.command.reset_cooldown(ctx)
 
@@ -652,6 +693,118 @@ class Tp(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 return
 
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @tp.command()
+    async def discard(self, ctx , charName):
+        channel = ctx.channel
+        author = ctx.author
+        tpEmbed = discord.Embed()
+        tpCog = self.bot.get_cog('Tp')
+        charRecords, tpEmbedmsg = await checkForChar(ctx, charName, tpEmbed)
+        
+        #limit responses to just the original user and the appropriate emotes
+        def tpEmbedCheck(r, u):
+            sameMessage = False
+            if tpEmbedmsg.id == r.message.id:
+                sameMessage = True
+            return ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author and sameMessage
+
+        def discardEmbedCheck(r, u):
+            sameMessage = False
+            if tpEmbedmsg.id == r.message.id:
+                sameMessage = True
+            return ((r.emoji in alphaEmojis[:alphaIndex]) or (str(r.emoji) == '❌')) and u == author and sameMessage
+        
+        #if the character was found in the DB
+        if charRecords:
+            # If there are no incomplete TP invested items, cancel command
+            if charRecords['Current Item'] == "None":
+                await channel.send(f'You currently do not have an incomplete item to discard.')
+                ctx.command.reset_cooldown(ctx)
+                return
+
+            # Split curent items into a list and check with user which item they would like to discard
+            currentItemList = charRecords['Current Item'].split(', ')
+            discardString = ""
+            # set up the mapping between letter emoji and item to discard
+            alphaIndex = 0
+            for c in currentItemList:
+                discardString += f"{alphaEmojis[alphaIndex]}: {c}\n"
+                alphaIndex += 1
+            
+            #if there is only one item, select it by default and skip the selection proces
+            currentItem = currentItemList[0]
+
+            if len(currentItemList) > 1:
+                tpEmbed.description = f"You have multiple items with TP invested. Choose a magic item to discard.\n\n{discardString}"
+                if tpEmbedmsg:
+                    await tpEmbedmsg.edit(embed=tpEmbed)
+                else:
+                    tpEmbedmsg = await channel.send(embed=tpEmbed)
+                await tpEmbedmsg.add_reaction('❌')
+
+                try:
+                    tReaction, tUser = await self.bot.wait_for("reaction_add", check=discardEmbedCheck , timeout=60)
+                except asyncio.TimeoutError:
+                    await tpEmbedmsg.delete()
+                    await channel.send(f'TP cancelled. Try again using the same command!')
+                    ctx.command.reset_cooldown(ctx)
+                    return
+                await tpEmbedmsg.clear_reactions()
+                #remove from the list of current items the one that got mapped to the emoji that the user reacted with
+                currentItem = currentItemList.pop(alphaEmojis.index(tReaction.emoji))
+            else:
+                currentItemList = ["None"]
+            
+            #store the original string of the item and find the item name without TP
+            currentItemStr = currentItem
+            currentItem = currentItem.split('(')[0].strip()
+
+            # Item has been chosen, prompt user to be sure.
+            tpEmbed.title = f"Discarding a Magic Item: {charRecords['Name']}"
+            tpEmbed.description = f"Are you sure you want to discard **{currentItemStr}**?\n\n**Note: you will not be refunded any TP which you have put towards it.**\n\n✅: Yes\n\n❌: Cancel"
+            tpEmbed.set_footer(text=tpEmbed.Empty)
+            if tpEmbedmsg:
+                await tpEmbedmsg.edit(embed=tpEmbed)
+            else:
+                tpEmbedmsg = await channel.send(embed=tpEmbed)
+            await tpEmbedmsg.add_reaction('✅')
+            await tpEmbedmsg.add_reaction('❌')
+
+            try:
+                tReaction, tUser = await self.bot.wait_for("reaction_add", check=tpEmbedCheck , timeout=60)
+            except asyncio.TimeoutError:
+                #cancel if no response was given within the timeframe
+                await tpEmbedmsg.delete()
+                await channel.send(f'TP cancelled. Try again using the same command!')
+                ctx.command.reset_cooldown(ctx)
+                return
+            else:
+                await tpEmbedmsg.clear_reactions()
+                if tReaction.emoji == '❌':
+                    await tpEmbedmsg.edit(embed=None, content=f"TP cancelled. Try again using the same command!")
+                    await tpEmbedmsg.clear_reactions()
+                    ctx.command.reset_cooldown(ctx)
+                    return
+                elif tReaction.emoji == '✅': 
+                    tpEmbed.clear_fields()
+                    try:
+                        #filter out the discarded item and its group from the Grouped property
+                        def filterGroupedItems(elem):
+                            if(elem.split(":")[1].strip() != currentItem):
+                                return True
+                            else: return None
+                        #update the database
+                        filtered_grouped = list(filter( filterGroupedItems, charRecords['Grouped']))
+                        playersCollection = db.players
+                        playersCollection.update_one({'_id': charRecords['_id']}, {"$set": {"Current Item":', '.join(currentItemList), "Grouped":filtered_grouped}})
+                    except Exception as e:
+                        print ('MONGO ERROR: ' + str(e))
+                        tpEmbedmsg = await channel.send(embed=None, content=f"Uh oh, looks like something went wrong. Try again using the same command!")
+                    else:
+                        tpEmbed.description = f"**{currentItem}** has been discarded!\n\nCurrent Item(s): {', '.join(currentItemList)}"
+                        await tpEmbedmsg.edit(embed=tpEmbed)
+                        ctx.command.reset_cooldown(ctx)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @tp.command()
@@ -730,7 +883,7 @@ class Tp(commands.Cog):
                 return
             
 
-            tpEmbed.title = f"Abandoning TP: {charRecords['Name']}"  
+            tpEmbed.title = f"Abandoning a Magic Item: {charRecords['Name']}"  
             tpEmbed.description = f"Are you sure you want to abandon your Tier {role} TP?\n\nYou currently have {charRecords[f'T{role} TP']} Tier {role} TP.\n\n**Note: this action is permanent and cannot be reversed.**\n\n✅: Yes\n\n❌: Cancel"
             tpEmbed.set_footer(text=tpEmbed.Empty)
             if tpEmbedmsg:

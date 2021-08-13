@@ -344,10 +344,9 @@ async def checkForChar(ctx, char, charEmbed="", authorCheck=None, mod=False, cus
     channel = ctx.channel
     author = ctx.author
     guild = ctx.guild
-    search_author = author
+
     if authorCheck != None:
-        search_author = authorCheck
-        mod=False
+        author = authorCheck
 
     playersCollection = db.players
 
@@ -358,7 +357,7 @@ async def checkForChar(ctx, char, charEmbed="", authorCheck=None, mod=False, cus
     if mod == True:
         charRecords = list(playersCollection.find({"Name": {"$regex": query, '$options': 'i' }})) 
     else:
-        charRecords = list(playersCollection.find({"User ID": str(search_author.id), "Name": {"$regex": query, '$options': 'i' }}))
+        charRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": query, '$options': 'i' }}))
 
     if charRecords == list():
         if not mod and not customError:
