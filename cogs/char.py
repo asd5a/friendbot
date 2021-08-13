@@ -19,17 +19,23 @@ class Character(commands.Cog):
         
     def is_log_channel():
         async def predicate(ctx):
+            if ctx.channel.type == discord.ChannelType.private:
+                return False
             return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
         return commands.check(predicate)
    
     def is_log_channel_or_game():
         async def predicate(ctx):
+            if ctx.channel.type == discord.ChannelType.private:
+                return False
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"])
         return commands.check(predicate) 
         
     def stats_special():
         async def predicate(ctx):
+            if ctx.channel.type == discord.ChannelType.private:
+                return False
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"] or
                     ctx.channel.id == 564994370416410624)
@@ -3574,6 +3580,7 @@ class Character(commands.Cog):
 
                             if "Wizard" in charClassChoice:
                                 freeSpells[0] += 6
+                                infoRecords["Free Spells"] = freeSpells
 
                             levelUpEmbed.description = f"{infoRecords['Race']}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
                             levelUpEmbed.clear_fields()

@@ -363,6 +363,8 @@ class Log(commands.Cog):
         self.bot = bot
     def is_log_channel():
         async def predicate(ctx):
+            if ctx.channel.type == discord.ChannelType.private:
+                return False
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"] or
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"])

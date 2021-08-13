@@ -30,15 +30,21 @@ class Guild(commands.Cog):
        
     def is_log_channel():
         async def predicate(ctx):
+            if ctx.channel.type == discord.ChannelType.private:
+                return False
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or
                     ctx.channel.category_id == 698784680488730666)
         return commands.check(predicate)
     def is_guild_channel():
         async def predicate(ctx):
+            if ctx.channel.type == discord.ChannelType.private:
+                return False
             return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
         return commands.check(predicate)
     def is_game_channel():
         async def predicate(ctx):
+            if ctx.channel.type == discord.ChannelType.private:
+                return False
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Game Rooms"] or
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"]or
