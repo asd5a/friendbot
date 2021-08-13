@@ -3941,6 +3941,7 @@ class Character(commands.Cog):
 
                             if "Wizard" in charClassChoice:
                                 freeSpells[0] += 6
+                                infoRecords["Free Spells"] = freeSpells
 
                             levelUpEmbed.description = f"{infoRecords['Race']}: {charClass}\n**STR**:{charStats['STR']} **DEX**:{charStats['DEX']} **CON**:{charStats['CON']} **INT**:{charStats['INT']} **WIS**:{charStats['WIS']} **CHA**:{charStats['CHA']}"
                             levelUpEmbed.clear_fields()
