@@ -10,14 +10,8 @@ import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-#<<<<<<< HEAD
 from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic, calculateTreasure
 from cogs.char import paginate
-#=======
-from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic
-
-#>>>>>>> parent of 5ca1e18 (Merge remote-tracking branch 'upstream/master')
-
 
 
 def admin_or_owner():
@@ -202,11 +196,8 @@ class Admin(commands.Cog, name="Admin"):
         player_list = list(db.players.find(
                {"Alignment": {"$exists": True}})
             )
-            
         contents = []
-        alignment=""
-        for s in player_list:
-            alignment += f"{s['Alignment']}\n"
+        alignment="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Alignment"].replace("\"", "") for x in player_list])))).items()])
         contents.append(("Alignment", alignment, False))
         await paginate(ctx, self.bot, f"Alignments List", contents=contents, separator="\n")
         
@@ -218,12 +209,13 @@ class Admin(commands.Cog, name="Admin"):
                {"Reflavor": {"$exists": True}})
             )
         rfarray = list([line["Reflavor"] for line in player_list]) #puts all the reflavors in a list
+        contents = []
         raceContents=[]
         classContents=[]
         backgroundContents=[]
-        races=""
-        classes=""
-        backgrounds=""
+        raceList = []
+        classList = []
+        backgroundList = []
         i = 0
         while i < len(rfarray):
             if 'Race' in rfarray[i]:
@@ -233,13 +225,17 @@ class Admin(commands.Cog, name="Admin"):
             if 'Background' in rfarray[i]:
                 backgrounds += f"{rfarray[i]['Background']}\n"
             i += 1
-        raceContents.append(("Race", races, False))
-        classContents.append(("Class", classes, False))
-        backgroundContents.append(("Background", backgrounds, False))
-            
-        await paginate(ctx, self.bot, f"Race Reflavor List", contents=raceContents, separator="\n")
-        await paginate(ctx, self.bot, f"Class Reflavor List", contents=classContents, separator="\n")
-        await paginate(ctx, self.bot, f"Background Reflavor List", contents=backgroundContents, separator="\n")
+
+        raceContents="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in raceList])))).items()])
+
+        classContents="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in classList])))).items()])
+
+        backgroundContents="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in backgroundList])))).items()])
+        contents.append(("Race", raceContents, False))
+        contents.append(("Class", classContents, False))
+        contents.append(("Background", backgroundContents, False))
+
+        await paginate(ctx, self.bot, f"Reflavor List", contents=contents, separator="\n")
     
     @commands.command()
     @commands.has_any_role("Mod Friend")
@@ -247,16 +243,10 @@ class Admin(commands.Cog, name="Admin"):
         player_list = list(db.players.find(
                {"Nickname": {"$exists": True}})
             )
-        
-#<<<<<<< HEAD
+        nickname ="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Nickname"].replace("\"", "") for x in player_list])))).items()])
         contents = []
-        nickname=""
-        for s in player_list:
-            nickname += f"{s['Nickname']}\n"
         contents.append(("Nickname", nickname, False))
-                
         await paginate(ctx, self.bot, f"Nicknames List", contents=contents, separator="\n")
-        
         
     @commands.command()
     @commands.has_any_role("Mod Friend")

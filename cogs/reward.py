@@ -1,7 +1,7 @@
 import discord
 import re
 from discord.ext import commands
-from bfunc import db, alphaEmojis, roleArray, calculateTreasure, timeConversion, commandPrefix, tier_reward_dictionary, checkForChar
+from bfunc import db, roleArray, calculateTreasure, timeConversion, commandPrefix, tier_reward_dictionary, checkForChar
 from random import *
 
 async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None, amount=None, start=None):
@@ -15,10 +15,6 @@ async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None
             rewardTable = list(rewardCollection.find({"Tier": int(tier), "Minor/Major": rewardType}))
         else:
             rewardTable = list(rewardCollection.find({"Tier": tier, "Minor/Major": rewardType, "Name": {"$nin": dmChar[5][1][player_type][rewardType]}, "Grouped": {"$nin": dmChar[5][1][player_type][rewardType]}}))
-        
-        # if rewardTable == None # Only happens if called from timer and there are no eligible rewards
-            # await channel.send(f"Error: You have already given out every tier {tier} {rewardType} reward item on the reward table!")
-            # return None
         
         if int(amount) > 1:
             if len(rewardTable) < int(amount): # size restriction check if used from rewardtable, which varies based on tier.
@@ -77,8 +73,6 @@ async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None
                         #self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx) #error
                         return None
                 await charEmbedmsg.clear_reactions()
-                #```yaml\n{commandPrefix}{tier}{rewardType}{amount}```
-                # ```yaml\n{commandPrefix}{tier}{rewardType}{amount}```
                 classList = spellClasses[alphaEmojis.index(tReaction.emoji)]
                 
                 spellCollection = db.spells
@@ -247,7 +241,6 @@ class Reward(commands.Cog):
                 await channel.send(embed=charEmbed)
             return
     
-    
     @commands.command()
     async def random(self,ctx, tier, rewardType, size=1):
         rewardCommand = f"\nPlease follow this format:\n```yaml\n{commandPrefix}rewardtable \"tier\" \"major or minor\" \"# of rewards\"```\n"
@@ -267,10 +260,7 @@ class Reward(commands.Cog):
         else:
             await channel.send(content="The reward type must be major or minor." + rewardCommand)
             return
-        
-        #if size == None:
-            #size = 1
-        
+
         tierNum = 0
         if tier == 'junior':
             tierNum = 1
@@ -286,14 +276,12 @@ class Reward(commands.Cog):
             tierNum = tier
         
         reward = await randomReward(self, ctx, tier=int(tierNum), rewardType=rewardType, amount=size)
-        #reward = await self.randomReward(ctx, int(tierNum), rewardType, size)
         if reward == None:
             return
         
         outputString = f"{rewardType.capitalize()}s: "+", ".join(reward[i] for i in range(0, len(reward)))
 
         await channel.send(outputString)
-        
             
 def setup(bot):
     bot.add_cog(Reward(bot))

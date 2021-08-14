@@ -18,7 +18,6 @@ from cogs.logs import generateLog
 from pymongo.errors import BulkWriteError
 from cogs.reward import randomReward
 
-
 class Timer(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
@@ -2178,15 +2177,13 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
             return False
         else: 
             return True
+            
     
     """
     start -> a dictionary of strings and player list pairs, the strings are made out of the kind of reward and the duration and the value is a list of players entries (format can be found as the return value in signup)
     resume -> if this is during the resume process
     dmChar -> the player entry (format [member object, char DB entry, brought consumables, char id, item changes]) of the DM with an added entry [5] as [Noodle Role Name, majors  = 0, minors = 0, dmMajors = 0,dmMinors = 0]
     """  
-    
-    
-    
     async def randomRew(self,ctx, msg=None, start="",resume=False, dmChar="", rewardType=None):
         channel = ctx.channel
         author = ctx.author
@@ -2294,7 +2291,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 
         #in no rewards games characters cannot die or get rewards
         if role != "":
-            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp', 'undo rewards', 'major', 'minor']
+            timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'death', 'reward', 'stamp', 'undo rewards', "guild", 'major', 'minor']
         else:
             timerCommands = ['transfer', 'stop', 'end', 'add', 'remove', 'stamp']
 
