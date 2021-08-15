@@ -119,77 +119,42 @@ class Misc(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
+        await self.role_management_kernel(payload)
+    
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self,payload):
+        await self.role_management_kernel(payload)
+    
+    async def role_management_kernel(self, payload):
         if not str(payload.channel_id) in settingsRecord["Role Channel List"].keys(): 
             return
         guild_id = settingsRecord["Role Channel List"][str(payload.channel_id)]
         guild = self.bot.get_guild(int(guild_id))
 
-        if str(payload.message_id) in settingsRecord[guild_id]["Messages"].keys():
-            if payload.emoji.name == "1️⃣":
-                name = 'Tier 1' 
-            elif payload.emoji.name == "2️⃣":
-                name = 'Tier 2' 
-            elif payload.emoji.name == "3️⃣":
-                name = 'Tier 3' 
-            elif payload.emoji.name == "4️⃣":
-                name = 'Tier 4' 
-            elif payload.emoji.name == "5️⃣" :
-                name = 'Tier 5' 
-            elif payload.emoji.name == "0️⃣":
-                name = 'Tier 0' 
-            else:
-                return
+        if (str(payload.message_id) in settingsRecord[guild_id]["Messages"].keys()
+            and payload.emoji.name in settingsRecord[guild_id]["Messages"][str(payload.message_id)].keys()):
             
-            name = settingsRecord[guild_id]["Messages"][str(payload.message_id)]+" "+name     
+            name = settingsRecord[guild_id]["Messages"][str(payload.message_id)][payload.emoji.name]
             role = get(guild.roles, name = name)
             if role is not None:
                 member = guild.get_member(payload.user_id)
                 if member is not None:
-                    await member.remove_roles(role)
-                    successMsg = await member.send(f":tada: ***{member.display_name}***, I have removed the ***{name}*** role from you! You will no longer be pinged for quests of this tier. React with the same emoji if you would like to be pinged for quests of this tier again!")
-                else:
-                    print('member not found')
-            else:
-                print('role not found')
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self,payload):
-        if not str(payload.channel_id) in settingsRecord["Role Channel List"].keys(): 
-            return
-        guild_id = settingsRecord["Role Channel List"][str(payload.channel_id)]
-        guild = self.bot.get_guild(int(guild_id))
-        if str(payload.message_id) in settingsRecord[guild_id]["Messages"].keys():
-            if payload.emoji.name == "1️⃣":
-                name = 'Tier 1' 
-            elif payload.emoji.name == "2️⃣":
-                name = 'Tier 2' 
-            elif payload.emoji.name == "3️⃣":
-                name = 'Tier 3' 
-            elif payload.emoji.name == "4️⃣":
-                name = 'Tier 4' 
-            elif payload.emoji.name == "5️⃣" :
-                name = 'Tier 5' 
-            elif payload.emoji.name == "0️⃣":
-                name = 'Tier 0' 
-            else:
-                return
-            
-            name = settingsRecord[guild_id]["Messages"][str(payload.message_id)]+" "+name    
-            role = get(guild.roles, name = name)    
-
-            if role is not None:
-                member = guild.get_member(payload.user_id)
-
-                if member is not None:
-                    await member.add_roles(role)
-                    successMsg = await member.send(f":tada: ***{member.display_name}***, I have given you the ***{name}*** role! You will be pinged for quests of this tier. React to the same emoji if you no longer want to be pinged for quests of this tier!")
-
+                    has_role = role in member.roles
+                    if has_role:
+                        action = "add_roles"
+                        await member.add_roles(role, atomic=True)
+                        text = f":tada: ***{member.display_name}***, I have removed the ***{name}*** role from you! You will no longer be pinged for quests of this tier. React with the same emoji if you would like to be pinged for quests of this tier again!"
+                    else:
+                        action = "remove_roles"
+                        await member.remove_roles(role, atomic=True)
+                        text = f":tada: ***{member.display_name}***, I have given you the ***{name}*** role! You will be pinged for quests of this tier. React to the same emoji if you no longer want to be pinged for quests of this tier!"
                         
+                    successMsg = await getattr(member, "send")(text)
                 else:
                     print('member not found')
             else:
                 print('role not found')
-    
+
     #A function that grabs all messages in the quest board and compiles a list of availablities
     async def generateMessageText(self, channel_id):
         tChannel = channel_id
