@@ -279,6 +279,7 @@ class Timer(commands.Cog):
         while not timerStarted:
             # get any message that managed to satisfy the check described above, it has to be a command as a result
             msg = await self.bot.wait_for('message', check=lambda m: any(x in m.content for x in timerCombined) and m.channel == channel)
+            msg.content = msg.content.replace("“", "\"").replace("”", "\"")
             """
             the following commands are all down to check which command it was
             the checks are all doubled up since the commands can start with $t and $timer
@@ -2259,6 +2260,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                     msg = await self.bot.wait_for('message', timeout=60.0, check=lambda m: (any(x in m.content for x in timerCombined) or m.content.startswith('-')) and m.channel == channel)
                 else:
                     msg = await self.bot.wait_for('message', timeout=60.0*15, check=lambda m: (any(x in m.content for x in timerCombined)) and m.channel == channel)
+                msg.content = msg.content.replace("“", "\"").replace("”", "\"")
                 #transfer ownership of the timer
                 if (msg.content.startswith(f"{commandPrefix}timer transfer ") or msg.content.startswith(f"{commandPrefix}t transfer ")):
                     # check if the author of the message has the right permissions for this command
