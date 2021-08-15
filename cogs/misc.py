@@ -141,14 +141,13 @@ class Misc(commands.Cog):
                 if member is not None:
                     has_role = role in member.roles
                     if has_role:
-                        action = "add_roles"
-                        await member.add_roles(role, atomic=True)
+                        action = "remove_roles"
                         text = f":tada: ***{member.display_name}***, I have removed the ***{name}*** role from you! You will no longer be pinged for quests of this tier. React with the same emoji if you would like to be pinged for quests of this tier again!"
                     else:
-                        action = "remove_roles"
-                        await member.remove_roles(role, atomic=True)
+                        action = "add_roles"
                         text = f":tada: ***{member.display_name}***, I have given you the ***{name}*** role! You will be pinged for quests of this tier. React to the same emoji if you no longer want to be pinged for quests of this tier!"
                         
+                    await getattr(member, action)(role, atomic=True)
                     successMsg = await getattr(member, "send")(text)
                 else:
                     print('member not found')

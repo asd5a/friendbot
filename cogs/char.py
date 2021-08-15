@@ -4195,6 +4195,8 @@ class Character(commands.Cog):
             roleRemoveStr = 'Junior Friend'
             levelRole = get(guild.roles, name = roleName)
             roleRemove = get(guild.roles, name = roleRemoveStr)
+            await appMember.add_roles(get(guild.roles, name = 'Roll20 Tier 2'))
+            await appMember.add_roles(get(guild.roles, name = 'Foundry Tier 2'))
             await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 5!")
             await author.remove_roles(roleRemove)
         if 'Elite Friend' not in roles and 'Journeyfriend' in roles and level > 10:
@@ -4202,6 +4204,8 @@ class Character(commands.Cog):
             roleRemoveStr = 'Journeyfriend'
             levelRole = get(guild.roles, name = roleName)
             roleRemove = get(guild.roles, name = roleRemoveStr)
+            await appMember.add_roles(get(guild.roles, name = 'Roll20 Tier 3'))
+            await appMember.add_roles(get(guild.roles, name = 'Foundry Tier 3'))
             await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 11!")
             await author.remove_roles(roleRemove)
         if 'True Friend' not in roles and 'Elite Friend' in roles and level > 16:
@@ -4209,6 +4213,11 @@ class Character(commands.Cog):
             roleRemoveStr = 'Elite Friend'
             levelRole = get(guild.roles, name = roleName)
             roleRemove = get(guild.roles, name = roleRemoveStr)
+            await appMember.add_roles(get(guild.roles, name = 'Roll20 Tier 4'))
+            await appMember.add_roles(get(guild.roles, name = 'Foundry Tier 4'))
+            await appMember.add_roles(get(guild.roles, name = 'Roll20 Tier 5'))
+            await appMember.add_roles(get(guild.roles, name = 'Foundry Tier 5'))
+            
             await author.add_roles(levelRole, reason=f"***{author}***'s character ***{charName}*** is the first character who has reached level 17!")
             await author.remove_roles(roleRemove)
         if 'Ascended Friend' not in roles and 'True Friend' in roles and level > 19:
