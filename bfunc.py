@@ -169,56 +169,28 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, ti
     query = query.replace(')', '\\)')
     query = query.replace('+', '\\+')
     query = query.replace('.', '\\.')
-
-    
+    query_data =  {"$regex": query,
+                    #make the check case-insensitively
+                    "$options": "i"
+                  }
+    if exact:
+        query_data = query
     #search through the table for an element were the Name or Grouped property contain the query
     if table == "spells":
-        filterDic = {"Name": {"$regex": query, '$options': 'i' }, 'Level': {'$gt':0}}
-    elif table == "rit" or table == "mit":
-        filterDic = {"$or": [
-                        {
-                          "Name": {
-                            "$regex": query,
-                            #make the check case-insensitively
-                            "$options": "i"
-                          }
-                        },
-                        {
-                          "Grouped": {
-                            "$regex": query,
-                            "$options": "i"
-                          }
-                        }
-                      ],
-                      'Tier': {'$lt':tier+1}}
+        filterDic = {"Name": query_data,  'Level': {'$gt':0}}
     else:
-        if(exact):
-            filterDic = {"$or": [
+        filterDic = {"$or": [
                             {
-                              "Name": query
+                              "Name": query_data
                             },
                             {
-                              "Grouped": query
+                              "Grouped": query_data
                             }
-                          ],
-                        }
-        else:
-            filterDic = {"$or": [
-                            {
-                              "Name": {
-                                "$regex": query,
-                                #make the check case-insensitively
-                                "$options": "i"
-                              }
-                            },
-                            {
-                              "Grouped": {
-                                "$regex": query,
-                                "$options": "i"
-                              }
-                            }
-                          ],
-                        }
+                        ]
+                    } 
+    if table == "rit" or table == "mit":
+        filterDic['Tier'] = {'$lt':tier+1}}
+    
      
     # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
     #  collection.find(collection.find(filterDic)) does not work for he could not read

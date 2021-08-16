@@ -11,7 +11,7 @@ from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic, calculateTreasure
-
+from cogs.char import paginate
 
 
 
@@ -192,15 +192,18 @@ class Admin(commands.Cog, name="Admin"):
         player_list = list(db.players.find(
                {"Alignment": {"$exists": True}})
             )
-        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Alignment"].replace("\"", "") for x in player_list])))).items()]))  
-    
+        contents = []
+        alignment="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Alignment"].replace("\"", "") for x in player_list])))).items()])
+        contents.append(("Alignment", alignment, False))
+        await paginate(ctx, self.bot, f"Alignments List", contents=contents, separator="\n")
     @commands.command()
     @commands.has_any_role("Mod Friend")
     async def reflavorList(self, ctx):
         player_list = list(db.players.find(
                {"Reflavor": {"$exists": True}})
             )
-        rfarray = list([line["Reflavor"] for line in player_list]) #puts all the 
+        rfarray = list([line["Reflavor"] for line in player_list]) #puts all the reflavors in a list
+        contents = []
         raceList = []
         classList = []
         backgroundList = []
@@ -213,29 +216,27 @@ class Admin(commands.Cog, name="Admin"):
             if 'Background' in rfarray[i]:
                 backgroundList.append(rfarray[i]['Background'])
             i += 1
-        await ctx.channel.send("**Races:**")
-        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in raceList])))).items()]))
-        await ctx.channel.send("**Classes:**")
-        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in classList])))).items()]))
-        await ctx.channel.send("**Backgrounds:**")
-        await ctx.channel.send(content="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in backgroundList])))).items()]))  
-    
+        raceContents="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in raceList])))).items()])
+
+        classContents="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in classList])))).items()])
+
+        backgroundContents="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x.replace("\"", "") for x in backgroundList])))).items()])
+        
+        contents.append(("Race", raceContents, False))
+        contents.append(("Class", classContents, False))
+        contents.append(("Background", backgroundContents, False))
+
+        await paginate(ctx, self.bot, f"Reflavor List", contents=contents, separator="\n")
     @commands.command()
     @commands.has_any_role("Mod Friend")
     async def nicknameList(self, ctx):
         player_list = list(db.players.find(
                {"Nickname": {"$exists": True}})
             )
-        out ="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Nickname"].replace("\"", "") for x in player_list])))).items()])
-        
-        length = len(out)
-        while(length>2000):
-            x = out[:2000]
-            x = x.rsplit("\n", 1)[0]
-            await ctx.channel.send(content=x)
-            out = out[len(x):]
-            length -= len(x)
-        await ctx.channel.send(content=out)
+        nickname ="\n".join([f"{x}: {y}" for x,y in dict(collections.Counter(sorted(list([x["Nickname"].replace("\"", "") for x in player_list])))).items()])
+        contents = []
+        contents.append(("Nickname", nickname, False))
+        await paginate(ctx, self.bot, f"Nicknames List", contents=contents, separator="\n")
         
     @commands.command()
     @commands.has_any_role("Mod Friend")
