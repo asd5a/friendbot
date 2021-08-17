@@ -189,7 +189,7 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, ti
                         ]
                     } 
     if table == "rit" or table == "mit":
-        filterDic['Tier'] = {'$lt':tier+1}}
+        filterDic['Tier'] = {'$lt':tier+1}
     
      
     # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
