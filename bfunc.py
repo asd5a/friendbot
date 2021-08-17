@@ -163,7 +163,7 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, ti
         if i in query:
             await channel.send(f":warning: Please do not use `{i}` in your query. Revise your query and retry the command.\n")
             return None, apiEmbed, apiEmbedmsg
-            
+         
     query = query.strip()
     query = query.replace('(', '\\(')
     query = query.replace(')', '\\)')
@@ -174,10 +174,11 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, ti
                     "$options": "i"
                   }
     if exact:
-        query_data = query
+        query_data["$regex"] = f'^{query_data["$regex"]}$'
+        
     #search through the table for an element were the Name or Grouped property contain the query
     if table == "spells":
-        filterDic = {"Name": query_data,  'Level': {'$gt':0}}
+        filterDic = {"Name": query_data}
     else:
         filterDic = {"$or": [
                             {

@@ -142,10 +142,18 @@ class Misc(commands.Cog):
                     has_role = role in member.roles
                     if has_role:
                         action = "remove_roles"
-                        text = f":tada: ***{member.display_name}***, I have removed the ***{name}*** role from you! You will no longer be pinged for quests of this tier. React with the same emoji if you would like to be pinged for quests of this tier again!"
+                        extra_text = "You will no longer be pinged for quests of this tier. React with the same emoji if you would like to be pinged for quests of this tier again!"
+                        if "Campaign" in role.name:
+                            extra_text = "You will no longer be pinged for campaigns on the `#campaign-board` channel. React to the same emoji if you want to be pinged for campaigns!"
+                    
+                        text = f":tada: ***{member.display_name}***, I have removed the ***{name}*** role from you! {extra_text}"
                     else:
                         action = "add_roles"
-                        text = f":tada: ***{member.display_name}***, I have given you the ***{name}*** role! You will be pinged for quests of this tier. React to the same emoji if you no longer want to be pinged for quests of this tier!"
+                        extra_text = "You will be pinged for quests of this tier. React to the same emoji if you no longer want to be pinged for quests of this tier!"
+                        if "Campaign" in role.name:
+                            extra_text = "You will be pinged for campaigns on the `#campaign-board` channel. React to the same emoji if you no longer want to be pinged for campaigns!"
+                    
+                        text = f":tada: ***{member.display_name}***, I have given you the ***{name}*** role! {extra_text}"
                         
                     await getattr(member, action)(role, atomic=True)
                     successMsg = await getattr(member, "send")(text)

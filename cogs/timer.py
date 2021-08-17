@@ -48,7 +48,6 @@ class Timer(commands.Cog):
             return
         else:
             if isinstance(error, commands.MissingRequiredArgument):
-                print(error.param.name)
                 if error.param.name == 'userList':
                     msg = "You can't prepare a timer without any players! \n"
                 elif error.param.name == 'game':
@@ -56,15 +55,15 @@ class Timer(commands.Cog):
                 else:
                     msg = "Your command was missing an argument! "
             
-            if msg:
-                if ctx.command.name == "prep":
-                    msg +=  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1 @player2 [...]" "quest name" #guild-channel-1 #guild-channel-2```'
-                
-                ctx.command.reset_cooldown(ctx)
-                await ctx.channel.send(content=msg)
-            else:
-                ctx.command.reset_cooldown(ctx)
-                await traceBack(ctx,error)
+        if msg:
+            if ctx.command.name == "prep":
+                msg +=  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1 @player2 [...]" "quest name" #guild-channel-1 #guild-channel-2```'
+            
+            ctx.command.reset_cooldown(ctx)
+            await ctx.channel.send(content=msg)
+        else:
+            ctx.command.reset_cooldown(ctx)
+            await traceBack(ctx,error)
 
 
     
@@ -77,6 +76,8 @@ class Timer(commands.Cog):
     @commands.has_any_role('D&D Friend', 'Campaign Friend')
     @timer.command()
     async def prep(self, ctx, userList, game):
+        ctx.message.content = ctx.message.content.replace("“", "\"").replace("”", "\"")
+                
         #this checks that only the author's response with one of the Tier emojis allows Tier selection
         #the response is limited to only the embed message
         def startEmbedcheck(r, u):
@@ -1077,17 +1078,20 @@ class Timer(commands.Cog):
                                 return start, dmChar
 
                             else:
-                                # Converts number to ordinal - 1:1st, 2:2nd, 3:3rd...
-                                # floor(n/10)%10!=1, this acts as an if statement to check if the number is in the teens
-                                # (n%10<4), this acts as an if statement to check if the number is below 4
-                                # n%10 get the last digit of the number
-                                # by multiplying these number together we end up with calculation that will be 0 unless both conditions have been met, otherwise it is the digit
-                                # this number x is then used as the starting point of the selection and ::4 will then select the second letter by getting the x+4 element
-                                # technically it will get more, but since the string is only 8 characters it will return 2 characters always
-                                # th, st, nd, rd are spread out by 4 characters in the string 
-                                ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
-                                # change the query to be an accurate representation
-                                query = f"Spell Scroll ({ordinal(sRecord['Level'])} Level)"
+                                if sRecord["Level"] == 0:
+                                    query = f"Spell Scroll (Cantrip)"
+                                else:
+                                    # Converts number to ordinal - 1:1st, 2:2nd, 3:3rd...
+                                    # floor(n/10)%10!=1, this acts as an if statement to check if the number is in the teens
+                                    # (n%10<4), this acts as an if statement to check if the number is below 4
+                                    # n%10 get the last digit of the number
+                                    # by multiplying these number together we end up with calculation that will be 0 unless both conditions have been met, otherwise it is the digit
+                                    # this number x is then used as the starting point of the selection and ::4 will then select the second letter by getting the x+4 element
+                                    # technically it will get more, but since the string is only 8 characters it will return 2 characters always
+                                    # th, st, nd, rd are spread out by 4 characters in the string 
+                                    ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(floor(n/10)%10!=1)*(n%10<4)*n%10::4])
+                                    # change the query to be an accurate representation
+                                    query = f"Spell Scroll ({ordinal(sRecord['Level'])} Level)"
                         
    
                         # search for the item in the DB with the function from bfunc

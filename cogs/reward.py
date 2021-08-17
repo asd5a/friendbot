@@ -1,7 +1,8 @@
 import discord
 import re
+import asyncio
 from discord.ext import commands
-from bfunc import db, roleArray, calculateTreasure, timeConversion, commandPrefix, tier_reward_dictionary, checkForChar
+from bfunc import db, roleArray, calculateTreasure, timeConversion, commandPrefix, tier_reward_dictionary, checkForChar, alphaEmojis
 from random import *
 
 async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None, amount=None, start=None):
@@ -16,10 +17,14 @@ async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None
         else:
             rewardTable = list(rewardCollection.find({"Tier": tier, "Minor/Major": rewardType, "Name": {"$nin": dmChar[5][1][player_type][rewardType]}, "Grouped": {"$nin": dmChar[5][1][player_type][rewardType]}}))
 
-        if int(amount) > 1:
+        if int(amount) > 0:
             if len(rewardTable) < int(amount): # size restriction check if used from rewardtable, which varies based on tier.
                 await channel.send(f'Error: You requested more {rewardType} reward items than the Tier {tier} table has available!')
                 return None
+        else:
+            await channel.send(f'Error: You requested an invalid amount of {rewardType} reward items.')
+            return None
+
 
         randomItem = sample(rewardTable, int(amount)) # Makes a list of all the randomly chosen items. Includes their entire entry, which is needed for special cases of spell scrolls and ammunition
         rewardString = []
@@ -28,7 +33,7 @@ async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
                 sameMessage = True
-            return sameMessage and ((r.emoji in alphaEmojis[:6]) or (str(r.emoji) == '❌')) and u == author
+            return sameMessage and ((r.emoji in alphaEmojis[:len(spellClasses)]) or (str(r.emoji) == '❌')) and u == author
 
         #Puts all rewards into an array
         for i in range(0,int(amount)):
@@ -41,20 +46,25 @@ async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None
 
                 # create an embed object for user communication
                 #extract spell level:
-                spellLevel = int(spell[0])
+                if len(spell)>0:
+                    spellLevel = int(spell[0])
+                else:
+                    spellLevel = 0
                 charEmbed = discord.Embed()
                 charEmbed.title = f"{randomItem[i]['Name']}"
                 charEmbed.description = f"What class list would you like the spell scroll to be from?"
 
                 #Determine if the scroll level is available to half-casters
-                if spellLevel < 6: #all caster list
-                    spellClasses = ["Artificer", "Bard", "Cleric", "Druid", "Ranger", "Paladin", "Sorcerer", "Warlock", "Wizard"]
-                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Artificer\n{alphaEmojis[1]}: Bard\n{alphaEmojis[2]}: Cleric\n{alphaEmojis[3]}: Druid\n{alphaEmojis[4]}: Ranger\n{alphaEmojis[5]}: Paladin\n{alphaEmojis[6]}: Sorcerer\n{alphaEmojis[7]}: Warlock\n{alphaEmojis[8]}: Wizard\n", inline=False)
+                if spellLevel < 1: #all caster list
+                    spellClasses = ["Artificer", "Bard", "Cleric", "Druid", "Sorcerer", "Warlock", "Wizard"]
+                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Artificer\n{alphaEmojis[1]}: Bard\n{alphaEmojis[2]}: Cleric\n{alphaEmojis[3]}: Druid\n{alphaEmojis[4]}: Sorcerer\n{alphaEmojis[5]}: Warlock\n{alphaEmojis[6]}: Wizard\n", inline=False)
+                elif spellLevel < 6: #all caster list
+                    spellClasses = ["Artificer", "Bard", "Cleric", "Druid", "Paladin", "Ranger", "Sorcerer", "Warlock", "Wizard"]
+                    charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Artificer\n{alphaEmojis[1]}: Bard\n{alphaEmojis[2]}: Cleric\n{alphaEmojis[3]}: Druid\n{alphaEmojis[4]}: Paladin\n{alphaEmojis[5]}: Ranger\n{alphaEmojis[6]}: Sorcerer\n{alphaEmojis[7]}: Warlock\n{alphaEmojis[8]}: Wizard\n", inline=False)
                 else: #full caster list
                     spellClasses = ["Bard", "Cleric", "Druid", "Sorcerer", "Warlock", "Wizard"]
                     charEmbed.add_field(name="Please pick the spell list you want the scroll to be from:", value=f"{alphaEmojis[0]}: Bard\n{alphaEmojis[1]}: Cleric\n{alphaEmojis[2]}: Druid\n{alphaEmojis[3]}: Sorcerer\n{alphaEmojis[4]}: Warlock\n{alphaEmojis[5]}: Wizard\n", inline=False)
-
-                charEmbedmsg = await channel.send(embed=charEmbed, content="Testing")
+                charEmbedmsg = await channel.send(embed=charEmbed)
                 await charEmbedmsg.add_reaction('❌')
 
                 try:
@@ -90,7 +100,29 @@ async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None
 class Reward(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
-
+    async def cog_command_error(self, ctx, error):
+        msg = None
+        if isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
+             msg = "Your \" placement seems to be messed up.\n"
+        elif isinstance(error, commands.BadArgument):
+            msg = "A parameter needed to be a number! \n"
+        else:
+            if isinstance(error, commands.MissingRequiredArgument):
+                if error.param.name == 'rewardType':
+                    msg = "You are missing the reward type! \n"
+                elif error.param.name == 'tier':
+                    msg = "You are missing the tier! \n"
+                else:
+                    msg = "Your command was missing an argument! "
+        if msg:
+            if ctx.command.name == "prep":
+                msg +=  f'Please follow this format:\n```yaml\n{commandPrefix}timer prep "@player1 @player2 [...]" "quest name" #guild-channel-1 #guild-channel-2```'
+            
+            ctx.command.reset_cooldown(ctx)
+            await ctx.channel.send(content=msg)
+        else:
+            ctx.command.reset_cooldown(ctx)
+            await traceBack(ctx,error)
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @commands.command()
 
@@ -138,7 +170,7 @@ class Reward(commands.Cog):
         
         
         # Checks to see if a tier was given. If there wasn't, it then checks to see if a valid character was given. If not, error.
-        if tier not in ('0','1','2','3','4', '5') and tier.lower() not in [r.lower() for r in roleArray]:
+        if tier not in ('0', '1','2','3','4', '5') and tier.lower() not in [r.lower() for r in roleArray]:
             charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
             if charDict == None:
                 charEmbed.description = f"**{tier}** is not a valid tier or character name. Please try again with **New** or **0**, **Junior** or **1**, **Journey** or **2**, **Elite** or **3**, **True** or **4**, or **Ascended** or **5**, or input a valid character name."
@@ -241,12 +273,12 @@ class Reward(commands.Cog):
             
     @commands.command()
     async def random(self,ctx, tier, rewardType, size=1):
-        rewardCommand = f"\nPlease follow this format:\n```yaml\n{commandPrefix}rewardtable \"tier\" \"major or minor\" \"# of rewards\"```\n"
+        rewardCommand = f"\nPlease follow this format:\n```yaml\n{commandPrefix}random \"tier\" \"major or minor\" \"# of rewards\"```\n"
 
         channel = ctx.channel
         author = ctx.author
 
-        if tier not in ('0','1','2','3','4', '5') and tier.lower() not in [r.lower() for r in roleArray]:
+        if tier not in ('0', '1','2','3','4', '5') and tier.lower() not in [r.lower() for r in roleArray]:
             errorMessage = f"**{tier}** is not a valid tier. Please try again with **New** or **0**, **Junior** or **1**, **Journey** or **2**, **Elite** or **3**, **True** or **4**, or **Ascended** or **5**."
             await channel.send(errorMessage)
             return
@@ -259,8 +291,10 @@ class Reward(commands.Cog):
             await channel.send(content="The reward type must be major or minor." + rewardCommand)
             return
 
-        tierNum = 0
-        if tier == 'junior':
+        tierNum = 1
+        if tier == 'new':
+            tierNum = 1
+        elif tier == 'junior':
             tierNum = 1
         elif tier == "journey":
             tierNum = 2
@@ -271,7 +305,7 @@ class Reward(commands.Cog):
         elif tier == "ascended":
             tierNum = 5
         else:
-            tierNum = tier
+            tierNum = int(tier)
 
         reward = await randomReward(self, ctx, tier=int(tierNum), rewardType=rewardType, amount=size)
         if reward == None:
