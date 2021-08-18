@@ -163,6 +163,8 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f'{commandPrefix}reward XhYm tier', inline=False)
 
+    helpEmbedGen.add_field(name=f'▫️ Choosing a Random Reward Item', value=f'{commandPrefix}random tier major/minor #', inline=False)
+
     helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f'{commandPrefix}stats', inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Viewing Fanatic Competition Stats', value=f'{commandPrefix}fanatic', inline=False)
@@ -250,9 +252,11 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerTwo.add_field(name=f'▫️ Removing Players During a Quest (DM)', value=f'{commandPrefix}timer remove @player', inline=False)
 
+    helpEmbedTimerTwo.add_field(name=f'▫️ Awarding a Random Reward Item (DM)', value=f'{commandPrefix}timer major/minor @player', inline=False)
+
     helpEmbedTimerTwo.add_field(name=f'▫️ Awarding Reward Items (DM)', value=f'{commandPrefix}timer reward @player "reward item1, reward item2, [...]"', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Revoking Reward Items (DM)', value=f'{commandPrefix}timer undo rewards @player "reward item1, reward item2, [...]"', inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Revoking Reward Items (DM)', value=f'{commandPrefix}timer undo rewards', inline=False)
 
     helpEmbedTimerTwo.add_field(name=f'▫️ Character Death (DM)', value=f'{commandPrefix}timer death @player', inline=False)
 
