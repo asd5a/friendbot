@@ -273,7 +273,7 @@ class Reward(commands.Cog):
             
     @commands.command()
     async def random(self,ctx, tier, rewardType, size=1):
-        rewardCommand = f"\nPlease follow this format:\n```yaml\n{commandPrefix}random \"tier\" \"major or minor\" \"# of rewards\"```\n"
+        rewardCommand = f"\nPlease follow this format:\n```yaml\n{commandPrefix}random tier major/minor #```\n"
 
         channel = ctx.channel
         author = ctx.author
@@ -288,7 +288,7 @@ class Reward(commands.Cog):
         elif rewardType.lower() == "minor":
             rewardType = "Minor"
         else:
-            await channel.send(content="The reward type must be major or minor." + rewardCommand)
+            await channel.send(content="The reward type must be Major or Minor." + rewardCommand)
             return
 
         tierNum = 1
