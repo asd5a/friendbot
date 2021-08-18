@@ -3366,15 +3366,15 @@ class Character(commands.Cog):
             if "Reflavor" in charDict:
                 rfdict = charDict['Reflavor']
                 if 'Race' in rfdict and rfdict['Race'] != "":
-                    char_race = f"• {rfdict['Race']} | {char_race}"
+                    char_race = f"{rfdict['Race']} | {char_race}"
                 if 'Class' in rfdict and rfdict['Class'] != "":
-                    char_class = f"• {rfdict['Class']} | {char_class}"
+                    char_class = f"{rfdict['Class']} | {char_class}"
                 if 'Background' in rfdict and rfdict['Background'] != "":
-                    char_background = f"• {rfdict['Background']} | {char_background}"
+                    char_background = f"{rfdict['Background']} | {char_background}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"• Goes By: **{charDict['Nickname']}**\n"
-            alignment_string = "• Alignment: Unknown\n"
+            alignment_string = "Alignment: Unknown\n"
             if "Alignment" in charDict and charDict['Alignment'] != "":
                 alignment_string = f"Alignment: {charDict['Alignment']}\n"
 
