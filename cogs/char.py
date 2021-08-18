@@ -3053,7 +3053,7 @@ class Character(commands.Cog):
                             char_race = f"{rfarray['Race']} | {char_race}"
                         if 'Class' in rfarray:
                             char_class = f"{rfarray['Class']} | {char_class}"
-                    charString += f"• **{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {char_class}\n"
+                    charString += f"**{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {char_class}\n"
 
                     if 'Guild' in charDict:
                         charString += f"---Guild: *{charDict['Guild']}*\n"
@@ -3123,7 +3123,7 @@ class Character(commands.Cog):
                     char_class = f"{rfdict['Class']} | {char_class}"
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
-                nick_string = f"Goes By: **{charDict['Nickname']}**\n"
+                nick_string = f"• Goes By: **{charDict['Nickname']}**\n"
             description = f"{nick_string}{char_race}\n{char_class}\n"
             
             charLevel = charDict['Level']
@@ -3374,11 +3374,11 @@ class Character(commands.Cog):
             nick_string = ""
             if "Nickname" in charDict and charDict['Nickname'] != "":
                 nick_string = f"• Goes By: **{charDict['Nickname']}**\n"
-            alignment_string = "Alignment: Unknown\n"
+            alignment_string = "• Alignment: Unknown\n"
             if "Alignment" in charDict and charDict['Alignment'] != "":
-                alignment_string = f"• Alignment: {charDict['Alignment']}\n"
+                alignment_string = f"Alignment: {charDict['Alignment']}\n"
 
-            description = f"{nick_string}{char_race}\n{char_class}\n{char_background}\n{alignment_string}• One-shots Played: {charDict['Games']}\n"
+            description = f"{nick_string}• {char_race}\n• {char_class}\n• {char_background}\n• {alignment_string}• One-shots Played: {charDict['Games']}\n"
             if 'Proficiency' in charDict:
                 description +=  f"• Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
