@@ -306,7 +306,7 @@ class Reward(commands.Cog):
             tierNum = 5
         else:
             tierNum = int(tier)
-
+        tierNum = max(tierNum, 1)
         reward = await randomReward(self, ctx, tier=int(tierNum), rewardType=rewardType, amount=size)
         if reward == None:
             return
