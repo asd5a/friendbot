@@ -89,7 +89,7 @@ class Apps(commands.Cog):
             await appMember.add_roles(get(guild.roles, name = 'Roll20 Tier 0'), reason=f"Approved application - the user has been given the base role.")
             await appMember.add_roles(get(guild.roles, name = 'Foundry Tier 0'), reason=f"Approved application - the user has been given the base role.")
             
-            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! The Mod team has approved your application and you have been assigned the appropriate role(s). In order to be pinged for one-shots, you must navigate to the `#role-management` channel and opt into the tiers you would like to be pinged for by reacting to the posts with the appropriate emojis.\n\nIf you have any further questions then please don't hesitate to ask in our `#help-for-players` channel or message a Mod Friend!")
+            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! The Mod team has approved your application and you have been assigned the appropriate roles. If you would like to opt-out of the *Tier Roles* in order to no longer be pinged/mentioned for one-shots, navigate to the `#role-management` channel and react to the approrpriate reactions.\n\nIf you have any further questions then please don't hesitate to ask in our `#help-for-players` channel or message a Mod Friend!")
             
         elif 'deny' in response:
             await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Generic)")
