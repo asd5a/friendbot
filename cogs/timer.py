@@ -531,7 +531,7 @@ class Timer(commands.Cog):
 
 
             # use the bfunc function checkForChar to handle character selection, gives us the DB entry of the character
-            cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, author, customError=True)
+            cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, authorOverride = author, customError=True)
             
             if not cRecord:
                 if not resume:

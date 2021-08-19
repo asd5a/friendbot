@@ -320,15 +320,17 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, ti
             #if only 1 item was left, simply return it
             return records[0], apiEmbed, apiEmbedmsg
 
-async def checkForChar(ctx, char, charEmbed="", authorCheck=None, mod=False, customError=False):
+async def checkForChar(ctx, char, charEmbed="", authorOverride=None,  mod=False, customError=False, authorCheck=None):
     channel = ctx.channel
     author = ctx.author
     guild = ctx.guild
+    if authorOverride != None:
+        author = authorOverride
+        mod=False
     search_author = author
     if authorCheck != None:
         search_author = authorCheck
         mod=False
-
     playersCollection = db.players
 
     query = char.strip()
