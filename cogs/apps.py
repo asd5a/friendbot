@@ -95,12 +95,12 @@ class Apps(commands.Cog):
             await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Generic)")
             await botMsg.clear_reactions()
             await ctx.message.delete()
-            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you are not a good fit for the server. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck! \n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>")
+            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you are not a good fit for the server. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck!")
         elif 'sub17' in response:
             await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Under 17)")
             await botMsg.clear_reactions()
             await ctx.message.delete()
-            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to th **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you did not meet the cut-off age. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck! \n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>")
+            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to th **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you did not meet the cut-off age. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck!")
     
     def is_private_channel():
         async def predicate(ctx):
