@@ -2578,7 +2578,6 @@ class Character(commands.Cog):
                     ("Potion of Cheating", "Potion of Mind Reading"), 
                     ("RedBull", "Olisuba Leaf")]
             selection = random.randrange(len(outcomes)) 
-            
             show_name, selected_item = outcomes[selection]
             amount = 0
             if "Event Token" in charRecords:
@@ -2588,8 +2587,10 @@ class Character(commands.Cog):
                 shopEmbedmsg = await channel.send(embed=shopEmbed)
                 ctx.command.reset_cooldown(ctx)
                 return
-            bRecord = db.rit.find_one({"Name" : {"$regex" : f"{selected_item}", "$options": "i"}}) 
+            bRecord = db.rit.find_one({"Name" : {"$regex" : f"^{selected_item}$", "$options": "i"}}) 
             out_text = f"You reach into the gift box and find a(n) **{show_name} ({selected_item})**\n\n*{amount-1} rolls remaining*"
+            
+            shopEmbed.description = out_text
             if bRecord:
                 
                 if shopEmbedmsg:
