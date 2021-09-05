@@ -455,7 +455,7 @@ class Log(commands.Cog):
                     
         dm = sessionInfo["DM"] 
         # {cp, magic items, consumables, inventory, character id, character name, character level, character cp, double rewards, guild, noodles, dm double}
-        event_inc = 1*sessionInfo["Event"]
+        event_inc = 1*("Event" in sessionInfo and sessionInfo["Event"])
         maximumCP = dm["CP"]
         deathChars = []
         playerUpdates = []
