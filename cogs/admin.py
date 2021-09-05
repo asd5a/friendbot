@@ -111,6 +111,26 @@ class Admin(commands.Cog, name="Admin"):
             global settingsRecord
             settingsRecord["ddmrw"] = True
             await ctx.channel.send("Let the games begin!")
+    @commands.command()
+    async def endDDMRW(self, ctx):
+        if "Mod Friend" in [r.name for r in ctx.author.roles]:
+            global settingsRecord
+            settingsRecord["ddmrw"] = False        
+            await ctx.channel.send("Until next month!")
+    
+    @commands.command()
+    async def startEvent(self, ctx):
+        if "Mod Friend" in [r.name for r in ctx.author.roles]:
+            global settingsRecord
+            settingsRecord["Event"] = True
+            await ctx.channel.send("Let the event begin!")
+            
+    @commands.command()
+    async def endEvent(self, ctx):
+        if "Mod Friend" in [r.name for r in ctx.author.roles]:
+            global settingsRecord
+            settingsRecord["Event"] = False        
+            await ctx.channel.send("Until next time!")
     
     @commands.command()
     async def zoop(self, ctx):
@@ -135,13 +155,6 @@ class Admin(commands.Cog, name="Admin"):
         liner_dic["Craft"] = list([line["Text"] for line in db.liners_craft.find()])
         await ctx.channel.send("Liners Updated")
 
-    @commands.command()
-    async def endDDMRW(self, ctx):
-        if "Mod Friend" in [r.name for r in ctx.author.roles]:
-            global settingsRecord
-            settingsRecord["ddmrw"] = False        
-            await ctx.channel.send("Until next month!")
-    
     
     @commands.command()
     @admin_or_owner()
@@ -1235,39 +1248,6 @@ class Admin(commands.Cog, name="Admin"):
         except Exception as e:
             traceback.print_exc()
     
-    #@commands.command()
-    #@admin_or_owner()
-    async def uploadSettings(self, ctx):
-        try:
-            settings = {
-            "ddmrw" : False,
-            "Test Channel IDs" : ["663454980140695553", "577611798442803205", "697974883140894780", "698220733259841656"],
-            "QB List" : {"781021043778781195" : "382025597041246210", "728476108940640297" : "259732415319244800"},
-            "Role Channel List" : {"777046003832193034" : "382025597041246210", "781360717101400084" : "259732415319244800"},
-                    "382025597041246210": 
-                    {"Sessions" : 737076677238063125, "QB" : 781021043778781195, 
-                        "CB" : 382027251618938880,
-                        "Player Logs" : 788158884329422848 ,
-                        "Game Rooms" : 575798293913796619, 
-                        "Guild Rooms" :452704598440804375,
-                        "Campaign Rooms" : 698784680488730666, 
-                        "Messages" : {"777051070110498846": "Roll20"," 777051209299132456": "Foundry"},
-                        "Emotes" : {"Roll20" : "<:roll20:777767592684421130>" , "Foundry": "<:foundry:777767632471719956>"}}, 
-                  "259732415319244800" : 
-                    {"Sessions" : 728456783466725427, "QB" : 728476108940640297, 
-                        "CB" : 781360342483075113,
-                        "Player Logs" : 728729922205647019 ,
-                        "Game Rooms" : 728456686024523810, 
-                        "Guild Rooms" : 734586911901089832,
-                        "Campaign Rooms" : 734276389322096700, 
-                        "Messages" : {"781360780162760765": "Roll20", "781360787854852106": "Foundry"},
-                        "Emotes" : {"Roll20" : "<:adorabat:733763021008273588>" , "Foundry": "🗡️"}}}
-
-            #db.settings.insert_one(settings)
-            await ctx.channel.send(content=f"Settings have been updated in the DB.")
-    
-        except Exception as e:
-            traceback.print_exc()
     #Allows the sending of messages
     @commands.command()
     @admin_or_owner()
