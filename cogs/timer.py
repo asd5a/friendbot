@@ -1048,14 +1048,7 @@ class Timer(commands.Cog):
                     
                     rewardMajorLimit += max(floor((totalDurationTimeMultiplier -1) / 2), 0)
                     rewardMinorLimit += max((totalDurationTimeMultiplier -1), 0)
-                    if totalDurationTime < 180:
-                        if dmMajorLimit > 0:
-                            dmMajorLimit = max((dmMajorLimit // 2), 1)
-                        dmMinorLimit = max((dmMinorLimit // 2), 1)
-                        
-                        if rewardMajorLimit > 0:
-                            rewardMajorLimit = max((rewardMajorLimit // 2), 1)
-                        rewardMinorLimit = max((rewardMinorLimit // 2), 1)
+                    
                         
                     if dmMnc:
                         dmMinorLimit += dmMajorLimit
