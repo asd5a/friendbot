@@ -534,26 +534,28 @@ class Admin(commands.Cog, name="Admin"):
             cut_offs.append((get(ctx.guild.roles, name=noodleRoleArray[i]).mention, cut_off_count))
         cut_offs.insert(0, ("Junior Noodle", 1))
         cut_offs.reverse()
-        current_noodle_index = 1
+        current_noodle_index = 0
         symbol_count_fix = [0,0,0]
         count += 1
         
         role_name, cut_off = cut_offs[0]
         next_message = await ctx.channel.send(str(count))
         all_messages.append([next_message, f"{role_name}s have run {cut_off}+ Games"])
-        role_name, cut_off = cut_offs[current_noodle_index]
+        #role_name, cut_off = cut_offs[current_noodle_index]
                 
         for u in all_users:
             if u['Noodles'] < cut_off:
-                current_noodle_index += 1
-                role_name, cut_off = cut_offs[current_noodle_index]
-                count += 1
-                next_message = await ctx.channel.send(str(count))
-                all_messages.append([next_message, curr_message])
-                curr_message = ""
+            
+                if curr_message:
+                    count += 1
+                    next_message = await ctx.channel.send(str(count))
+                    all_messages.append([next_message, curr_message])
+                    curr_message = ""
                 new_stuff = False
                 symbol_count_fix = [0,0,0]
                 
+                current_noodle_index += 1
+                role_name, cut_off = cut_offs[current_noodle_index]
                 count += 1
                 next_message = await ctx.channel.send(str(count))
                 all_messages.append([next_message, f"``` ```{role_name}s have DM'd {cut_off}+ Games"])
