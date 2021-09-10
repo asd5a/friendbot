@@ -4,13 +4,14 @@ import requests
 import re
 from discord.utils import get        
 from discord.ext import commands
+from datetime import date
 import sys
 import traceback
 import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic, calculateTreasure
+from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic, calculateTreasure, noodleRoleArray
 from cogs.char import paginate
 
 
@@ -515,6 +516,10 @@ class Admin(commands.Cog, name="Admin"):
     @admin_or_owner()
     async def generateBoard(self, ctx):
                                         
+        def is_me(m):
+            return m.author == self.bot.user
+
+        deleted = await ctx.channel.purge(limit=100, check=is_me)
         all_users = list(db.users.find( {"Noodles": {"$gt":0}}))
         all_users.sort(key = lambda x: x["Noodles"], reverse=True)
         all_messages = []
@@ -522,12 +527,41 @@ class Admin(commands.Cog, name="Admin"):
         count = 0
         new_stuff = False
         
+        cut_offs = []
+        cut_off_count = 0
+        for i in range(0,len(noodleRoleArray)):
+            cut_off_count += 10*(i+1)
+            cut_offs.append((get(ctx.guild.roles, name=noodleRoleArray[i]).mention, cut_off_count))
+        cut_offs.insert(0, ("Junior Noodle", 1))
+        cut_offs.reverse()
+        current_noodle_index = 1
         symbol_count_fix = [0,0,0]
+        count += 1
+        
+        role_name, cut_off = cut_offs[0]
+        next_message = await ctx.channel.send(str(count))
+        all_messages.append([next_message, f"{role_name}s have run {cut_off}+ Games"])
+        role_name, cut_off = cut_offs[current_noodle_index]
+                
         for u in all_users:
+            if u['Noodles'] < cut_off:
+                current_noodle_index += 1
+                role_name, cut_off = cut_offs[current_noodle_index]
+                count += 1
+                next_message = await ctx.channel.send(str(count))
+                all_messages.append([next_message, curr_message])
+                curr_message = ""
+                new_stuff = False
+                symbol_count_fix = [0,0,0]
+                
+                count += 1
+                next_message = await ctx.channel.send(str(count))
+                all_messages.append([next_message, f"``` ```{role_name}s have DM'd {cut_off}+ Games"])
+                
             crown_count = u['Noodles']//100
             big_star_count = (u['Noodles']%100)//10
             star_count = u['Noodles']%10
-            curr_message += f"<@!{u['User ID']}> - {u['Noodles']} {'👑'*(crown_count)}{'🌟'*big_star_count}{'⭐'* star_count}\n"
+            curr_message += f"<@!{u['User ID']}>: {u['Noodles']} {'👑'*(crown_count)}{'🌟'*big_star_count}{'⭐'* star_count}\n"
             symbol_count_fix[0] +=crown_count
             symbol_count_fix[1] +=big_star_count
             symbol_count_fix[2] +=star_count
@@ -540,10 +574,16 @@ class Admin(commands.Cog, name="Admin"):
                 symbol_count_fix = [0,0,0]
             else:
                 new_stuff = True
+                
         if new_stuff:
             count += 1
             next_message = await ctx.channel.send(str(count))
             all_messages.append([next_message, curr_message])
+            
+        
+        count += 1
+        next_message = await ctx.channel.send(str(count))
+        all_messages.append([next_message, f"``` ```Last updated {date.today().strftime('%B %d, %Y')}"])
             
         for m in all_messages:
             await m[0].edit(content=m[1])
