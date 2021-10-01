@@ -216,7 +216,7 @@ class Stats(commands.Cog):
                 contents.insert(0, (f"{identity_strings[0]} Stats", statsTotalString, False))
                 if statsString:
                     contents.append(("One-shots by DM", statsString, True))
-                await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg)
+            await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg)
                 
           
         # Below are lifetime stats which consists of character data
