@@ -2,7 +2,7 @@ import discord
 import asyncio
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import  numberEmojis, numberEmojisMobile, commandPrefix, checkForChar, checkForGuild, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
+from bfunc import  timezoneVar, numberEmojis, numberEmojisMobile, commandPrefix, checkForChar, checkForGuild, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
 from datetime import datetime, timezone,timedelta
 from cogs.char import paginate
 
@@ -280,7 +280,7 @@ class Guild(commands.Cog):
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_game_channel()
     @guild.command()
-    async def info(self,ctx, guildName): 
+    async def info(self,ctx, guildName, month = None, year = None): 
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
@@ -289,6 +289,17 @@ class Guild(commands.Cog):
         guildChannel = ctx.message.channel_mentions
         content = []
         mention= ""
+        currentDate = datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%y")
+        if not year:
+            year = currentDate.split("-")[1]
+        if month:
+            if month.isnumeric() and int(month)>0 and int(month) < 13:
+                currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
+                
+            else:
+                await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
+                ctx.command.reset_cooldown(ctx)
+                return
         if guildChannel == list():
             guildChannel = ctx.channel
             mention= guildName
@@ -315,7 +326,6 @@ class Guild(commands.Cog):
             playersCollection = db.players
             guildMembers = list(playersCollection.find({"Guild": guildRecords['Name']}))
             
-            currentDate = datetime.now().strftime("%b-%y")
             guild_stats = db.stats.find_one({"Date": currentDate, "Guilds."+guildRecords['Name'] : {"$exists" : True}})
             guild_life_stats = db.stats.find_one({"Life": 1})
             guild_stats_string = ""
@@ -661,7 +671,7 @@ class Guild(commands.Cog):
                 await author.add_roles(guild.get_role(int(guildRecords['Role ID'])), reason=f"Joined guild {guildName}")
 
                 try:
-                    currentDate = datetime.now().strftime("%b-%y")
+                    currentDate = datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%y")
                     # update all the other data entries
                     # update the DB stats
                     db.stats.update_one({'Date': currentDate}, {"$inc": {"Guilds."+guildRecords['Name']+".Joins": 1}}, upsert=True)

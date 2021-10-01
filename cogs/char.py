@@ -515,7 +515,7 @@ class Character(commands.Cog):
                         msg += f":warning: I could not find a number in your time amount!\n"
                         totalTime = 0
                         
-                    if userRecords["Campaigns"][campaignKey]["Time"]< 3600*4 or totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
+                    if totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
                         msg += f":warning: You do not have enough hours to transfer from {error_name}!\n"
                     else:
                         cp = ((totalTime) // 1800) / 2

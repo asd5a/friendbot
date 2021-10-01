@@ -11,7 +11,7 @@ from math import floor
 from datetime import datetime, timezone, timedelta 
 from discord.ext import commands
 from cogs.char import paginate
-from bfunc import alphaEmojis, commandPrefix, left,right,back, db, callAPI, checkForChar, timeConversion, traceBack, settingsRecord
+from bfunc import alphaEmojis, timezoneVar, commandPrefix, left,right,back, db, callAPI, checkForChar, timeConversion, traceBack, settingsRecord
 
 
 class Stats(commands.Cog):
@@ -63,12 +63,12 @@ class Stats(commands.Cog):
     @stats_special()
     async def stats(self,ctx, month = None, year = None):                
         statsCollection = db.stats
-        currentDate = datetime.now().strftime("%b-%y")
+        currentDate = datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%y")
         if not year:
             year = currentDate.split("-")[1]
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
-                currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
+                currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
                 
             else:
                 await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
@@ -179,18 +179,18 @@ class Stats(commands.Cog):
                     contents.append((f"Campaigns", f"• Sessions: {statRecords['Campaigns']}", False))
                 
                 if "Life" in statRecords:
-                    monthStart = datetime.now().replace(day = 14).replace(month = 1).replace(year = 2021)
+                    monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(day = 14).replace(month = 1).replace(year = 2021)
                 elif month:
                     
-                    monthStart = datetime.now().replace(year=2000+int(year), month= int(month), day=1) -  timedelta(days=1)
+                    monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=1) -  timedelta(days=1)
                 else:
-                    monthStart = datetime.now().replace(day = 1)
+                    monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(day = 1)
                 
                 # Stat for average player and average play time
                 if 'Players' in statRecords and 'Playtime' in statRecords:
                     avgString += f"• Players per One-shot: {(int(statRecords['Players']  / superTotal *100) /100.0)}\n" 
                     avgString += f"• One-shot Length: {timeConversion(statRecords['Playtime'] / superTotal)}\n"
-                    avgString += f"• One-shots per Day: {(int(superTotal / (max((datetime.now()-monthStart).days, 1))*100) /100.0)}\n"
+                    avgString += f"• One-shots per Day: {(int(superTotal / (max((datetime.now(pytz.timezone(timezoneVar))-monthStart).days, 1))*100) /100.0)}\n"
                     
                     contents.append((f"Averages", avgString, False))
 
@@ -296,12 +296,12 @@ class Stats(commands.Cog):
     @stats_special()
     async def fanatic(self,ctx, month = None, year = None):                
         statsCollection = db.stats
-        currentDate = datetime.now().strftime("%b-%y")
+        currentDate = datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%y")
         if not year:
             year = currentDate.split("-")[1]
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
-                currentDate = datetime.now().replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
+                currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
                 
             else:
                 await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
