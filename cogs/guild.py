@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import pytz
 from discord.utils import get        
 from discord.ext import commands
 from bfunc import  timezoneVar, numberEmojis, numberEmojisMobile, commandPrefix, checkForChar, checkForGuild, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
