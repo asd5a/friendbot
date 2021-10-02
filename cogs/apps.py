@@ -144,7 +144,7 @@ class Apps(commands.Cog):
         msg = ctx.message
          
             
-        text = """Hello!
+        text = f"""Hello {msg.author.name}! 
 
 Thank you for applying for membership to the D&D Friends Discord server. Please copy-paste the following template, answer all questions, and reply to me with your filled out template:
 ```$submit
