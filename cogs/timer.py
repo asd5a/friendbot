@@ -2137,7 +2137,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
             await channel.send(f'Try again!\n')
             return None
 
-        return f"{randomItem[0]}"
+        return f"{randomItem[0]}", dmChar
 
     
     """
