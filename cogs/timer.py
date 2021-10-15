@@ -842,7 +842,7 @@ class Timer(commands.Cog):
             # Inform the user of the started timer
             await channel.send(content=f"Starting the timer for **{game}** {roleString}.\n" )
             # add the timer to the list of runnign timers
-            currentTimers.append('#'+channel.name)
+            currentTimers['#'+channel.name] = "PLACEHOLDER"
             
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
@@ -876,7 +876,7 @@ class Timer(commands.Cog):
             # allow the creation of a new timer
             self.timer.get_command('prep').reset_cooldown(ctx)
             # when the game concludes, remove the timer from the global tracker
-            currentTimers.remove('#'+channel.name)
+            del currentTimers['#'+channel.name]
             return
 
     @timer.command()
@@ -2030,12 +2030,12 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
     @timer.command()
     @commands.has_any_role('Mod Friend', 'A d m i n')
     async def list(self,ctx):
-        if not currentTimers:
+        timer_list = list(currentTimers.keys())
+        if not timer_list:
             currentTimersString = "There are currently NO timers running!"
         else:
-            currentTimersString = "There are currently timers running in these channels:\n"
-        for i in currentTimers:
-            currentTimersString = f"{currentTimersString} - {i} \n"
+            currentTimersString = "There are currently timers running in these channels:\n-"
+        currentTimersString += f"\n-".join(timer_list)
         await ctx.channel.send(content=currentTimersString)
 
     @timer.command()

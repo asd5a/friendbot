@@ -476,7 +476,7 @@ def refreshKey (timeStarted):
 # ritSheet = gClient.open("Reward Item Table").sheet1
 
 # token = os.environ['TOKEN']
-currentTimers = []
+currentTimers = {}
 
 gameCategory = ["🎲 game rooms", "🐉 campaigns", "mod friends"]
 roleArray = ['New', 'Junior', 'Journey', 'Elite', 'True', 'Ascended', '']

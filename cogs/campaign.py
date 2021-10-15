@@ -647,7 +647,7 @@ class Campaign(commands.Cog):
             # Inform the user of the started timer
             await channel.send(content=f"Starting the timer for **{game}** {roleString}.\n" )
             # add the timer to the list of runnign timers
-            currentTimers.append('#'+channel.name)
+            currentTimers['#'+channel.name] = userList
             
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
@@ -667,7 +667,7 @@ class Campaign(commands.Cog):
             # allow the creation of a new timer
             self.timer.get_command('prep').reset_cooldown(ctx)
             # when the game concludes, remove the timer from the global tracker
-            currentTimers.remove('#'+channel.name)
+            del currentTimers['#'+channel.name]
             return
 
     
@@ -1072,7 +1072,17 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         self.timer.get_command('prep').reset_cooldown(ctx)
         await ctx.channel.send(f"Timer has been reset in #{ctx.channel}")
     
-    
+    @timer.command()
+    async def resume(self,ctx):
+        if '#'+ctx.channel.name not in currentTimers:
+            return
+        userList = currentTimers['#'+ctx.channel.name]
+        datestart = userList["datestart"]
+        role = userList["role"]
+        game = userList["game"]
+        dmChar = userList["DM"]
+        campaignRecords = userList["campaignRecords"]
+        await duringTimer(ctx, datestart, startTime, userList, role, game, author, stampEmbed, stampEmbedmsg, dmChar,campaignRecords)
     
     #extracted the checks to here to generalize the changes
     async def permissionCheck(self, msg, author):
