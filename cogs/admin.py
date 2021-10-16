@@ -521,6 +521,7 @@ class Admin(commands.Cog, name="Admin"):
 
         deleted = await ctx.channel.purge(limit=100, check=is_me)
         all_users = list(db.users.find( {"Noodles": {"$gt":0}}))
+        all_users = list(filter(lambda x: ctx.guild.get_member(int(x['User ID'])), all_users))
         all_users.sort(key = lambda x: x["Noodles"], reverse=True)
         all_messages = []
         curr_message = ""
