@@ -847,10 +847,22 @@ class Shop(commands.Cog):
                     
 
                 if bookChoice == "Spellbook":
+                    
+                        
                     if 'Wizard' not in bRecord['Classes']:
-                        await channel.send(f"**{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook.")
-                        ctx.command.reset_cooldown(ctx)
-                        return   
+                        if "Race" in bRecord:   # Determines if the spell is a Mark of X spell
+                            if "Mark" not in charRecords['Race']:   # Determines if the race is a Mark of X race
+                                await channel.send(f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook.")
+                                ctx.command.reset_cooldown(ctx)
+                                return
+                            elif charRecords['Race'] not in bRecord['Race']:    # Determines if the Mark of X race is a valid Mark of X race for the spell
+                                await channel.send(f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook.")
+                                ctx.command.reset_cooldown(ctx)
+                                return
+                        else:
+                            await channel.send(f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook.")    # If the spell isn't a wizard spell, bot checks to see if it is a mark spell.
+                            ctx.command.reset_cooldown(ctx)
+                            return
 
                     if "Chronurgy" in bRecord['Classes'] and "Graviturgy" in bRecord['Classes']:
                         if "Chronurgy" not in charRecords['Class'] and "Graviturgy" not in charRecords['Class']:
@@ -868,7 +880,7 @@ class Shop(commands.Cog):
                         if "Graviturgy" not in charRecords['Class']:
                             await channel.send(f"***{bRecord['Name']}*** is restricted to the **Graviturgy** school and cannot be copied into your spellbook.")
                             ctx.command.reset_cooldown(ctx)
-                            return   
+                            return
 
                 spellCopied = None
                 spellScrollAmount = 0
