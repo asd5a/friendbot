@@ -1481,5 +1481,3 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
     
 def setup(bot):
     bot.add_cog(Campaign(bot))
-
-
