@@ -455,7 +455,7 @@ class Log(commands.Cog):
                     
         dm = sessionInfo["DM"] 
         # {cp, magic items, consumables, inventory, character id, character name, character level, character cp, double rewards, guild, noodles, dm double}
-        
+        event_inc = 1*("Event" in sessionInfo and sessionInfo["Event"])
         maximumCP = dm["CP"]
         deathChars = []
         playerUpdates = []
@@ -593,7 +593,7 @@ class Log(commands.Cog):
                 increment = {"CP":  treasureArray[0], 
                             "GP":  treasureArray[2],
                             "Games": 1,
-                            "Event Token" : 0}
+                            "Event Token" : event_inc}
                 # for every TP tier value that was gained create the increment field
                 for k,v in treasureArray[1].items():
                     increment[k] = v
@@ -719,7 +719,8 @@ class Log(commands.Cog):
                     del character["Inventory"][i]
             
             # set up all db values that need to be incremented
-            increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1, "Event Token": 0}
+            increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1, "Event Token": event_inc}
+            
             # for every TP tier value that was gained create the increment field
             for k,v in treasureArray[1].items():
                 increment[k] = v
@@ -1144,7 +1145,16 @@ class Log(commands.Cog):
     @session.command()
     async def approveDDMRW(self, ctx,  num : int):
         await self.session_set(ctx, num, "DDMRW", True)
-    
+        
+    @commands.has_any_role('Mod Friend', 'Admins')      
+    @session.command()
+    async def denyEvent(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Event", False)
+        
+    @commands.has_any_role('Mod Friend', 'Admins')
+    @session.command()
+    async def approveEvent(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Event", True)
     @commands.has_any_role('Mod Friend', 'Admins')
     @session.command()
     async def pending(self, ctx,  num : int):

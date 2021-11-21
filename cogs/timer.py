@@ -531,7 +531,7 @@ class Timer(commands.Cog):
 
 
             # use the bfunc function checkForChar to handle character selection, gives us the DB entry of the character
-            cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, author, customError=True)
+            cRecord, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, authorOverride = author, customError=True)
             
             if not cRecord:
                 if not resume:
@@ -1048,6 +1048,8 @@ class Timer(commands.Cog):
                     
                     rewardMajorLimit += max(floor((totalDurationTimeMultiplier -1) / 2), 0)
                     rewardMinorLimit += max((totalDurationTimeMultiplier -1), 0)
+                    
+                        
                     if dmMnc:
                         dmMinorLimit += dmMajorLimit
                         dmMajorLimit = 0
@@ -1736,6 +1738,7 @@ Command Checklist
             dbEntry["Players"] = {}
             
             dbEntry["DDMRW"] = settingsRecord["ddmrw"] or ddmrw
+            dbEntry["Event"] = settingsRecord["Event"]
             if tierNum < 1:
                 tierNum = 1
             rewardsCollection = db.rit
@@ -2071,7 +2074,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
             if not resume:
                 await ctx.channel.send(content=f"I could not find any mention of a user to hand out a random item.") 
             #return the unchanged parameters
-            return start,dmChar
+            return None
         else:
             # get the first user mentioned
             rewardUser = guild.get_member(rewardList[0])
@@ -2083,7 +2086,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                 if not resume:
                     await ctx.channel.send(content=f"You did not sign up with a character to reward items to.") 
                 #return the unchanged parameters
-                return start,dmChar #cause error
+                return None #cause error
             elif rewardUser == dmChar[0]: 
                 userFound = True
                 # the player entry of the player getting the item
@@ -2112,7 +2115,9 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                         charMagicList = currentItem[1]['Magic Items'].split(', ')
                         # character level
                         charLevel = int(currentItem[1]['Level'])
-
+        if not userFound:
+            await ctx.channel.send(content=f"***{rewardUser}*** is not on the timer to receive rewards.")
+            return None
         # calculate the tier of the rewards
         tierNum = 5
         if charLevel < 5:

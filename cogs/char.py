@@ -515,7 +515,7 @@ class Character(commands.Cog):
                         msg += f":warning: I could not find a number in your time amount!\n"
                         totalTime = 0
                         
-                    if userRecords["Campaigns"][campaignKey]["Time"]< 3600*4 or totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
+                    if totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
                         msg += f":warning: You do not have enough hours to transfer from {error_name}!\n"
                     else:
                         cp = ((totalTime) // 1800) / 2
@@ -2547,7 +2547,7 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def bemine(self, ctx, char):
+    async def turninhomework(self, ctx, char):
         channel = ctx.channel
         author = ctx.author
         shopEmbed = discord.Embed()
@@ -2557,20 +2557,27 @@ class Character(commands.Cog):
 
         if charRecords:
             
-            outcomes = [("Ghost Pepper Chocolate", "Ghost Pepper Chocolate"), 
-                    ("Wand of Smiles", "Wand of Smiles"), 
-                    ("Promise Rings", "Band of Loyalty"), 
-                    ("Arcanaloth's Music Box", "Arcanaloth's Music Box"), 
-                    ("Talking Teddy Bear", "Talking Doll"), 
-                    ("Crown of Blind Love", "Crown of the Forest"), 
-                    ("Pipe of Remembrance", "Pipe of Remembrance"), 
-                    ("Chocolate of Nourishment", "Bead of Nourishment"), 
-                    ("Love Note Bird", "Paper Bird"), 
-                    ("Perfume of Bewitching", "Perfume of Bewitching"), 
-                    ("Philter of Love", "Philter of Love"), 
-                    ("Swan Boat", "Quaal's Feather Token \\(Swan Boat\\)")]
+            outcomes = [("Backpack of Dog Ate My Homework", "Backpack of Dog Ate My Homework"), 
+                    ("Orb of Alarm Clock", "Orb of Time"), 
+                    ("Orb of Alarm Clock", "Orb of Time"), 
+                    ("Orb of Campus Map", "Orb of Direction"), 
+                    ("Orb of Campus Map", "Orb of Direction"), 
+                    ("Endless Water Bottle", "Tankard of Plenty"), 
+                    ("Endless Water Bottle", "Tankard of Plenty"), 
+                    ("Lunch Box of Preserving", "Chest of Preserving"),
+                    ("Lunch Box of Preserving", "Chest of Preserving"), 
+                    ("Fresh Threads", "Common Glamerweave"), 
+                    ("Fresh Threads", "Common Glamerweave"), 
+                    ("Bong of Study Harder", "Pipe of Remembrance"), 
+                    ("Bong of Study Harder", "Pipe of Remembrance"), 
+                    ("Fake it Til you Make It", "Wand of Smiles"), 
+                    ("Fake it Til you Make It", "Wand of Smiles"), 
+                    ("Note to Your Crush", "Paper Bird"), 
+                    ("Note to Your Crush", "Paper Bird"), 
+                    ("Potion of All-Nighter", "Potion of Watchful Rest"), 
+                    ("Potion of Cheating", "Potion of Mind Reading"), 
+                    ("RedBull", "Olisuba Leaf")]
             selection = random.randrange(len(outcomes)) 
-            
             show_name, selected_item = outcomes[selection]
             amount = 0
             if "Event Token" in charRecords:
@@ -2580,8 +2587,10 @@ class Character(commands.Cog):
                 shopEmbedmsg = await channel.send(embed=shopEmbed)
                 ctx.command.reset_cooldown(ctx)
                 return
-            bRecord = db.rit.find_one({"Name" : {"$regex" : f"{selected_item}", "$options": "i"}}) 
+            bRecord = db.rit.find_one({"Name" : {"$regex" : f"^{selected_item}$", "$options": "i"}}) 
             out_text = f"You reach into the gift box and find a(n) **{show_name} ({selected_item})**\n\n*{amount-1} rolls remaining*"
+            
+            shopEmbed.description = out_text
             if bRecord:
                 
                 if shopEmbedmsg:

@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime,timedelta
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import roleArray, calculateTreasure, timeConversion, db
+from bfunc import roleArray, calculateTreasure, timeConversion, db, traceBack
 
 class Apps(commands.Cog):
     def __init__ (self, bot):
@@ -55,12 +55,12 @@ class Apps(commands.Cog):
         botMsg = await channel.fetch_message(message_id) 
         botEmbed = botMsg.embeds[0]
         appDict = botEmbed.to_dict()
-        member_name = appDict['title'].split('-')[1].strip()
+        member_name = appDict['title'].split('-', 1)[1].strip()
         appMember = guild.get_member_named(member_name)
         botEmbed.set_footer(text=f"Application Message ID: {botMsg.id}\nMod: {ctx.message.author}")
         response = response.lower()
         if appMember is None:
-            channel.send(content=f"Something went wrong. The application could not find the discord name {appDiscord} for application {appNum}. Please delete this message once this is resolved.")
+            channel.send(content=f"Something went wrong. The application could not find the discord name {member_name} for application {message_id}. Please delete this message once this is resolved.")
             return
 
         if 'approve' in response or 'sub18' in response:
@@ -95,12 +95,12 @@ class Apps(commands.Cog):
             await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Generic)")
             await botMsg.clear_reactions()
             await ctx.message.delete()
-            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you are not a good fit for the server. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck! \n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>")
+            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you are not a good fit for the server. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck!")
         elif 'sub17' in response:
             await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Under 17)")
             await botMsg.clear_reactions()
             await ctx.message.delete()
-            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to th **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you did not meet the cut-off age. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck! \n\nIf you have any questions or inquiries, please direct them to our Reddit or Twitter accounts:\nReddit - <https://www.reddit.com/user/DnDFriends/>\nTwitter - <https://twitter.com/DnD_Friends>")
+            await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to th **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you did not meet the cut-off age. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck!")
     
     def is_private_channel():
         async def predicate(ctx):
@@ -144,7 +144,7 @@ class Apps(commands.Cog):
         msg = ctx.message
          
             
-        text = """Hello!
+        text = f"""Hello {msg.author.name}! 
 
 Thank you for applying for membership to the D&D Friends Discord server. Please copy-paste the following template, answer all questions, and reply to me with your filled out template:
 ```$submit
