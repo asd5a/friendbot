@@ -20,19 +20,10 @@ intents = discord.Intents.default()
 intents.members = True
 
 def timeConversion (time):
-		hours = time//3600
-		time = time - 3600*hours
-		minutes = time//60
-		return ('%d Hours %d Minutes' %(hours,minutes))
-		
-# def getTiers (tiers):
-#     getTierArray = []
-#     for i in range(len(tiers)):
-#         if tiers[i] != "":
-#             getTierArray.append(i)
-#     getTierArray.append(len(sheet.row_values(3)) + 1)
-
-#     return getTierArray
+    hours = time//3600
+    time = time - 3600*hours
+    minutes = time//60
+    return ('%d Hours %d Minutes' %(hours,minutes))
 
 async def traceBack (ctx,error,silent=False):
     ctx.command.reset_cooldown(ctx)
@@ -41,10 +32,10 @@ async def traceBack (ctx,error,silent=False):
 
     # the verbosity is how large of a traceback to make
     # more specifically, it's the amount of levels up the traceback goes from the exception source
-    verbosity = -6
+    #verbosity = -6
 
     # 'traceback' is the stdlib module, `import traceback`.
-    lines = traceback.format_exception(etype,error, trace, verbosity)
+    lines = traceback.format_exception(etype,error, trace)
 
     # format_exception returns a list with line breaks embedded in the lines, so let's just stitch the elements together
     traceback_text = ''.join(lines) +f"\n{ctx.message.author.mention}"
