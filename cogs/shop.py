@@ -847,20 +847,21 @@ class Shop(commands.Cog):
                     
 
                 if bookChoice == "Spellbook":
-                    f 'Wizard' not in bRecord['Classes']:
+                    #denyStrings = [f"***{charRecords['Race']} is not a valid race for the spell {bRecord['Name']}*** to be copied into your spellbook.",f"***{charRecords['Race']} is not a Mark valid race for the spell {bRecord['Name']}*** to be copied into your spellbook.",f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook."}]
+                    
+                    if 'Wizard' not in bRecord['Classes']:
+                        deny_string = f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook."
                         if "Race" in bRecord:   # Determines if the spell is a Mark of X spell
                             if "Mark" not in charRecords['Race']:   # Determines if the race is a Mark of X race
-                                await channel.send(f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook.")
-                                ctx.command.reset_cooldown(ctx)
-                                return
+                                deny_string = f"***{charRecords['Race']}*** is not a valid race for the spell ***{bRecord['Name']}*** to be copied into your spellbook."
                             elif charRecords['Race'] not in bRecord['Race']:    # Determines if the Mark of X race is a valid Mark of X race for the spell
-                                await channel.send(f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook.")
-                                ctx.command.reset_cooldown(ctx)
-                                return
-                        else:
-                            await channel.send(f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook.")    # If the spell isn't a wizard spell, bot checks to see if it is a mark spell.
+                                deny_string = f"***{charRecords['Race']}*** is not a Mark valid race for the spell ***{bRecord['Name']}*** to be copied into your spellbook."
+                            else:
+                                deny_string = f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook."
+                        if deny_string:
+                            await channel.send(deny_string)
                             ctx.command.reset_cooldown(ctx)
-                            return  
+                            return
 
                     if "Chronurgy" in bRecord['Classes'] and "Graviturgy" in bRecord['Classes']:
                         if "Chronurgy" not in charRecords['Class'] and "Graviturgy" not in charRecords['Class']:
