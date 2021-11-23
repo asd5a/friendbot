@@ -1362,6 +1362,7 @@ class Character(commands.Cog):
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
         else:
+            charEmbed.set_footer(text= charEmbed.Empty)
             if charEmbedmsg:
                 await charEmbedmsg.clear_reactions()
                 await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! :tada: You have created ***{charDict['Name']}***!")
@@ -2213,6 +2214,7 @@ class Character(commands.Cog):
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
         else:
+            charEmbed.set_footer(text= charEmbed.Empty)
             if charEmbedmsg:
                 await charEmbedmsg.clear_reactions()
                 await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! You have respecced your character!")
@@ -2537,12 +2539,14 @@ class Character(commands.Cog):
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
         else:
+        
+            charEmbed.set_footer(text= charEmbed.Empty)
             if charEmbedmsg:
                 await charEmbedmsg.clear_reactions()
                 await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! You have respecced your character!")
             else: 
                 charEmbedmsg = await channel.send(embed=charEmbed, content=f"Congratulations! You have respecced your character!")
-
+            
         self.bot.get_command('racerespec').reset_cooldown(ctx)
     
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
