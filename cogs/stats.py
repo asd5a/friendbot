@@ -24,7 +24,8 @@ class Stats(commands.Cog):
                 return False
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"] or
-                    ctx.channel.id == 564994370416410624)
+                    ctx.channel.id == 564994370416410624 or
+                    ctx.channel.id == 548991524386373633)
         return commands.check(predicate) 
         
     
