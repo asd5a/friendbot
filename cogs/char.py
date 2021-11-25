@@ -1297,6 +1297,7 @@ class Character(commands.Cog):
             return sameMessage and ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author
 
 
+        charEmbed.set_footer(text= charEmbed.Empty)
         if not charEmbedmsg:
             charEmbedmsg = await channel.send(embed=charEmbed, content="**Double-check** your character information.\nIf this is correct, please react with one of the following:\n✅ to finish creating your character.\n❌ to cancel. ")
         else:
@@ -2131,6 +2132,7 @@ class Character(commands.Cog):
             charEmbed.add_field(name='Starting Equipment', value=charDictInvString, inline=False)
             charEmbed.set_footer(text= charEmbed.Empty)
         
+        charEmbed.set_footer(text= charEmbed.Empty)
         def charCreateCheck(r, u):
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
@@ -2216,7 +2218,6 @@ class Character(commands.Cog):
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
         else:
-            charEmbed.set_footer(text= charEmbed.Empty)
             if charEmbedmsg:
                 await charEmbedmsg.clear_reactions()
                 await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! You have respecced your character!")

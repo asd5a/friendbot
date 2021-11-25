@@ -850,14 +850,16 @@ class Shop(commands.Cog):
                     #denyStrings = [f"***{charRecords['Race']} is not a valid race for the spell {bRecord['Name']}*** to be copied into your spellbook.",f"***{charRecords['Race']} is not a Mark valid race for the spell {bRecord['Name']}*** to be copied into your spellbook.",f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook."}]
                     
                     if 'Wizard' not in bRecord['Classes']:
-                        deny_string = f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook."
+                        deny_string = ""
                         if "Race" in bRecord:   # Determines if the spell is a Mark of X spell
+                            
                             if "Mark" not in charRecords['Race']:   # Determines if the race is a Mark of X race
                                 deny_string = f"***{charRecords['Race']}*** is not a valid race for the spell ***{bRecord['Name']}*** to be copied into your spellbook."
                             elif charRecords['Race'] not in bRecord['Race']:    # Determines if the Mark of X race is a valid Mark of X race for the spell
                                 deny_string = f"***{charRecords['Race']}*** is not a Mark valid race for the spell ***{bRecord['Name']}*** to be copied into your spellbook."
-                            else:
-                                deny_string = f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook."
+                        else:
+                            deny_string = f"***{bRecord['Name']}*** is not a Wizard spell that can be copied into your spellbook."
+                        
                         if deny_string:
                             await channel.send(deny_string)
                             ctx.command.reset_cooldown(ctx)
