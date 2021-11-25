@@ -1328,7 +1328,10 @@ class Log(commands.Cog):
                 delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
         
         await asyncio.sleep(30) 
-        await ctx.message.delete()
+        try:
+            await ctx.message.delete()
+        except Exception as e:
+            pass
         await delMessage.delete()
         
         

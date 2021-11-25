@@ -407,13 +407,28 @@ class Guild(commands.Cog):
                     dm_text_lifetime += f"   <@{dm_id}>: {dm_data['Guilds'][guildRecords['Name']]}\n"
 
 
+            unique_members = set()
+            
+            
+            
+            guildMemberStr = "There are no guild members currently."
+            if guildMembers != list():
+                guildMemberStr = ""
+                for g in guildMembers:
+                    g_member = guild.get_member(int(g['User ID']))
+                    if not g_member:
+                        continue
+                    unique_members.add(g['User ID'])
+                    next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
+                    guildMemberStr += next_member_str 
+            
+            guild_life_stats_string += f"• Unique Members: {len(unique_members)}\n"
             
             
             if guildRecords['Funds'] < self.creation_cost:
                 content.append(("Funds", f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!"))
             else:
                 content.append(("Reputation", f"• Lifetime (Total): {guildRecords['Total Reputation']} :sparkles:\n• Bank (Current): {guildRecords['Reputation']} :sparkles:"))
-            guildEmbed.add_field(name="Monthly Stats", value=guild_stats_string, inline=False)
             
             content.append(("Monthly Stats", guild_stats_string))
             content.append(("Lifetime Stats", guild_life_stats_string))
@@ -424,18 +439,8 @@ class Guild(commands.Cog):
             if dm_text_lifetime:
                 content.append(("All-time Top DMs", dm_text_lifetime, separate_page, True))
             
-            if guildMembers != list():
-                guildMemberStr = ""
-                for g in guildMembers:
-                    g_member = guild.get_member(int(g['User ID']))
-                    if not g_member:
-                        continue
-                    next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
-                    guildMemberStr += next_member_str 
-                content.append(("Members", guildMemberStr, True, True))
-            else:
-                content.append(("Members", "There are no guild members currently.", True, True))
-
+            content.append(("Members", guildMemberStr, True, True))
+                
             await paginate(ctx, self.bot, title, content, msg = guildEmbedmsg, footer="")
     
         else:
