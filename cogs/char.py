@@ -96,7 +96,9 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
             
             set_length += len(section_text) + len(subtitle)
             # check if the content would exceed the page limit    
-            if new_page or (set_length + title_length + footer_text_sample >= 6000):
+            if (new_page or 
+                len(entry_list) > 24 or
+                (set_length + title_length + footer_text_sample >= 6000)):
                 new_page = False
                 set_length = len(section_text) + len(subtitle)
                 # add the page to the storage

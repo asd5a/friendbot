@@ -256,10 +256,9 @@ class Timer(commands.Cog):
                             {"Consumables": {"Add": [], "Remove": []}, 
                              "Inventory": {"Add": [], "Remove": []},
                              "Magic Items": []}]]
-        # signedPlayers +=[[self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 1", "Level": 19, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 0, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350", {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}], 
-                            # [self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 2", "Level": 19, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 9, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350",  {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}], 
-                            # [self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 3", "Level": 20, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 1, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350",  {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}]]
-
+        
+        
+        
         #set up a variable for the current state of the timer
         timerStarted = False
         
@@ -419,7 +418,6 @@ class Timer(commands.Cog):
                     elif msg.channel_mentions != list():
                         guildsList = msg.channel_mentions
                         invalidChannel = False
-                        # TODO: Guilds on DM
                         for g in guildsList:
                             if g.category_id != guildCategoryID:
                                 invalidChannel = True
@@ -842,7 +840,16 @@ class Timer(commands.Cog):
             # Inform the user of the started timer
             await channel.send(content=f"Starting the timer for **{game}** {roleString}.\n" )
             # add the timer to the list of runnign timers
-            currentTimers['#'+channel.name] = "PLACEHOLDER"
+            stored_data = {}
+            stored_data["datestart"] = datestart
+            stored_data["Start"] = startTime
+            stored_data["Role"] = role
+            stored_data["Game"] = game
+            stored_data["startTimes"] = startTimes
+            stored_data["dmChar"] = dmChar
+            stored_data["guildsList"] = guildsList
+            
+            currentTimers[channel.mention] = stored_data
             
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
@@ -870,13 +877,14 @@ class Timer(commands.Cog):
             stampEmbedmsg = await channel.send(embed=stampEmbed)
 
             ddmrw = settingsRecord["ddmrw"]
+            stored_data["ddmrw"] = ddmrw
             # During Timer
             await timerCog.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg,dmChar,guildsList, ddmrw = ddmrw)
             
             # allow the creation of a new timer
             self.timer.get_command('prep').reset_cooldown(ctx)
             # when the game concludes, remove the timer from the global tracker
-            del currentTimers['#'+channel.name]
+            del currentTimers[channel.mention]
             return
 
     @timer.command()
@@ -1696,7 +1704,6 @@ Command Checklist
     async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", ddmrw= False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
             end = time.time() + 3600 *0
-            
             tierNum = 0
             guild = ctx.guild
 
@@ -2034,8 +2041,8 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
         if not timer_list:
             currentTimersString = "There are currently NO timers running!"
         else:
-            currentTimersString = "There are currently timers running in these channels:\n-"
-        currentTimersString += f"\n-".join(timer_list)
+            currentTimersString = "There are currently timers running in these channels:\n"
+        currentTimersString += f"\n".join(timer_list)
         await ctx.channel.send(content=currentTimersString)
 
     @timer.command()
@@ -2055,7 +2062,38 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
         else: 
             return True
     
-    
+    @timer.command()
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.channel) 
+    @commands.has_any_role('D&D Friend', 'Campaign Friend')
+    async def resume(self,ctx):
+        if not self.timer.get_command('prep').is_on_cooldown(ctx):
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
+        channel = ctx.channel
+        if channel.mention not in currentTimers:
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
+        stored_data = currentTimers[channel.mention]
+        dmChar = stored_data["dmChar"]
+        author = dmChar[0]
+        if author != ctx.author and not await self.permissionCheck(ctx.message, ctx.author):
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
+        datestart = stored_data["datestart"]
+        startTime = stored_data["Start"]
+        role = stored_data["Role"]
+        game = stored_data["Game"]
+        ddmrw = stored_data["ddmrw"]
+        guildsList = stored_data["guildsList"]
+        startTimes = stored_data["startTimes"]
+        stampEmbed = discord.Embed()
+        stampEmbed.title = f' a '
+        stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of campaign commands: {commandPrefix}help campaign')
+        stampEmbed.set_author(name=f'DM: {author.name}', icon_url=author.avatar_url)
+        stampEmbedMsg =  await self.stamp(ctx, startTime, role, game, author, startTimes, dmChar, guildsList, stampEmbed)
+        await self.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedMsg, dmChar, guildsList, ddmrw)
+        
+        self.timer.get_command('resume').reset_cooldown(ctx)
 
     """
     start -> a dictionary of strings and player list pairs, the strings are made out of the kind of reward and the duration and the value is a list of players entries (format can be found as the return value in signup)
@@ -2158,15 +2196,10 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
     guildsList -> the list of guilds involved with the timer
     """
     async def duringTimer(self,ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg, dmChar, guildsList, ddmrw = False):
-        # if the timer is being restarted then we create a new message with the stamp command
-        if ctx.invoked_with == "resume":
-            stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, guildsList=guildsList, embed=stampEmbed, embedMsg=stampEmbedmsg)
-        
         # set up the variable for the continuous loop
         timerStopped = False
         channel = ctx.channel
         user = author.display_name
-
         timerAlias = ["timer", "t"]
 
         #in no rewards games characters cannot die or get rewards
@@ -2280,6 +2313,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                                     guildsList = []
                                     break
                             
+                            currentTimers[channel.mention]["guildsList"] = guildsList
                             stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, guildsList=guildsList, embed=stampEmbed, embedMsg=stampEmbedmsg)
 
                         else:
