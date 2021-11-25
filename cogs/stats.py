@@ -371,13 +371,13 @@ class Stats(commands.Cog):
             owner = guild.get_member(int(result["User ID"]))
             if not owner:
                 continue
-            char_string = f"{result['CP']}   (<@!{result['User ID']}>)"
+            char_string = f"{result['CP']}      (<@!{result['User ID']}>)"
             contents.append((f'{number-limit}.) {result["Name"]}', char_string, False))
             
             limit -= 1
             if limit <= 0:
                 break
-        await paginate(ctx, self.bot, f"Top {number-1} Characters", contents, statsEmbedmsg)
+        await paginate(ctx, self.bot, f"Top {number-1} Characters (CP)", contents, statsEmbedmsg)
 
 
 def setup(bot):
