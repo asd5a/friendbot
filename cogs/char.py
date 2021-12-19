@@ -2581,8 +2581,8 @@ class Character(commands.Cog):
                     ("New Years Outfit", "Common Glamourweave"), 
                     ("Small Firecracker", "Explosive Seed"), 
                     ("Small Firecracker", "Explosive Seed"), 
-                    ("The Morning After Soup", "Cleansing Stone"), 
-                    ("The Morning After Soup", "Cleansing Stone"), 
+                    ("The Morning After Soap", "Cleansing Stone"), 
+                    ("The Morning After Soap", "Cleansing Stone"), 
                     ("Vial of New Years Resolutions", "Vial of Stardust")]
             selection = random.randrange(len(outcomes)) 
             show_name, selected_item = outcomes[selection]
