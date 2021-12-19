@@ -2564,7 +2564,7 @@ class Character(commands.Cog):
 
         if charRecords:
             
-            outcomes = [("Broken 2022 Glasses", "Backpack of Dog Ate My Homework"), 
+            outcomes = [("Broken 2022 Glasses", "Broken 2022 Glasses"), 
                     ("Big Firecracker", "Shatterstick"), 
                     ("Big Firecracker", "Shatterstick"), 
                     ("Wand of Fireworks", "Wand of Pyrotechnics"), 
