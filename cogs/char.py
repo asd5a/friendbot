@@ -2595,7 +2595,11 @@ class Character(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 return
             bRecord = db.rit.find_one({"Name" : {"$regex" : f"^{selected_item}$", "$options": "i"}}) 
-            out_text = f"You reach into the gift box and find a(n) **{show_name} ({selected_item})**\n\n*{amount-1} rolls remaining*"
+            text_string = f"{show_name}"
+            if show_name != selected_item:
+                text_string = f"{show_name} ({selected_item})"
+                
+            out_text = f"You reach into the gift box and find a(n) **{text_string}**\n\n*{amount-1} rolls remaining*"
             
             shopEmbed.description = out_text
             if bRecord:
