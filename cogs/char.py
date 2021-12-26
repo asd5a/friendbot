@@ -2554,7 +2554,7 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def turninhomework(self, ctx, char):
+    async def roll2022(self, ctx, char):
         channel = ctx.channel
         author = ctx.author
         shopEmbed = discord.Embed()
@@ -2564,26 +2564,26 @@ class Character(commands.Cog):
 
         if charRecords:
             
-            outcomes = [("Backpack of Dog Ate My Homework", "Backpack of Dog Ate My Homework"), 
-                    ("Orb of Alarm Clock", "Orb of Time"), 
-                    ("Orb of Alarm Clock", "Orb of Time"), 
-                    ("Orb of Campus Map", "Orb of Direction"), 
-                    ("Orb of Campus Map", "Orb of Direction"), 
-                    ("Endless Water Bottle", "Tankard of Plenty"), 
-                    ("Endless Water Bottle", "Tankard of Plenty"), 
-                    ("Lunch Box of Preserving", "Chest of Preserving"),
-                    ("Lunch Box of Preserving", "Chest of Preserving"), 
-                    ("Fresh Threads", "Common Glamerweave"), 
-                    ("Fresh Threads", "Common Glamerweave"), 
-                    ("Bong of Study Harder", "Pipe of Remembrance"), 
-                    ("Bong of Study Harder", "Pipe of Remembrance"), 
-                    ("Fake it Til you Make It", "Wand of Smiles"), 
-                    ("Fake it Til you Make It", "Wand of Smiles"), 
-                    ("Note to Your Crush", "Paper Bird"), 
-                    ("Note to Your Crush", "Paper Bird"), 
-                    ("Potion of All-Nighter", "Potion of Watchful Rest"), 
-                    ("Potion of Cheating", "Potion of Mind Reading"), 
-                    ("RedBull", "Olisuba Leaf")]
+            outcomes = [("Broken 2022 Glasses", "Broken 2022 Glasses"), 
+                    ("Big Firecracker", "Shatterstick"), 
+                    ("Big Firecracker", "Shatterstick"), 
+                    ("Wand of Fireworks", "Wand of Pyrotechnics"), 
+                    ("Wand of Fireworks", "Wand of Pyrotechnics"), 
+                    ("Tankard for the Designated Driver", "Tankard of Sobriety"), 
+                    ("Tankard for the Designated Driver", "Tankard of Sobriety"), 
+                    ("Pipe of Remembrance", "Pipe of Remembrance"),
+                    ("Pipe of Remembrance", "Pipe of Remembrance"),
+                    ("Orb of Time", "Orb of Time"), 
+                    ("Orb of Time", "Orb of Time"), 
+                    ("Tankard of Plenty", "Tankard of Plenty"), 
+                    ("Tankard of Plenty", "Tankard of Plenty"), 
+                    ("New Years Outfit", "Common Glamerweave"), 
+                    ("New Years Outfit", "Common Glamerweave"), 
+                    ("Small Firecracker", "Explosive Seed"), 
+                    ("Small Firecracker", "Explosive Seed"), 
+                    ("The Morning After Soap", "Cleansing Stone"), 
+                    ("The Morning After Soap", "Cleansing Stone"), 
+                    ("Vial of New Years Resolutions", "Vial of Stardust")]
             selection = random.randrange(len(outcomes)) 
             show_name, selected_item = outcomes[selection]
             amount = 0
@@ -2595,7 +2595,11 @@ class Character(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 return
             bRecord = db.rit.find_one({"Name" : {"$regex" : f"^{selected_item}$", "$options": "i"}}) 
-            out_text = f"You reach into the gift box and find a(n) **{show_name} ({selected_item})**\n\n*{amount-1} rolls remaining*"
+            text_string = f"{show_name}"
+            if show_name != selected_item:
+                text_string = f"{show_name} ({selected_item})"
+                
+            out_text = f"You reach into the gift box and find a(n) **{text_string}**\n\n*{amount-1} rolls remaining*"
             
             shopEmbed.description = out_text
             if bRecord:
