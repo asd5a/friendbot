@@ -1016,24 +1016,24 @@ class Log(commands.Cog):
     async def approveGuild(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Status", True, 0)
         
-    @session.command()
+    #@session.command()
     async def denyRewards(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Rewards", False, 0)
-    @session.command()
+    #@session.command()
     async def approveRewards(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Rewards", True, 3)
         
-    @session.command()
+    #@session.command()
     async def denyItems(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Items", False, 0)
-    @session.command()
+    #@session.command()
     async def approveItems(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Items", True, 3)
         
-    @session.command()
+    #@session.command()
     async def denyDrive(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Drive", False, 0, unique = False)
-    @session.command()
+    #@session.command()
     async def approveDrive(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Drive", True, 0, unique = True)
         
@@ -1211,17 +1211,17 @@ class Log(commands.Cog):
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
       
-    @session.command()
+    #@session.command()
     async def optout2xR(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xR", False)
-    @session.command()
+    #@session.command()
     async def optin2xR(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xR", True)
         
-    @session.command()
+    #@session.command()
     async def optout2xI(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xI", False)
-    @session.command()
+    #@session.command()
     async def optin2xI(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xI", True)
         
