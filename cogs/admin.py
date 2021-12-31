@@ -1384,8 +1384,8 @@ def setup(bot):
     # Updates all magic items int he specified tier and TP to the new GP value.
 
 # $moveItem "item" tier TP
-    # Moves the specified magic item to the specified tier and TP and refunds all characters with partial TP towards it. It does not refund completed items and is mostly non-functional.
-
+    # Moves the specified magic item to the specified tier and TP and refunds all characters who purchased the item with TP or GP (whichever was spent).
+    
 # $guild rename "new name" #guild-channel
     # Renames a guild in the following sub-databases: guilds.db (the guild entry itself), players.db (each individual character entry that is part of the guild), stats.db (monthly and lifetime quest tracking), and users.db (which displays the Noodle role used to create the guild).
 
