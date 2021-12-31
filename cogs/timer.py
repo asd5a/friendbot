@@ -215,7 +215,6 @@ class Timer(commands.Cog):
             for g in ctx.message.channel_mentions:
                 if g.category_id == guildCategoryID:
                     guildsList.append(g)
-                    break
                     
             if guildsList:
                 prepEmbed.description = f"**Guilds**: {', '.join([g.mention for g in guildsList])}\n\n{command_checklist_string}"

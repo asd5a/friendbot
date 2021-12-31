@@ -319,9 +319,13 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             noodleCongrats = "Congratulations! You have reached Good Noodle!"
         elif noodles < 1 and noodleFinal >= 1:
             noodleCongrats = "Congratulations on hosting your first game!"
-        
-        sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
-        sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
+        game_channel = get(ctx.guild.text_channels, name = sessionInfo['Channel'])
+        if not game_channel:
+            game_channel = sessionInfo['Channel']
+        else:
+            game_channel = f"<#{game_channel.id}>"
+        sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest*"
+        sessionLogEmbed.description = f"Channel: {game_channel}\n{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
         await editMessage.clear_reactions()
         if sessionInfo["Status"] == "Approved":
