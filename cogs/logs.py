@@ -33,7 +33,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     usersCollection = db.users
 
     sessionLogEmbed = editMessage.embeds[0]
-    summaryIndex = sessionLogEmbed.description.find('**General Summary**:')
+    summaryIndex = sessionLogEmbed.description.find('**Session Log Summary**')
     description = sessionLogEmbed.description[summaryIndex:]+"\n"
     
     role = sessionInfo["Role"]
@@ -1317,8 +1317,8 @@ class Log(commands.Cog):
         sessionLogEmbed = editMessage.embeds[0]
 
         if sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
-            summaryIndex = sessionLogEmbed.description.find('General Summary**:')
-            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"General Summary**:\n" + editString+"\n"
+            summaryIndex = sessionLogEmbed.description.find('Session Log Summary**')
+            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Session Log Summary**\n" + editString+"\n"
         else:
             sessionLogEmbed.description += "\n"+editString
         try:
