@@ -142,7 +142,7 @@ class Admin(commands.Cog, name="Admin"):
             print(line)
             if line.strip():
                 out.append({"Text" : line.strip()})
-        result = db.liners_meme.insert_many(out)
+        result = db.liners_money.insert_many(out)
         print(len(result.inserted_ids))
         
         
@@ -154,7 +154,8 @@ class Admin(commands.Cog, name="Admin"):
         liner_dic["Find"] = list([line["Text"] for line in db.liners_find.find()])
         liner_dic["Meme"] = list([line["Text"] for line in db.liners_meme.find()])
         liner_dic["Craft"] = list([line["Text"] for line in db.liners_craft.find()])
-        await ctx.channel.send("Liners Updated")
+        liner_dic["Money"] = list([line["Text"] for line in db.liners_money.find()])
+        await ctx.channel.send("All liners Updated")
 
     
     @commands.command()

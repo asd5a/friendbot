@@ -101,6 +101,9 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                 g["Reputation"] -= 10*guilds[g["Name"]]["Items"]
             else:
                 guilds[g["Name"]]["Items"] = False
+    gold_modifier = 100
+    if "Gold Modifier" in sessionInfo:
+        gold_modifier = sessionInfo["Gold Modifier"]
     
     for k, player in players.items():
         # this indicates that the character had died
@@ -137,7 +140,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             dmDouble = False
             
             
-            treasureArray  = calculateTreasure(player["Level"], player["Character CP"], tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+            treasureArray  = calculateTreasure(player["Level"], player["Character CP"], tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble, gold_modifier)
             treasureString = f"{treasureArray[0]} CP, {sum(treasureArray[1].values())} TP, {treasureArray[2]} GP"
 
                 
@@ -325,7 +328,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         else:
             game_channel = f"<#{game_channel.id}>"
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest*"
-        sessionLogEmbed.description = f"Channel: {game_channel}\n{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
+        sessionLogEmbed.description = f"{game_channel}\n{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
         await editMessage.clear_reactions()
         if sessionInfo["Status"] == "Approved":
@@ -507,6 +510,10 @@ class Log(commands.Cog):
             userDBEntriesDic[u["User ID"]] = u
 
         
+        gold_modifier = 100
+        if "Gold Modifier" in sessionInfo:
+            gold_modifier = sessionInfo["Gold Modifier"]
+        
         for character in characterDBentries:
             player = players[str(character["User ID"])]
             # this indicates that the character had died
@@ -533,7 +540,7 @@ class Log(commands.Cog):
                 dmDouble = False
                 
                 
-                treasureArray  = calculateTreasure(player["Level"], character["CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+                treasureArray  = calculateTreasure(player["Level"], character["CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble, gold_modifier)
                 
                 if(guild_valid and 
                         guilds[player["Guild"]]["Items"] and 
@@ -1259,6 +1266,32 @@ class Log(commands.Cog):
                 await ctx.channel.send("This session has already been processed")
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
+    
+    @session.command()
+    async def setGold(self, ctx,  num : int, gold_modifier : int):
+        if gold_modifier < 0 or gold_modifier > 100:
+            await ctx.channel.send(f"{gold_modifier} is an invalid percentage.")
+            return
+        logData = db.logdata
+        sessionInfo = logData.find_one({"Log ID": int(num)})
+        if( sessionInfo):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"): # True):#
+                mod = "Mod Friend" in [r.name for r in ctx.author.roles]
+                if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or mod):
+                    try:
+                        db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Gold Modifier": gold_modifier}})
+                    except BulkWriteError as bwe:
+                        print(e)
+                    
+                    await ctx.channel.send("Session updated.")
+                    await generateLog(self, ctx, num)
+                else:
+                    await ctx.channel.send("You do not have the permissions to perform this change to the session.")
+            else:
+                await ctx.channel.send("This session has already been processed")
+        else:
+            await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
+    
     
     @commands.has_any_role('Mod Friend', 'A d m i n')
     @session.command()

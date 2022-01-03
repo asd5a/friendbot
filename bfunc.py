@@ -1,6 +1,7 @@
 import discord
 import gspread
 import decimal
+import math
 import os
 import time
 import traceback
@@ -55,7 +56,7 @@ async def traceBack (ctx,error,silent=False):
     raise error
 
 
-def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guildDouble=False, playerDouble=False, dmDouble=False):
+def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guildDouble=False, playerDouble=False, dmDouble=False, gold_modifier = 100):
     # calculate the CP gained during the game
     cp = ((seconds) // 1800) / 2
     cp_multiplier = 1 + guildDouble + playerDouble + dmDouble
@@ -80,6 +81,7 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
         tier = 3
     elif level < 20:
         tier = 4
+        
     #unreasonably large number as a cap
     cpThreshHoldArray = [16, 16+60, 16+60+60, 16+60+60+30, 90000000]
     # calculate how far into the current level CP the character is after the game
@@ -114,7 +116,7 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
         tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
         gp += consideredCP * tier_reward_dictionary[tier-1][0]
         tier += 1
-            
+    gp = math.ceil(gold_modifier * gp/100)
     return [gainedCP, tp, int(gp)]
     
     
@@ -540,7 +542,8 @@ settingsRecord = list(settings.find())[0]
 # get all entries of the relevant DB and extract the Text field and compile as a list and assign to the dic
 liner_dic = {"Find" : list([line["Text"] for line in db.liners_find.find()]),
              "Meme" : list([line["Text"] for line in db.liners_meme.find()]),
-             "Craft" : list([line["Text"] for line in db.liners_craft.find()])}
+             "Craft" : list([line["Text"] for line in db.liners_craft.find()]),
+             "Money" : list([line["Text"] for line in db.liners_money.find()])}
 
 
 # API_URL = ('https://api.airtable.com/v0/appF4hiT6A0ISAhUu/'+ 'races')
