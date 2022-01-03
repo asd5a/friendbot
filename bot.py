@@ -5,6 +5,7 @@ from os import listdir
 from os.path import isfile, join
 from itertools import cycle
 
+from random import sample
 from bfunc import *
 
 cogs_dir = "cogs"
@@ -68,7 +69,11 @@ async def on_command_error(ctx,error):
 
 
     elif isinstance(error, commands.CommandNotFound):
-        await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!')
+        try:
+            amount = float(ctx.invoked_with)
+            await ctx.channel.send(f'{sample(liner_dic["Money"], 1)[0]}') 
+        except ValueError:
+            await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!')
         return 
     else:
         ctx.command.reset_cooldown(ctx)
