@@ -71,7 +71,7 @@ async def on_command_error(ctx,error):
     elif isinstance(error, commands.CommandNotFound):
         try:
             amount = float(ctx.invoked_with)
-            await ctx.channel.send(f'{sample(liner_dic["Money"], 1)[0]}') 
+            await ctx.channel.send(f'{sample(liner_dic["Money"], 1)[0]}'.replace("<cashmoney>", f"${ctx.invoked_with}").replace("<user>", ctx.author.display_name)) 
         except ValueError:
             await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!')
         return 
@@ -286,6 +286,7 @@ async def help(ctx, *, pageString=''):
 # DM COMMANDS
 
     helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)', value=f'{commandPrefix}session log gameID summary', inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Set Gold Modifier (DM)', value=f'{commandPrefix}session setGuild gameID percentage', inline=False)
 
 #    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)', value=f'{commandPrefix}session approveRewards gameID #guild-channel', inline=False)
 
