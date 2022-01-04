@@ -147,7 +147,7 @@ class Timer(commands.Cog):
         {alphaEmojis[4]} True Friend (Level 17-19)
         {alphaEmojis[5]} Ascended Friend (Level 17+)\n""", inline=False)
         # the discord name is used for listing the owner of the timer
-        prepEmbed.set_author(name=userName, icon_url=author.avatar_url)
+        prepEmbed.set_author(name=user, icon_url=author.avatar_url)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
         # setup the variable to access the message for user communication
         prepEmbedMsg = None
@@ -854,7 +854,7 @@ class Timer(commands.Cog):
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
             stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of running timer commands: $help timer2')
-            stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
+            stampEmbed.set_author(name=f'DM: {user}', icon_url=author.avatar_url)
 
             
             # playerList is never used
