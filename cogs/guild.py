@@ -419,7 +419,7 @@ class Guild(commands.Cog):
             if guildRecords['Funds'] < self.creation_cost:
                 content.append(("Funds", f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!"))
             else:
-                content.append(("Reputation", f"• Lifetime (Total): {guildRecords['Total Reputation']} :sparkles:\n• Bank (Current): {guildRecords['Reputation']} :sparkles:"))
+                content.append(("Reputation", f"• Lifetime (Total): {guildRecords['Total Reputation']} :sparkles:"))
             
             content.append(("Monthly Stats", guild_stats_string))
             content.append(("Lifetime Stats", guild_life_stats_string))
