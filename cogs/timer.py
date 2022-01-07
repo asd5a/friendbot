@@ -1869,16 +1869,18 @@ Reminder: do not deny any session logs until we have spoken about it as a team."
             
             stopEmbed.title = f"Timer: {game} [END] - {totalDuration}"
             stopEmbed.description = """**Session Log Summary**
-Your summary will need to explain the following:
+Your narrative summary will need to explain the following:
 • The context of your one-shot so a Mod can understand how the pillars were fulfilled in relation to the main objectives of your quest;
 • How the adventurers' actions were successful or resulted in failure;
 • How these actions fulfilled at least two of the three pillars of D&D;
 • What the cause and effect, meaningful risk of failure, and consequences of said actions were; and
-• It shouldn't include "fluff", banter, or inside jokes which might not be relevant to helping a Mod understand the context of your one-shot.
+• It shouldn't include "fluff", banter, or inside jokes which might not be relevant to helping a Mod understand the context of your one-shot. 
 
-**Guilds**
-• You must list which guild quest guideline(s) were fulfilled (copy-paste the guild quest guideline's name from the guild channel) and then explain how the party accomplished said guideline(s) as per the main objective of your quest.
-• If the party did not fulfill the guild quest guideline(s), how or why did they fail to accomplish said guideline(s)? What were the consequences of failing to do so?
+If you reduce the amount of GP that the party will gain from your one-shot, you must explain why their GP is being reduced.
+
+If you are running a guild quest, you will also have to do the following:
+• Explain how the party accomplished any guild quest guideline(s) in relation to the main objective of your quest. If the party did not fulfill the guild quest guideline(s), how or why did they fail to accomplish said guideline(s)? What were the consequences of failing to do so?
+• You must also list which guild quest guideline(s) were fulfilled by their title. We recommend copy-pasting the guild quest guideline's title from the guild channel. You can also explain how the party accomplished the GQG(s) here instead of in the narrative summary.
 """ 
             
             # get the collections of characters
