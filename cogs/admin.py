@@ -647,8 +647,17 @@ class Admin(commands.Cog, name="Admin"):
         
         await moveEmbedmsg.edit(content="Completed")    
     
+    @commands.command()
+    @admin_or_owner()
+    async def characterUpdate(self, ctx, element, current_value, new_value):
+        
+        # if( not await self.doubleVerify(ctx, ctx.message)):
+            # return
+        count = db.players.update( {element: current_value},
+                                    {"$set" : {element : new_value}})
+        await ctx.channel.send(content=f"Successfully updated {count['nModified']} player entries.")
     
-       
+    
     @commands.command()
     @admin_or_owner()
     async def moveItem(self, ctx, item, tier: int, tp: int):
