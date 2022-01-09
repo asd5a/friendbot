@@ -659,7 +659,6 @@ class Admin(commands.Cog, name="Admin"):
             return
         count = db.players.update_many( {element: current_value},
                                     {"$set" : {element : new_value}})
-        print(count)
         await ctx.channel.send(content=f"Successfully updated {count.modified_count} player entries.")
     
     
