@@ -653,10 +653,13 @@ class Admin(commands.Cog, name="Admin"):
     @admin_or_owner()
     async def characterUpdate(self, ctx, element, current_value, new_value):
         
-        if( not await self.doubleVerify(ctx, ctx.message)):
+        moveEmbedmsg = await  ctx.channel.send(content=f"Are you sure you want to change the value of {current_value} to {new_value}?\n No: ❌\n Yes: ✅")
+        
+        if(not await self.doubleVerify(ctx, moveEmbedmsg)):
             return
         count = db.players.update_many( {element: current_value},
                                     {"$set" : {element : new_value}})
+        print(count)
         await ctx.channel.send(content=f"Successfully updated {count.modified_count} player entries.")
     
     
