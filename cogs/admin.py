@@ -647,15 +647,17 @@ class Admin(commands.Cog, name="Admin"):
         
         await moveEmbedmsg.edit(content="Completed")    
     
+    
+    # updates all player elements that match the string current_value in the element field and replaces the value with new_value
     @commands.command()
     @admin_or_owner()
     async def characterUpdate(self, ctx, element, current_value, new_value):
         
-        # if( not await self.doubleVerify(ctx, ctx.message)):
-            # return
-        count = db.players.update( {element: current_value},
+        if( not await self.doubleVerify(ctx, ctx.message)):
+            return
+        count = db.players.update_many( {element: current_value},
                                     {"$set" : {element : new_value}})
-        await ctx.channel.send(content=f"Successfully updated {count['nModified']} player entries.")
+        await ctx.channel.send(content=f"Successfully updated {count.modified_count} player entries.")
     
     
     @commands.command()
