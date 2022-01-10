@@ -1617,9 +1617,9 @@ class Timer(commands.Cog):
                                 rewardsString = "\nRewards: " + ', '.join(rList)
                     # create field entries for every reward entry as appropriate
                     # - indicates that the entry is for people who were removed from the timer
-                    # % indicates that a character died
+                    # % indicates that a character died 
                     if "Full Rewards" in key and not key.startswith("-") and not key.startswith("%"):
-                        embed.add_field(name= f"**{v[0].display_name}**", value=f"{v[1]['Name']}{consumablesString}{rewardsString}", inline=False)
+                        embed.add_field(name= f"**{v[0].display_name}**", value=f"{v[1]['Name']}\nLevel {v[1]['Level']}: {v[1]['Race']} {v[1]['Class']}{consumablesString}{rewardsString}", inline=False)
                     # if there are no rewards then we just need to list the player information
                     elif 'No Rewards' in key:
                         embed.add_field(name= f"**{v[0].display_name}**", value=f"{v[0].mention}", inline=False)
@@ -1640,7 +1640,7 @@ class Timer(commands.Cog):
                             durationEach += (float(ttemp[1]) - float(ttemp[0]))
 
                         if role != "":
-                            embed.add_field(name= f"**{v[0].display_name}** - {timeConversion(durationEach)} (Latecomer)\n", value=f"{v[1]['Name']}{consumablesString}{rewardsString}", inline=False)
+                            embed.add_field(name= f"**{v[0].display_name}** - {timeConversion(durationEach)} (Latecomer)\n", value=f"{v[1]['Name']}\nLevel {v[1]['Level']}: {v[1]['Race']} {v[1]['Class']}{consumablesString}{rewardsString}", inline=False)
                         else:
                             # if it is a no rewards game then there is no character to list
                             embed.add_field(name= f"**{v[0].display_name}** - {timeConversion(durationEach)} (Latecomer)\n", value=v[0].mention, inline=False)
