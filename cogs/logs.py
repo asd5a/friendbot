@@ -340,8 +340,10 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             status_text = "❔ Log Pending! DM has been messaged due to session log issues."
             
             await editMessage.add_reaction('<:nipatya:408137844972847104>')
-        
-        sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}\n{noodleCongrats}")
+        gold_mod_text = ""
+        if gold_modifier != 100:
+            gold_mod_text = f"Current GP earned: {gold_modifier}%\n"
+        sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}\n{gold_mod_text}{noodleCongrats}")
         if noodleCongrats:
             await editMessage.add_reaction('🎉')
             await editMessage.add_reaction('🎊')
