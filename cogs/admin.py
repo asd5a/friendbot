@@ -1361,6 +1361,40 @@ class Admin(commands.Cog, name="Admin"):
             
         await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
 
+    @commands.command()
+    @commands.has_any_role("Mod Friend", "Bot Friend", "A d m i n")
+    async def status(self, ctx):
+        contents = []
+        settings_text = ""
+        settings_text += f'Event: {settingsRecord["Event"]}\n'
+        settings_text += f'DDMRW: {settingsRecord["ddmrw"]}\n'
+        contents.append(("Settings", settings_text, False))
+        liners_text = ""
+        liners_text += f'Craft: {len(liner_dic["Craft"])}\n'
+        liners_text += f'Find: {len(liner_dic["Find"])}\n'
+        liners_text += f'Meme: {len(liner_dic["Meme"])}\n'
+        liners_text += f'Money: {len(liner_dic["Money"])}\n'
+        contents.append(("Liner Count", liners_text, False))
+        await paginate(ctx, self.bot, f"Bot Status", contents=contents, separator="\n")
+        
+    @commands.command()
+    @commands.has_any_role("Mod Friend", "Bot Friend", "A d m i n")
+    async def roomData(self, ctx):
+        data = list(map(lambda x: x["Channel"],list(db.logdata.find(
+               {})
+            )))
+        counted = collections.Counter(data)
+        counter_list = sorted(list(counted.keys()))
+        
+        contents = []
+        counter_text = "\n".join([f"{key.capitalize()}: {counted[key]}" for key in counter_list])
+        contents.append(("Counts by Name", f"{counter_text}", False, True))
+        counter_list = sorted(counter_list, key= lambda x: counted[x], reverse = True)
+        counter_text = "\n".join([f"{key.capitalize()}: {counted[key]}" for key in counter_list])
+        contents.append(("Counts by Value", f"{counter_text}", False, True))
+        counter_list = sorted(list(counted.keys()))
+        await paginate(ctx, self.bot, f"Game Channel Use", contents=contents, separator="\n")
+
 def setup(bot):
     bot.add_cog(Admin(bot))
 
@@ -1434,3 +1468,8 @@ def setup(bot):
 
 # $raceRespec "character name" "new race" STR DEX CON INT WIS CHA
     # Only functions if `$permitRaceRespec` has been used for the character. Allows the user to respec their character's race, starting ASIs, and any ASIs gained through leveling up. Temporary command (August 2021).
+    
+# $status
+    # Shows the current status of different Bot aspects. Useful for seeing if generally non-visible actions have occured like starting events.
+# $roomData
+    # Shows the statistic of game room usage by count
