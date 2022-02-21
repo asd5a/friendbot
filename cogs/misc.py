@@ -180,7 +180,9 @@ class Misc(commands.Cog):
         all_posts = await channel.history(oldest_first=True).flatten()
         for elem in all_posts:
             #ignore self and Ghost example post
-            if(elem.author.id==self.bot.user.id or elem.id == 540049894598246420):
+            if(elem.author.id==self.bot.user.id 
+                or elem.id == 800644241189503026
+                or not isinstance(elem.author, discord.Member)):
                 continue
             #loop in order to avoid guild channels blocking the check
             for mention in elem.channel_mentions:

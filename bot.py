@@ -5,6 +5,7 @@ from os import listdir
 from os.path import isfile, join
 from itertools import cycle
 
+from random import sample
 from bfunc import *
 
 cogs_dir = "cogs"
@@ -68,7 +69,11 @@ async def on_command_error(ctx,error):
 
 
     elif isinstance(error, commands.CommandNotFound):
-        await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!')
+        try:
+            amount = float(ctx.invoked_with)
+            await ctx.channel.send(f'{sample(liner_dic["Money"], 1)[0]}'.replace("<cashmoney>", f"${ctx.invoked_with}").replace("<user>", ctx.author.display_name)) 
+        except ValueError:
+            await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!')
         return 
     else:
         ctx.command.reset_cooldown(ctx)
@@ -153,9 +158,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.title = 'General Commands'
     
-    helpEmbedGen.add_field(name=f'▫️ Viewing the Help Menu', value=f'{commandPrefix}help', inline=False)
-
-    helpEmbedGen.add_field(name=f'▫️ Applying for Membership (only available for Direct Messages to Bot Friend)', value=f'{commandPrefix}membership', inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Applying for Membership (only available in Direct Messages to Bot Friend)', value=f'{commandPrefix}membership', inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Creating and Viewing Your User Profile', value=f'{commandPrefix}user', inline=False)
 
@@ -163,12 +166,15 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedGen.add_field(name=f'▫️ Calculating Rewards', value=f'{commandPrefix}reward XhYm tier', inline=False)
 
-    helpEmbedGen.add_field(name=f'▫️ Choosing a Random Reward Item', value=f'{commandPrefix}random tier major/minor #', inline=False)
+    helpEmbedGen.add_field(name=f'▫️ Rolling a Random Reward Item', value=f'{commandPrefix}random tier major/minor #', inline=False)
 
     helpEmbedGen.add_field(name=f'▫️ Viewing Server Stats', value=f'{commandPrefix}stats', inline=False)
 
+    helpEmbedGen.add_field(name=f'▫️ Viewing Highest-CP Characters', value=f'{commandPrefix}top x', inline=False)
+
     helpEmbedGen.add_field(name=f'▫️ Viewing Fanatic Competition Stats', value=f'{commandPrefix}fanatic', inline=False)
 
+    helpEmbedGen.add_field(name=f'▫️ Submitting a Suggestion (only available in Direct Messages with Bot Friend)', value=f'{commandPrefix}inbox', inline=False)
 
 
 
@@ -192,7 +198,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedChar.add_field(name=f'▫️ Respecing a Character into a Multiclass', value=f'{commandPrefix}respec "character name" "new character name" "race" "class1 level / class2 level / class3 level / class4 level" "background" STR DEX CON INT WIS CHA', inline=False)
 
-    helpEmbedChar.add_field(name=f'▫️ Reflavoring a Character', value=f'{commandPrefix}reflavor race "character name" race name\n{commandPrefix}reflavor class "character name" class name\n{commandPrefix}reflavor background "character name" background name\n[{commandPrefix}rf]', inline=False)
+    helpEmbedChar.add_field(name=f'▫️ Re-flavoring a Character', value=f'{commandPrefix}reflavor race "character name" race name\n{commandPrefix}reflavor class "character name" class name\n{commandPrefix}reflavor background "character name" background name\n[{commandPrefix}rf]', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Adding Extra Names', value=f'{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', inline=False)
 
@@ -269,29 +275,30 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerThree.title = f"Post-Quest Timer Commands\n{commandPrefix}timer, {commandPrefix}t"
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Rewards (Player)', value=f'{commandPrefix}session optout2xR gameID', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Rewards (Player)', value=f'{commandPrefix}session optout2xR gameID', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Rewards (Player)', value=f'{commandPrefix}session optin2xR gameID', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Rewards (Player)', value=f'{commandPrefix}session optin2xR gameID', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Items (Player)', value=f'{commandPrefix}session optout2xI gameID', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of Guild 2x Items (Player)', value=f'{commandPrefix}session optout2xI gameID', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items (Player)', value=f'{commandPrefix}session optin2xI gameID', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Opting Into of Guild 2x Items (Player)', value=f'{commandPrefix}session optin2xI gameID', inline=False)
 
 # DM COMMANDS
 
     helpEmbedTimerThree.add_field(name=f'▫️ Submitting a Session Log (DM)', value=f'{commandPrefix}session log gameID summary', inline=False)
+    helpEmbedTimerThree.add_field(name=f'▫️ Set Gold Modifier (DM)', value=f'{commandPrefix}session setGuild gameID percentage', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)', value=f'{commandPrefix}session approveRewards gameID #guild-channel', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Rewards (DM)', value=f'{commandPrefix}session approveRewards gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Rewards (DM)', value=f'{commandPrefix}session denyRewards gameID #guild-channel', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Rewards (DM)', value=f'{commandPrefix}session denyRewards gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Items (DM)', value=f'{commandPrefix}session approveItems gameID #guild-channel', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Approve Guild 2x Items (DM)', value=f'{commandPrefix}session approveItems gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Items (DM)', value=f'{commandPrefix}session denyItems gameID #guild-channel', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Deny Guild 2x Items (DM)', value=f'{commandPrefix}session denyItems gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Approve Recruitment Drive (DM)', value=f'{commandPrefix}approveDrive gameID #guild-channel', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Approve Recruitment Drive (DM)', value=f'{commandPrefix}approveDrive gameID #guild-channel', inline=False)
 
-    helpEmbedTimerThree.add_field(name=f'▫️ Deny Recruitment Drive (DM)', value=f'{commandPrefix}session denyDrive gameID #guild-channel', inline=False)
+#    helpEmbedTimerThree.add_field(name=f'▫️ Deny Recruitment Drive (DM)', value=f'{commandPrefix}session denyDrive gameID #guild-channel', inline=False)
 
     helpEmbedTimerThree.add_field(name=f'▫️ Opting Out of DDMRW (DM)', value=f'{commandPrefix}session ddmrw optout gameID', inline=False)
 

@@ -147,7 +147,7 @@ class Timer(commands.Cog):
         {alphaEmojis[4]} True Friend (Level 17-19)
         {alphaEmojis[5]} Ascended Friend (Level 17+)\n""", inline=False)
         # the discord name is used for listing the owner of the timer
-        prepEmbed.set_author(name=userName, icon_url=author.avatar_url)
+        prepEmbed.set_author(name=user, icon_url=author.avatar_url)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
         # setup the variable to access the message for user communication
         prepEmbedMsg = None
@@ -215,7 +215,6 @@ class Timer(commands.Cog):
             for g in ctx.message.channel_mentions:
                 if g.category_id == guildCategoryID:
                     guildsList.append(g)
-                    break
                     
             if guildsList:
                 prepEmbed.description = f"**Guilds**: {', '.join([g.mention for g in guildsList])}\n\n{command_checklist_string}"
@@ -256,10 +255,9 @@ class Timer(commands.Cog):
                             {"Consumables": {"Add": [], "Remove": []}, 
                              "Inventory": {"Add": [], "Remove": []},
                              "Magic Items": []}]]
-        # signedPlayers +=[[self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 1", "Level": 19, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 0, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350", {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}], 
-                            # [self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 2", "Level": 19, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 9, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350",  {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}], 
-                            # [self.bot.user,{"User ID": "203948352973438995", "Name": "MinVOrc 3", "Level": 20, "HP": 11, "Class": "Monk", " Background": "Waterdhavian Noble", "STR": 17, "DEX": 15, "CON": 16, "INT": 8, "WIS": 8, "CHA": 8, "CP": 1, "Current Item": "Dorfer Greataxe (3.0/6.0)", "GP": 0, "Magic Items": "None", "Consumables": "None", "Feats": "None", "Games":0, "Race": "Minotaur"},['None'],"5ecc5237f67beaca7943d350",  {"Consumables": {"Add": [], "Remove": []},"Inventory": {"Add": [], "Remove": []},"Magic Items": []}]]
-
+        
+        
+        
         #set up a variable for the current state of the timer
         timerStarted = False
         
@@ -419,7 +417,6 @@ class Timer(commands.Cog):
                     elif msg.channel_mentions != list():
                         guildsList = msg.channel_mentions
                         invalidChannel = False
-                        # TODO: Guilds on DM
                         for g in guildsList:
                             if g.category_id != guildCategoryID:
                                 invalidChannel = True
@@ -842,13 +839,22 @@ class Timer(commands.Cog):
             # Inform the user of the started timer
             await channel.send(content=f"Starting the timer for **{game}** {roleString}.\n" )
             # add the timer to the list of runnign timers
-            currentTimers.append('#'+channel.name)
+            stored_data = {}
+            stored_data["datestart"] = datestart
+            stored_data["Start"] = startTime
+            stored_data["Role"] = role
+            stored_data["Game"] = game
+            stored_data["startTimes"] = startTimes
+            stored_data["dmChar"] = dmChar
+            stored_data["guildsList"] = guildsList
+            
+            currentTimers[channel.mention] = stored_data
             
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
             stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of running timer commands: $help timer2')
-            stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
+            stampEmbed.set_author(name=f'DM: {user}', icon_url=author.avatar_url)
 
             
             # playerList is never used
@@ -870,13 +876,14 @@ class Timer(commands.Cog):
             stampEmbedmsg = await channel.send(embed=stampEmbed)
 
             ddmrw = settingsRecord["ddmrw"]
+            stored_data["ddmrw"] = ddmrw
             # During Timer
             await timerCog.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg,dmChar,guildsList, ddmrw = ddmrw)
             
             # allow the creation of a new timer
             self.timer.get_command('prep').reset_cooldown(ctx)
             # when the game concludes, remove the timer from the global tracker
-            currentTimers.remove('#'+channel.name)
+            del currentTimers[channel.mention]
             return
 
     @timer.command()
@@ -1610,9 +1617,9 @@ class Timer(commands.Cog):
                                 rewardsString = "\nRewards: " + ', '.join(rList)
                     # create field entries for every reward entry as appropriate
                     # - indicates that the entry is for people who were removed from the timer
-                    # % indicates that a character died
+                    # % indicates that a character died 
                     if "Full Rewards" in key and not key.startswith("-") and not key.startswith("%"):
-                        embed.add_field(name= f"**{v[0].display_name}**", value=f"{v[1]['Name']}{consumablesString}{rewardsString}", inline=False)
+                        embed.add_field(name= f"**{v[0].display_name}**", value=f"{v[1]['Name']}\nLevel {v[1]['Level']}: {v[1]['Race']} {v[1]['Class']}{consumablesString}{rewardsString}", inline=False)
                     # if there are no rewards then we just need to list the player information
                     elif 'No Rewards' in key:
                         embed.add_field(name= f"**{v[0].display_name}**", value=f"{v[0].mention}", inline=False)
@@ -1633,7 +1640,7 @@ class Timer(commands.Cog):
                             durationEach += (float(ttemp[1]) - float(ttemp[0]))
 
                         if role != "":
-                            embed.add_field(name= f"**{v[0].display_name}** - {timeConversion(durationEach)} (Latecomer)\n", value=f"{v[1]['Name']}{consumablesString}{rewardsString}", inline=False)
+                            embed.add_field(name= f"**{v[0].display_name}** - {timeConversion(durationEach)} (Latecomer)\n", value=f"{v[1]['Name']}\nLevel {v[1]['Level']}: {v[1]['Race']} {v[1]['Class']}{consumablesString}{rewardsString}", inline=False)
                         else:
                             # if it is a no rewards game then there is no character to list
                             embed.add_field(name= f"**{v[0].display_name}** - {timeConversion(durationEach)} (Latecomer)\n", value=v[0].mention, inline=False)
@@ -1696,7 +1703,6 @@ Command Checklist
     async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", ddmrw= False):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
             end = time.time() + 3600 *0
-            
             tierNum = 0
             guild = ctx.guild
 
@@ -1862,37 +1868,20 @@ Reminder: do not deny any session logs until we have spoken about it as a team."
             dbEntry["Log ID"] = sessionMessage.id
             
             stopEmbed.title = f"Timer: {game} [END] - {totalDuration}"
-            stopEmbed.description = """**General Summary**:
-• Give context to pillars and guild quest guidelines.
-• Focus on the outline of quest and shouldn't include "fluff".
-• Should help Mods understand context of the one-shot.
+            stopEmbed.description = """**Session Log Summary**
+Your narrative summary will need to explain the following:
+• The context of your one-shot so a Mod can understand how the pillars were fulfilled in relation to the main objectives of your quest;
+• How the adventurers' actions were successful or resulted in failure;
+• How these actions fulfilled at least two of the three pillars of D&D;
+• What the cause and effect, meaningful risk of failure, and consequences of said actions were; and
+• It shouldn't include "fluff", banter, or inside jokes which might not be relevant to helping a Mod understand the context of your one-shot. 
 
-In order to help determine if the adventurers fulfilled a pillar or a guild's quest guidelines, answer the following questions:
+If you reduce the amount of GP that the party will gain from your one-shot, you must explain why their GP is being reduced.
 
-**Exploration**
-• Did they deal with environmental effects? How did they resolve them?
-• Did they interact the environment to gather info and make informed decisions? What were the clues? How did these contribute to their success?
-• Did they travel or solve a puzzle/trap within a limited time frame? What problems did they have to face? How were they solved?
-• How did any unsuccessful attempts negatively affect future events?
-
-**Social**
-• Did they change an NPC's attitude? How did they do it and why was it important?
-• Did they convince an NPC of something against their nature or traits? Why was it important?
-• Did they retrieve info from an NPC? How did they retrieve it? How was it relevant to the main objective?
-• How did any unsuccessful attempts negatively affect future events?
-
-**Combat**
-• Did they fight? What kind of creatures and why? How did these encounters relate to the main objective?
-• Did they engage in combat as a result of unsuccessful attempts in the Exploration or Social pillars?
-• Did combat present complications for future events?
-
-**Guilds**
-• How were guilds central to plot and setting, main objectives, core elements, and overall progression of your one-shot?
-• Which guidelines were fulfilled and how?
-• If guidelines were not fulfilled, how/why did the party fail?
+If you are running a guild quest, you will also have to do the following:
+• Explain how the party accomplished any guild quest guideline(s) in relation to the main objective of your quest. If the party did not fulfill the guild quest guideline(s), how or why did they fail to accomplish said guideline(s)? What were the consequences of failing to do so?
+• You must also list which guild quest guideline(s) were fulfilled by their title. We recommend copy-pasting the guild quest guideline's title from the guild channel. You can also explain how the party accomplished the GQG(s) here instead of in the narrative summary.
 """ 
-            
-            
             
             # get the collections of characters
             playersCollection = db.players
@@ -2030,12 +2019,12 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
     @timer.command()
     @commands.has_any_role('Mod Friend', 'A d m i n')
     async def list(self,ctx):
-        if not currentTimers:
+        timer_list = list(currentTimers.keys())
+        if not timer_list:
             currentTimersString = "There are currently NO timers running!"
         else:
             currentTimersString = "There are currently timers running in these channels:\n"
-        for i in currentTimers:
-            currentTimersString = f"{currentTimersString} - {i} \n"
+        currentTimersString += f"\n".join(timer_list)
         await ctx.channel.send(content=currentTimersString)
 
     @timer.command()
@@ -2055,7 +2044,38 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
         else: 
             return True
     
-    
+    @timer.command()
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.channel) 
+    @commands.has_any_role('D&D Friend', 'Campaign Friend')
+    async def resume(self,ctx):
+        if not self.timer.get_command('prep').is_on_cooldown(ctx):
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
+        channel = ctx.channel
+        if channel.mention not in currentTimers:
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
+        stored_data = currentTimers[channel.mention]
+        dmChar = stored_data["dmChar"]
+        author = dmChar[0]
+        if author != ctx.author and not await self.permissionCheck(ctx.message, ctx.author):
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
+        datestart = stored_data["datestart"]
+        startTime = stored_data["Start"]
+        role = stored_data["Role"]
+        game = stored_data["Game"]
+        ddmrw = stored_data["ddmrw"]
+        guildsList = stored_data["guildsList"]
+        startTimes = stored_data["startTimes"]
+        stampEmbed = discord.Embed()
+        stampEmbed.title = f' a '
+        stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of campaign commands: {commandPrefix}help campaign')
+        stampEmbed.set_author(name=f'DM: {author.name}', icon_url=author.avatar_url)
+        stampEmbedMsg =  await self.stamp(ctx, startTime, role, game, author, startTimes, dmChar, guildsList, stampEmbed)
+        await self.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedMsg, dmChar, guildsList, ddmrw)
+        
+        self.timer.get_command('resume').reset_cooldown(ctx)
 
     """
     start -> a dictionary of strings and player list pairs, the strings are made out of the kind of reward and the duration and the value is a list of players entries (format can be found as the return value in signup)
@@ -2158,15 +2178,10 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
     guildsList -> the list of guilds involved with the timer
     """
     async def duringTimer(self,ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedmsg, dmChar, guildsList, ddmrw = False):
-        # if the timer is being restarted then we create a new message with the stamp command
-        if ctx.invoked_with == "resume":
-            stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, guildsList=guildsList, embed=stampEmbed, embedMsg=stampEmbedmsg)
-        
         # set up the variable for the continuous loop
         timerStopped = False
         channel = ctx.channel
         user = author.display_name
-
         timerAlias = ["timer", "t"]
 
         #in no rewards games characters cannot die or get rewards
@@ -2280,6 +2295,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                                     guildsList = []
                                     break
                             
+                            currentTimers[channel.mention]["guildsList"] = guildsList
                             stampEmbedmsg = await ctx.invoke(self.timer.get_command('stamp'), stamp=startTime, role=role, game=game, author=author, start=startTimes, dmChar=dmChar, guildsList=guildsList, embed=stampEmbed, embedMsg=stampEmbedmsg)
 
                         else:

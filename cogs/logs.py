@@ -33,7 +33,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     usersCollection = db.users
 
     sessionLogEmbed = editMessage.embeds[0]
-    summaryIndex = sessionLogEmbed.description.find('**General Summary**:')
+    summaryIndex = sessionLogEmbed.description.find('**Session Log Summary**')
     description = sessionLogEmbed.description[summaryIndex:]+"\n"
     
     role = sessionInfo["Role"]
@@ -101,6 +101,9 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                 g["Reputation"] -= 10*guilds[g["Name"]]["Items"]
             else:
                 guilds[g["Name"]]["Items"] = False
+    gold_modifier = 100
+    if "Gold Modifier" in sessionInfo:
+        gold_modifier = sessionInfo["Gold Modifier"]
     
     for k, player in players.items():
         # this indicates that the character had died
@@ -137,7 +140,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             dmDouble = False
             
             
-            treasureArray  = calculateTreasure(player["Level"], player["Character CP"], tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+            treasureArray  = calculateTreasure(player["Level"], player["Character CP"], tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble, gold_modifier)
             treasureString = f"{treasureArray[0]} CP, {sum(treasureArray[1].values())} TP, {treasureArray[2]} GP"
 
                 
@@ -319,9 +322,13 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             noodleCongrats = "Congratulations! You have reached Good Noodle!"
         elif noodles < 1 and noodleFinal >= 1:
             noodleCongrats = "Congratulations on hosting your first game!"
-        
-        sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest* \n{sessionInfo['Channel']}"
-        sessionLogEmbed.description = f"{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
+        game_channel = get(ctx.guild.text_channels, name = sessionInfo['Channel'])
+        if not game_channel:
+            game_channel = sessionInfo['Channel']
+        else:
+            game_channel = f"<#{game_channel.id}>"
+        sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest*"
+        sessionLogEmbed.description = f"{game_channel}\n{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
         status_text = "Log is being processed! Characters are currently on hold."
         await editMessage.clear_reactions()
         if sessionInfo["Status"] == "Approved":
@@ -333,8 +340,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             status_text = "❔ Log Pending! DM has been messaged due to session log issues."
             
             await editMessage.add_reaction('<:nipatya:408137844972847104>')
-        
-        sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}\n{noodleCongrats}")
+        gold_mod_text = f"Current GP earned: {gold_modifier}%\n"
+        sessionLogEmbed.set_footer(text=f"Game ID: {num}\n{status_text}\n{gold_mod_text}{noodleCongrats}")
         if noodleCongrats:
             await editMessage.add_reaction('🎉')
             await editMessage.add_reaction('🎊')
@@ -503,6 +510,10 @@ class Log(commands.Cog):
             userDBEntriesDic[u["User ID"]] = u
 
         
+        gold_modifier = 100
+        if "Gold Modifier" in sessionInfo:
+            gold_modifier = sessionInfo["Gold Modifier"]
+        
         for character in characterDBentries:
             player = players[str(character["User ID"])]
             # this indicates that the character had died
@@ -529,7 +540,7 @@ class Log(commands.Cog):
                 dmDouble = False
                 
                 
-                treasureArray  = calculateTreasure(player["Level"], character["CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+                treasureArray  = calculateTreasure(player["Level"], character["CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble, gold_modifier)
                 
                 if(guild_valid and 
                         guilds[player["Guild"]]["Items"] and 
@@ -1016,24 +1027,24 @@ class Log(commands.Cog):
     async def approveGuild(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Status", True, 0)
         
-    @session.command()
+    #@session.command()
     async def denyRewards(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Rewards", False, 0)
-    @session.command()
+    #@session.command()
     async def approveRewards(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Rewards", True, 3)
         
-    @session.command()
+    #@session.command()
     async def denyItems(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Items", False, 0)
-    @session.command()
+    #@session.command()
     async def approveItems(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Items", True, 3)
         
-    @session.command()
+    #@session.command()
     async def denyDrive(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Drive", False, 0, unique = False)
-    @session.command()
+    #@session.command()
     async def approveDrive(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Drive", True, 0, unique = True)
         
@@ -1211,17 +1222,17 @@ class Log(commands.Cog):
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
       
-    @session.command()
+    #@session.command()
     async def optout2xR(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xR", False)
-    @session.command()
+    #@session.command()
     async def optin2xR(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xR", True)
         
-    @session.command()
+    #@session.command()
     async def optout2xI(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xI", False)
-    @session.command()
+    #@session.command()
     async def optin2xI(self, ctx,  num : int):
         await self.userOpt(ctx, num, "2xI", True)
         
@@ -1255,6 +1266,32 @@ class Log(commands.Cog):
                 await ctx.channel.send("This session has already been processed")
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
+    
+    @session.command()
+    async def setGold(self, ctx,  num : int, gold_modifier : int):
+        if gold_modifier < 0 or gold_modifier > 100:
+            await ctx.channel.send(f"{gold_modifier} is an invalid percentage.")
+            return
+        logData = db.logdata
+        sessionInfo = logData.find_one({"Log ID": int(num)})
+        if( sessionInfo):
+            if( sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied"): # True):#
+                mod = "Mod Friend" in [r.name for r in ctx.author.roles]
+                if( (str(ctx.author.id) == sessionInfo["DM"]["ID"]) or mod):
+                    try:
+                        db.logdata.update_one({"_id": sessionInfo["_id"]}, {"$set": {"Gold Modifier": gold_modifier}})
+                    except BulkWriteError as bwe:
+                        print(e)
+                    
+                    await ctx.channel.send("Session updated.")
+                    await generateLog(self, ctx, num)
+                else:
+                    await ctx.channel.send("You do not have the permissions to perform this change to the session.")
+            else:
+                await ctx.channel.send("This session has already been processed")
+        else:
+            await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
+    
     
     @commands.has_any_role('Mod Friend', 'A d m i n')
     @session.command()
@@ -1313,8 +1350,8 @@ class Log(commands.Cog):
         sessionLogEmbed = editMessage.embeds[0]
 
         if sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
-            summaryIndex = sessionLogEmbed.description.find('General Summary**:')
-            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"General Summary**:\n" + editString+"\n"
+            summaryIndex = sessionLogEmbed.description.find('Session Log Summary**')
+            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Session Log Summary**\n" + editString+"\n"
         else:
             sessionLogEmbed.description += "\n"+editString
         try:
@@ -1328,7 +1365,10 @@ class Log(commands.Cog):
                 delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 30 seconds.")
         
         await asyncio.sleep(30) 
-        await ctx.message.delete()
+        try:
+            await ctx.message.delete()
+        except Exception as e:
+            pass
         await delMessage.delete()
         
         

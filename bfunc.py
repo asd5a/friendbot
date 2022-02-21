@@ -1,6 +1,7 @@
 import discord
 import gspread
 import decimal
+import math
 import os
 import time
 import traceback
@@ -18,6 +19,7 @@ from secret import *
 
 intents = discord.Intents.default()
 intents.members = True
+
 
 def timeConversion (time,hmformat=False):
         hours = time//3600
@@ -38,7 +40,6 @@ def timeConversion (time,hmformat=False):
 
 #     return getTierArray
 
-
 async def traceBack (ctx,error,silent=False):
     ctx.command.reset_cooldown(ctx)
     etype = type(error)
@@ -46,10 +47,10 @@ async def traceBack (ctx,error,silent=False):
 
     # the verbosity is how large of a traceback to make
     # more specifically, it's the amount of levels up the traceback goes from the exception source
-    verbosity = -6
+    #verbosity = -6
 
     # 'traceback' is the stdlib module, `import traceback`.
-    lines = traceback.format_exception(etype,error, trace, verbosity)
+    lines = traceback.format_exception(etype,error, trace)
 
     # format_exception returns a list with line breaks embedded in the lines, so let's just stitch the elements together
     traceback_text = ''.join(lines) +f"\n{ctx.message.author.mention}"
@@ -69,7 +70,7 @@ async def traceBack (ctx,error,silent=False):
     raise error
 
 
-def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guildDouble=False, playerDouble=False, dmDouble=False):
+def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guildDouble=False, playerDouble=False, dmDouble=False, gold_modifier = 100):
     # calculate the CP gained during the game
     cp = ((seconds) // 1800) / 2
     cp_multiplier = 1 + guildDouble + playerDouble + dmDouble
@@ -94,6 +95,7 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
         tier = 3
     elif level < 20:
         tier = 4
+        
     #unreasonably large number as a cap
     cpThreshHoldArray = [16, 16+60, 16+60+60, 16+60+60+30, 90000000]
     # calculate how far into the current level CP the character is after the game
@@ -128,7 +130,7 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
         tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
         gp += consideredCP * tier_reward_dictionary[tier-1][0]
         tier += 1
-            
+    gp = math.ceil(gold_modifier * gp/100)
     return [gainedCP, tp, int(gp)]
     
     
@@ -481,7 +483,7 @@ def refreshKey (timeStarted):
 # ritSheet = gClient.open("Reward Item Table").sheet1
 
 # token = os.environ['TOKEN']
-currentTimers = []
+currentTimers = {}
 
 gameCategory = ["🎲 game rooms", "🐉 campaigns", "mod friends"]
 roleArray = ['New', 'Junior', 'Journey', 'Elite', 'True', 'Ascended', '']
@@ -540,7 +542,7 @@ numberEmojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7�
 alphaEmojis = ['🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮','🇯','🇰',
 '🇱','🇲','🇳','🇴','🇵','🇶','🇷','🇸','🇹','🇺','🇻','🇼','🇽','🇾','🇿']
 
-statuses = [f'D&D Friends | {commandPrefix}help', "We're all friends here!", f"See a bug? tell @MSchildorfer!", "Practicing social distancing!", "Wearing a mask!", "Being a good boio.", "Vibing", "Hippity Hoppity", "These Logs Are My Property"]
+statuses = [f'D&D Friends | {commandPrefix}help', "We're all friends here!", f"See a bug? tell @MSchildorfer!", "Practicing social distancing!", "Wearing a mask!", "Being a good boio.", "Vibing", "Hippity Hoppity", "These Logs Are My Property", "UwU"]
 discordClient = discord.Client()
 bot = commands.Bot(command_prefix=commandPrefix, case_insensitive=True, intents = intents)
 
@@ -554,7 +556,8 @@ settingsRecord = list(settings.find())[0]
 # get all entries of the relevant DB and extract the Text field and compile as a list and assign to the dic
 liner_dic = {"Find" : list([line["Text"] for line in db.liners_find.find()]),
              "Meme" : list([line["Text"] for line in db.liners_meme.find()]),
-             "Craft" : list([line["Text"] for line in db.liners_craft.find()])}
+             "Craft" : list([line["Text"] for line in db.liners_craft.find()]),
+             "Money" : list([line["Text"] for line in db.liners_money.find()])}
 
 
 # API_URL = ('https://api.airtable.com/v0/appF4hiT6A0ISAhUu/'+ 'races')

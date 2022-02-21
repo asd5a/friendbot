@@ -28,7 +28,7 @@ async def pin_control(self, ctx, goal):
 class Guild(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
-        self.creation_cost = 8000
+        self.creation_cost = 0
        
     def is_log_channel():
         async def predicate(ctx):
@@ -263,7 +263,7 @@ class Guild(commands.Cog):
 
 
                         guildEmbed.title = f"Guild Creation: {guildName}"
-                        guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\n{self.creation_cost} GP must be donated in order for the guild to officially open!\n\nAny character who is not in a guild can fund this guild using the following command:\n```yaml\n{commandPrefix}guild fund \"character name\" #guild-channel GP```\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info #guild-channel```\nCurrent Guild Funds: {gpNeeded} GP"
+                        guildEmbed.description = f"***{charDict['Name']}*** has created ***{guildName}***!\n\nThe guild's status can be checked using the following command:\n```yaml\n{commandPrefix}guild info #guild-channel```"
                         if guildEmbedmsg:
                             await guildEmbedmsg.clear_reactions()
                             await guildEmbedmsg.edit(embed=guildEmbed)
@@ -312,17 +312,8 @@ class Guild(commands.Cog):
             guildRecords = db.guilds.find_one({"Channel ID": str(guild_id)})
             
         if guildRecords:
-            guildRank = ""
-            if guildRecords['Total Reputation'] >= 30:
-                guildRank = "Rank 4 (Masterwork)"
-            elif guildRecords['Total Reputation'] >= 20:
-                guildRank = "Rank 3 (Large)"
-            elif guildRecords['Total Reputation'] >= 10:
-                guildRank = "Rank 2 (Medium)"
-            else:
-                guildRank = "Rank 1 (Small)"
 
-            title = f"{guildRecords['Name']}: {guildRank}" 
+            title = f"{guildRecords['Name']}" 
            
             playersCollection = db.players
             guildMembers = list(playersCollection.find({"Guild": guildRecords['Name']}))
@@ -407,13 +398,28 @@ class Guild(commands.Cog):
                     dm_text_lifetime += f"   <@{dm_id}>: {dm_data['Guilds'][guildRecords['Name']]}\n"
 
 
+            unique_members = set()
+            
+            
+            
+            guildMemberStr = "There are no guild members currently."
+            if guildMembers != list():
+                guildMemberStr = ""
+                for g in guildMembers:
+                    g_member = guild.get_member(int(g['User ID']))
+                    if not g_member:
+                        continue
+                    unique_members.add(g['User ID'])
+                    next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
+                    guildMemberStr += next_member_str 
+            
+            guild_life_stats_string += f"• Unique Members: {len(unique_members)}\n"
             
             
             if guildRecords['Funds'] < self.creation_cost:
                 content.append(("Funds", f"{guildRecords['Funds']} GP / {self.creation_cost} GP\n**{self.creation_cost - guildRecords['Funds']} GP** required to open the guild!"))
             else:
-                content.append(("Reputation", f"• Lifetime (Total): {guildRecords['Total Reputation']} :sparkles:\n• Bank (Current): {guildRecords['Reputation']} :sparkles:"))
-            guildEmbed.add_field(name="Monthly Stats", value=guild_stats_string, inline=False)
+                content.append(("Reputation", f"• Lifetime (Total): {guildRecords['Total Reputation']} :sparkles:"))
             
             content.append(("Monthly Stats", guild_stats_string))
             content.append(("Lifetime Stats", guild_life_stats_string))
@@ -424,34 +430,23 @@ class Guild(commands.Cog):
             if dm_text_lifetime:
                 content.append(("All-time Top DMs", dm_text_lifetime, separate_page, True))
             
-            if guildMembers != list():
-                guildMemberStr = ""
-                for g in guildMembers:
-                    g_member = guild.get_member(int(g['User ID']))
-                    if not g_member:
-                        continue
-                    next_member_str = f"{guild.get_member(int(g['User ID'])).mention} **{g['Name']}** [Rank {g['Guild Rank']}]\n"
-                    guildMemberStr += next_member_str 
-                content.append(("Members", guildMemberStr, True, True))
-            else:
-                content.append(("Members", "There are no guild members currently.", True, True))
-
+            content.append(("Members", guildMemberStr, True, True))
+                
             await paginate(ctx, self.bot, title, content, msg = guildEmbedmsg, footer="")
     
         else:
             await channel.send(f'The ***{mention}*** guild does not exist. Check to see if it is a valid guild and check your spelling.')
             return
 
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @is_log_channel()
-    @guild.command()
+    #@commands.cooldown(1, 5, type=commands.BucketType.member)
+    #@is_log_channel()
+    #@guild.command()
     async def fund(self,ctx, charName, guildName, gpFund = 0): 
         channel = ctx.channel
         author = ctx.author
         guild = ctx.guild
         guildEmbed = discord.Embed()
         guildEmbedEmbedmsg = None
-        self.creation_cost = 8000
         def guildEmbedCheck(r, u):
             sameMessage = False
             if guildEmbedmsg.id == r.message.id:
@@ -728,19 +723,6 @@ class Guild(commands.Cog):
                 if charRecords['Guild Rank'] > 3:
                     await channel.send(f"***{charRecords['Name']}*** is already at the max rank and cannot increase their rank any further.")
                     return
-
-                elif charRecords['Guild Rank'] == 3:
-                    if guildRecords['Total Reputation'] < 30:
-                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because ***{guildRecords['Name']}*** has not unlocked their Masterwork upgrade yet.")
-                        return
-                elif charRecords['Guild Rank'] == 2:
-                    if guildRecords['Total Reputation'] < 15:
-                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because ***{guildRecords['Name']}*** has not unlocked their Large upgrade yet.")
-                        return
-                elif charRecords['Guild Rank'] == 1:
-                    if guildRecords['Total Reputation'] < 5:
-                        await channel.send(f"***{charRecords['Name']}*** cannot upgrade their rank because ***{guildRecords['Name']}*** has not unlocked their Medium upgrade yet.")
-                        return
 
                 rankCosts = [1000, 3000, 3000]
                 gpNeeded = rankCosts[charRecords['Guild Rank']-1]

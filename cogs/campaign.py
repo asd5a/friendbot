@@ -471,7 +471,11 @@ class Campaign(commands.Cog):
         # this entry will be overwritten if the DM signs up with a game
         # the DM entry will always be the front entry, this property is maintained by the code
         
-        signedPlayers = {"Players" : {}, "DM" : {"Member" : author, "DB Entry": dmRecord}}
+        signedPlayers = {"Players" : {}, 
+                            "DM" : {"Member" : author, "DB Entry": dmRecord},
+                            "Game" : game,
+                            "Role" : role,
+                            "Campaign" : campaignRecords}
         #set up a variable for the current state of the timer
         timerStarted = False
         
@@ -639,7 +643,7 @@ class Campaign(commands.Cog):
             userList["Start"] = startTime
             # format the time for a localized version defined in bfunc
             datestart = datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
-            
+            userList["datestart"] = datestart
             for p_key, p_entry in userList["Players"].items():
                 p_entry["State"] = "Full"
                 p_entry["Latest Join"] = startTime
@@ -649,7 +653,7 @@ class Campaign(commands.Cog):
             # Inform the user of the started timer
             await channel.send(content=f"Starting the timer for **{game}** {roleString}.\n" )
             # add the timer to the list of runnign timers
-            currentTimers.append('#'+channel.name)
+            currentTimers[channel.mention] = userList
             
             # set up an embed object for displaying the current duration, help info and DM data
             stampEmbed = discord.Embed()
@@ -669,7 +673,7 @@ class Campaign(commands.Cog):
             # allow the creation of a new timer
             self.timer.get_command('prep').reset_cooldown(ctx)
             # when the game concludes, remove the timer from the global tracker
-            currentTimers.remove('#'+channel.name)
+            del currentTimers[channel.mention]
             return
 
     
@@ -918,7 +922,6 @@ class Campaign(commands.Cog):
     @timer.command()
     async def stamp(self,ctx, stamp=0, role="", game="", author="", start="", dmChar={}, embed="", embedMsg=""):
         if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
-            user = author.display_name
             # calculate the total duration of the game so far
             end = time.time()
             duration = end - stamp
@@ -974,6 +977,7 @@ Command Checklist
             guild = ctx.guild
             startTime = start["Start"]
             total_duration = end - startTime
+            
             
             stopEmbed = discord.Embed()
             
@@ -1076,8 +1080,35 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         self.timer.get_command('prep').reset_cooldown(ctx)
         await ctx.channel.send(f"Timer has been reset in #{ctx.channel}")
     
+    @timer.command()
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.channel) 
+    @commands.has_any_role('D&D Friend', 'Campaign Friend')
+    async def resume(self,ctx):
     
+        if not self.timer.get_command('prep').is_on_cooldown(ctx):
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
+        if ctx.channel.mention not in currentTimers:
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
+        userList = currentTimers[ctx.channel.mention]
+        dmChar = userList["DM"]
+        author = dmChar["Member"]
+        if author != ctx.author and not await self.permissionCheck(ctx.message, ctx.author):
+            return
+        datestart = userList["datestart"]
+        startTime = userList["Start"]
+        role = userList["Role"]
+        game = userList["Game"]
+        campaignRecords = userList["Campaign"]
+        stampEmbed = discord.Embed()
+        stampEmbed.title = f' a '
+        stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of campaign commands: {commandPrefix}help campaign')
+        stampEmbed.set_author(name=f'DM: {author.name}', icon_url=author.avatar_url)
+        stampEmbedMsg =  await self.stamp(ctx, stamp = startTime, game = game, start = userList ,embed = stampEmbed)
+        await self.duringTimer(ctx, datestart, startTime, userList, role, game, author, stampEmbed, stampEmbedMsg, dmChar,campaignRecords)
     
+        self.timer.get_command('resume').reset_cooldown(ctx)
     #extracted the checks to here to generalize the changes
     async def permissionCheck(self, msg, author):
         # check if the person who sent the message is either the DM, a Mod or a Admin
@@ -1221,7 +1252,10 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 delMessage = await ctx.channel.send(content=f"I've edited the summary for quest #{num}.\nPlease double-check that the edit is correct. I will now delete your message and this one in 20 seconds.")
         await asyncio.sleep(20) 
         await delMessage.delete()
-        await ctx.message.delete() 
+        try:
+            await ctx.message.delete()
+        except Exception as e:
+            pass
         
     @commands.has_any_role('Mod Friend', 'Admins')
     @campaign.command()

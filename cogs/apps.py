@@ -96,8 +96,8 @@ class Apps(commands.Cog):
             await botMsg.clear_reactions()
             await ctx.message.delete()
             await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to the **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you are not a good fit for the server. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck!")
-        elif 'sub17' in response:
-            await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Under 17)")
+        elif 'sub16' in response:
+            await botMsg.edit(embed=botEmbed, content=f"{appMember.mention} - **Denied** (Under 16)")
             await botMsg.clear_reactions()
             await ctx.message.delete()
             await appMember.send(f"Hello, {appMember.name}!\n\nThank you for applying for membership to th **D&D Friends** Discord server! Unfortunately, the Mod team has declined your application since you did not meet the cut-off age. Although D&D is for everyone, not every server is for everyone and we hope you find other like-minded people to play D&D with. Good luck!")
@@ -128,7 +128,7 @@ class Apps(commands.Cog):
         footer_text = f"$app approve {botMsg.id}\n"
         footer_text += f"$app sub18 {botMsg.id}\n"
         footer_text += f"$app deny {botMsg.id}\n"
-        footer_text += f"$app sub17 {botMsg.id}\n" 
+        footer_text += f"$app sub16 {botMsg.id}\n" 
         
         embed = discord.Embed()
         embed.title = title
