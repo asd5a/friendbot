@@ -24,7 +24,9 @@ class Stats(commands.Cog):
                 return False
             return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"] or 
                     ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"] or
-                    ctx.channel.id == 564994370416410624)
+                    ctx.channel.id == 564994370416410624 or
+                    ctx.channel.id == 548991524386373633 or
+                    "A d m i n" in [r.name for r in ctx.author.roles])
         return commands.check(predicate) 
         
     
@@ -38,7 +40,9 @@ class Stats(commands.Cog):
              return
         elif isinstance(error, commands.CheckFailure):
             msg = "This channel or user does not have permission for this command. "
-        
+        elif isinstance(error, commands.BadArgument):
+            await ctx.channel.send("One of your parameters was of an incorrect type.")
+            return
         if msg:
             ctx.command.reset_cooldown(ctx)
             await ctx.channel.send(msg)
@@ -350,6 +354,32 @@ class Stats(commands.Cog):
                 statsEmbed.add_field(name=f"Guild Fanatic", value=guildString, inline=True)  
                 
         await ctx.channel.send(embed=statsEmbed)
+        
+    @commands.command()
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @stats_special()
+    async def top(self,ctx, limit = 10):
+        if limit < 1:
+            await ctx.channel.send(f"{limit} is not a valid count")
+        player_collection = db.players
+        top_results = player_collection.find( { "$query": {"Test" : {"$exists" : False}}, 
+                                                "$orderby": { "Level": -1, "CP" : -1 }} )
+        guild=ctx.guild
+        channel = ctx.channel
+        contents = []
+        number = limit+1
+        statsEmbedmsg = None
+        for result in top_results:
+            owner = guild.get_member(int(result["User ID"]))
+            if not owner:
+                continue
+            char_string = f"{result['CP']}      (<@!{result['User ID']}>)"
+            contents.append((f'{number-limit}.) {result["Name"]}', char_string, False))
+            
+            limit -= 1
+            if limit <= 0:
+                break
+        await paginate(ctx, self.bot, f"Top {number-1} Characters (CP)", contents, statsEmbedmsg)
 
 
 def setup(bot):

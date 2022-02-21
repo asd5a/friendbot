@@ -164,7 +164,7 @@ class Admin(commands.Cog, name="Admin"):
             print(line)
             if line.strip():
                 out.append({"Text" : line.strip()})
-        result = db.liners_meme.insert_many(out)
+        result = db.liners_money.insert_many(out)
         print(len(result.inserted_ids))
         
         
@@ -176,7 +176,8 @@ class Admin(commands.Cog, name="Admin"):
         liner_dic["Find"] = list([line["Text"] for line in db.liners_find.find()])
         liner_dic["Meme"] = list([line["Text"] for line in db.liners_meme.find()])
         liner_dic["Craft"] = list([line["Text"] for line in db.liners_craft.find()])
-        await ctx.channel.send("Liners Updated")
+        liner_dic["Money"] = list([line["Text"] for line in db.liners_money.find()])
+        await ctx.channel.send("All liners Updated")
 
     
     @commands.command()
@@ -669,7 +670,20 @@ class Admin(commands.Cog, name="Admin"):
         await moveEmbedmsg.edit(content="Completed")    
     
     
-       
+    # updates all player elements that match the string current_value in the element field and replaces the value with new_value
+    @commands.command()
+    @admin_or_owner()
+    async def characterUpdate(self, ctx, element, current_value, new_value):
+        
+        moveEmbedmsg = await  ctx.channel.send(content=f"Are you sure you want to change the value of {current_value} to {new_value}?\n No: ❌\n Yes: ✅")
+        
+        if(not await self.doubleVerify(ctx, moveEmbedmsg)):
+            return
+        count = db.players.update_many( {element: current_value},
+                                    {"$set" : {element : new_value}})
+        await moveEmbedmsg.edit(content=f"Successfully updated {count.modified_count} player entries.")
+    
+    
     @commands.command()
     @admin_or_owner()
     async def moveItem(self, ctx, item, tier: int, tp: int):
@@ -1369,6 +1383,40 @@ class Admin(commands.Cog, name="Admin"):
             
         await ctx.channel.send(content="You have changed the data type for Reflavor. DO NOT USE THIS COMMAND EVER AGAIN.")
 
+    @commands.command()
+    @commands.has_any_role("Mod Friend", "Bot Friend", "A d m i n")
+    async def status(self, ctx):
+        contents = []
+        settings_text = ""
+        settings_text += f'Event: {settingsRecord["Event"]}\n'
+        settings_text += f'DDMRW: {settingsRecord["ddmrw"]}\n'
+        contents.append(("Settings", settings_text, False))
+        liners_text = ""
+        liners_text += f'Craft: {len(liner_dic["Craft"])}\n'
+        liners_text += f'Find: {len(liner_dic["Find"])}\n'
+        liners_text += f'Meme: {len(liner_dic["Meme"])}\n'
+        liners_text += f'Money: {len(liner_dic["Money"])}\n'
+        contents.append(("Liner Count", liners_text, False))
+        await paginate(ctx, self.bot, f"Bot Status", contents=contents, separator="\n")
+        
+    @commands.command()
+    @commands.has_any_role("Mod Friend", "Bot Friend", "A d m i n")
+    async def roomData(self, ctx):
+        data = list(map(lambda x: x["Channel"],list(db.logdata.find(
+               {})
+            )))
+        counted = collections.Counter(data)
+        counter_list = sorted(list(counted.keys()))
+        
+        contents = []
+        counter_text = "\n".join([f"{key.capitalize()}: {counted[key]}" for key in counter_list])
+        contents.append(("Counts by Name", f"{counter_text}", False, True))
+        counter_list = sorted(counter_list, key= lambda x: counted[x], reverse = True)
+        counter_text = "\n".join([f"{key.capitalize()}: {counted[key]}" for key in counter_list])
+        contents.append(("Counts by Value", f"{counter_text}", False, True))
+        counter_list = sorted(list(counted.keys()))
+        await paginate(ctx, self.bot, f"Game Channel Use", contents=contents, separator="\n")
+
 def setup(bot):
     bot.add_cog(Admin(bot))
 
@@ -1406,8 +1454,8 @@ def setup(bot):
     # Updates all magic items int he specified tier and TP to the new GP value.
 
 # $moveItem "item" tier TP
-    # Moves the specified magic item to the specified tier and TP and refunds all characters with partial TP towards it. It does not refund completed items and is mostly non-functional.
-
+    # Moves the specified magic item to the specified tier and TP and refunds all characters who purchased the item with TP or GP (whichever was spent).
+    
 # $guild rename "new name" #guild-channel
     # Renames a guild in the following sub-databases: guilds.db (the guild entry itself), players.db (each individual character entry that is part of the guild), stats.db (monthly and lifetime quest tracking), and users.db (which displays the Noodle role used to create the guild).
 
@@ -1442,3 +1490,8 @@ def setup(bot):
 
 # $raceRespec "character name" "new race" STR DEX CON INT WIS CHA
     # Only functions if `$permitRaceRespec` has been used for the character. Allows the user to respec their character's race, starting ASIs, and any ASIs gained through leveling up. Temporary command (August 2021).
+    
+# $status
+    # Shows the current status of different Bot aspects. Useful for seeing if generally non-visible actions have occured like starting events.
+# $roomData
+    # Shows the statistic of game room usage by count
