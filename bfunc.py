@@ -544,7 +544,7 @@ statuses = [f'D&D Friends | {commandPrefix}help', "We're all friends here!", f"S
 discordClient = discord.Client()
 bot = commands.Bot(command_prefix=commandPrefix, case_insensitive=True, intents = intents)
 
-connection = MongoClient(mongoConnection, ssl=True, ssl_cert_reqs='CERT_NONE') 
+connection = MongoClient(mongoConnection, ssl=True) 
 db = connection.dnd
 
 settings = db.settings
