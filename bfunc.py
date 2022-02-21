@@ -19,11 +19,15 @@ from secret import *
 intents = discord.Intents.default()
 intents.members = True
 
-def timeConversion (time):
-		hours = time//3600
-		time = time - 3600*hours
-		minutes = time//60
-		return ('%d Hours %d Minutes' %(hours,minutes))
+def timeConversion (time,hmformat=False):
+        hours = time//3600
+        time = time - 3600*hours
+        minutes = time//60
+        if hmformat is False:
+            return ('%d Hours %d Minutes' %(hours,minutes))
+        else:
+            return ('%dh%dm' %(hours,minutes))
+        
 		
 # def getTiers (tiers):
 #     getTierArray = []
@@ -33,6 +37,7 @@ def timeConversion (time):
 #     getTierArray.append(len(sheet.row_values(3)) + 1)
 
 #     return getTierArray
+
 
 async def traceBack (ctx,error,silent=False):
     ctx.command.reset_cooldown(ctx)
@@ -539,7 +544,7 @@ statuses = [f'D&D Friends | {commandPrefix}help', "We're all friends here!", f"S
 discordClient = discord.Client()
 bot = commands.Bot(command_prefix=commandPrefix, case_insensitive=True, intents = intents)
 
-connection = MongoClient(mongoConnection, ssl=True) 
+connection = MongoClient(mongoConnection, ssl=True, ssl_cert_reqs='CERT_NONE') 
 db = connection.dnd
 
 settings = db.settings
