@@ -112,7 +112,8 @@ class Campaign(commands.Cog):
                 member_name = "Left the Server"
                 if member:
                     member_name = member.display_name
-                info_string += f"• Time: {timeConversion(player['Campaigns'][campaignRecords['Name']]['Time'])}\n"
+                info_string += f"• Total Time: {timeConversion(player['Campaigns'][campaignRecords['Name']]['Time'])}\n"
+                info_string += f"• Time Available: {timeConversion(player['Campaigns'][campaignRecords['Name']]['TimeAvailable'])}\n" 
                 info_string += f"• Sessions: {player['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
                 if full:
                     active_string = 'Active'
@@ -126,7 +127,8 @@ class Campaign(commands.Cog):
         member_name = "Left the Server"
         if member:
             member_name = member.display_name
-        master_text += f"• Time: {timeConversion(master['Campaigns'][campaignRecords['Name']]['Time'])}\n"
+        master_text += f"• Total Time: {timeConversion(master['Campaigns'][campaignRecords['Name']]['Time'])}\n"
+        master_text += f"• Time Available: {timeConversion(master['Campaigns'][campaignRecords['Name']]['TimeAvailable'])}\n"        
         master_text += f"• Sessions: {master['Campaigns'][campaignRecords['Name']]['Sessions']}\n"
         infoEmbed.insert_field_at(0, name=f"**{member_name}** (Campaign Master):", value = master_text, inline = False)
         await ctx.channel.send(embed=infoEmbed)
@@ -1014,7 +1016,8 @@ Command Checklist
                 for v in value:
                     temp += f"{v['Member'].mention}\n"
                     v["inc"] = {"Campaigns."+campaignRecord["Name"]+".Time" :tempTime,
-                    "Campaigns."+campaignRecord["Name"]+".Sessions" :1}
+                    "Campaigns."+campaignRecord["Name"]+".Sessions" :1,
+                    "Campaigns."+campaignRecord["Name"]+".TimeAvailable" :tempTime}
                     playerData.append(v)
                 stopEmbed.add_field(name=key, value=temp, inline=False)
             if 'Noodles' not in dmChar['DB Entry']:
@@ -1027,6 +1030,7 @@ Command Checklist
                 usersCollection.update_one({'User ID': str(dmChar["Member"].id)},
                                             {"$set": {campaignRecord["Name"]+" inc" : 
                                                 {f"Campaigns.{campaignRecord['Name']}.Time": total_duration,
+                                                 f"Campaigns.{campaignRecord['Name']}.TimeAvailable": total_duration,
                                                  f"Campaigns.{campaignRecord['Name']}.Sessions": 1,
                                                  'Noodles': int((total_duration/3600)//3)}}}, upsert=True)
                 # update the player entries in bulk

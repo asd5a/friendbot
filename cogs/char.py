@@ -517,7 +517,7 @@ class Character(commands.Cog):
                         msg += f":warning: I could not find a number in your time amount!\n"
                         totalTime = 0
                         
-                    if totalTime > userRecords["Campaigns"][campaignKey]["Time"]:
+                    if totalTime > userRecords["Campaigns"][campaignKey]["TimeAvailable"]:
                         msg += f":warning: You do not have enough hours to transfer from {error_name}!\n"
                     else:
                         cp = ((totalTime) // 1800) / 2
@@ -1356,7 +1356,7 @@ class Character(commands.Cog):
         try:
             playersCollection.insert_one(charDict)
             if campaignTransferSuccess:
-                target = f"Campaigns.{campaignKey}.Time"
+                target = f"Campaigns.{campaignKey}.TimeAvailable"
                 db.users.update_one({"User ID": str(author.id)}, {"$inc" : {target: -cpTransfered *3600}})
                 await self.levelCheck(ctx, charDict["Level"], charDict["Name"])
             statsCollection.update_one({'Life':1}, {"$set": statsRecord}, upsert=True)
@@ -3097,7 +3097,7 @@ class Character(commands.Cog):
         if "Campaigns" in userRecords:
             campaignString = ""
             for u, v in userRecords['Campaigns'].items():
-                campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, {timeConversion(v['Time'])}\n"
+                campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, Available: {timeConversion(v['TimeAvailable'],hmformat=True)}/{timeConversion(v['Time'],hmformat=True)}\n"
 
             
             contents.append((f"Campaigns", campaignString, False))
