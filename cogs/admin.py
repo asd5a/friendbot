@@ -76,6 +76,9 @@ class Admin(commands.Cog, name="Admin"):
           value_set = {}
           for key, value in user["Campaigns"].items():
             value_set[f"Campaigns.{key}.TimeAvailable"] = value["Time"]
+            if f"{key} inc" in user:
+                user[f"{key} inc"][f"Campaigns.{key}.TimeAvailable"] = user[f"{key} inc"][f"Campaigns.{key}.Time"]
+                value_set[f"{key} inc"] = user[f"{key} inc"]
           user_update = {"$set" : value_set}
           mass_updates.append(UpdateOne({'_id': user['_id']}, user_update))
                     
