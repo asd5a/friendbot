@@ -91,7 +91,7 @@ class Admin(commands.Cog, name="Admin"):
             # if it fails, we need to cancel and use the error details
             return
             
-        await ctx.channel.send(content=f"Updated {len(mass_updates)>0} entries")
+        await ctx.channel.send(content=f"Updated {len(mass_updates)} entries")
     
     @react.command()
     @admin_or_owner()
