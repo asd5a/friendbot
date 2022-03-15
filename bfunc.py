@@ -30,24 +30,11 @@ def timeConversion (time,hmformat=False):
         else:
             return ('%dh%dm' %(hours,minutes))
         
-		
-# def getTiers (tiers):
-#     getTierArray = []
-#     for i in range(len(tiers)):
-#         if tiers[i] != "":
-#             getTierArray.append(i)
-#     getTierArray.append(len(sheet.row_values(3)) + 1)
-
-#     return getTierArray
 
 async def traceBack (ctx,error,silent=False):
     ctx.command.reset_cooldown(ctx)
     etype = type(error)
     trace = error.__traceback__
-
-    # the verbosity is how large of a traceback to make
-    # more specifically, it's the amount of levels up the traceback goes from the exception source
-    #verbosity = -6
 
     # 'traceback' is the stdlib module, `import traceback`.
     lines = traceback.format_exception(etype,error, trace)
@@ -70,7 +57,7 @@ async def traceBack (ctx,error,silent=False):
     raise error
 
 
-def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guildDouble=False, playerDouble=False, dmDouble=False, gold_modifier = 100):
+def calculateTreasure(level, charcp, seconds, death=False, gameID="", guildDouble=False, playerDouble=False, dmDouble=False, gold_modifier = 100):
     # calculate the CP gained during the game
     cp = ((seconds) // 1800) / 2
     cp_multiplier = 1 + guildDouble + playerDouble + dmDouble
@@ -103,27 +90,19 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
     gp= 0
     tp = {}
     charLevel = level
+    levelCP = (((charLevel-5) * 10) + 16)
+    if charLevel < 5:
+        levelCP = ((charLevel -1) * 4)
     while(cp>0):
         
         # Level 20 characters haves access to exclusive items
         # create a string representing which tier the character is in in order to create/manipulate the appropriate TP entry in the DB
         tierTP = f"T{tier} TP"
-        # the level of the character
-        
-        levelCP = (((charLevel-5) * 10) + 16)
-        if charLevel < 5:
-            levelCP = ((charLevel -1) * 4)
-            charLevel = 5
-        elif charLevel < 11:
-            charLevel = 11
-        elif charLevel < 17:
-            charLevel = 17
-        elif charLevel < 20:
-            charLevel = 20
             
         if levelCP + leftCP + cp > cpThreshHoldArray[tier-1]:
             consideredCP = cpThreshHoldArray[tier-1] - (levelCP + leftCP)
             leftCP -= min(leftCP, cpThreshHoldArray[tier-1]-levelCP)
+            levelCP = cpThreshHoldArray[tier-1]
         else:
             consideredCP = cp
         if consideredCP > 0:
@@ -163,8 +142,6 @@ async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, ti
         return None, apiEmbed, apiEmbedmsg
 
     #restructure the query to be more regEx friendly
-  
-    
     invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "}", "^", ">", "<", "|"]
 
     for i in invalidChars:
@@ -452,86 +429,18 @@ def refreshKey (timeStarted):
             refreshTime = time.time()
     return
 
-# use creds to create a client to interact with the Google Drive API
-# gSecret = {
-#   "type": "service_account",
-#   "project_id": "magic-item-table",
-#   "private_key_id": os.environ['PKEY_ID'],
-#   "private_key": os.environ['PKEY'],
-#   "client_email": os.environ['CEMAIL'],
-#   "client_id": os.environ['C_ID'],
-#   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-#   "token_uri": "https://oauth2.googleapis.com/token",
-#   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-#   "client_x509_cert_url": os.environ['C_CERT']
-# }
-
-# scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-# creds = ServiceAccountCredentials.from_json_keyfile_dict(gSecret, scope)
-
-# gClient = gspread.authorize(creds)
-# refreshTime = time.time()
-
-# Find a workbook by name and open the first sheet
-# Make sure you use the right name here.
-# sheet = gClient.open("Magic Items Document").sheet1
-# ritSheet = gClient.open("Magic Items Document").get_worksheet(1)
-# charDatabase = gClient.open("Character Database").worksheet("Character Database")
-# refListSheet = gClient.open("Character Database").worksheet("Reference Lists")
-
-
-# sheet = gClient.open("Magic Item Table").sheet1
-# ritSheet = gClient.open("Reward Item Table").sheet1
-
 # token = os.environ['TOKEN']
 currentTimers = {}
 
 gameCategory = ["🎲 game rooms", "🐉 campaigns", "mod friends"]
 roleArray = ['New', 'Junior', 'Journey', 'Elite', 'True', 'Ascended', '']
 noodleRoleArray = ['Good Noodle', 'Elite Noodle', 'True Noodle', 'Ascended Noodle', 'Immortal Noodle', 'Eternal Noodle']
-# tierArray = getTiers(sheet.row_values(2))
-# tpArray = sheet.row_values(3)
 commandPrefix = '$'
 timezoneVar = 'US/Eastern'
-
-# ritTierArray = getTiers(ritSheet.row_values(2))
-# ritSubArray = ritSheet.row_values(3)
 
 tier_reward_dictionary = [[50, 0.5], [100, 0.5], [150, 1], [200, 1], [200, 1]]
 
 cp_bound_array = [[4, "4"], [10, "10"], [10, "10"], [10, "10"], [9999999999, "∞"]]
-# settingsRecord = {"QB List" : {781021043778781195 : 382025597041246210, 728476108940640297 : 259732415319244800},
-                    # "Role Channel List" : {777046003832193034 : 382025597041246210, 781360717101400084 : 259732415319244800},
-                    # 382025597041246210: 
-                    # {"Sessions" : 737076677238063125, "QB" : 781021043778781195, 
-                        # "CB" : 382027251618938880,
-                        # "Player Logs" : 788158884329422848 ,
-                        # "Game Rooms" : 575798293913796619, 
-                        # "Guild Rooms" :452704598440804375,
-                        # "Campaign Rooms" : 698784680488730666, 
-                        # "Messages" : {777051070110498846: "Roll20", 777051209299132456: "Foundry"},
-                        # "Emotes" : {"Roll20" : "<:roll20:777767592684421130>" , "Foundry": "<:foundry:777767632471719956>"}}, 
-                  # 259732415319244800 : 
-                    # {"Sessions" : 728456783466725427, "QB" : 728476108940640297, 
-                        # "CB" : 781360342483075113,
-                        # "Player Logs" : 728729922205647019 ,
-                        # "Game Rooms" : 728456686024523810, 
-                        # "Guild Rooms" : 734586911901089832,
-                        # "Campaign Rooms" : 734276389322096700, 
-                        # "Messages" : {781360780162760765: "Roll20", 781360787854852106: "Foundry"},
-                        # "Emotes" : {"Roll20" : "<:adorabat:733763021008273588>" , "Foundry": "🗡️"}}}
-
-
-# Quest Buffs - 2x Rewards, 2x Items, Recruitment Drive
-questBuffsDict = {'2xRewards': [20, "2x CP,TP, and gp"], 
-"2xItems - Small": [5,"+ 1 Tier 1 Minor Non-Consumable Reward"], 
-"2xItems - Medium": [10, "+ 1 Same Tier or Lower Reward"], 
-"2xItems - Large": [15,"Both of the above + 1 Tier 1 Minor Non-Consumable Reward"], 
-"RD - Small":[4,"Small Guild Upgrade"], 
-"RD - Medium": [6,"Small and Medium Upgrades"], 
-"RD - Large": [9,"Small, Medium, and Large Upgrades"], 
-"RD - All": [13, " All Guild Upgrades"]}
-questBuffsArray = list(questBuffsDict.keys())
 
 left = '\N{BLACK LEFT-POINTING TRIANGLE}'
 right = '\N{BLACK RIGHT-POINTING TRIANGLE}'
@@ -559,34 +468,3 @@ liner_dic = {"Find" : list([line["Text"] for line in db.liners_find.find()]),
              "Meme" : list([line["Text"] for line in db.liners_meme.find()]),
              "Craft" : list([line["Text"] for line in db.liners_craft.find()]),
              "Money" : list([line["Text"] for line in db.liners_money.find()])}
-
-
-# API_URL = ('https://api.airtable.com/v0/appF4hiT6A0ISAhUu/'+ 'races')
-# # API_URL += '?offset=' + 'itr4Z54rnNABYW8jj/recr2ss2DkyF4Q84X' 
-# r = requests.get(API_URL, headers=headers)
-# r = r.json()['records']
-# playersCollection = db.races
-# addList = []
-# for i in r:
-#     print(i['fields'])
-#     addList.append(i['fields'])
-
-# playersCollection.insert_many(addList)
-
-# collection = db['mit']
-# cl = list(collection.find({"Name": {"$regex": 'Vicious.*\+1$', '$options': 'i' }}))
-# cData = list(map(lambda item: UpdateOne({'_id': item['_id']}, {'$set': {'TP':12, 'GP':5280 } }, upsert=True), cl))
-# collection.bulk_write(cData)
-
-# records = list(collection.find({"Modifiers": {"$regex": '', '$options': 'i' }}))
-
-
-# i = 0
-# for r in sorted(records, key = lambda i: i['Name']) :
-#     print(r['Name'])
-#     i+=1
-
-# print (i)
-
-# # delete
-# collection.remove(({"Modifiers": {"$regex": '', '$options': 'i' }}))
