@@ -453,9 +453,14 @@ async def help(ctx, *, pageString=''):
 if __name__ == '__main__':
     for extension in [f.replace('.py', '') for f in listdir(cogs_dir) if isfile(join(cogs_dir, f))]:
         try:
-            bot.load_extension(cogs_dir + "." + extension)
+            await bot.load_extension(cogs_dir + "." + extension)
         except (discord.ClientException, ModuleNotFoundError):
             print(f'Failed to load extension {extension}.')
             traceback.print_exc()
 
-bot.run(token)
+async def main():
+    async with bot:
+        bot.loop.create_task(background_task())
+        await bot.start('token')
+
+asyncio.run(main())
