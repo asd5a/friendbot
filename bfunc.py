@@ -123,10 +123,9 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
             
         if levelCP + leftCP + cp > cpThreshHoldArray[tier-1]:
             consideredCP = cpThreshHoldArray[tier-1] - (levelCP + leftCP)
-            leftCP = 0
+            leftCP -= min(leftCP, cpThreshHoldArray[tier-1]-levelCP)
         else:
             consideredCP = cp
-        
         if consideredCP > 0:
             cp -=  consideredCP
             tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
