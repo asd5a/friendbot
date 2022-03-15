@@ -333,6 +333,7 @@ class Character(commands.Cog):
         name = name.strip()
         characterCog = self.bot.get_cog('Character')
         roleCreationDict = {
+            'D&D Friend':[2],
             'Journeyfriend':[3],
             'Elite Friend':[3],
             'True Friend':[3],
@@ -436,13 +437,6 @@ class Character(commands.Cog):
             if userRecords != list():
                 msg += f":warning: You already have a character by the name of ***{name}***! Please use a different name.\n"
         
-        # ██████╗░░█████╗░██╗░░░░░███████╗  ░░░░██╗  ██╗░░░░░███████╗██╗░░░██╗███████╗██╗░░░░░
-        # ██╔══██╗██╔══██╗██║░░░░░██╔════╝  ░░░██╔╝  ██║░░░░░██╔════╝██║░░░██║██╔════╝██║░░░░░
-        # ██████╔╝██║░░██║██║░░░░░█████╗░░  ░░██╔╝░  ██║░░░░░█████╗░░╚██╗░██╔╝█████╗░░██║░░░░░
-        # ██╔══██╗██║░░██║██║░░░░░██╔══╝░░  ░██╔╝░░  ██║░░░░░██╔══╝░░░╚████╔╝░██╔══╝░░██║░░░░░
-        # ██║░░██║╚█████╔╝███████╗███████╗  ██╔╝░░░  ███████╗███████╗░░╚██╔╝░░███████╗███████╗
-        # ╚═╝░░╚═╝░╚════╝░╚══════╝╚══════╝  ╚═╝░░░░  ╚══════╝╚══════╝░░░╚═╝░░░╚══════╝╚══════╝
-
         # Check if level or roles are vaild
         # A set that filters valid levels depending on user's roles
         roleSet = [1]
@@ -574,12 +568,6 @@ class Character(commands.Cog):
             
         
         
-        # ███╗░░░███╗░█████╗░░██████╗░██╗░█████╗░  ██╗████████╗███████╗███╗░░░███╗  ░░░░██╗  ████████╗██████╗░
-        # ████╗░████║██╔══██╗██╔════╝░██║██╔══██╗  ██║╚══██╔══╝██╔════╝████╗░████║  ░░░██╔╝  ╚══██╔══╝██╔══██╗
-        # ██╔████╔██║███████║██║░░██╗░██║██║░░╚═╝  ██║░░░██║░░░█████╗░░██╔████╔██║  ░░██╔╝░  ░░░██║░░░██████╔╝
-        # ██║╚██╔╝██║██╔══██║██║░░╚██╗██║██║░░██╗  ██║░░░██║░░░██╔══╝░░██║╚██╔╝██║  ░██╔╝░░  ░░░██║░░░██╔═══╝░
-        # ██║░╚═╝░██║██║░░██║╚██████╔╝██║╚█████╔╝  ██║░░░██║░░░███████╗██║░╚═╝░██║  ██╔╝░░░  ░░░██║░░░██║░░░░░
-        # ╚═╝░░░░░╚═╝╚═╝░░╚═╝░╚═════╝░╚═╝░╚════╝░  ╚═╝░░░╚═╝░░░╚══════╝╚═╝░░░░░╚═╝  ╚═╝░░░░  ░░░╚═╝░░░╚═╝░░░░░
         # Magic Item / TP
         # Check if magic items exist, and calculates the TP cost of each magic item.
         mItems = ""
@@ -587,12 +575,6 @@ class Character(commands.Cog):
         allMagicItemsString = []
 
 
-        # ██████╗░███████╗░██╗░░░░░░░██╗░█████╗░██████╗░██████╗░  ██╗████████╗███████╗███╗░░░███╗░██████╗
-        # ██╔══██╗██╔════╝░██║░░██╗░░██║██╔══██╗██╔══██╗██╔══██╗  ██║╚══██╔══╝██╔════╝████╗░████║██╔════╝
-        # ██████╔╝█████╗░░░╚██╗████╗██╔╝███████║██████╔╝██║░░██║  ██║░░░██║░░░█████╗░░██╔████╔██║╚█████╗░
-        # ██╔══██╗██╔══╝░░░░████╔═████║░██╔══██║██╔══██╗██║░░██║  ██║░░░██║░░░██╔══╝░░██║╚██╔╝██║░╚═══██╗
-        # ██║░░██║███████╗░░╚██╔╝░╚██╔╝░██║░░██║██║░░██║██████╔╝  ██║░░░██║░░░███████╗██║░╚═╝░██║██████╔╝
-        # ╚═╝░░╚═╝╚══════╝░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝╚═╝░░╚═╝╚═════╝░  ╚═╝░░░╚═╝░░░╚══════╝╚═╝░░░░░╚═╝╚═════╝░
         # Reward Items
         if msg == "":
             rewardItems = consumes.strip().split(',')
@@ -714,12 +696,6 @@ class Character(commands.Cog):
                         else:
                             charDict['Inventory'][r['Name']] =1
                       
-        # ██████╗░░█████╗░░█████╗░███████╗░░░  ░█████╗░██╗░░░░░░█████╗░░██████╗░██████╗
-        # ██╔══██╗██╔══██╗██╔══██╗██╔════╝░░░  ██╔══██╗██║░░░░░██╔══██╗██╔════╝██╔════╝
-        # ██████╔╝███████║██║░░╚═╝█████╗░░░░░  ██║░░╚═╝██║░░░░░███████║╚█████╗░╚█████╗░
-        # ██╔══██╗██╔══██║██║░░██╗██╔══╝░░██╗  ██║░░██╗██║░░░░░██╔══██║░╚═══██╗░╚═══██╗
-        # ██║░░██║██║░░██║╚█████╔╝███████╗╚█║  ╚█████╔╝███████╗██║░░██║██████╔╝██████╔╝
-        # ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚══════╝░╚╝  ░╚════╝░╚══════╝╚═╝░░╚═╝╚═════╝░╚═════╝░
         # check race
         
         if msg == "":
@@ -1083,12 +1059,7 @@ class Character(commands.Cog):
                 
                 charDict['GP'] = int(bRecord['GP']) + totalGP
         
-        # ░██████╗████████╗░█████╗░████████╗░██████╗░░░  ███████╗███████╗░█████╗░████████╗░██████╗
-        # ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝░░░  ██╔════╝██╔════╝██╔══██╗╚══██╔══╝██╔════╝
-        # ╚█████╗░░░░██║░░░███████║░░░██║░░░╚█████╗░░░░  █████╗░░█████╗░░███████║░░░██║░░░╚█████╗░
-        # ░╚═══██╗░░░██║░░░██╔══██║░░░██║░░░░╚═══██╗██╗  ██╔══╝░░██╔══╝░░██╔══██║░░░██║░░░░╚═══██╗
-        # ██████╔╝░░░██║░░░██║░░██║░░░██║░░░██████╔╝╚█║  ██║░░░░░███████╗██║░░██║░░░██║░░░██████╔╝
-        # ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░░╚╝  ╚═╝░░░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░
+        
         # Stats - Point Buy
         
         if msg == "":
@@ -2551,7 +2522,98 @@ class Character(commands.Cog):
                 charEmbedmsg = await channel.send(embed=charEmbed, content=f"Congratulations! You have respecced your character!")
             
         self.bot.get_command('racerespec').reset_cooldown(ctx)
+   
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @is_log_channel()
+    @commands.command()
+    async def applyTime(self, ctx, charName, campaignName, timeTransfer: str):
+        msg = ctx.message
+        error_msg = ""
+        charEmbed = discord.Embed()
+        charEmbedmsg = None
+        author = ctx.author
+        charDict, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, author, customError=True)
+        if charDict:
+            if charDict["Level"] < 5:
+                tierNum = 1
+            elif charDict["Level"] < 11:
+                tierNum = 2
+            elif charDict["Level"] < 17:
+                tierNum = 3
+            elif charDict["Level"] < 20:
+                tierNum = 4
+            else:
+                tierNum = 5
+            
+            campaignKey = ""
+            campaignChannels = ctx.message.channel_mentions
+            
+            userRecords = db.users.find_one({"User ID" : str(author.id)})
+            campaignFind = False
+            if not userRecords:
+                error_msg += f":warning: I could not find you in the database!\n"
+            elif "Campaigns" not in userRecords.keys():
+                error_msg += f":warning: You have no campaigns in your records!\n"
+            else:
+                
+                if len(campaignChannels) > 1 or campaignChannels == list():
+                    for key in userRecords["Campaigns"].keys():
+                        if campaignName.lower() in key.lower(): 
+                            campaignFind = True
+                            campaignKey = key
+                            break
+                    error_name = campaignName
+                else:
+                    for key in userRecords["Campaigns"].keys():
+                        if key.lower().replace(",", "") == (campaignChannels[0].name.replace('-', ' ')):
+                            campaignFind = True
+                            campaignKey = key
+                            break
+                    
+                    error_name = campaignChannels[0].mention
+                if not campaignFind:
+                    error_msg += f":warning: I could not find {error_name} in your records!\n"
+                else:
+                    def convert_to_seconds(s):
+                        return int(s[:-1]) * seconds_per_unit[s[-1]]
+
+                    seconds_per_unit = { "m": 60, "h": 3600 }
+                    lowerTimeString = timeTransfer.lower()
+                    l = list((re.findall('.*?[hm]', lowerTimeString)))
+                    totalTime = 0
+                    try:
+                        for timeItem in l:
+                            totalTime += convert_to_seconds(timeItem)
+                    except Exception as e:
+                        error_msg += f":warning: I could not find a number in your time amount!\n"
+                        totalTime = 0
+                        
+                    if totalTime > userRecords["Campaigns"][campaignKey]["TimeAvailable"]:
+                        error_msg += f":warning: You do not have enough hours to transfer from {error_name}!\n"
+            
+            self.bot.get_command('applyTime').reset_cooldown(ctx)
+            if error_msg:
+                await ctx.channel.send(content=error_msg)
+                return
+            else:
+                treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , tierNum, totalTime)
+                inc_dic = {"GP": treasureArray[2], "CP": treasureArray[0]}
+                inc_dic.update(treasureArray[1])
+                    
+        else:
+            await ctx.channel.send(content=f"I could not find {charName} in the DB.")        
+            self.bot.get_command('applyTime').reset_cooldown(ctx)
+            return
+        
+        try:
+            db.players.update_one({"_id": charDict["_id"]}, {"$inc": inc_dic})
+            db.users.update_one({"User ID": f"{author.id}"}, {"$inc": {f"Campaigns.{campaignKey}.TimeAvailable": -totalTime}})
+            await ctx.channel.send(content=f"**{charDict['Name']}** has received **{treasureArray[0]} CP, {sum(treasureArray[1].values())} TP, {treasureArray[2]} GP** from **{campaignKey}**")
     
+        except Exception as e:
+            traceback.print_exc()
+
+   
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
     async def roll2022(self, ctx, char):

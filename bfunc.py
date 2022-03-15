@@ -126,9 +126,11 @@ def calculateTreasure(level, charcp, tier, seconds, death=False, gameID="", guil
             leftCP = 0
         else:
             consideredCP = cp
-        cp -=  consideredCP
-        tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
-        gp += consideredCP * tier_reward_dictionary[tier-1][0]
+        
+        if consideredCP > 0:
+            cp -=  consideredCP
+            tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
+            gp += consideredCP * tier_reward_dictionary[tier-1][0]
         tier += 1
     gp = math.ceil(gold_modifier * gp/100)
     return [gainedCP, tp, int(gp)]

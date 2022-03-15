@@ -1064,7 +1064,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 modMessage = await modChannel.send(embed=modEmbed)
                 for e in ["🚧", "📝", "✅", "❌"]:
                     await modMessage.add_reaction(e)
-                stopEmbed.set_footer(text=f"Game ID: {session_msg.id}\nLog is being processed. If you have appended a summary to your campaign session log more than 24 hours after the session ended, message a Mod with a link to your campaign session log to get it approved.")
+                stopEmbed.set_footer(text=f"Game ID: {session_msg.id}\nLog is being processed. If you have appended a summary to your campaign session log more than 24 hours after the session ended, message a Mod with a link to your campaign session log to get it approved.\n$campaign log {session_msg.id} [Replace the brackets and this text with your session summary log.]")
 
                 await session_msg.edit(embed=stopEmbed)
                 
