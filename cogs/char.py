@@ -2536,6 +2536,8 @@ class Character(commands.Cog):
         if charDict:
             if "GID" in charDict:
                 error_msg += f":warning: Your character is still awaiting rewards!\n"
+            if "Death" in charDict:
+                error_msg += f":warning: Your character is still dead!\n"
 
             if charDict["Level"] < 5:
                 tierNum = 1
