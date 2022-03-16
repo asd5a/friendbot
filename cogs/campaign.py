@@ -173,9 +173,8 @@ class Campaign(commands.Cog):
 
         if userRecords: 
             if 'Campaigns' not in userRecords:
-                userRecords['Campaigns'] = {campaignRole[0].name : {"Time" : 0, "Sessions" : 0, "Active" : True} }
-            else:
-                userRecords['Campaigns'][campaignRole[0].name] = {"Time" : 0, "Sessions" : 0, "Active" : True}
+                userRecords['Campaigns'] = {}
+            userRecords['Campaigns'][campaignRole[0].name] = {"Time" : 0, "Sessions" : 0, "Active" : True, "TimeAvailable": 0}
             campaignDict = {'Name': campaignName, 
                             'Campaign Master ID': str(author.id), 
                             'Role ID': str(campaignRole[0].id), 
@@ -256,6 +255,7 @@ class Campaign(commands.Cog):
             if campaignRecords['Name'] not in userRecords['Campaigns']:
                 userRecords['Campaigns'][campaignRecords['Name']] = {"Time" : 0, "Sessions" : 0}
         userRecords['Campaigns'][campaignRecords['Name']]["Active"] = True
+        userRecords['Campaigns'][campaignRecords['Name']]["TimeAvailable"] = 0
 
         await user[0].add_roles(guild.get_role(int(campaignRecords['Role ID'])), reason=f"{author.name} add campaign member to {campaignRecords['Name']}")
         if not any([role in roles for role in ["Junior Friend", "Journeyfriend", "Elite Friend", "True Friend", "Ascended Friend"]]):
