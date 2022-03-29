@@ -69,7 +69,10 @@ class Stats(commands.Cog):
         statsCollection = db.stats
         currentDate = datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%y")
         if not year:
-            year = currentDate.split("-")[1]
+            year = int(currentDate.split("-")[1])
+        else:
+            year = int(year)%100
+        
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
                 currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=1).strftime("%b-%y")
@@ -182,11 +185,13 @@ class Stats(commands.Cog):
                 if "Campaigns" in statRecords:
                     contents.append((f"Campaigns", f"• Sessions: {statRecords['Campaigns']}", False))
                 
+                monthEnd = datetime.now(pytz.timezone(timezoneVar))
                 if "Life" in statRecords:
                     monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(day = 14).replace(month = 1).replace(year = 2021)
                 elif month:
                     
                     monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=1) -  timedelta(days=1)
+                    monthEnd = (datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=28) +  timedelta(days=4)).replace(day=1)
                 else:
                     monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(day = 1)
                 
@@ -194,7 +199,7 @@ class Stats(commands.Cog):
                 if 'Players' in statRecords and 'Playtime' in statRecords:
                     avgString += f"• Players per One-shot: {(int(statRecords['Players']  / superTotal *100) /100.0)}\n" 
                     avgString += f"• One-shot Length: {timeConversion(statRecords['Playtime'] / superTotal)}\n"
-                    avgString += f"• One-shots per Day: {(int(superTotal / (max((datetime.now(pytz.timezone(timezoneVar))-monthStart).days, 1))*100) /100.0)}\n"
+                    avgString += f"• One-shots per Day: {(int(superTotal / (max((monthEnd-monthStart).days, 1))*100) /100.0)}\n"
                     
                     contents.append((f"Averages", avgString, False))
 
