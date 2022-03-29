@@ -72,7 +72,7 @@ class Stats(commands.Cog):
             year = currentDate.split("-")[1]
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
-                currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
+                currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=1).strftime("%b-%y")
                 
             else:
                 await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
@@ -305,7 +305,7 @@ class Stats(commands.Cog):
             year = currentDate.split("-")[1]
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
-                currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(month = int(month)).replace(year = 2000+int(year)).strftime("%b-%y")
+                currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=1).strftime("%b-%y")
                 
             else:
                 await ctx.channel.send(f"Month needs to be a number between 1 and 12.")
