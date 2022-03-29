@@ -193,7 +193,7 @@ class Stats(commands.Cog):
                     monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=1) -  timedelta(days=1)
                     monthEnd = (datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=28) +  timedelta(days=4)).replace(day=1)
                 else:
-                    monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(day = 1)
+                    monthStart = datetime.now(pytz.timezone(timezoneVar)).replace(day = 1) -  timedelta(days=1)
                 
                 # Stat for average player and average play time
                 if 'Players' in statRecords and 'Playtime' in statRecords:
