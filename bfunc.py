@@ -1,24 +1,27 @@
 import discord
-import gspread
 import decimal
 import math
 import os
 import time
 import traceback
-# import json
-import requests
-from discord.ext import commands
+from discord.ext import commands, tasks
+from os import listdir
+from os.path import isfile, join
 import asyncio
-from oauth2client.service_account import ServiceAccountCredentials
 from pymongo import MongoClient
 import re
+
+from itertools import cycle
 
 from pymongo import UpdateOne
 
 from secret import *
 
+cogs_dir = "cogs"
+
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True
 
 
 def timeConversion (time,hmformat=False):
@@ -453,9 +456,52 @@ alphaEmojis = ['🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮','�
 '🇱','🇲','🇳','🇴','🇵','🇶','🇷','🇸','🇹','🇺','🇻','🇼','🇽','🇾','🇿']
 
 statuses = [f'D&D Friends | {commandPrefix}help', "We're all friends here!", f"See a bug? tell @MSchildorfer!", "Practicing social distancing!", "Wearing a mask!", "Being a good boio.", "Vibing", "Hippity Hoppity", "These Logs Are My Property", "UwU"]
-discordClient = discord.Client()
-bot = commands.Bot(command_prefix=commandPrefix, case_insensitive=True, intents = intents)
+discordClient = discord.Client(intents = intents)
+@tasks.loop(minutes=10)
+async def change_status():
+    await bot.wait_until_ready()
+    statusLoop = cycle(statuses)
 
+    while not bot.is_closed():
+        current_status = next(statusLoop)
+        await bot.change_presence(activity=discord.Activity(name=current_status, type=discord.ActivityType.watching))
+        await asyncio.sleep(5)
+
+class FriendBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix=commandPrefix, case_insensitive=True, intents = intents)
+        self.initial_extensions = [
+            'cogs.admin',
+            'cogs.misc',
+            'cogs.char',
+        ]
+
+    async def setup_hook(self):
+        change_status.start()
+        for extension in [f.replace('.py', '') for f in listdir(cogs_dir) if isfile(join(cogs_dir, f))]:
+            try:
+                await bot.load_extension(cogs_dir + "." + extension)
+            except (discord.ClientException, ModuleNotFoundError):
+                print(f'Failed to load extension {extension}.')
+                traceback.print_exc()
+        #self.session = aiohttp.ClientSession()
+        # for ext in self.initial_extensions:
+            # await self.load_extension(ext)
+
+    async def close(self):
+        await super().close()
+        #await self.session.close()
+
+    
+
+    @tasks.loop(minutes=10)
+    async def background_task(self):
+        print('Running background task...')
+
+    async def on_ready(self):
+        print('Ready!')
+
+bot = FriendBot()
 connection = MongoClient(mongoConnection, ssl=True) 
 db = connection.dnd
 

@@ -382,5 +382,5 @@ class Stats(commands.Cog):
         await paginate(ctx, self.bot, f"Top {number-1} Characters (CP)", contents, statsEmbedmsg)
 
 
-def setup(bot):
-    bot.add_cog(Stats(bot))
+async def setup(bot):
+    await bot.add_cog(Stats(bot))

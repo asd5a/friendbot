@@ -1375,5 +1375,5 @@ class Log(commands.Cog):
         
 
 
-def setup(bot):
-    bot.add_cog(Log(bot))
+async def setup(bot):
+    await bot.add_cog(Log(bot))

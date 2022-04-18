@@ -1185,35 +1185,6 @@ class Shop(commands.Cog):
             
            
 
-# Proficiency Training
-# Characters can receive training and spend their gp on the services of an instructor to learn a language or pick up proficiency with a tool, but cannot gain expertise through this training. The cost of this training varies depending on how many proficiencies you have already learned through this system:
-# • 1st proficiency: 1000 gp
-# • 2nd proficiency: 1250 gp
-# • 3rd proficiency: 1500 gp
-# • 4th proficiency: 1750 gp
-# • 5th proficiency: 2000 gp *
-# Note: when you learn your fifth proficiency, you can instead choose to learn a skill and gain proficiency in it.
 
-# Congratulatory message for learning a skill:
-# {charRecords['Name']} has been trained by an instructor and can learn one language or gain proficiency in a tool of your choice. Alternatively, you can choose to gain proficiency in a skill of your choice.
-
-
-# Proficiency Training for Noodle roles
-# The Noodle roles allow your characters to purchase a language or tool proficiency for a nominal fee. As you acquire new Noodle roles on the server, you must first use all previous Noodle roles' benefits before using any new ones.
-# Good: 500
-# Elite: 400
-# True: 300 *
-# Asended: 200
-# Immortal: 100 *
-
-# Note: when you become True Noodle and Immortal Noodle, you can instead choose to learn a skill and gain proficiency in it.
-# Note: all Noodle roles after Immortal are free, with every second one granting the possibility to purchase a skill proficiency.
-
-# Use the same congratulatory message as above for learning a skill.
-
-
-# IMPORTANT: include a yes/no prompt for training proficiencies, including current and new gp (before and after the purchase). The relevant code is found on line 109.
-
-
-def setup(bot):
-    bot.add_cog(Shop(bot))
+async def setup(bot):
+    await bot.add_cog(Shop(bot))

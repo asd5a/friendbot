@@ -13,7 +13,7 @@ from discord.ext import commands
 from math import ceil, floor
 from itertools import product      
 from datetime import datetime, timezone,timedelta
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, roleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
+from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, roleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
@@ -659,7 +659,7 @@ class Campaign(commands.Cog):
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
             stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of campaign commands: {commandPrefix}help campaign')
-            stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.avatar_url)
+            stampEmbed.set_author(name=f'DM: {userName}', icon_url=author.display_avatar)
 
             for u in userList["Players"].values():
                 stampEmbed.add_field(name=f"**{u['Member'].display_name}**", value=u['Member'].mention, inline=False)
@@ -995,7 +995,7 @@ Command Checklist
             # Session Log Channel
             logChannel = ctx.channel
             stopEmbed.clear_fields()
-            stopEmbed.set_footer(text=stopEmbed.Empty)
+            stopEmbed.set_footer(text=None)
             dateend = datetime.fromtimestamp(end).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%d-%y %I:%M %p")
             totalDuration = timeConversion(end - startTime)
 
@@ -1104,7 +1104,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         stampEmbed = discord.Embed()
         stampEmbed.title = f' a '
         stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of campaign commands: {commandPrefix}help campaign')
-        stampEmbed.set_author(name=f'DM: {author.name}', icon_url=author.avatar_url)
+        stampEmbed.set_author(name=f'DM: {author.name}', icon_url=author.display_avatar)
         stampEmbedMsg =  await self.stamp(ctx, stamp = startTime, game = game, start = userList ,embed = stampEmbed)
         await self.duringTimer(ctx, datestart, startTime, userList, role, game, author, stampEmbed, stampEmbedMsg, dmChar,campaignRecords)
     
@@ -1517,5 +1517,5 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         await resultMessage.delete()
 
     
-def setup(bot):
-    bot.add_cog(Campaign(bot))
+async def setup(bot):
+    await bot.add_cog(Campaign(bot))

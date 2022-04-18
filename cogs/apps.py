@@ -133,7 +133,7 @@ class Apps(commands.Cog):
         embed = discord.Embed()
         embed.title = title
         embed.description = response
-        embed.set_author(name=msg.author, icon_url=msg.author.avatar_url)
+        embed.set_author(name=msg.author, icon_url=msg.author.display_avatar)
         embed.set_footer(text=f"{footer_text}")
         await botMsg.edit(embed=embed)
             
@@ -161,5 +161,5 @@ By submitting this membership application, you are consenting to the following:
 • We are not liable for NSFW content in one-shots on the server and participating in one-shots is done at your own discretion as we can't be held liable if you end up in a situation with which you are uncomfortable. Although the public channels on the server are considered a "safe for work" (SFW) environment, we allow anyone to be a DM and host a one-shot on the server. Therefore, we do not have control over what people put in their quests and some quests may contain explicit or adult content, otherwise known as "not safe for work" (NSFW) content. Explicit or adult content in this context is considered to be: violence, gore, disturbing imagery, or otherwise implied risqué themes. However, we do urge those DMs to put a warning on their quest board post if they will be using such content so all players are fairly warned prior to the one-shot."""
         await ctx.channel.send(content=text)
                 
-def setup(bot):
-    bot.add_cog(Apps(bot))
+async def setup(bot):
+    await bot.add_cog(Apps(bot))

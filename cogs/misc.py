@@ -21,9 +21,15 @@ class Misc(commands.Cog):
         self.past_message_check= 0
 
     
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @admin_or_owner()
+    @commands.command()
+    async def hi(self,ctx):
+        channel = ctx.channel
+        print(dir(ctx.author))
+        await channel.send("hi")
 
-
-    @commands.cooldown(1, 60, type=commands.BucketType.member)
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
     @admin_or_owner()
     @commands.command()
     async def uwu(self,ctx):
@@ -67,7 +73,8 @@ class Misc(commands.Cog):
         
         ch =self.bot.get_channel(382027251618938880) #382027251618938880 728476108940640297
         #find the message in the Campaign Board
-        message = await ch.history().get(author__id = self.bot.user.id)
+        
+        message = await discord.utils.get(ch.history(), author__id = self.bot.user.id)
         #Go through all categories with Campaign in the name and Grab all channels in the Campaign category and their ids
         campaign_channels = []
         for cat in chan.guild.categories:
@@ -115,7 +122,8 @@ class Misc(commands.Cog):
         #block any check but the first one
         if(not self.past_message_check):
             self.past_message_check= 1
-            self.current_message = await self.bot.get_channel(channel_id).history().get(author__id = self.bot.user.id)
+            
+            self.current_message = await discord.utils.get(self.bot.get_channel(channel_id).history(), author__id = self.bot.user.id)
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
@@ -177,7 +185,7 @@ class Misc(commands.Cog):
         for c in game_channel_category.text_channels:
             channel_dm_dic[c.mention]= ["✅ "+c.mention+": Clear", set([])]
         #get all posts in the channel
-        all_posts = await channel.history(oldest_first=True).flatten()
+        all_posts = [post async for post in channel.history(oldest_first=True)]
         for elem in all_posts:
             #ignore self and Ghost example post
             if(elem.author.id==self.bot.user.id 
@@ -291,5 +299,5 @@ class Misc(commands.Cog):
             return
 
         
-def setup(bot):
-    bot.add_cog(Misc(bot))
+async def setup(bot):
+    await bot.add_cog(Misc(bot))

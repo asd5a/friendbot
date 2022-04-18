@@ -66,7 +66,7 @@ class Suggestions(commands.Cog):
                         
         embed = discord.Embed()
         embed.description = response
-        embed.set_author(name=msg.author, icon_url=msg.author.avatar_url)
+        embed.set_author(name=msg.author, icon_url=msg.author.display_avatar)
         await botMsg.edit(content="", embed=embed)
         await botMsg.add_reaction('✅')
         await botMsg.add_reaction('❌')
@@ -101,5 +101,5 @@ Your suggestion here.```
 """
         await ctx.channel.send(content=text)
                 
-def setup(bot):
-    bot.add_cog(Suggestions(bot))
+async def setup(bot):
+    await bot.add_cog(Suggestions(bot))

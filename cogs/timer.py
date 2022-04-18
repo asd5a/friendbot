@@ -12,7 +12,7 @@ from itertools import product
 from discord.utils import get        
 from datetime import datetime, timezone,timedelta
 from discord.ext import commands
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, questBuffsDict, questBuffsArray, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
+from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
 from pymongo import UpdateOne
 from cogs.logs import generateLog
 from pymongo.errors import BulkWriteError
@@ -147,7 +147,7 @@ class Timer(commands.Cog):
         {alphaEmojis[4]} True Friend (Level 17-19)
         {alphaEmojis[5]} Ascended Friend (Level 17+)\n""", inline=False)
         # the discord name is used for listing the owner of the timer
-        prepEmbed.set_author(name=user, icon_url=author.avatar_url)
+        prepEmbed.set_author(name=user, icon_url=author.display_avatar)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
         # setup the variable to access the message for user communication
         prepEmbedMsg = None
@@ -854,7 +854,7 @@ class Timer(commands.Cog):
             stampEmbed = discord.Embed()
             stampEmbed.title = f'**{game}**: 0 Hours 0 Minutes\n'
             stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of running timer commands: $help timer2')
-            stampEmbed.set_author(name=f'DM: {user}', icon_url=author.avatar_url)
+            stampEmbed.set_author(name=f'DM: {user}', icon_url=author.display_avatar)
 
             
             # playerList is never used
@@ -2071,7 +2071,7 @@ If you are running a guild quest, you will also have to do the following:
         stampEmbed = discord.Embed()
         stampEmbed.title = f' a '
         stampEmbed.set_footer(text=f'#{ctx.channel}\nUse the following command to see a list of campaign commands: {commandPrefix}help campaign')
-        stampEmbed.set_author(name=f'DM: {author.name}', icon_url=author.avatar_url)
+        stampEmbed.set_author(name=f'DM: {author.name}', icon_url=author.display_avatar)
         stampEmbedMsg =  await self.stamp(ctx, startTime, role, game, author, startTimes, dmChar, guildsList, stampEmbed)
         await self.duringTimer(ctx, datestart, startTime, startTimes, role, game, author, stampEmbed, stampEmbedMsg, dmChar, guildsList, ddmrw)
         
@@ -2306,6 +2306,5 @@ If you are running a guild quest, you will also have to do the following:
             else:
                 pass
                
-
-def setup(bot):
-    bot.add_cog(Timer(bot))
+async def setup(bot):
+    await bot.add_cog(Timer(bot))

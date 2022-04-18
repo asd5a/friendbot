@@ -282,7 +282,7 @@ class Tp(commands.Cog):
                 tpEmbed.description = f"Are you sure you want to upgrade **{mRecord['Name']} ({mRecord['Predecessor']['Names'][upgrade_stage]})** to **{mRecord['Name']} ({mRecord['Predecessor']['Names'][upgrade_stage +1]})** for **{tpNeeded_copy} TP**?\n\nLeftover TP: {used_tp_text}\n\n✅: Yes\n\n❌: Cancel"
 
 
-                tpEmbed.set_footer(text=tpEmbed.Empty)
+                tpEmbed.set_footer(text=None)
                 if tpEmbedmsg:
                     await tpEmbedmsg.edit(embed=tpEmbed)
                 else:
@@ -548,7 +548,7 @@ class Tp(commands.Cog):
                         charRecords["Predecessor"] = {}
                     if("Predecessor" in mRecord and mRecord["Name"] not in charRecords["Predecessor"]):
                         charRecords["Predecessor"][mRecord["Name"]] ={"Names" : mRecord["Predecessor"]["Names"], "Stage" : 0}
-                    tpEmbed.set_footer(text=tpEmbed.Empty)
+                    tpEmbed.set_footer(text=None)
                     await tpEmbedmsg.edit(embed=tpEmbed)
                     await tpEmbedmsg.add_reaction('✅')
                     await tpEmbedmsg.add_reaction('❌')
@@ -732,7 +732,7 @@ class Tp(commands.Cog):
 
             tpEmbed.title = f"Abandoning TP: {charRecords['Name']}"  
             tpEmbed.description = f"Are you sure you want to abandon your Tier {role} TP?\n\nYou currently have {charRecords[f'T{role} TP']} Tier {role} TP.\n\n**Note: this action is permanent and cannot be reversed.**\n\n✅: Yes\n\n❌: Cancel"
-            tpEmbed.set_footer(text=tpEmbed.Empty)
+            tpEmbed.set_footer(text=None)
             if tpEmbedmsg:
                 await tpEmbedmsg.edit(embed=tpEmbed)
             else:
@@ -767,5 +767,5 @@ class Tp(commands.Cog):
                         ctx.command.reset_cooldown(ctx)
 
 
-def setup(bot):
-    bot.add_cog(Tp(bot))
+async def setup(bot):
+    await bot.add_cog(Tp(bot))

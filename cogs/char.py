@@ -26,7 +26,7 @@ def get_embed_length(embed):
         
         # If we str(discord.Embed.Empty) we get 'Embed.Empty', when
         # we just want an empty string...
-        total += str(item) if str(item) != 'Embed.Empty' else ''
+        total += str(item) if str(item) != 'None' else ''
 
     return(len(total))
     
@@ -122,7 +122,7 @@ async def paginate(ctx, bot, title, contents, msg=None, separator="\n", author =
     
     embed.title = title
     if author:
-        embed.set_author(name=author, icon_url=author.avatar_url)
+        embed.set_author(name=author, icon_url=author.display_avatar)
     if color:
         embed.color = color
     if footer:
@@ -352,7 +352,7 @@ class Character(commands.Cog):
         guild = ctx.guild
         channel = ctx.channel
         charEmbed = discord.Embed ()
-        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
         charEmbedmsg = None
         statNames = ['STR','DEX','CON','INT','WIS','CHA']
@@ -1268,7 +1268,7 @@ class Character(commands.Cog):
             return sameMessage and ((str(r.emoji) == '✅') or (str(r.emoji) == '❌')) and u == author
 
 
-        charEmbed.set_footer(text= charEmbed.Empty)
+        charEmbed.set_footer(text= None)
         if not charEmbedmsg:
             charEmbedmsg = await channel.send(embed=charEmbed, content="**Double-check** your character information.\nIf this is correct, please react with one of the following:\n✅ to finish creating your character.\n❌ to cancel. ")
         else:
@@ -1336,7 +1336,7 @@ class Character(commands.Cog):
             print ('MONGO ERROR: ' + str(e))
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
         else:
-            charEmbed.set_footer(text= charEmbed.Empty)
+            charEmbed.set_footer(text= None)
             if charEmbedmsg:
                 await charEmbedmsg.clear_reactions()
                 await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! :tada: You have created ***{charDict['Name']}***!")
@@ -1356,7 +1356,7 @@ class Character(commands.Cog):
         guild = ctx.guild
         channel = ctx.channel
         charEmbed = discord.Embed ()
-        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
 
         statNames = ['STR','DEX','CON','INT','WIS','CHA']
@@ -2101,9 +2101,9 @@ class Character(commands.Cog):
             for k,v in charDict['Inventory'].items():
                 charDictInvString += f"• {k} x{v}\n"
             charEmbed.add_field(name='Starting Equipment', value=charDictInvString, inline=False)
-            charEmbed.set_footer(text= charEmbed.Empty)
+            charEmbed.set_footer(text= None)
         
-        charEmbed.set_footer(text= charEmbed.Empty)
+        charEmbed.set_footer(text= None)
         def charCreateCheck(r, u):
             sameMessage = False
             if charEmbedmsg.id == r.message.id:
@@ -2205,7 +2205,7 @@ class Character(commands.Cog):
         guild = ctx.guild
         channel = ctx.channel
         charEmbed = discord.Embed ()
-        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
 
         statNames = ['STR','DEX','CON','INT','WIS','CHA']
@@ -2514,7 +2514,7 @@ class Character(commands.Cog):
             charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
         else:
         
-            charEmbed.set_footer(text= charEmbed.Empty)
+            charEmbed.set_footer(text= None)
             if charEmbedmsg:
                 await charEmbedmsg.clear_reactions()
                 await charEmbedmsg.edit(embed=charEmbed, content =f"Congratulations! You have respecced your character!")
@@ -2864,7 +2864,7 @@ class Character(commands.Cog):
                 elif tReaction.emoji == '1️⃣':
                     charEmbed.title = f"Are you sure you want to retire {charDict['Name']}?"
                     charEmbed.description = "✅: Yes\n\n❌: Cancel"
-                    charEmbed.set_footer(text=charEmbed.Empty)
+                    charEmbed.set_footer(text=None)
                     await charEmbedmsg.edit(embed=charEmbed)
                     await charEmbedmsg.add_reaction('✅')
                     await charEmbedmsg.add_reaction('❌')
@@ -3232,7 +3232,7 @@ class Character(commands.Cog):
             else:
                 description += "No Guild"
             charDictAuthor = guild.get_member(int(charDict['User ID']))
-            charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.avatar_url)
+            charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.display_avatar)
             charEmbed.description = description
             charEmbed.clear_fields()    
             charEmbed.title = f"{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
@@ -3497,7 +3497,7 @@ class Character(commands.Cog):
                 charEmbed.colour = discord.Colour(0xbb0a1e)
 
             charDictAuthor = guild.get_member(int(charDict['User ID']))
-            charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.avatar_url)
+            charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.display_avatar)
             charEmbed.description = description
             charEmbed.clear_fields()    
             charEmbed.title = f"{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
@@ -4209,7 +4209,7 @@ class Character(commands.Cog):
                 levelUpEmbed.description = f"{infoRecords['Race']} {charClass}\n**STR**: {charStats['STR']} **DEX**: {charStats['DEX']} **CON**: {charStats['CON']} **INT**: {charStats['INT']} **WIS**: {charStats['WIS']} **CHA**: {charStats['CHA']}" + f"\n{charFeatsGainedStr}{maxStatStr}\n{specialStatStr}"
                 if charClassChoice != "":
                     levelUpEmbed.description += f"{charName} has multiclassed into **{charClassChoice}!**"
-                levelUpEmbed.set_footer(text= levelUpEmbed.Empty)
+                levelUpEmbed.set_footer(text= None)
                 levelUpEmbed.clear_fields()
 
                 def charCreateCheck(r, u):
@@ -5075,7 +5075,7 @@ class Character(commands.Cog):
                 if featPicked['Name'] == "Ritual Caster":
                     ritualClasses = ["Bard", "Cleric", "Druid", "Sorcerer", "Warlock", "Wizard"]
                     charEmbed.clear_fields()
-                    charEmbed.set_footer(text=charEmbed.Empty)
+                    charEmbed.set_footer(text=None)
                     charEmbed.add_field(name="For the **Ritual Caster** feat, please pick the spellcasting class.", value=f"{alphaEmojis[0]}: Bard\n{alphaEmojis[1]}: Cleric\n{alphaEmojis[2]}: Druid\n{alphaEmojis[3]}: Sorcerer\n{alphaEmojis[4]}: Warlock\n{alphaEmojis[5]}: Wizard\n", inline=False)
 
                     try:
@@ -5155,7 +5155,7 @@ class Character(commands.Cog):
 
                         try:
                             charEmbed.clear_fields()    
-                            charEmbed.set_footer(text= charEmbed.Empty)
+                            charEmbed.set_footer(text= None)
                             charEmbed.add_field(name=f"The {featPicked['Name']} feat lets you choose between {featBonus}. React with [{alphaEmojis[0]}-{alphaEmojis[len(featBonusList)-1]}] below with the stat(s) you would like to choose.", value=featBonusString, inline=False)
                             await charEmbedmsg.edit(embed=charEmbed)
                             for num in range(0,len(featBonusList)): await charEmbedmsg.add_reaction(alphaEmojis[num])
@@ -5189,5 +5189,5 @@ class Character(commands.Cog):
         return featsChosen, charStats, charEmbedmsg        
     
 
-def setup(bot):
-    bot.add_cog(Character(bot))
+async def setup(bot):
+    await bot.add_cog(Character(bot))

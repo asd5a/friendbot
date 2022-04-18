@@ -1,6 +1,5 @@
 import discord
 import asyncio
-import requests
 import re
 from discord.utils import get        
 from discord.ext import commands
@@ -27,6 +26,7 @@ def admin_or_owner():
 class Admin(commands.Cog, name="Admin"):
     def __init__ (self, bot):
         self.bot = bot
+        print("admin")
     async def cog_command_error(self, ctx, error):
         msg = None
         
@@ -1352,21 +1352,21 @@ class Admin(commands.Cog, name="Admin"):
     @commands.command()
     @admin_or_owner()
     async def killbot(self, ctx):
-        await self.bot.logout()
+        await self.bot.close()
     
     @commands.command()
     @admin_or_owner()
     async def reload(self, ctx, cog: str):
         
         try:
-            self.bot.reload_extension('cogs.'+cog)
+            await self.bot.reload_extension('cogs.'+cog)
             print(f"{cog} has been reloaded.")
             await ctx.channel.send(cog+" has been reloaded")
         except commands.ExtensionNotLoaded as e:
             try:
-                self.bot.load_extension("cogs." + cog)
+                await self.bot.load_extension("cogs." + cog)
                 print(f"{cog} has been added.")
-                await ctx.channel.send(cog+" has been reloaded")
+                await ctx.channel.send(cog+" has been loaded for the first time")
             except (discord.ClientException, ModuleNotFoundError, commands.ExtensionNotFound):
                 await ctx.channel.send(f'Failed to load extension {cog}.')
                 traceback.print_exc()
@@ -1420,8 +1420,8 @@ class Admin(commands.Cog, name="Admin"):
         counter_list = sorted(list(counted.keys()))
         await paginate(ctx, self.bot, f"Game Channel Use", contents=contents, separator="\n")
 
-def setup(bot):
-    bot.add_cog(Admin(bot))
+async def setup(bot):
+    await bot.add_cog(Admin(bot))
 
 
 
