@@ -449,7 +449,6 @@ async def help(ctx, *, pageString=''):
         await helpMsg.edit(embed=helpList[alphaEmojis.index(hReact.emoji)+1])
         await helpMsg.clear_reactions()
 
-
 if __name__ == '__main__':
     for extension in [f.replace('.py', '') for f in listdir(cogs_dir) if isfile(join(cogs_dir, f))]:
         try:
@@ -464,3 +463,28 @@ async def main():
         await bot.start('token')
 
 asyncio.run(main())
+
+class FriendBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix='$')
+        self.initial_extensions = [
+            'cogs.admin',
+            'cogs.misc',
+        ]
+
+    async def setup_hook(self):
+        self.background_task.start()
+        self.session = aiohttp.ClientSession()
+        for ext in self.initial_extensions:
+            await self.load_extension(ext)
+
+    async def close(self):
+        await super().close()
+        await self.session.close()
+
+    @tasks.loop(minutes=10)
+    async def background_task(self):
+        print('Running background task...')
+
+    async def on_ready(self):
+        print('Ready!')

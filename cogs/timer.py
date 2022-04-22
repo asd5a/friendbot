@@ -12,7 +12,7 @@ from itertools import product
 from discord.utils import get        
 from datetime import datetime, timezone,timedelta
 from discord.ext import commands
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
+from bfunc import numberEmojis, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
 from pymongo import UpdateOne
 from cogs.logs import generateLog
 from pymongo.errors import BulkWriteError

@@ -60,7 +60,7 @@ async def traceBack (ctx,error,silent=False):
     raise error
 
 
-def calculateTreasure(level, charcp, seconds, death=False, gameID="", guildDouble=False, playerDouble=False, dmDouble=False, gold_modifier = 100):
+def calculateTreasure(level, charcp, seconds, guildDouble=False, playerDouble=False, dmDouble=False, gold_modifier = 100):
     # calculate the CP gained during the game
     cp = ((seconds) // 1800) / 2
     cp_multiplier = 1 + guildDouble + playerDouble + dmDouble

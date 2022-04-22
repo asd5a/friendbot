@@ -529,7 +529,7 @@ class Character(commands.Cog):
         levelCP = (((lvl-5) * 10) + 16)
         if lvl < 5:
             levelCP = ((lvl -1) * 4)
-        cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP+cp)*3600)
+        cp_tp_gp_array = calculateTreasure(1, 0, (levelCP+cp)*3600)
         totalGP = cp_tp_gp_array[2]
         bankTP = []
         bankTP = cp_tp_gp_array[1]
@@ -1519,7 +1519,7 @@ class Character(commands.Cog):
         if charLevel < 5:
             levelCP = ((charLevel -1) * 4)
             
-        cp_tp_gp_array = calculateTreasure(1, 0, 1, (levelCP+extraCp)*3600)
+        cp_tp_gp_array = calculateTreasure(1, 0, (levelCP+extraCp)*3600)
         totalGP = cp_tp_gp_array[2]
         bankTP = cp_tp_gp_array[1]
         # Stats - Point Buy
@@ -2596,7 +2596,7 @@ class Character(commands.Cog):
                 await ctx.channel.send(content=error_msg)
                 return
             else:
-                treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , tierNum, totalTime)
+                treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"], totalTime)
                 inc_dic = {"GP": treasureArray[2], "CP": treasureArray[0]}
                 inc_dic.update(treasureArray[1])
                     

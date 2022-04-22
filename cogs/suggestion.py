@@ -54,7 +54,7 @@ class Suggestions(commands.Cog):
         await ctx.channel.send(content='Thanks! Your suggestion has been submitted and will be reviewed by the Admin and Mod teams.')
             
         # suggestion channel
-        channelID = 382031984471310336
+        channelID = 792565998355611688
         channel = self.bot.get_channel(channelID)
         files =None
         if msg.attachments:

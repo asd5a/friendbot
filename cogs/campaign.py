@@ -1467,7 +1467,6 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             #inform the user of the correct location to use the command and how to use it
             await channel.send('Try this command in a campaign channel! ')
             return False
-        
         campaignRecords = db.campaigns.find_one({"Channel ID": str(channel.id)}) #finds the campaign that has the same Channel ID as the channel the command was typed.
         if not campaignRecords:
             return False
@@ -1480,10 +1479,12 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
     @commands.has_any_role('Campaign Master')
     async def pin(self,ctx):
         
+        print("B")
         if not await self.campaign_check(ctx):
             return
         
         
+        print("A")
         async with ctx.channel.typing():
             
             await pin_control(self, ctx, "pin")

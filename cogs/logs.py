@@ -140,7 +140,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             dmDouble = False
             
             
-            treasureArray  = calculateTreasure(player["Level"], player["Character CP"], tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble, gold_modifier)
+            treasureArray  = calculateTreasure(player["Level"], player["Character CP"], duration, guildDouble, playerDouble, dmDouble, gold_modifier)
             treasureString = f"{treasureArray[0]} CP, {sum(treasureArray[1].values())} TP, {treasureArray[2]} GP"
 
                 
@@ -229,7 +229,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             dm_double_string += playerDouble * "Fanatic "
             dm_double_string += dmDouble * "DDMRW "
             
-            dmtreasureArray  = calculateTreasure(player["Level"], player["Character CP"], dm_tier_num, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+            dmtreasureArray  = calculateTreasure(player["Level"], player["Character CP"], duration, guildDouble, playerDouble, dmDouble)
             
         
         # add the items that the DM awarded themselves to the items list
@@ -540,7 +540,7 @@ class Log(commands.Cog):
                 dmDouble = False
                 
                 
-                treasureArray  = calculateTreasure(player["Level"], character["CP"] , tierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble, gold_modifier)
+                treasureArray  = calculateTreasure(player["Level"], character["CP"] , duration, guildDouble, playerDouble, dmDouble, gold_modifier)
                 
                 if(guild_valid and 
                         guilds[player["Guild"]]["Items"] and 
@@ -669,7 +669,7 @@ class Log(commands.Cog):
             dmDouble = player["DM Double"]
             
             
-            treasureArray  = calculateTreasure(charLevel, character["CP"], dmTierNum, duration, (player in deathChars), num, guildDouble, playerDouble, dmDouble)
+            treasureArray  = calculateTreasure(charLevel, character["CP"], duration, guildDouble, playerDouble, dmDouble)
                 
                 
             if(guild_valid and 
@@ -934,7 +934,7 @@ class Log(commands.Cog):
                     await dmUser.add_roles(noodleRole, reason=f"Hosted 10 sessions. This user has 10+ Noodles.")
                     noodleString += "\n**Good Noodle** role received! :tada:"
       
-    @commands.has_any_role('Mod Friend', 'Admins')
+    @commands.has_any_role('Mod Friend', 'A d m i n')
     @session.command()
     async def deny(self,ctx,  num : int):
         channel = self.bot.get_channel
