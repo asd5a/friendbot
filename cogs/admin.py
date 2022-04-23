@@ -26,7 +26,6 @@ def admin_or_owner():
 class Admin(commands.Cog, name="Admin"):
     def __init__ (self, bot):
         self.bot = bot
-        print("admin")
     async def cog_command_error(self, ctx, error):
         msg = None
         

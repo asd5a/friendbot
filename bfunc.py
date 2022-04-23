@@ -470,11 +470,6 @@ async def change_status():
 class FriendBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=commandPrefix, case_insensitive=True, intents = intents)
-        self.initial_extensions = [
-            'cogs.admin',
-            'cogs.misc',
-            'cogs.char',
-        ]
 
     async def setup_hook(self):
         change_status.start()
@@ -484,22 +479,14 @@ class FriendBot(commands.Bot):
             except (discord.ClientException, ModuleNotFoundError):
                 print(f'Failed to load extension {extension}.')
                 traceback.print_exc()
-        #self.session = aiohttp.ClientSession()
-        # for ext in self.initial_extensions:
-            # await self.load_extension(ext)
 
     async def close(self):
         await super().close()
         #await self.session.close()
 
-    
-
-    @tasks.loop(minutes=10)
-    async def background_task(self):
-        print('Running background task...')
 
     async def on_ready(self):
-        print('Ready!')
+        print('We have logged in as ' + self.user.name)
 
 bot = FriendBot()
 connection = MongoClient(mongoConnection, ssl=True) 

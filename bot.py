@@ -1,10 +1,10 @@
 import asyncio
 import traceback
-from discord.ext import commands
+from discord.ext import commands, tasks
 from os import listdir
 from os.path import isfile, join
 from itertools import cycle
-
+import aiohttp
 from random import sample
 from bfunc import *
 
@@ -24,22 +24,11 @@ cogs_dir = "cogs"
 # ~ General Reports.
 # ~ Staff Reports.
 
-async def change_status():
-      await bot.wait_until_ready()
-      statusLoop = cycle(statuses)
+if __name__ == '__main__':
+    pass
 
-      while not bot.is_closed():
-          current_status = next(statusLoop)
-          await bot.change_presence(activity=discord.Activity(name=current_status, type=discord.ActivityType.watching))
-          await asyncio.sleep(5)
 
-@bot.event
-async def on_ready():
-    print('We have logged in as ' + bot.user.name)
-    bot.loop.create_task(change_status())
-  
 bot.remove_command('help')
-
 @bot.event
 async def on_command_error(ctx,error):
     msg = None
@@ -449,42 +438,4 @@ async def help(ctx, *, pageString=''):
         await helpMsg.edit(embed=helpList[alphaEmojis.index(hReact.emoji)+1])
         await helpMsg.clear_reactions()
 
-if __name__ == '__main__':
-    for extension in [f.replace('.py', '') for f in listdir(cogs_dir) if isfile(join(cogs_dir, f))]:
-        try:
-            await bot.load_extension(cogs_dir + "." + extension)
-        except (discord.ClientException, ModuleNotFoundError):
-            print(f'Failed to load extension {extension}.')
-            traceback.print_exc()
-
-async def main():
-    async with bot:
-        bot.loop.create_task(background_task())
-        await bot.start('token')
-
-asyncio.run(main())
-
-class FriendBot(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix='$')
-        self.initial_extensions = [
-            'cogs.admin',
-            'cogs.misc',
-        ]
-
-    async def setup_hook(self):
-        self.background_task.start()
-        self.session = aiohttp.ClientSession()
-        for ext in self.initial_extensions:
-            await self.load_extension(ext)
-
-    async def close(self):
-        await super().close()
-        await self.session.close()
-
-    @tasks.loop(minutes=10)
-    async def background_task(self):
-        print('Running background task...')
-
-    async def on_ready(self):
-        print('Ready!')
+bot.run(token)
