@@ -265,14 +265,7 @@ class Misc(commands.Cog):
         if msg.guild == None: 
             return
         tChannel = settingsRecord[str(msg.guild.id)]["QB"]
-        if(msg.type.value == 7):
-            await msg.add_reaction('👋')
-        #check if any tier boost was done and react
-        elif(7 < msg.type.value and msg.type.value < 12):
-            emoji_list = ['<:boost:585637770970660876>', "🎉", "🎊", "🥳", "🍾", "🥂", "🍻", "<:bless:382029999500165120>"]
-            for e in emoji_list:
-                await msg.add_reaction(e)
-        elif any(word in msg.content.lower() for word in ['thank', 'thanks', 'thank you', 'thx', 'gracias', 'danke', 'arigato', 'xie xie', 'merci']) and 'bot friend' in msg.content.lower():
+        if any(word in msg.content.lower() for word in ['thank', 'thanks', 'thank you', 'thx', 'gracias', 'danke', 'arigato', 'xie xie', 'merci']) and 'bot' in msg.content.lower():
             await msg.add_reaction('❤️')
             await msg.channel.send("You're welcome friend!")
         elif msg.channel.id == tChannel and msg.author.id != self.bot.user.id:

@@ -33,7 +33,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     usersCollection = db.users
 
     sessionLogEmbed = editMessage.embeds[0]
-    summaryIndex = sessionLogEmbed.description.find('**Session Log Summary**')
+    summaryIndex = sessionLogEmbed.description.find('Summary**')
     description = sessionLogEmbed.description[summaryIndex:]+"\n"
     
     role = sessionInfo["Role"]
@@ -328,7 +328,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         else:
             game_channel = f"<#{game_channel.id}>"
         sessionLogEmbed.title = f"\n**{game}**\n*Tier {tierNum} Quest*"
-        sessionLogEmbed.description = f"{game_channel}\n{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n"+description
+        sessionLogEmbed.description = f"{game_channel}\n{guildsListStr}\n**Start**: {datestart} EDT\n**End**: {dateend} EDT\n**Runtime**: {totalDuration}\n**General "+description
         status_text = "Log is being processed! Characters are currently on hold."
         await editMessage.clear_reactions()
         if sessionInfo["Status"] == "Approved":
@@ -1350,8 +1350,8 @@ class Log(commands.Cog):
         sessionLogEmbed = editMessage.embeds[0]
 
         if sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
-            summaryIndex = sessionLogEmbed.description.find('Session Log Summary**')
-            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Session Log Summary**\n" + editString+"\n"
+            summaryIndex = sessionLogEmbed.description.find('Summary**')
+            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Summary**\n" + editString+"\n"
         else:
             sessionLogEmbed.description += "\n"+editString
         try:
