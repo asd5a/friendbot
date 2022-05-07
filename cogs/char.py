@@ -3745,6 +3745,48 @@ class Character(commands.Cog):
     
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
+    @commands.command(aliases=['rn'])
+    async def rename(self,ctx, char, new_name = ""):
+        channel = ctx.channel
+        author = ctx.author
+        guild = ctx.guild
+        msg = self.name_check(new_name, author)
+        if msg:
+            await channel.send(msg)
+            return
+            
+        charEmbed = discord.Embed()
+
+        infoRecords, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+
+        if infoRecords:
+            query = new_name
+            query = query.replace('(', '\\(')
+            query = query.replace(')', '\\)')
+            query = query.replace('.', '\\.')
+            playersCollection = db.players
+            userRecords = list(playersCollection.find({"User ID": str(author.id), "Name": {"$regex": f"^{query}$", '$options': 'i' } }))
+
+            if userRecords != list():
+                await channel.send(f"\nYou already have a character by the name of ***{new_name}***! Please use a different name.")
+                return
+            charID = infoRecords['_id']
+            data = {
+                'Name': new_name
+            }
+
+            try:
+                playersCollection = db.players
+                playersCollection.update_one({'_id': charID}, {"$set": data})
+            except Exception as e:
+                print ('MONGO ERROR: ' + str(e))
+                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
+            else:
+                await ctx.channel.send(content=f'I have updated the name for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+            
+    
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
     @commands.command(aliases=['aka'])
     async def alias(self,ctx, char, new_name = ""):
         channel = ctx.channel
