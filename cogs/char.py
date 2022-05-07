@@ -2534,6 +2534,11 @@ class Character(commands.Cog):
         author = ctx.author
         charDict, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, author, customError=True)
         if charDict:
+            if "GID" in charDict:
+                error_msg += f":warning: Your character is still awaiting rewards!\n"
+            if "Death" in charDict:
+                error_msg += f":warning: Your character is still dead!\n"
+
             if charDict["Level"] < 5:
                 tierNum = 1
             elif charDict["Level"] < 11:
