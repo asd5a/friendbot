@@ -190,6 +190,8 @@ async def help(ctx, *, pageString=''):
     helpEmbedChar.add_field(name=f'▫️ Re-flavoring a Character', value=f'{commandPrefix}reflavor race "character name" race name\n{commandPrefix}reflavor class "character name" class name\n{commandPrefix}reflavor background "character name" background name\n[{commandPrefix}rf]', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Adding Extra Names', value=f'{commandPrefix}alias "character name" "surname, nickname1, nickname2, othername, [...]\n[{commandPrefix}aka]', inline=False)
+    
+    helpEmbedChar.add_field(name=f'▫️ Renaming', value=f'{commandPrefix}rename "character name" "new name"\n[{commandPrefix}rn]', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Adding Alignment', value=f'{commandPrefix}align "character name" alignment', inline=False)
 

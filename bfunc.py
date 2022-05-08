@@ -325,10 +325,23 @@ async def checkForChar(ctx, char, charEmbed="", authorOverride=None,  mod=False,
     query = query.replace('(', '\\(')
     query = query.replace(')', '\\)')
     query = query.replace('.', '\\.')
+    query_data =  {"$regex": query,
+                    "$options": "i"
+                  }
+    filterDic = {"$or": [
+                            {
+                              "Name": query_data
+                            },
+                            {
+                              "Nickname": query_data
+                            }
+                        ]
+                    } 
     if mod == True:
-        charRecords = list(playersCollection.find({"Name": {"$regex": query, '$options': 'i' }})) 
+        charRecords = list(playersCollection.find(filterDic)) 
     else:
-        charRecords = list(playersCollection.find({"User ID": str(search_author.id), "Name": {"$regex": query, '$options': 'i' }}))
+        filterDic["User ID"] = str(search_author.id)
+        charRecords = list(playersCollection.find(filterDic))
 
     if charRecords == list():
         if not mod and not customError:

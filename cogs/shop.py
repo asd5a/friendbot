@@ -154,7 +154,7 @@ class Shop(commands.Cog):
                     unpackDict = []
                     unpackChoiceString = ""
                     unpackString = f"**Contents of {bRecord['Name']}**\n"
-                    for pk, pv in bRecord["Unpack"].items():
+                    for pk, pv in list(bRecord["Unpack"].items()):
                         if type(pv) == dict:
                             for pvk, pvv in pv.items():
                                 unpackDict.append(pvk)
@@ -187,6 +187,7 @@ class Shop(commands.Cog):
 
                             await shopEmbedmsg.clear_reactions()
                             shopEmbed.clear_fields()
+                            unpackString += f"{unpackChoice} x{pvv}\n"
                         else:
                             unpackString += f"{pk} x{pv}\n"
                     unpackString += "\n"
