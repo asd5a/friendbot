@@ -447,12 +447,12 @@ class Timer(commands.Cog):
         but it does open the door to creating certain behaviors even if not commaning from $resume
         the current state would only allow this from prep though, which never sets this property
         The other way around does not work, however since checking for it being true instead of checking for
-        the invoke source (ctx.invoked_with == "resume") would allow manual calls to this command
+        the invoke source (ctx.invoked_with.lower() == "resume") would allow manual calls to this command
     """
     @timer.command()
     async def signup(self,ctx, char="", author="", role="", resume=False):
         #check if the command was called using one of the permitted other commands
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == "resume":
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == "resume":
             # set up a informative error message for the user
             signupFormat = f'Please follow this format:\n```yaml\n{commandPrefix}timer signup "character name" "consumable1, consumable2, [...]"```'
             # create an embed object
@@ -474,7 +474,7 @@ class Timer(commands.Cog):
             # check if the entire message was just one of the triggering commands which indicates a lack of character
             if f'{commandPrefix}timer signup' == char.content.strip() or f'{commandPrefix}t signup' == char.content.strip():
                 # According to Xyff this blocks the repeating of error messages when resume goes through all messages
-                if ctx.invoked_with != "resume":
+                if ctx.invoked_with.lower() != "resume":
                     await channel.send(content=f'You did not input a character, please try again.\n\n{signupFormat}')
                     # this is a valid return, since the resume and sign up code will check for this before executing further
                 return False
@@ -685,7 +685,7 @@ class Timer(commands.Cog):
     """
     @timer.command()
     async def deductConsumables(self, ctx, msg,start, resume=False): 
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == "resume":
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == "resume":
             channel = ctx.channel
             # extract the name of the consumable and transform it into a standardized format
             searchQuery =  msg.content.split('-')[1].strip()
@@ -755,7 +755,7 @@ class Timer(commands.Cog):
     resume -> if this command has been called during the resume phase
     """
     async def undoConsumables(self, ctx, start, dmChar, resume=False): 
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == "resume":
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == "resume":
             channel = ctx.channel
             # search through all entries for the player entry of the player
             for u, v in start.items():
@@ -794,7 +794,7 @@ class Timer(commands.Cog):
         global currentTimers
         timerCog = self.bot.get_cog('Timer')
         # start cannot be invoked by resume since it has its own structure
-        if ctx.invoked_with == 'prep': 
+        if ctx.invoked_with.lower() == 'prep': 
             # make some common variables more accessible
             channel = ctx.channel
             author = ctx.author
@@ -888,7 +888,7 @@ class Timer(commands.Cog):
 
     @timer.command()
     async def transfer(self,ctx,user=""):
-        if ctx.invoked_with == 'start' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'start' or ctx.invoked_with.lower() == 'resume':
             guild = ctx.guild
             newUser = guild.get_member_named(user.split('#')[0])
             return newUser 
@@ -901,7 +901,7 @@ class Timer(commands.Cog):
 
     async def reward(self,ctx,msg, start="",resume=False, dmChar="", exact=False):
 
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             guild = ctx.guild
             # get the list of people receiving rewards
             rewardList = msg.raw_mentions
@@ -1244,7 +1244,7 @@ class Timer(commands.Cog):
     """
     @timer.command()
     async def addme(self,ctx, *, role="", msg=None, start="", user="", dmChar=None, resume=False, ):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             startcopy = start.copy()
             # user found is used to check if the user can be found in one of the current entries in start
             userFound = False
@@ -1399,7 +1399,7 @@ class Timer(commands.Cog):
     """
     @timer.command()
     async def add(self,ctx, *, msg, role="", start=None,prep=None, resume=False):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             guild = ctx.guild
             #if normal mentions were used then no users would have to be gotten later
             addList = msg.mentions
@@ -1426,7 +1426,7 @@ class Timer(commands.Cog):
             return start
     
     async def addDuringTimer(self,ctx, *, msg, role="", start=None,resume=False, dmChar=None, ):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             guild = ctx.guild
             #if normal mentions were used then no users would have to be gotten later
             addList = msg.mentions
@@ -1450,7 +1450,7 @@ class Timer(commands.Cog):
 
     @timer.command()
     async def removeme(self,ctx, msg=None, start="",role="",user="", resume=False, death=False):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             startcopy = start.copy()
             
             # user found is used to check if the user can be found in one of the current entries in start
@@ -1514,7 +1514,7 @@ class Timer(commands.Cog):
 
     @timer.command()
     async def death(self,ctx, msg, start="", role="", resume=False):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             await self.removeDuringTimer(ctx, msg, start=start, role=role, resume=resume, death=True)
     
     """
@@ -1528,7 +1528,7 @@ class Timer(commands.Cog):
     """
     @timer.command()
     async def remove(self,ctx, msg, start=None,role="", prep=False, resume=False, death=False):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             guild = ctx.guild
             removeList = msg.mentions
             removeUser = ""
@@ -1550,7 +1550,7 @@ class Timer(commands.Cog):
                     await ctx.invoke(self.timer.get_command('removeme'), start=start, msg=msg, role=role, user=removeUser, resume=resume, death=death)
                 
     async def removeDuringTimer(self,ctx, msg, start=None,role="", resume=False, death=False):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             guild = ctx.guild
             removeList = msg.mentions
             removeUser = ""
@@ -1577,7 +1577,7 @@ class Timer(commands.Cog):
     """
     @timer.command()
     async def stamp(self,ctx, stamp=0, role="", game="", author="", start="", dmChar=[], guildsList= [], embed="", embedMsg=""):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             # copy the duration trackers from the game
             startcopy = start.copy()
             user = author.display_name
@@ -1701,7 +1701,7 @@ Command Checklist
 
     @timer.command(aliases=['end'])
     async def stop(self,ctx,*,start="", role="", game="", datestart="", dmChar="", guildsList="", ddmrw= False):
-        if ctx.invoked_with == 'prep' or ctx.invoked_with == 'resume':
+        if ctx.invoked_with.lower() == 'prep' or ctx.invoked_with.lower() == 'resume':
             end = time.time() + 3600 *0
             tierNum = 0
             guild = ctx.guild
