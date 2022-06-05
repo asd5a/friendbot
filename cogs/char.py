@@ -304,13 +304,19 @@ class Character(commands.Cog):
             ))
             raceEmbed = discord.Embed()
             raceEmbed.title = f"All Valid Races:\n"
-            
-            items.sort(key = lambda x: x["Name"])
+            def group_sort(x):
+                if "Grouped" in x:
+                    return x["Grouped"]
+                return x["Name"]
+            items.sort(key = group_sort)
             character = ""
             out_strings = []
             collector_string = ""
             for race in items:
-                race = race["Name"]
+                if "Grouped" in race:
+                    race = race["Grouped"]
+                else:
+                    race = race["Name"]
                 if race[0] == character:
                     collector_string += f"{race}\n"
                 else:
@@ -4950,7 +4956,7 @@ class Character(commands.Cog):
                         featList = []
                         meetsRestriction = False
 
-                        if 'Feat Restriction' not in feat and 'Race Restriction' not in feat and 'Class Restriction' not in feat and 'Stat Restriction' not in feat and (feat['Name'] not in charFeats) and 'Race Unavailable' not in feat and 'Require Spellcasting' not in feat:
+                        if 'Feat Restriction' not in feat and 'Race Restriction' not in feat and 'Class Restriction' not in feat and 'Stat Restriction' not in feat and (feat['Name'] not in charFeats) and 'Race Unavailable' not in feat and 'Require Spellcasting' not in feat and 'Level Restriction' not in feat:
                             featChoices.append(feat)
 
                         else:
@@ -5015,7 +5021,8 @@ class Character(commands.Cog):
                                 for f in spellcastingFeats:
                                     if f["Name"] in charFeats:
                                          meetsRestriction = True
-
+                            if 'Level Restriction' in feat:
+                                meetsRestriction = charStats["Level"] >= feat['Level Restriction']
                             if meetsRestriction:
                                 featChoices.append(feat)
 
