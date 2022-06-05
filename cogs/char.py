@@ -5022,7 +5022,7 @@ class Character(commands.Cog):
                                     if f["Name"] in charFeats:
                                          meetsRestriction = True
                             if 'Level Restriction' in feat:
-                                meetsRestriction = charStats["Level"] >= feat['Level Restriction']
+                                meetsRestriction = meetsRestriction and charStats["Level"] >= feat['Level Restriction']
                             if meetsRestriction:
                                 featChoices.append(feat)
 
