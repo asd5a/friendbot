@@ -202,6 +202,10 @@ async def help(ctx, *, pageString=''):
     helpEmbedChar.add_field(name=f'▫️ Unattuning from a Magic Item', value=f'{commandPrefix}unattune "character name" "magic item"\n[{commandPrefix}unatt, {commandPrefix}uatt]', inline=False)
 
     helpEmbedChar.add_field(name=f'▫️ Death Options', value=f'{commandPrefix}death "character name"', inline=False)
+    
+    helpEmbedChar.add_field(name=f'▫️ Adding Campaign Time', value=f'{commandPrefix}applyTime "character name" #channel XhYm', inline=False)
+    
+    
 
 
 # PRE-QUEST TIMER COMMANDS MENU ($help timer1)
@@ -253,7 +257,7 @@ async def help(ctx, *, pageString=''):
 
     helpEmbedTimerTwo.add_field(name=f'▫️ Awarding Reward Items (DM)', value=f'{commandPrefix}timer reward @player "reward item1, reward item2, [...]"', inline=False)
 
-    helpEmbedTimerTwo.add_field(name=f'▫️ Revoking Reward Items (DM)', value=f'{commandPrefix}timer undo rewards', inline=False)
+    helpEmbedTimerTwo.add_field(name=f'▫️ Revoking Reward Items (DM)', value=f'{commandPrefix}timer undo rewards [@player1 @player2 ...]', inline=False)
 
     helpEmbedTimerTwo.add_field(name=f'▫️ Character Death (DM)', value=f'{commandPrefix}timer death @player', inline=False)
 

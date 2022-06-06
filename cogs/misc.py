@@ -1,6 +1,7 @@
 import discord
 import random
 import asyncio
+import re
 from discord.utils import get
 from discord.ext import commands
 from bfunc import settingsRecord, settingsRecord, checkForChar, callAPI
@@ -19,15 +20,6 @@ class Misc(commands.Cog):
         self.current_message= None
         #0: No message search so far, 1: Message searched, but no new message made so far, 2: New message made
         self.past_message_check= 0
-
-    
-    @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @admin_or_owner()
-    @commands.command()
-    async def hi(self,ctx):
-        channel = ctx.channel
-        print(dir(ctx.author))
-        await channel.send("hi")
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @admin_or_owner()
@@ -183,10 +175,11 @@ class Misc(commands.Cog):
         emoteMap = settingsRecord[str(channel.guild.id)]["Emotes"]
         channel_dm_dic = {}
         for c in game_channel_category.text_channels:
-            channel_dm_dic[c.mention]= ["✅ "+c.mention+": Clear", set([])]
+            channel_dm_dic[c.mention]= ["✅ "+c.mention+": Clear", []]
         #get all posts in the channel
         all_posts = [post async for post in channel.history(oldest_first=True)]
         for elem in all_posts:
+            content = elem.content
             #ignore self and Ghost example post
             if(elem.author.id==self.bot.user.id 
                 or elem.id == 800644241189503026
@@ -199,17 +192,28 @@ class Misc(commands.Cog):
                     if(elem.author.nick):
                         username = elem.author.nick
                     channel_dm_dic[mention.mention][0] = "❌ "+mention.mention+": "+username
+                    tier_list = []
                     for tierMention in elem.role_mentions:
                         name_split = tierMention.name.split(" ",1)
                         if tierMention.name.split(" ",1)[1] in tierMap:
-                            channel_dm_dic[mention.mention][1].add(emoteMap[tierMention.name.split(" ",1)[0]]+" "+tierMap[tierMention.name.split(" ",1)[1]])
+                            tier_list.append(emoteMap[tierMention.name.split(" ",1)[0]]+" "+tierMap[tierMention.name.split(" ",1)[1]])
+                    time_text = ""
+                    hammer_times = re.findall("<t:(\\d+)(?::.)?>", content)
+                    if hammer_times:
+                        time_text = f" - <t:{hammer_times[0]}>"
+                    else:
+                        timing = re.findall("When.*?:.*? (.*?)\n", content)
+                        if timing:
+                            time_text = f" - {timing[0]}"
+                    if tier_list or time_text:
+                        channel_dm_dic[mention.mention][1].append("/".join(sorted(tier_list))+ time_text)
         #build the message using the pairs built above
         for c in game_channel_category.text_channels:
             if(c.permissions_for(channel.guild.me).view_channel and c.id != 820394366278697020): 
                 tierAddendum = ""
                 if(len(channel_dm_dic[c.mention][1])> 0):
-                    tierAddendum = " - "+"/".join(sorted(channel_dm_dic[c.mention][1]))
-                build_message+=channel_dm_dic[c.mention][0]+tierAddendum+"\n"
+                    tierAddendum = "\n       "+"\n       ".join(channel_dm_dic[c.mention][1])
+                build_message+=""+channel_dm_dic[c.mention][0]+tierAddendum+"\n"
         return build_message
     
         

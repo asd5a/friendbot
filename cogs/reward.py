@@ -5,17 +5,16 @@ from discord.ext import commands
 from bfunc import db, roleArray, calculateTreasure, timeConversion, commandPrefix, tier_reward_dictionary, checkForChar, alphaEmojis
 from random import *
 
-async def randomReward(self,ctx, tier, rewardType, dmChar=None, player_type=None, amount=None, start=None):
+async def randomReward(self,ctx, tier, rewardType, block=[], player_type=None, amount=None, start=None):
         channel = ctx.channel
         author = ctx.author
-        #start="", dmChar=""
         rewardCollection = db.rit
 
 
-        if dmChar == None:
+        if not block:
             rewardTable = list(rewardCollection.find({"Tier": int(tier), "Minor/Major": rewardType}))
         else:
-            rewardTable = list(rewardCollection.find({"Tier": tier, "Minor/Major": rewardType, "Name": {"$nin": dmChar[5][1][player_type][rewardType]}, "Grouped": {"$nin": dmChar[5][1][player_type][rewardType]}}))
+            rewardTable = list(rewardCollection.find({"Tier": tier, "Minor/Major": rewardType, "Name": {"$nin": block}, "Grouped": {"$nin": block}}))
 
         if int(amount) > 0:
             if len(rewardTable) < int(amount): # size restriction check if used from rewardtable, which varies based on tier.

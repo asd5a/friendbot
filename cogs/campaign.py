@@ -78,6 +78,8 @@ class Campaign(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await ctx.channel.send(msg)
         else:
+            if ctx.channel.mention in currentTimers and "State" in currentTimers[ctx.channel.mention]:
+                currentTimers[ctx.channel.mention]["State"] = "Crashed"
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
     @campaign.command()
@@ -465,12 +467,6 @@ class Campaign(commands.Cog):
         # if it is a campaign or the previous message somehow failed then the prepEmbedMsg would not exist yet send we now send another message
         prepEmbedMsg = await channel.send(embed=prepEmbed)
 
-        # create a list of all player and characters they have signed up with
-        # this is a nested list where the contained entries are [member object, DB character entry, Consumable list for the game, character DB ID]
-        # currently this starts with a dummy initial entry for the DM to enable later users of these entries in the code
-        # this entry will be overwritten if the DM signs up with a game
-        # the DM entry will always be the front entry, this property is maintained by the code
-        
         signedPlayers = {"Players" : {}, 
                             "DM" : {"Member" : author, "DB Entry": dmRecord},
                             "Game" : game,
@@ -637,7 +633,7 @@ class Campaign(commands.Cog):
             # this uses the invariant that the DM is always the first signed up
             dmChar = userList["DM"]
 
-            
+            userList["State"] = "Running"
             # get the current time for tracking the duration
             startTime = time.time()
             userList["Start"] = startTime
@@ -840,10 +836,8 @@ class Campaign(commands.Cog):
             
             # if no entry could be found we inform the user and return the unchanged state
             if not userFound:
-                if not resume:
-                    await ctx.channel.send(content=f"***{user}***, I couldn't find you on the timer to remove you.") 
+                await ctx.channel.send(content=f"***{user}***, I couldn't find you on the timer to remove you.") 
                 return start
-            # checks if the last entry was because of a death (%) or normal removal (-)
             user_dic = start["Players"][user.id]
             
             if user_dic["State"] == "Removed": 
@@ -1085,13 +1079,13 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
     @commands.has_any_role('D&D Friend', 'Campaign Friend')
     async def resume(self,ctx):
     
-        if not self.timer.get_command('prep').is_on_cooldown(ctx):
-            self.timer.get_command('resume').reset_cooldown(ctx)
-            return
         if ctx.channel.mention not in currentTimers:
             self.timer.get_command('resume').reset_cooldown(ctx)
             return
         userList = currentTimers[ctx.channel.mention]
+        if userList["State"] != "Crashed":
+            self.timer.get_command('resume').reset_cooldown(ctx)
+            return
         dmChar = userList["DM"]
         author = dmChar["Member"]
         if author != ctx.author and not await self.permissionCheck(ctx.message, ctx.author):
@@ -1100,6 +1094,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         startTime = userList["Start"]
         role = userList["Role"]
         game = userList["Game"]
+        userList["State"] = "Running"
         campaignRecords = userList["Campaign"]
         stampEmbed = discord.Embed()
         stampEmbed.title = f' a '
@@ -1107,7 +1102,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
         stampEmbed.set_author(name=f'DM: {author.name}', icon_url=author.display_avatar)
         stampEmbedMsg =  await self.stamp(ctx, stamp = startTime, game = game, start = userList ,embed = stampEmbed)
         await self.duringTimer(ctx, datestart, startTime, userList, role, game, author, stampEmbed, stampEmbedMsg, dmChar,campaignRecords)
-    
+        del currentTimers[ctx.channel.mention]
         self.timer.get_command('resume').reset_cooldown(ctx)
     #extracted the checks to here to generalize the changes
     async def permissionCheck(self, msg, author):
@@ -1478,13 +1473,9 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
     @campaign.command()
     @commands.has_any_role('Campaign Master')
     async def pin(self,ctx):
-        
-        print("B")
         if not await self.campaign_check(ctx):
             return
         
-        
-        print("A")
         async with ctx.channel.typing():
             
             await pin_control(self, ctx, "pin")
