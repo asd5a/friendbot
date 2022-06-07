@@ -630,7 +630,6 @@ class Timer(commands.Cog):
         searchQuery =  msg.content.split('-')[1].strip()
         searchItem = searchQuery.lower().replace(' ', '')
         removedItem = ""  
-        print(userInfo["Players"].keys())
         if msg.author.id not in userInfo["Players"]:
             await channel.send(f"Looks like you were trying to remove **{searchItem}** from your inventory. I could not find you on the timer to do that.")
             return userInfo
@@ -1216,7 +1215,6 @@ class Timer(commands.Cog):
     async def removeme(self,ctx, msg=None, userInfo="",user="", death=False):
         # take the current time
         endTime = time.time()
-        print(user)
         # if no entry could be found we inform the user and return the unchanged state
         if not user.id in userInfo["Players"]:
             await ctx.channel.send(content=f"***{user}***, I couldn't find you on the timer to remove you.") 
@@ -1846,7 +1844,6 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                         stampEmbedmsg = await self.stamp(ctx, userInfo, author, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 # this invokes the remove command, since we do not pass prep = True through, the special removeme command will be invoked by remove
                 elif msg.content == f"{commandPrefix}timer removeme" or msg.content == f"{commandPrefix}t removeme":
-                    print(msg.author.name)
                     userInfo = await self.removeme(ctx, userInfo=userInfo, user=msg.author)
                     stampEmbedmsg = await self.stamp(ctx, userInfo, author, embed=stampEmbed, embedMsg=stampEmbedmsg)
                 elif (msg.content.startswith(f"{commandPrefix}timer remove ") or msg.content.startswith(f"{commandPrefix}t remove ")): 

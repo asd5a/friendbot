@@ -251,6 +251,10 @@ class Character(commands.Cog):
                 msg = ":warning: You're missing a URL to add an image to your character's information window.\n"
             elif error.param.name == 'm':
                 msg = ":warning: You're missing a magic item to attune to, or unattune from, your character.\n"
+            elif error.param.name == 'timeTransfer':
+                msg = ":warning: You're missing a time amount\n"
+            else:
+                msg = ":warning: You're missing a required argument"
 
             msg += "**Note: if this error seems incorrect, something else may be incorrect.**\n\n"
 
