@@ -1143,14 +1143,14 @@ class Timer(commands.Cog):
                         return userInfo
                     await addEmbedmsg.edit(embed=None, content=f"I've added ***{addUser.display_name}*** to the timer.")
             
-            if addUser == dmChar["Member"]:
-                userInfo["DM"].update(user_dic)
-            else:
-                # since the timer has already been going when this user is added it has to be partial rewards
-                user_dic["Duration"] = 0
-                user_dic["Latest Join"] = startTime
-                user_dic["State"] = "Partial"
-                userInfo["Players"][addUser.id] = user_dic
+                if addUser == dmChar["Member"]:
+                    userInfo["DM"].update(user_dic)
+                else:
+                    # since the timer has already been going when this user is added it has to be partial rewards
+                    user_dic["Duration"] = 0
+                    user_dic["Latest Join"] = startTime
+                    user_dic["State"] = "Partial"
+                    userInfo["Players"][addUser.id] = user_dic
         # the following are the case where the player has already been on the timer
         elif userInfo["Players"][user.id]["State"] in ["Full", "Partial"]:
             await channel.send(content='Your character has already been added to the timer.')
