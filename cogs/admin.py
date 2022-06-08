@@ -1418,7 +1418,22 @@ class Admin(commands.Cog, name="Admin"):
         contents.append(("Counts by Value", f"{counter_text}", False, True))
         counter_list = sorted(list(counted.keys()))
         await paginate(ctx, self.bot, f"Game Channel Use", contents=contents, separator="\n")
-
+        
+    @commands.command()
+    @commands.has_any_role("Mod Friend", "Bot Friend", "A d m i n")
+    async def noodleRecalc(self, ctx, dm_id):
+        
+        data = list(map(lambda x: (x["End"] - x["Start"]) ,list(db.logdata.find(
+               {"DM.ID": dm_id, "Status": "Approved"})
+            )))
+        cut_data = list([x%(3600*3) for x in data])
+        filtered_data = list([x%(3600*3) for x in data if x>(3600*3)])
+        dm_data = db.users.find_one(
+               {"User ID": dm_id})
+        cut_total = sum(cut_data)//(3600*3)
+        filtered_total = sum(filtered_data)//(3600*3)
+        noodles = dm_data["Noodles"]
+        await ctx.channel.send(f"Current: {noodles}\nTotal Time: {noodles+cut_total}\nOver 3h: {noodles+filtered_total}")
 async def setup(bot):
     await bot.add_cog(Admin(bot))
 

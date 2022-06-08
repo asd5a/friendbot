@@ -941,12 +941,16 @@ class Timer(commands.Cog):
                     rewardMajorLimit += max(floor((totalDurationTimeMultiplier -1) / 2), 0)
                     rewardMinorLimit += max((totalDurationTimeMultiplier -1), 0)
                     
-                    if dmMnc:
-                        dmMinorLimit += dmMajorLimit
-                        dmMajorLimit = 0
                     
+                    mnc_limit = dmMnc
                     player_type = "Players"
                     if rewardUser == dmChar["Member"]:
+                        if dmMnc:
+                            for dm_item in dm_item_rewards:
+                                if (dm_item['Minor/Major'] == 'Minor' and dm_item["Type"] == "Magic Items"):
+                                    mnc_limit = False
+                                    break
+                        
                         player_type = "DM"
                         item_rewards = dm_item_rewards
                     if half_reward_time:
@@ -954,7 +958,7 @@ class Timer(commands.Cog):
                         dmMinorLimit = lowerLimit(dmMinorLimit)
                         rewardMajorLimit = lowerLimit(rewardMajorLimit)
                         rewardMinorLimit = lowerLimit(rewardMinorLimit)
-                    
+                    dm_cap = (dmMinorLimit)
                     item_rewards = list(map(blocking_type, item_rewards))
                     character_add = {"Inventory": [], "Consumables": [], "Magic Items": []}
                     item_list = []
@@ -1011,17 +1015,13 @@ class Timer(commands.Cog):
                                 # return unchanged parameters
                                 return userInfo 
                             
-                            # if the item is rewarded to the DM and they are not allowed to pick a consumable
-                            # and the item is neither minor nor consumable
-                            if dmMnc and rewardUser == dmChar["Member"] and (rewardConsumable['Minor/Major'] != 'Minor' or  rewardConsumable["Type"] != "Magic Items"):
-                                await ctx.channel.send(f"You cannot award yourself this reward item because your reward item has to be a Minor Non-Consumable.")
-                                # return unchanged parameters
-                                return userInfo
                                 
                             # increase the appropriate counters based on what the reward is and who is receiving it
                             if rewardConsumable['Minor/Major'] == 'Minor':
                                 if rewardUser == dmChar["Member"]:
                                     dmMinor += 1
+                                    if (rewardConsumable["Type"] == "Magic Items"):
+                                        mnc_limit = False
                                 else:
                                     minor += 1
                             elif rewardConsumable['Minor/Major'] == 'Major':
@@ -1029,6 +1029,12 @@ class Timer(commands.Cog):
                                     dmMajor += 1
                                 else:
                                     major += 1
+                            # if the item is rewarded to the DM and they are not allowed to pick a consumable
+                            # and the item is neither minor nor consumable
+                            if dmMnc and rewardUser == dmChar["Member"] and (dm_cap - dmMajor - dmMinor) == 0 and mnc_limit:
+                                await ctx.channel.send(f"You cannot award yourself this reward item because you have not yet rewarded yourself a Minor Non-Consumable.")
+                                # return unchanged parameters
+                                return userInfo
                             
                             # set up error messages based on the allowed item counts inserted appropriately
                             rewardMajorErrorString = f"You cannot award any more **{rewardConsumable['Minor/Major']}** reward items.\n```md\nTotal attempted to reward so far:\n({major}/{rewardMajorLimit}) Major Rewards \n({minor}/{rewardMinorLimit-rewardMajorLimit}) Minor Rewards```"
