@@ -73,6 +73,7 @@ class Timer(commands.Cog):
         else:
             if ctx.channel.mention in currentTimers and "State" in currentTimers[ctx.channel.mention]:
                 currentTimers[ctx.channel.mention]["State"] = "Crashed"
+                await ctx.channel.send(f"This timer has crashed. The DM can use `{commandPrefix}timer resume` to continue the timer.")
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
 
