@@ -4959,14 +4959,14 @@ class Character(commands.Cog):
                     for feat in fRecords:
                         featList = []
                         meetsRestriction = False
-
+                        level_only = True
                         if 'Feat Restriction' not in feat and 'Race Restriction' not in feat and 'Class Restriction' not in feat and 'Stat Restriction' not in feat and (feat['Name'] not in charFeats) and 'Race Unavailable' not in feat and 'Require Spellcasting' not in feat and 'Level Restriction' not in feat:
                             featChoices.append(feat)
 
                         else:
                             if 'Feat Restriction' in feat and feat["Name"] not in charFeats:
                                 featsList = [x.strip() for x in feat['Feat Restriction'].split(', ')]
-
+                                level_only = False
                                 for f in featsList:
                                     if f in charFeats or f in featsChosen:
                                         meetsRestriction = True
@@ -4974,15 +4974,18 @@ class Character(commands.Cog):
                             if 'Race Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Race Restriction'].split(', ')]
 
+                                level_only = False
                                 for f in featsList:
                                     if f in race:
                                         meetsRestriction = True
 
                             if 'Race Unavailable' in feat:
+                                level_only = False
                                 if race not in feat['Race Unavailable']:
                                     meetsRestriction = True
                             if 'Class Restriction' in feat:
                                 featsList = [x.strip() for x in feat['Class Restriction'].split(', ')]
+                                level_only = False
                                 for c in cRecord:
                                     if (ctx.invoked_with.lower() == "create" 
                                         or ctx.invoked_with.lower() == "respec"
@@ -4996,6 +4999,7 @@ class Character(commands.Cog):
                                             meetsRestriction = True
                                             
                             if 'Stat Restriction' in feat:
+                                level_only = False
                                 s = feat['Stat Restriction']
                                 statNumber = int(s[-2:])
                                 if '/' in s:
@@ -5010,6 +5014,7 @@ class Character(commands.Cog):
 
 
                             if "Require Spellcasting" in feat:
+                                level_only = False
                                 for c in cRecord:
                                     if "Class" in c:
                                         if "Spellcasting" in c["Class"]:
@@ -5026,10 +5031,9 @@ class Character(commands.Cog):
                                     if f["Name"] in charFeats:
                                          meetsRestriction = True
                             if 'Level Restriction' in feat:
-                                meetsRestriction = meetsRestriction and charStats["Level"] >= feat['Level Restriction']
+                                meetsRestriction = (level_only or meetsRestriction) and charStats["Level"] >= feat['Level Restriction']
                             if meetsRestriction:
                                 featChoices.append(feat)
-
 
                 else:
                     # Whenever a feat that grants spellcasting gets picked.
