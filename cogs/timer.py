@@ -829,7 +829,7 @@ class Timer(commands.Cog):
                     userFound = True
                     # the player entry of the player getting the item
                     user_dic = dmChar
-                else:
+                else if userFound:
                     user_dic = userInfo["Players"][rewardUser.id]
                 cur_time = time.time()
                 # since this checks for multiple things, this cannot be avoided
