@@ -821,7 +821,7 @@ class Timer(commands.Cog):
                 userFound = rewardUser.id in userInfo["Players"]
                 
                 # if the user getting rewards is the DM we can save time by not going through the loop
-                if rewardUser == dmChar["Member"] and dmChar["Character ID"]=="No Rewards":
+                if rewardUser == dmChar["Member"] and not dmChar["Character ID"]:
                     await ctx.channel.send(content=f"You did not sign up with a character to reward items to.") 
                     #return the unchanged parameters
                     return userInfo
