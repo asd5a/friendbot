@@ -35,7 +35,6 @@ class Campaign(commands.Cog):
             return commands.check(predicate)
     async def cog_command_error(self, ctx, error):
         msg = None
-
         if isinstance(error, commands.CommandNotFound):
             await ctx.channel.send(f'Sorry, the command `{commandPrefix}campaign {ctx.invoked_with}` requires an additional keyword to the command or is invalid, please try again!')
             return
@@ -63,14 +62,9 @@ class Campaign(commands.Cog):
             elif isinstance(error, commands.UnexpectedQuoteError) or isinstance(error, commands.ExpectedClosingQuoteError) or isinstance(error, commands.InvalidEndOfQuotedStringError):
               msg = "There seems to be an unexpected or a missing closing quote mark somewhere, please check your format and retry the command."
 
-            
             if msg:
                 if ctx.command.name == "prep":
                     msg += f'Please follow this format:\n```yaml\n{commandPrefix}campaign timer prep "@player1, @player2, [...]" "session name"```'
-                
-            else:
-                ctx.command.reset_cooldown(ctx)
-                await traceBack(ctx,error)
         if msg:
             if ctx.command.name == "create":
                 msg += f"Please follow this format:\n```yaml\n{commandPrefix}campaign create @rolename #channel-name```"
