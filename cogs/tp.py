@@ -614,7 +614,7 @@ class Tp(commands.Cog):
                                 unsetData = {"Dummy Entry" : 1}
                             
                                 
-                                if newTP:
+                                if newTP != "":
                                 
                                     for tp, value in used_tp.items():
                                         if charRecords[tp] == 0:
@@ -624,7 +624,7 @@ class Tp(commands.Cog):
                                         setData[f"Item Spend.{mRecord['Name']}.{tp}"] = value
                                 
                                 
-                                elif newGP:
+                                elif newGP != "":
                                     setData['GP'] = newGP
                                     setData[f"Item Spend.{mRecord['Name']}.GP"] = gpNeeded
 
@@ -639,9 +639,9 @@ class Tp(commands.Cog):
                                 tpEmbedmsg = await channel.send(embed=None, content=f"Uh oh, looks like something went wrong. Try again using the same command!")
                             else:
                                 outputLiner = oneLiner.replace("<magic item>", str(mRecord['Name'])).replace(f"a {str(mRecord['Name'])}", f"{indefinite} {str(mRecord['Name'])}")
-                                if newTP:
+                                if newTP != "":
                                     tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['TP']} TP! :tada:\n\nLeftover TP: {used_tp_text}\n\n"
-                                elif newGP:
+                                elif newGP != "":
                                     tpEmbed.description = f"{outputLiner}\n\nYou have {sourcePast} **{mRecord['Name']}** for {mRecord['GP']} GP! :tada:\n\nCurrent GP: {newGP}\n"
 
                                 await tpEmbedmsg.edit(embed=tpEmbed)
