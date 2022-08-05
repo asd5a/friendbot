@@ -364,16 +364,17 @@ class Timer(commands.Cog):
                     else:
                         for removeUser in removeList:
                             #check if the user is not the DM
-                            if playerRoster.index(removeUser) != 0:
-                                # remove the embed field of the player
-                                prepEmbed.remove_field(playerRoster.index(removeUser))
-                                # remove the player from the roster
-                                playerRoster.remove(removeUser)
-                                # remove the player from the signed up players
-                                if removeUser.id in signedPlayers["Players"]:
-                                    del signedPlayers["Players"][removeUser.id]
-                            else:
-                                await channel.send('You cannot remove yourself from the timer.')
+                            if removeUser in playerRoster:
+                                if playerRoster.index(removeUser) != 0:
+                                    # remove the embed field of the player
+                                    prepEmbed.remove_field(playerRoster.index(removeUser))
+                                    # remove the player from the roster
+                                    playerRoster.remove(removeUser)
+                                    # remove the player from the signed up players
+                                    if removeUser.id in signedPlayers["Players"]:
+                                        del signedPlayers["Players"][removeUser.id]
+                                else:
+                                    await channel.send('You cannot remove yourself from the timer.')
 
             #the command that starts the timer, it does so by allowing the code to move past the loop
             elif (msg.content == f"{commandPrefix}timer start" or msg.content == f"{commandPrefix}t start"):
@@ -844,14 +845,13 @@ class Timer(commands.Cog):
                     else:
                         await ctx.channel.send(content=f'You need to include quotes around the reward item in your command. Please follow this format and try again:\n```yaml\n{commandPrefix}timer reward @player "reward item1, reward item2, [...]"```')
                         return userInfo
-                    half_reward_time = True
+                    half_reward_time_count = 0
                     for player in userInfo["Players"].values():
                         playtime = player["Duration"] + time_bonus
                         if player["State"] in ["Full", "Partial"]:
                             playtime += cur_time - player["Latest Join"]
                         if (playtime)//3600 >= 3:
-                            half_reward_time = False
-                            break
+                            half_reward_time_count += 1
                         
                     charLevel = user_dic["Character"]["Level"]
                     # the current counts of items rewarded
@@ -953,7 +953,7 @@ class Timer(commands.Cog):
                         
                         player_type = "DM"
                         item_rewards = dm_item_rewards
-                    if half_reward_time:
+                    if half_reward_time_count < 2:
                         dmMajorLimit = lowerLimit(dmMajorLimit)
                         dmMinorLimit = lowerLimit(dmMinorLimit)
                         rewardMajorLimit = lowerLimit(rewardMajorLimit)

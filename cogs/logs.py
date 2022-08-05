@@ -104,7 +104,9 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     gold_modifier = 100
     if "Gold Modifier" in sessionInfo:
         gold_modifier = sessionInfo["Gold Modifier"]
-    
+    item_rewards = True
+    if "Items" in sessionInfo:
+        item_rewards = sessionInfo["Items"]
     for k, player in players.items():
         # this indicates that the character had died
         if player["Status"] == "Dead":
@@ -233,8 +235,10 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             
         
         # add the items that the DM awarded themselves to the items list
-        for d in dm["Magic Items"]+dm["Consumables"]["Add"]+dm["Inventory"]["Add"]:
-            dmRewardsList.append("+"+d)
+        
+        if item_rewards:
+            for d in dm["Magic Items"]+dm["Consumables"]["Add"]+dm["Inventory"]["Add"]:
+                dmRewardsList.append("+"+d)
     
     # get the collections of characters
     playersCollection = db.players
@@ -266,9 +270,10 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             for v in value:
                 vRewardList = []
                 # for every brough consumable for the character
-                for r in  v["Magic Items"]+ v["Consumables"]["Add"]+ v["Inventory"]["Add"]:
-                    # add the awarded items to the list of rewards
-                    vRewardList.append("+"+r)
+                if item_rewards:
+                    for r in  v["Magic Items"]+ v["Consumables"]["Add"]+ v["Inventory"]["Add"]:
+                        # add the awarded items to the list of rewards
+                        vRewardList.append("+"+r)
                 # if the character was not dead at the end of the game
                 if v not in deathChars:
                     temp += f"{v['Mention']} | {v['Character Name']} {', '.join(vRewardList).strip()}\n"
@@ -513,7 +518,10 @@ class Log(commands.Cog):
         gold_modifier = 100
         if "Gold Modifier" in sessionInfo:
             gold_modifier = sessionInfo["Gold Modifier"]
-        
+        item_rewards = True
+        if "Items" in sessionInfo:
+            item_rewards = sessionInfo["Items"]
+        player["Consumables"]["Add"]
         for character in characterDBentries:
             player = players[str(character["User ID"])]
             # this indicates that the character had died
@@ -557,7 +565,10 @@ class Log(commands.Cog):
                 # create a list of all items the character has
                 consumableList = character["Consumables"].split(", ")
                 consumablesString = ""
-                
+                if not item_rewards:
+                    player["Consumables"]["Add"] = []
+                    player["Inventory"]["Add"] = []
+                    player["Magic Items"]["Add"] = []
                 
                 #if we know they didnt have any items, we know that changes could only be additions
                 if(character["Consumables"]=="None"):
@@ -683,6 +694,11 @@ class Log(commands.Cog):
                 player["Double Items"] = []
                 
             
+            if not item_rewards:
+                player["Consumables"]["Add"] = []
+                player["Inventory"]["Add"] = []
+                player["Magic Items"]["Add"] = []
+                
             # create a list of all items the character has
             consumableList = character["Consumables"].split(", ")
             consumablesString = ""
@@ -1034,12 +1050,6 @@ class Log(commands.Cog):
     async def approveRewards(self, ctx,  num : int, *, guilds):
         await self.guildPermission(ctx, num, "Rewards", True, 3)
         
-    #@session.command()
-    async def denyItems(self, ctx,  num : int, *, guilds):
-        await self.guildPermission(ctx, num, "Items", False, 0)
-    #@session.command()
-    async def approveItems(self, ctx,  num : int, *, guilds):
-        await self.guildPermission(ctx, num, "Items", True, 3)
         
     #@session.command()
     async def denyDrive(self, ctx,  num : int, *, guilds):
@@ -1161,6 +1171,17 @@ class Log(commands.Cog):
     @session.command()
     async def denyEvent(self, ctx,  num : int):
         await self.session_set(ctx, num, "Event", False)
+        
+        
+    @commands.has_any_role('Mod Friend', 'Admins')  
+    @session.command()
+    async def denyItems(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Items", False)
+        
+    @commands.has_any_role('Mod Friend', 'Admins')  
+    @session.command()
+    async def approveItems(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Items", True)
         
     @commands.has_any_role('Mod Friend', 'Admins')
     @session.command()
