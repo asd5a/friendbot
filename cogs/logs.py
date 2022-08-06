@@ -521,7 +521,6 @@ class Log(commands.Cog):
         item_rewards = True
         if "Items" in sessionInfo:
             item_rewards = sessionInfo["Items"]
-        player["Consumables"]["Add"]
         for character in characterDBentries:
             player = players[str(character["User ID"])]
             # this indicates that the character had died
