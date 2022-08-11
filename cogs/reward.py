@@ -238,7 +238,7 @@ class Reward(commands.Cog):
                 tierNum = 4
             
             # Uses calculateTreasure to determine the rewards from the quest based on the character
-            treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , tierNum, totalTime)
+            treasureArray  = calculateTreasure(charDict["Level"], charDict["CP"] , totalTime)
             durationString = timeConversion(totalTime)
             treasureString = f"{treasureArray[0]} CP, {sum(treasureArray[1].values())} TP, {treasureArray[2]} GP"
             resultLevel = charDict["Level"]
