@@ -70,8 +70,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     
     # the db entry of every character
     if characterDBentries == None:
-        characterDBentries = playersCollection.find({"_id": {"$in": characterIDs}})
-    
+        characterDBentries = list(playersCollection.find({"_id": {"$in": characterIDs}}))
+    characterDBentriesDic = {character["_id"] : character for character in characterDBentries}
     # the db entry of every user
     if userDBEntriesDic == None:
         userDBentries = usersCollection.find({"User ID": {"$in": userIDs}})
@@ -144,8 +144,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             
             treasureArray  = calculateTreasure(player["Level"], player["Character CP"], duration, guildDouble, playerDouble, dmDouble, gold_modifier)
             treasureString = f"{treasureArray[0]} CP, {sum(treasureArray[1].values())} TP, {treasureArray[2]} GP"
-
-                
+            
+            
         else:
             # if there were no rewards we only care about the time
             treasureString = timeConversion(duration) 
@@ -275,11 +275,15 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                         # add the awarded items to the list of rewards
                         vRewardList.append("+"+r)
                 # if the character was not dead at the end of the game
+                char_name = v['Character Name']
+                if "Paused" in characterDBentriesDic[v['Character ID']] and characterDBentriesDic[v['Character ID']]["Paused"]:
+                    char_name = "[PAUSED] " + char_name
+                    vRewardList = []
                 if v not in deathChars:
-                    temp += f"{v['Mention']} | {v['Character Name']} {', '.join(vRewardList).strip()}\n"
+                    temp += f"{v['Mention']} | {char_name} {', '.join(vRewardList).strip()}\n"
                 else:
                     # if they were dead, include that death
-                    temp += f"~~{v['Mention']} | {v['Character Name']}~~ **DEATH** {', '.join(vRewardList).strip()}\n"
+                    temp += f"~~{v['Mention']} | {char_name}~~ **DEATH** {', '.join(vRewardList).strip()}\n"
             
             # since if there is a player for this reward, temp will have text since every case above results in changes to temp
             # this informs us that there were no players
@@ -359,7 +363,9 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         dm_name_text = "**No Rewards**"
         # if no character signed up then the character parts are excluded
         if("Character ID" in dm):
-            dm_text = f"{dm['Character Name']} {', '.join(dmRewardsList)}"
+            dm_char = playersCollection.find_one({"_id": dm["Character ID"]})
+            paused = "Paused" in dm_char and dm_char["Paused"]
+            dm_text = f"{'[PAUSED] ' * paused + dm['Character Name']} {', '.join(dmRewardsList*paused)}"
             dm_name_text = f"DM {dm_double_string}Rewards (Tier {dm_tier_num}):\n**{dmtreasureArray[0]} CP, {sum(dmtreasureArray[1].values())} TP, {dmtreasureArray[2]} GP**\n"
         sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{noodleString}\n{'Gained :star:: ' + str(noodlesGained)} \n{noodleFinalString}", name=dm_name_text)
         
@@ -445,12 +451,12 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
             
-        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
-            await ctx.channel.send("This session has already been processed")
-            return
-        if ctx.author.id == int(sessionInfo["DM"]["ID"]):
-            await ctx.channel.send("You cannot approve your own log.")
-            return
+        # if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
+            # await ctx.channel.send("This session has already been processed")
+            # return
+        # if ctx.author.id == int(sessionInfo["DM"]["ID"]):
+            # await ctx.channel.send("You cannot approve your own log.")
+            # return
         if not editMessage or editMessage.author != self.bot.user:
             return await ctx.channel.send("Session has no corresponding message in the log channel.")
 
@@ -528,11 +534,12 @@ class Log(commands.Cog):
                 deathChars.append(player)
             
             duration = player["CP"] * 3600
+            player["Double"] = False
             guildDouble = False
             playerDouble = False
             dmDouble = False
 
-            if role != "":
+            if not ("Paused" in character and character["Paused"]):
                 guild_valid =("Guild" in player and 
                                 player["Guild"] in guilds and 
                                 guilds[player["Guild"]]["Status"] and
@@ -635,7 +642,12 @@ class Log(commands.Cog):
                     charRewards["fields"]["$inc"] = {"Games": 1}
                     charRewards["fields"]["$set"] = {"Death": deathDic}
                 playerUpdates.append(charRewards)
-                
+            else:
+                playerUpdates.append({'_id': player["Character ID"],
+                                        'fields': {"$unset": {f"GID": 1} ,
+                                        "$inc": {"Stored": duration,
+                                                    "Games": 1,
+                                                    "Event Token" : event_inc}}})
         dmRewardsList = []
         dm["Double"] = False
         #DM REWARD MATH STARTS HERE
@@ -644,130 +656,139 @@ class Log(commands.Cog):
             player = dm
             
             duration = player["CP"] * 3600
+            
+            
             # the db entry of every character
             character = playersCollection.find_one({"_id": dm["Character ID"]})
-            charLevel = int(dm['Level'])
-            # calculate the tier of the DM character
-            dmTierNum= 5
-            dmRole = "Ascended"
-            if charLevel < 5:
-                dmRole = 'Junior'
-                dmTierNum = 1
-            elif charLevel < 11:
-                dmRole = 'Journey'
-                dmTierNum = 2
-            elif charLevel < 17:
-                dmRole = 'Elite'
-                dmTierNum = 3
-            elif charLevel < 20:
-                dmRole = 'True'
-                dmTierNum = 4
-            
-            guild_valid =("Guild" in player and 
-                                player["Guild"] in guilds and 
-                                guilds[player["Guild"]]["Status"] and
-                            player["CP"]>= 3 and player['Guild Rank'] > 1)
-            guildDouble = (guild_valid and 
-                            guilds[player["Guild"]]["Rewards"] and 
-                            player["2xR"])
+            player["Double"] = False
+            if not ("Paused" in character and character["Paused"]):
+                charLevel = int(dm['Level'])
+                # calculate the tier of the DM character
+                dmTierNum= 5
+                dmRole = "Ascended"
+                if charLevel < 5:
+                    dmRole = 'Junior'
+                    dmTierNum = 1
+                elif charLevel < 11:
+                    dmRole = 'Journey'
+                    dmTierNum = 2
+                elif charLevel < 17:
+                    dmRole = 'Elite'
+                    dmTierNum = 3
+                elif charLevel < 20:
+                    dmRole = 'True'
+                    dmTierNum = 4
                 
-            
-             
-            player["Double"] = dm["ID"] in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[dm["ID"]] and userDBEntriesDic[dm["ID"]]["Double"] >0
-            playerDouble = player["Double"]
-            
-            dmDouble = player["DM Double"]
-            
-            
-            treasureArray  = calculateTreasure(charLevel, character["CP"], duration, guildDouble, playerDouble, dmDouble)
+                guild_valid =("Guild" in player and 
+                                    player["Guild"] in guilds and 
+                                    guilds[player["Guild"]]["Status"] and
+                                player["CP"]>= 3 and player['Guild Rank'] > 1)
+                guildDouble = (guild_valid and 
+                                guilds[player["Guild"]]["Rewards"] and 
+                                player["2xR"])
+                    
+                
+                 
+                player["Double"] = dm["ID"] in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[dm["ID"]] and userDBEntriesDic[dm["ID"]]["Double"] >0
+                playerDouble = player["Double"]
+                
+                dmDouble = player["DM Double"]
                 
                 
-            if(guild_valid and 
-                    guilds[player["Guild"]]["Items"] and 
-                    player["2xI"]):
-                for i in player["Double Items"]:
-                    if i[0] == "Magic Items":
-                        player["Magic Items"].append(i[1])
+                treasureArray  = calculateTreasure(charLevel, character["CP"], duration, guildDouble, playerDouble, dmDouble)
+                    
+                    
+                if(guild_valid and 
+                        guilds[player["Guild"]]["Items"] and 
+                        player["2xI"]):
+                    for i in player["Double Items"]:
+                        if i[0] == "Magic Items":
+                            player["Magic Items"].append(i[1])
+                        else:
+                            player[i[0]]["Add"].append(i[1])
+                    player["Double Items"] = []
+                    
+                
+                if not item_rewards:
+                    player["Consumables"]["Add"] = []
+                    player["Inventory"]["Add"] = []
+                    player["Magic Items"]["Add"] = []
+                    
+                # create a list of all items the character has
+                consumableList = character["Consumables"].split(", ")
+                consumablesString = ""
+                
+                
+                #if we know they didnt have any items, we know that changes could only be additions
+                if(character["Consumables"]=="None"):
+                    # turn the list of added items into the new string
+                    consumablesString = ", ".join(player["Consumables"]["Add"])
+                else:
+                    #remove the removed items from the list of original items and then combine the remaining and the new items                
+                    for i in player["Consumables"]["Remove"]:
+                        consumableList.remove(i)
+                    consumablesString = ", ".join(player["Consumables"]["Add"]+consumableList)
+                    
+                # if the string is empty, turn it into none
+                consumablesString += "None"*(consumablesString=="")
+                
+                # magic items cannot be removed so we only care about addtions
+                # if we have no items and no additions, string is None
+                magicItemString = "None"
+                if(character["Magic Items"]=="None"):
+                    if(len(player["Magic Items"])==0):
+                        pass
                     else:
-                        player[i[0]]["Add"].append(i[1])
-                player["Double Items"] = []
-                
-            
-            if not item_rewards:
-                player["Consumables"]["Add"] = []
-                player["Inventory"]["Add"] = []
-                player["Magic Items"]["Add"] = []
-                
-            # create a list of all items the character has
-            consumableList = character["Consumables"].split(", ")
-            consumablesString = ""
-            
-            
-            #if we know they didnt have any items, we know that changes could only be additions
-            if(character["Consumables"]=="None"):
-                # turn the list of added items into the new string
-                consumablesString = ", ".join(player["Consumables"]["Add"])
-            else:
-                #remove the removed items from the list of original items and then combine the remaining and the new items                
-                for i in player["Consumables"]["Remove"]:
-                    consumableList.remove(i)
-                consumablesString = ", ".join(player["Consumables"]["Add"]+consumableList)
-                
-            # if the string is empty, turn it into none
-            consumablesString += "None"*(consumablesString=="")
-            
-            # magic items cannot be removed so we only care about addtions
-            # if we have no items and no additions, string is None
-            magicItemString = "None"
-            if(character["Magic Items"]=="None"):
-                if(len(player["Magic Items"])==0):
-                    pass
+                        # otherwise it is just the combination of new items
+                        magicItemString = ", ".join(player["Magic Items"])
                 else:
-                    # otherwise it is just the combination of new items
-                    magicItemString = ", ".join(player["Magic Items"])
+                    # otherwise connect up the old and new items
+                    magicItemString = character["Magic Items"]+(", "+ ", ".join(player["Magic Items"]))*(len(player["Magic Items"])>0)
+                    
+                    
+                
+                # increase the relevant inventory entries and create them if necessary
+                for i in player["Inventory"]["Add"]:
+                    if i in character["Inventory"]:
+                        character["Inventory"][i] += 1
+                    else:
+                        character["Inventory"][i] = 1
+                
+                # decrement the relevant items and delete the entry when necessary
+                for i in player["Inventory"]["Remove"]:
+                    character["Inventory"][i] -= 1
+                    if int(character["Inventory"][i]) <= 0:
+                        del character["Inventory"][i]
+                
+                # set up all db values that need to be incremented
+                increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1, "Event Token": event_inc}
+                
+                # for every TP tier value that was gained create the increment field
+                for k,v in treasureArray[1].items():
+                    increment[k] = v
+                
+                player_set = {"Consumables": consumablesString, 
+                                "Magic Items": magicItemString, 
+                                "Inventory" : character["Inventory"], 
+                                "Drive" : []}
+
+                for g in guilds.values():
+                    if g["Drive"] and player["CP"] >= 3:
+                        player_set["Drive"] = g["Name"]
+                        break
+                
+                charRewards = {'_id': player["Character ID"],  
+                                "fields": {"$unset": {f"GID": 1},
+                                "$inc": increment, 
+                                "$set": player_set}}
+                                 
+                playerUpdates.append(charRewards)
             else:
-                # otherwise connect up the old and new items
-                magicItemString = character["Magic Items"]+(", "+ ", ".join(player["Magic Items"]))*(len(player["Magic Items"])>0)
-                
-                
-            
-            # increase the relevant inventory entries and create them if necessary
-            for i in player["Inventory"]["Add"]:
-                if i in character["Inventory"]:
-                    character["Inventory"][i] += 1
-                else:
-                    character["Inventory"][i] = 1
-            
-            # decrement the relevant items and delete the entry when necessary
-            for i in player["Inventory"]["Remove"]:
-                character["Inventory"][i] -= 1
-                if int(character["Inventory"][i]) <= 0:
-                    del character["Inventory"][i]
-            
-            # set up all db values that need to be incremented
-            increment = {"CP":  treasureArray[0], "GP":  treasureArray[2],"Games": 1, "Event Token": event_inc}
-            
-            # for every TP tier value that was gained create the increment field
-            for k,v in treasureArray[1].items():
-                increment[k] = v
-            
-            player_set = {"Consumables": consumablesString, 
-                            "Magic Items": magicItemString, 
-                            "Inventory" : character["Inventory"], 
-                            "Drive" : []}
-
-            for g in guilds.values():
-                if g["Drive"] and player["CP"] >= 3:
-                    player_set["Drive"] = g["Name"]
-                    break
-            
-            charRewards = {'_id': player["Character ID"],  
-                            "fields": {"$unset": {f"GID": 1},
-                            "$inc": increment, 
-                            "$set": player_set}}
-                             
-            playerUpdates.append(charRewards)
-
+                playerUpdates.append({'_id': player["Character ID"],
+                                        'fields': {"$unset": {f"GID": 1},
+                                        "$inc": {"Stored": duration,
+                                                    "Games": 1,
+                                                    "Event Token" : event_inc}}})
         
         noodles = dm["Noodles"]
         # Noodles Math

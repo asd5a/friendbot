@@ -3150,7 +3150,9 @@ class Character(commands.Cog):
                             char_race = f"{rfarray['Race']} | {char_race}"
                         if 'Class' in rfarray:
                             char_class = f"{rfarray['Class']} | {char_class}"
-                    charString += f"**{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {char_class}\n"
+                            
+                    paused = "Paused" in charDict and charDict["Paused"]
+                    charString += f"**{'[PAUSED] '*paused}{charDict['Name']}**: Lv {charDict['Level']}, {char_race}, {char_class}\n"
 
                     if 'Guild' in charDict:
                         charString += f"---Guild: *{charDict['Guild']}*\n"
@@ -3249,8 +3251,9 @@ class Character(commands.Cog):
             charDictAuthor = guild.get_member(int(charDict['User ID']))
             charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.display_avatar)
             charEmbed.description = description
-            charEmbed.clear_fields()    
-            charEmbed.title = f"{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
+            charEmbed.clear_fields()   
+            paused = "Paused" in charDict and charDict["Paused"]
+            charEmbed.title = f"{'[PAUSED] '* paused}{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
             
             
             notValidConsumables = ""
@@ -3515,7 +3518,9 @@ class Character(commands.Cog):
             charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.display_avatar)
             charEmbed.description = description
             charEmbed.clear_fields()    
-            charEmbed.title = f"{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
+            
+            paused = "Paused" in charDict and charDict["Paused"]
+            charEmbed.title = f"{'[PAUSED] '*paused}{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
             tpString = ""
             for i in range (1,6):
                 if f"T{i} TP" in charDict:
@@ -3678,6 +3683,37 @@ class Character(commands.Cog):
                 charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
             else:
                 await ctx.channel.send(content=f'I have updated the image for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
+    
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @commands.command()
+    async def pause(self,ctx,char):
+        await self.pauseKernel(ctx, char, True)
+        
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @is_log_channel()
+    @commands.command()
+    async def unpause(self,ctx,char):
+        await self.pauseKernel(ctx, char, False)
+    
+    async def pauseKernel(self,ctx,char, target = False):
+        channel = ctx.channel
+        author = ctx.author
+        guild = ctx.guild
+        charEmbed = discord.Embed()
+
+        infoRecords, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
+
+        if infoRecords:
+            charID = infoRecords['_id']
+            try:
+                playersCollection = db.players
+                playersCollection.update_one({'_id': charID}, {"$set": {"Paused": target}})
+            except Exception as e:
+                print ('MONGO ERROR: ' + str(e))
+                charEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try creating your character again.")
+            else:
+                await ctx.channel.send(content=f'I have {(not target)*"un"}paused the progress for ***{char}***. Please double-check using one of the following commands:\n```yaml\n{commandPrefix}info "character name"\n{commandPrefix}char "character name"\n{commandPrefix}i "character name"```')
     
     
     async def reflavorKernel(self,ctx, char, rtype, new_flavor):

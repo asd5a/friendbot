@@ -433,7 +433,10 @@ class Misc(commands.Cog):
         
         helpEmbedChar.add_field(name=f'▫️ Adding Campaign Time', value=f'{commandPrefix}applyTime "character name" #channel XhYm', inline=False)
         
-        
+        helpEmbedChar.add_field(name=f'▫️ Pause Game Rewards', value=f'{commandPrefix}pause "character name"', inline=False)
+
+        helpEmbedChar.add_field(name=f'▫️ Unpause Game Rewards', value=f'{commandPrefix}unpause "character name"', inline=False)
+
 
 
     # PRE-QUEST TIMER COMMANDS MENU ($help timer1)
