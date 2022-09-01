@@ -17,6 +17,6 @@ Follow the guides there to set up your own bot to test with.
 3: Setup your channels and categories, you will most likely want a similar structure to DnD Friends.
 4: Setup the roles you need for your testing.
 5: Setup the entry in the settings collection to contain the channel ids for your test server.
-6: Start you bot up.
+6: Start your bot up.
 (7: Improve this guide)
 

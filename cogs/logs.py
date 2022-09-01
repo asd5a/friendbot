@@ -15,7 +15,7 @@ from pymongo.errors import BulkWriteError
 guild_drive_costs = [4, 4, 6, 9, 13, 13]
 
 async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=None, characterDBentries=None, userDBEntriesDic=None, ):
-    logData =db.logdata
+    logData = db.logdata
     if sessionInfo == None:
         sessionInfo = logData.find_one({"Log ID": int(num)})
     
@@ -365,7 +365,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         if("Character ID" in dm):
             dm_char = playersCollection.find_one({"_id": dm["Character ID"]})
             paused = "Paused" in dm_char and dm_char["Paused"]
-            dm_text = f"{'[PAUSED] ' * paused + dm['Character Name']} {', '.join(dmRewardsList*paused)}"
+            dm_text = f"{'[PAUSED] ' * paused + dm['Character Name']} {', '.join(dmRewardsList* (not paused))}"
             dm_name_text = f"DM {dm_double_string}Rewards (Tier {dm_tier_num}):\n**{dmtreasureArray[0]} CP, {sum(dmtreasureArray[1].values())} TP, {dmtreasureArray[2]} GP**\n"
         sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{noodleString}\n{'Gained :star:: ' + str(noodlesGained)} \n{noodleFinalString}", name=dm_name_text)
         
@@ -574,7 +574,7 @@ class Log(commands.Cog):
                 if not item_rewards:
                     player["Consumables"]["Add"] = []
                     player["Inventory"]["Add"] = []
-                    player["Magic Items"]["Add"] = []
+                    player["Magic Items"] = []
                 
                 #if we know they didnt have any items, we know that changes could only be additions
                 if(character["Consumables"]=="None"):
@@ -712,7 +712,7 @@ class Log(commands.Cog):
                 if not item_rewards:
                     player["Consumables"]["Add"] = []
                     player["Inventory"]["Add"] = []
-                    player["Magic Items"]["Add"] = []
+                    player["Magic Items"] = []
                     
                 # create a list of all items the character has
                 consumableList = character["Consumables"].split(", ")
