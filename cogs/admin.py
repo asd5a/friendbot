@@ -10,7 +10,8 @@ import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, callAPI, traceBack, settingsRecord, checkForChar, liner_dic, calculateTreasure, noodleRoleArray
+from bfunc import db, traceBack, settingsRecord, liner_dic, calculateTreasure, noodleRoleArray
+from cogs.misc import callAPI, checkForChar
 from cogs.char import paginate
 
 

@@ -11,7 +11,7 @@ from math import floor
 from datetime import datetime, timezone, timedelta 
 from discord.ext import commands
 from cogs.char import paginate
-from bfunc import alphaEmojis, timezoneVar, commandPrefix, left,right,back, db, callAPI, checkForChar, timeConversion, traceBack, settingsRecord
+from bfunc import alphaEmojis, timezoneVar, commandPrefix, left,right,back, db, timeConversion, traceBack, settingsRecord
 
 
 class Stats(commands.Cog):

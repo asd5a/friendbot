@@ -11,8 +11,8 @@ from math import floor
 from datetime import datetime, timezone, timedelta 
 from discord.ext import commands
 from urllib.parse import urlparse 
-from bfunc import numberEmojis, alphaEmojis, commandPrefix, left,right,back, db, callAPI, checkForChar, timeConversion, traceBack, tier_reward_dictionary, cp_bound_array, calculateTreasure, settingsRecord
-
+from bfunc import numberEmojis, alphaEmojis, commandPrefix, left,right,back, db, timeConversion, traceBack, tier_reward_dictionary, cp_bound_array, calculateTreasure, settingsRecord
+from cogs.misc import callAPI, checkForChar
 
 def get_embed_length(embed):
     # embed would be the discord.Embed instance

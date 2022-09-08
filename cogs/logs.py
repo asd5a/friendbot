@@ -5,7 +5,8 @@ import pytz
 from discord.utils import get        
 from discord.ext import commands
 from datetime import datetime, timezone,timedelta
-from bfunc import callAPI, db, traceBack, timeConversion, calculateTreasure, roleArray,timeConversion, settingsRecord, timezoneVar
+from bfunc import db, traceBack, timeConversion, calculateTreasure, roleArray,timeConversion, settingsRecord, timezoneVar
+from cogs.misc import callAPI
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 

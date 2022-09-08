@@ -5,7 +5,9 @@ import re
 from discord.utils import get        
 from discord.ext import commands
 from cogs.admin import liner_dic
-from bfunc import db, commandPrefix,  alphaEmojis, roleArray, checkForChar, noodleRoleArray, callAPI, traceBack, numberEmojis, settingsRecord
+from bfunc import db, commandPrefix,  alphaEmojis, roleArray, noodleRoleArray, traceBack, numberEmojis, settingsRecord
+from cogs.misc import callAPI, checkForChar
+
 from math import floor
 
 

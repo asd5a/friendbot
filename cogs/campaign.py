@@ -13,7 +13,8 @@ from discord.ext import commands
 from math import ceil, floor
 from itertools import product      
 from datetime import datetime, timezone,timedelta
-from bfunc import numberEmojis, calculateTreasure, timeConversion, gameCategory, commandPrefix, checkForGuild, roleArray, timezoneVar, currentTimers, db, callAPI, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, roleArray, checkForChar, tier_reward_dictionary, cp_bound_array, settingsRecord
+from bfunc import numberEmojis, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, roleArray, tier_reward_dictionary, cp_bound_array, settingsRecord
+from cogs.misc import callAPI
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 

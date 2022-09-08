@@ -2,9 +2,10 @@ import discord
 import random
 import asyncio
 import re
+from cogs.view import AlphaView
 from discord.utils import get
 from discord.ext import commands
-from bfunc import settingsRecord, settingsRecord, checkForChar, callAPI, alphaEmojis, commandPrefix
+from bfunc import settingsRecord, settingsRecord, alphaEmojis, commandPrefix, db
 
 def admin_or_owner():
     async def predicate(ctx):
@@ -13,6 +14,272 @@ def admin_or_owner():
         return  output
     return commands.check(predicate)
 
+async def disambiguate(options, msg, author):
+    view = AlphaView(options, author, True)
+    msg = await msg.edit(view = view)
+    # Wait for the View to stop listening for input...
+    await view.wait()
+    await msg.edit(view = None)
+    return view.state
+
+"""
+The purpose of this function is to do a general call to the database
+apiEmbed -> the embed element that the calling function will be using
+apiEmbedmsg -> the message that will contain apiEmbed
+table -> the table in the database that should be searched in, most common tables are RIT, MIT and SHOP
+query -> the word which will be searched for in the "Name" property of elements, adjustments were made so that also a special property "Grouped" also gets searched
+"""
+async def callAPI(ctx, apiEmbed="", apiEmbedmsg=None, table=None, query=None, tier=5, exact=False, filter_rit=True):
+    
+    #channel and author of the original message creating this call
+    channel = ctx.channel
+    author = ctx.author
+    
+    #do nothing if no table is given
+    if table is None:
+       return None, apiEmbed, apiEmbedmsg
+
+    collection = db[table]
+    
+    #get the entire table if no query is given
+    if query is None:
+        return list(collection.find()), apiEmbed, apiEmbedmsg
+
+    #if the query has no text, return nothing
+    if query.strip() == "":
+        return None, apiEmbed, apiEmbedmsg
+
+    #restructure the query to be more regEx friendly
+    invalidChars = ["[", "]", "?", '"', "\\", "*", "$", "{", "}", "^", ">", "<", "|"]
+
+    for i in invalidChars:
+        if i in query:
+            await channel.send(f":warning: Please do not use `{i}` in your query. Revise your query and retry the command.\n")
+            return None, apiEmbed, apiEmbedmsg
+         
+    query = query.strip()
+    query = query.replace('(', '\\(')
+    query = query.replace(')', '\\)')
+    query = query.replace('+', '\\+')
+    query = query.replace('.', '\\.')
+    query_data =  {"$regex": query,
+                    #make the check case-insensitively
+                    "$options": "i"
+                  }
+    if exact:
+        query_data["$regex"] = f'^{query_data["$regex"]}$'
+        
+    #search through the table for an element were the Name or Grouped property contain the query
+    if table == "spells":
+        filterDic = {"Name": query_data}
+    else:
+        filterDic = {"$or": [
+                            {
+                              "Name": query_data
+                            },
+                            {
+                              "Grouped": query_data
+                            }
+                        ]
+                    } 
+    if table == "rit" or table == "mit":
+        filterDic['Tier'] = {'$lt':tier+1}
+    
+     
+    # Here lies MSchildorfer's dignity. He copy and pasted with abandon and wondered why
+    #  collection.find(collection.find(filterDic)) does not work for he could not read
+    # https://cdn.discordapp.com/attachments/663504216135958558/735695855667118080/New_Project_-_2020-07-22T231158.186.png
+    records = list(collection.find(filterDic))
+    
+    #turn the query into a regex expression
+    r = re.compile(query, re.IGNORECASE)
+    #restore the original query
+    query = query.replace("\\", "")
+    #sort elements by either the name, or the first element of the name list in case it is a list
+    def sortingEntryAndList(elem):
+        if(isinstance(elem['Name'],list)): 
+            return elem['Name'][0] 
+        else:  
+            return elem['Name']
+    
+    #create collections to track needed changes to the records
+    remove_grouper = [] #track all elements that need to be removes since they act as representative for a group of items
+    faux_entries = [] #collection of temporary items that will act as database elements during the call
+    
+    #for every search result check if it contains a group and create entries for each group element if it does
+    for entry in records:
+        # if the element is part of a group
+        if("Grouped" in entry):
+            # remove it later
+            remove_grouper.append(entry)
+            # check if the query is more specific about a group element
+            newlist = list(filter(r.search, entry['Name']))
+            """
+            if the every element has been filtered out because of the code above then we know from the fact 
+            that this was found in the search that the Grouper field had to have been matched, 
+            indicating that the entire group needs to be listed
+            """
+            if(newlist == list()):
+                newlist = entry['Name']
+            # for every group element that needs to be considered, create a new element with just the name adjusted
+            for name in newlist:
+                #copy the Group entry to get all relevant information about the item
+                faux_entry = entry.copy()
+                #change the name from the list to the specific element.
+                faux_entry["Name"]= name
+                #add it to the tracker
+                faux_entries.append(faux_entry)
+    # remove all group representatives
+    for group_to_remove in remove_grouper:
+        records.remove(group_to_remove)
+    #append the new entries
+    records += faux_entries
+    if filter_rit and table == "rit":
+        # get all minor reward item results
+        all_minors = list([record["Name"] for record in filter(lambda record: record["Minor/Major"]== "Minor", records)])
+        records = filter(lambda record: record["Minor/Major"]!= "Major" or record["Name"] not in all_minors, records)
+
+    
+    #sort all items alphabetically 
+    records = sorted(records, key = sortingEntryAndList)    
+    #if no elements are left, return nothing
+    if records == list():
+        return None, apiEmbed, apiEmbedmsg
+    else:
+        #create a string to provide information about the items to the user
+        infoString = ""
+        if (len(records) > 1):
+            #sort items by tier if the magic item tables were requested
+            if table == 'mit' or table == 'rit':
+                records = sorted(records, key = lambda i : i ['Tier'])
+            queryLimit = 20
+            #limit items to queryLimit
+            for i in range(0, min(len(records), queryLimit)):
+                if table == 'mit':
+                    infoString += f"{alphaEmojis[i]}: {records[i]['Name']} (Tier {records[i]['Tier']}): **{records[i]['TP']} TP**\n"
+                elif table == 'rit':
+                    infoString += f"{alphaEmojis[i]}: {records[i]['Name']} (Tier {records[i]['Tier']} {records[i]['Minor/Major']})\n"
+                # base spell scroll db entry should not be searched
+                elif table == 'shop' and records[i]['Type'] == "Spell Scroll":
+                    pass
+                else:
+                    infoString += f"{alphaEmojis[i]}: {records[i]['Name']}\n"
+            #inform the user of the current information and ask for their selection of an item
+            apiEmbed.add_field(name=f"There seems to be multiple results for \"**{query}**\"! Please choose the correct one.\nThe maximum number of results shown is {queryLimit}. If the result you are looking for is not here, please react with ❌ and be more specific.", value=infoString, inline=False)
+            if not apiEmbedmsg or apiEmbedmsg == "Fail":
+                apiEmbedmsg = await channel.send(embed=apiEmbed)
+            else:
+                await apiEmbedmsg.edit(embed=apiEmbed)
+            choice = await disambiguate(min(len(records), queryLimit), apiEmbedmsg, author)
+            
+            if choice is None or choice == -1:
+                await apiEmbedmsg.edit(embed=None, content=f"Command cancelled. Try again using the same command!")
+                ctx.command.reset_cooldown(ctx)
+                return None, apiEmbed, "Fail"
+            apiEmbed.clear_fields()
+            return records[choice], apiEmbed, apiEmbedmsg
+
+        else:
+            #if only 1 item was left, simply return it
+            return records[0], apiEmbed, apiEmbedmsg
+
+async def checkForChar(ctx, char, charEmbed="", authorOverride=None,  mod=False, customError=False, authorCheck=None):
+    channel = ctx.channel
+    author = ctx.author
+    guild = ctx.guild
+    if authorOverride != None:
+        author = authorOverride
+        mod=False
+    search_author = author
+    if authorCheck != None:
+        search_author = authorCheck
+        mod=False
+    playersCollection = db.players
+
+    query = char.strip()
+    query = query.replace('(', '\\(')
+    query = query.replace(')', '\\)')
+    query = query.replace('.', '\\.')
+    query_data =  {"$regex": query,
+                    "$options": "i"
+                  }
+    filterDic = {"$or": [
+                            {
+                              "Name": query_data
+                            },
+                            {
+                              "Nickname": query_data
+                            }
+                        ]
+                    } 
+    if mod == True:
+        charRecords = list(playersCollection.find(filterDic)) 
+    else:
+        filterDic["User ID"] = str(search_author.id)
+        charRecords = list(playersCollection.find(filterDic))
+
+    if charRecords == list():
+        if not mod and not customError:
+            await channel.send(content=f'I was not able to find your character named "**{char}**". Please check your spelling and try again.')
+        ctx.command.reset_cooldown(ctx)
+        return None, None
+
+    else:
+        if len(charRecords) > 1:
+            infoString = ""
+            
+            charRecords = sorted(list(charRecords), key = lambda i : i ['Name'])
+            for i in range(0, min(len(charRecords), 20)):
+                infoString += f"{alphaEmojis[i]}: {charRecords[i]['Name']} ({guild.get_member(int(charRecords[i]['User ID']))})\n"
+            
+            
+            charEmbed.add_field(name=f"There seems to be multiple results for \"`{char}`\"! Please choose the correct character. If you do not see your character here, please react with ❌ and be more specific with your query.", value=infoString, inline=False)
+            charEmbedmsg = await channel.send(embed=charEmbed)
+            choice = await disambiguate(min(len(charRecords), 20), charEmbedmsg, author)
+            
+            if choice is None or choice == -1:
+                await charEmbedmsg.edit(embed=None, content=f"Character information cancelled. Try again using the same command!")
+                ctx.command.reset_cooldown(ctx)
+                return None, None
+            charEmbed.clear_fields()
+            return charRecords[choice], charEmbedmsg
+
+    return charRecords[0], None
+
+async def checkForGuild(ctx, name, guildEmbed="" ):
+    channel = ctx.channel
+    author = ctx.author
+    guild = ctx.guild
+
+    name = name.strip()
+
+    collection = db.guilds
+    guildRecords = list(collection.find({"Name": {"$regex": name, '$options': 'i' }}))
+
+
+    if guildRecords == list():
+        await channel.send(content=f'I was not able to find a guild named "**{name}**". Please check your spelling and try again.')
+        ctx.command.reset_cooldown(ctx)
+        return None, None
+    else:
+        if len(guildRecords) > 1:
+            infoString = ""
+            guildRecords = sorted(list(guildRecords), key = lambda i : i ['Name'])
+            for i in range(0, min(len(guildRecords), 20)):
+                infoString += f"{alphaEmojis[i]}: {guildRecords[i]['Name']}\n"
+            
+            guildEmbed.add_field(name=f"There seems to be multiple results for \"`{name}`\"! Please choose the correct character. If you do not see your character here, please react with ❌ and be more specific with your query.", value=infoString, inline=False)
+            guildEmbedmsg = await channel.send(embed=guildEmbed)
+            choice = await disambiguate(min(len(records), 20), guildEmbedmsg, author)
+            
+            if choice is None or choice == -1:
+                await guildEmbedmsg.edit(embed=None, content=f"Command cancelled. Try again using the same command!")
+                ctx.command.reset_cooldown(ctx)
+                return None, None
+            guildEmbed.clear_fields()
+            return guildRecords[choice], guildEmbedmsg
+
+    return guildRecords[0], None
 class Misc(commands.Cog):
     def __init__ (self, bot):
     
@@ -60,7 +327,7 @@ class Misc(commands.Cog):
         await ctx.message.delete()
         
     #this function is passed in with the channel which has been created/moved
-    #relies on ther being a message to use
+    #relies on there being a message to use
     async def printCampaigns(self,chan):
         
         ch =self.bot.get_channel(382027251618938880) #382027251618938880 728476108940640297
@@ -655,25 +922,20 @@ class Misc(commands.Cog):
 
 
         numPages = len(helpList)
-
         for i in range(0, len(helpList)):
             helpList[i].set_footer(text= f"Page {i+1} of {numPages}")
-
-        helpMsg = await ctx.channel.send(embed=helpList[page])
+        
+        view = None
+        
         if page == 0:
-            for num in range(0,numPages-1): await helpMsg.add_reaction(alphaEmojis[num])
-
-    # THIS ERROR MESSAGE WILL NEED TO BE CHANGED TO ACCOMMODATE THE NEW COMMANDS.
-        try:
-            hReact, hUser = await bot.wait_for("reaction_add", check=helpCheck, timeout=30.0)
-        except asyncio.TimeoutError:
-            await helpMsg.edit(content=f"Your help menu has timed out! I'll leave this page open for you. Use the first command if you need to cycle through help menu again or use any of the other commands to view a specific help menu:\n```yaml\n{commandPrefix}help gen\n{commandPrefix}help char\n{commandPrefix}help timer1\n{commandPrefix}help timer2\n{commandPrefix}help timer3\n{commandPrefix}help shop\n{commandPrefix}help tp\n{commandPrefix}help guild\n{commandPrefix}help campaign```")
-            await helpMsg.clear_reactions()
-            await helpMsg.add_reaction('💤')
-            return
+            view = AlphaView(numPages-1)
+        helpMsg = await ctx.channel.send(embed=helpList[page], view = view)
+        # Wait for the View to stop listening for input...
+        await view.wait()
+        if view.state is None:
+            await helpMsg.edit(content=f"Your help menu has timed out! I'll leave this page open for you. Use the first command if you need to cycle through help menu again or use any of the other commands to view a specific help menu:\n```yaml\n{commandPrefix}help gen\n{commandPrefix}help char\n{commandPrefix}help timer1\n{commandPrefix}help timer2\n{commandPrefix}help timer3\n{commandPrefix}help shop\n{commandPrefix}help tp\n{commandPrefix}help guild\n{commandPrefix}help campaign```", view=None)
         else:
-            await helpMsg.edit(embed=helpList[alphaEmojis.index(hReact.emoji)+1])
-            await helpMsg.clear_reactions()
+            await helpMsg.edit(embed=helpList[view.state+1], view = None)
 
         
 async def setup(bot):
