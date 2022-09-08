@@ -928,7 +928,7 @@ class Misc(commands.Cog):
         view = None
         
         if page == 0:
-            view = AlphaView(numPages-1)
+            view = AlphaView(numPages-1, ctx.author)
         helpMsg = await ctx.channel.send(embed=helpList[page], view = view)
         # Wait for the View to stop listening for input...
         await view.wait()
