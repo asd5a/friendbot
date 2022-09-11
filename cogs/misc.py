@@ -927,16 +927,18 @@ class Misc(commands.Cog):
         
         view = None
         
-        helpMsg = await ctx.channel.send(embed=helpList[page], view = view)
         if page == 0:
             view = AlphaView(numPages-1, ctx.author)
+            
+            helpMsg = await ctx.channel.send(embed=helpList[page], view = view)
             # Wait for the View to stop listening for input...
             await view.wait()
             if view.state is None:
                 await helpMsg.edit(content=f"Your help menu has timed out! I'll leave this page open for you. Use the first command if you need to cycle through help menu again or use any of the other commands to view a specific help menu:\n```yaml\n{commandPrefix}help gen\n{commandPrefix}help char\n{commandPrefix}help timer1\n{commandPrefix}help timer2\n{commandPrefix}help timer3\n{commandPrefix}help shop\n{commandPrefix}help tp\n{commandPrefix}help guild\n{commandPrefix}help campaign```", view=None)
             else:
                 await helpMsg.edit(embed=helpList[view.state+1], view = None)
-
+        else:
+            helpMsg = await ctx.channel.send(embed=helpList[page], view = view)
         
 async def setup(bot):
     await bot.add_cog(Misc(bot))
