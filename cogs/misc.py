@@ -9,7 +9,6 @@ from bfunc import settingsRecord, settingsRecord, alphaEmojis, commandPrefix, db
 
 def admin_or_owner():
     async def predicate(ctx):
-        
         output = ctx.message.author.id in [220742049631174656, 203948352973438995] or (get(ctx.message.guild.roles, name = "A d m i n") in ctx.message.author.roles)
         return  output
     return commands.check(predicate)
@@ -17,7 +16,6 @@ def admin_or_owner():
 async def disambiguate(options, msg, author):
     view = AlphaView(options, author, True)
     msg = await msg.edit(view = view)
-    # Wait for the View to stop listening for input...
     await view.wait()
     await msg.edit(view = None)
     return view.state
@@ -339,7 +337,7 @@ class Misc(commands.Cog):
         for cat in chan.guild.categories:
             if("campaigns" in cat.name.lower()):
                 campaign_channels+=cat.text_channels
-        excluded = [787161189767577640, 382027251618938880, 582450618703020052]
+        excluded = [787161189767577640, 382027251618938880, 1003501229588107386] 
         text = "Number of currently-running campaigns: "
         filtered = []
         #filter the list of channels to be just viewable and not in the specific excluded list
