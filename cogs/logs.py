@@ -693,7 +693,7 @@ class Log(commands.Cog):
                 player["Double"] = dm["ID"] in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[dm["ID"]] and userDBEntriesDic[dm["ID"]]["Double"] >0
                 playerDouble = player["Double"]
                 
-                dmDouble = player["DM Double"]
+                dmDouble = player["DM Double"] and sessionInfo["DDMRW"]
                 
                 
                 treasureArray  = calculateTreasure(charLevel, character["CP"], duration, guildDouble, playerDouble, dmDouble)
