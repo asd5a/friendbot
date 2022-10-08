@@ -2628,10 +2628,9 @@ class Character(commands.Cog):
         except Exception as e:
             traceback.print_exc()
 
-   
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @commands.command()
-    async def roll2022(self, ctx, char):
+    async def trickortreat(self, ctx, char):
         channel = ctx.channel
         author = ctx.author
         shopEmbed = discord.Embed()
@@ -2640,27 +2639,26 @@ class Character(commands.Cog):
         charRecords, shopEmbedmsg = await checkForChar(ctx, char, shopEmbed)
 
         if charRecords:
-            
-            outcomes = [("Broken 2022 Glasses", "Broken 2022 Glasses"), 
-                    ("Big Firecracker", "Shatterstick"), 
-                    ("Big Firecracker", "Shatterstick"), 
-                    ("Wand of Fireworks", "Wand of Pyrotechnics"), 
-                    ("Wand of Fireworks", "Wand of Pyrotechnics"), 
-                    ("Tankard for the Designated Driver", "Tankard of Sobriety"), 
-                    ("Tankard for the Designated Driver", "Tankard of Sobriety"), 
-                    ("Pipe of Remembrance", "Pipe of Remembrance"),
-                    ("Pipe of Remembrance", "Pipe of Remembrance"),
-                    ("Orb of Time", "Orb of Time"), 
-                    ("Orb of Time", "Orb of Time"), 
-                    ("Tankard of Plenty", "Tankard of Plenty"), 
-                    ("Tankard of Plenty", "Tankard of Plenty"), 
-                    ("New Years Outfit", "Common Glamerweave"), 
-                    ("New Years Outfit", "Common Glamerweave"), 
-                    ("Small Firecracker", "Explosive Seed"), 
-                    ("Small Firecracker", "Explosive Seed"), 
-                    ("The Morning After Soap", "Cleansing Stone"), 
-                    ("The Morning After Soap", "Cleansing Stone"), 
-                    ("Vial of New Years Resolutions", "Vial of Stardust")]
+            def unfold(el):
+                subel1, subel2, count  = el
+                if not subel2:
+                    subel2 = subel1
+                return [(subel2, subel1)]*count
+            pool = [("Bag of Disappointment", None, 1), 
+                    ("Dread Helm", None, 2),
+                    ("Pipe of Smoke Monsters", None, 2),
+                    ("Common Glamerweave", None, 2),
+                    ("Wand of Scowls", None, 2),
+                    ("Wand of Pyrotechnics", None, 2),
+                    ("Wildspace Orrery", "Projection Machine", 2),
+                    ("Talking Doll", None, 2),
+                    ("Potion of Diminution", None, 2),
+                    ("Bottle of Boundless Coffee", "Apple Cider", 2),
+                    ("Soul Coin ", None, 1),
+                    ]
+            outcomes = []
+            for el in pool:
+                outcomes += unfold(el)
             selection = random.randrange(len(outcomes)) 
             show_name, selected_item = outcomes[selection]
             amount = 0
