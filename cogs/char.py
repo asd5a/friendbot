@@ -618,7 +618,7 @@ class Character(commands.Cog):
                         break
                     else:
                         
-                        if 'spell scroll' in r.lower():
+                        if 'spell scroll' in r.lower() and sRecord:
                             reRecord['Name'] = f"Spell Scroll ({sRecord['Name']})"
                         allRewardItemsString.append(reRecord)
                 allRewardItemsString.sort(key=lambda x: x["Tier"])
@@ -2654,7 +2654,7 @@ class Character(commands.Cog):
                     ("Talking Doll", None, 2),
                     ("Potion of Diminution", None, 2),
                     ("Bottle of Boundless Coffee", "Apple Cider", 2),
-                    ("Soul Coin ", None, 1),
+                    ("Soul Coin", None, 1),
                     ]
             outcomes = []
             for el in pool:
@@ -2669,7 +2669,7 @@ class Character(commands.Cog):
                 shopEmbedmsg = await channel.send(embed=shopEmbed)
                 ctx.command.reset_cooldown(ctx)
                 return
-            bRecord = db.rit.find_one({"Name" : {"$regex" : f"^{selected_item}$", "$options": "i"}}) 
+            bRecord = db.rit.find_one({"Name" : {"$regex" : f"^{selected_item.strip()}$", "$options": "i"}}) 
             text_string = f"{show_name}"
             if show_name != selected_item:
                 text_string = f"{show_name} ({selected_item})"
