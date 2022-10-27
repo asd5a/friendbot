@@ -1735,8 +1735,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
         dmChar = userInfo["DM"]
         # if nobody was listed, inform the user
         if rewardList == list():
-            if not resume:
-                await ctx.channel.send(content=f"I could not find any mention of a user to hand out a random item.") 
+            await ctx.channel.send(content=f"I could not find any mention of a user to hand out a random item.") 
             #return the unchanged parameters
             return None
         else:
