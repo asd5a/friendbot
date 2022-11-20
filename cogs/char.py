@@ -2718,6 +2718,29 @@ class Character(commands.Cog):
                     await channel.send(embed=shopEmbed)
                 
         ctx.command.reset_cooldown(ctx)
+    @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
+    @commands.command()
+    async def export(self, ctx, char):
+        channel = ctx.channel
+        author = ctx.author
+        shopEmbed = discord.Embed()
+        
+        # Check if character exists
+        charRecords, shopEmbedmsg = await checkForChar(ctx, char, shopEmbed)
+        #charRecords["Consumables"] = collections.Counter(charRecords['Consumables'].split(', '))
+        desired = ["Name", "Consumables", "Magic Items", "Inventory", "Race", "STR", "INT", "CON", "WIS", "DEX", "CHA", "Class", "Spellbook", "GP", "Background", "Level", "Feats"]
+        if charRecords:
+            export = {}
+            for key in desired:
+                if key in charRecords:
+                    export[key] = charRecords[key]
+                else:
+                    print(key)
+            #shopEmbed.description = f"```{export}```"
+            with io.StringIO(f"{export}") as f:
+                await channel.send(file=discord.File(f, f"{charRecords['Name']}.json"))
+                
+        ctx.command.reset_cooldown(ctx)
 
     @commands.cooldown(1, float('inf'), type=commands.BucketType.user)
     @is_log_channel()
