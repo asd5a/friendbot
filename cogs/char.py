@@ -5,6 +5,7 @@ import re
 import random
 import requests
 import asyncio
+import io
 import collections
 from discord.utils import get        
 from math import floor
