@@ -901,15 +901,20 @@ class Log(commands.Cog):
             for k,p in players.items():
                 c = ctx.guild.get_member(int(k))
                 if(c):
-                    await c.send(f"The session log for **{game}** has been approved. **{p['Character Name']}** has received their rewards.")
+                    try:
+                        await c.send(f"The session log for **{game}** has been approved. **{p['Character Name']}** has received their rewards.")
+                    except commands.errors.CommandInvokeError as cie:
+                        await ctx.channel.send(content=f"{c.mention} has blocked the bot.")
             dm_text = ""
             if("Character ID" in dm):
                 dm_text += f" **{dm['Character Name']}** has received their rewards."
             
             c = ctx.guild.get_member(int(dm["ID"]))
             if(c):
-                await c.send(f"Your session log for **{game}** has been approved."+dm_text)
-            #logData.delete_one({"Log ID": num})
+                try:
+                    await c.send(f"Your session log for **{game}** has been approved.{dm_text}")
+                except commands.errors.CommandInvokeError as cie:
+                    await ctx.channel.send(content=f"{c.mention} has blocked the bot.")
             await ctx.channel.send("The session has been approved.")
             
         except BulkWriteError as bwe:
