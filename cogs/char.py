@@ -3120,7 +3120,7 @@ class Character(commands.Cog):
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
     @is_log_channel()
-    @commands.command()
+    @commands.command(aliases=['u'])
     async def user(self,ctx):
         channel = ctx.channel
         author = ctx.author
