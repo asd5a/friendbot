@@ -3,7 +3,8 @@ import asyncio
 import re
 import pytz
 from discord.utils import get        
-from discord.ext import commands
+from discord.ext import commands  
+from discord.errors import Forbidden
 from datetime import datetime, timezone,timedelta
 from bfunc import db, traceBack, timeConversion, calculateTreasure, roleArray,timeConversion, settingsRecord, timezoneVar
 from cogs.misc import callAPI
@@ -903,7 +904,7 @@ class Log(commands.Cog):
                 if(c):
                     try:
                         await c.send(f"The session log for **{game}** has been approved. **{p['Character Name']}** has received their rewards.")
-                    except commands.errors.CommandInvokeError as cie:
+                    except commands.errors.Forbidden as cie:
                         await ctx.channel.send(content=f"{c.mention} has blocked the bot.")
             dm_text = ""
             if("Character ID" in dm):
@@ -913,7 +914,7 @@ class Log(commands.Cog):
             if(c):
                 try:
                     await c.send(f"Your session log for **{game}** has been approved.{dm_text}")
-                except commands.errors.CommandInvokeError as cie:
+                except commands.errors.Forbidden as cie:
                     await ctx.channel.send(content=f"{c.mention} has blocked the bot.")
             await ctx.channel.send("The session has been approved.")
             
