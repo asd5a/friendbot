@@ -904,7 +904,7 @@ class Log(commands.Cog):
                 if(c):
                     try:
                         await c.send(f"The session log for **{game}** has been approved. **{p['Character Name']}** has received their rewards.")
-                    except commands.errors.Forbidden as cie:
+                    except Forbidden as cie:
                         await ctx.channel.send(content=f"{c.mention} has blocked the bot.")
             dm_text = ""
             if("Character ID" in dm):
@@ -914,7 +914,7 @@ class Log(commands.Cog):
             if(c):
                 try:
                     await c.send(f"Your session log for **{game}** has been approved.{dm_text}")
-                except commands.errors.Forbidden as cie:
+                except Forbidden as cie:
                     await ctx.channel.send(content=f"{c.mention} has blocked the bot.")
             await ctx.channel.send("The session has been approved.")
             
