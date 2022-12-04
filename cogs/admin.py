@@ -68,30 +68,6 @@ class Admin(commands.Cog, name="Admin"):
             return ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Player Logs"]
         return commands.check(predicate)
     
-    @commands.command()
-    async def pop (self,ctx):
-        #update player logs
-        mass_updates = []
-        for user in db.users.find({ "Campaigns": { "$exists": 'true' } }):
-          value_set = {}
-          for key, value in user["Campaigns"].items():
-            value_set[f"Campaigns.{key}.TimeAvailable"] = value["Time"]
-            if f"{key} inc" in user:
-                user[f"{key} inc"][f"Campaigns.{key}.TimeAvailable"] = user[f"{key} inc"][f"Campaigns.{key}.Time"]
-                value_set[f"{key} inc"] = user[f"{key} inc"]
-          user_update = {"$set" : value_set}
-          mass_updates.append(UpdateOne({'_id': user['_id']}, user_update))
-                    
-        try:
-          if(len(mass_updates)>0):
-            db.users.bulk_write(mass_updates)
-        except BulkWriteError as bwe:
-            print(bwe.details)
-            await ctx.channel.send(content=f"Error")
-            # if it fails, we need to cancel and use the error details
-            return
-            
-        await ctx.channel.send(content=f"Updated {len(mass_updates)} entries")
     
     @react.command()
     @admin_or_owner()
