@@ -3,16 +3,16 @@ import discord
 import asyncio
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import numberEmojis, traceBack, alphaEmojis
+from bfunc import traceBack, alphaEmojis
 
 
 # Define a simple View that gives us a counter button
 class AlphaButton(discord.ui.Button):
     
-    def __init__(self, pos: int):
-        super().__init__(style=discord.ButtonStyle.secondary, emoji=alphaEmojis[pos])
+    def __init__(self, pos: int, emoji):
+        super().__init__(style=discord.ButtonStyle.secondary, emoji=emoji)
         self.pos = pos
-        self.value = alphaEmojis[pos]
+        self.value = emoji
     
     # This function is called whenever this particular button is pressed
     # This is part of the "meat" of the game logic
@@ -40,12 +40,12 @@ class CancelButton(discord.ui.Button):
 
 class AlphaView(discord.ui.View):
     
-    def __init__(self, count: int, author, cancel=False):
+    def __init__(self, count: int, author, emojies, cancel=False):
         super().__init__()
         self.author = author
         self.state = None
         for i in range(0, count):
-            self.add_item(AlphaButton(i))
+            self.add_item(AlphaButton(i, emojies[i%len(emojies)]))
         if cancel:
             self.add_item(CancelButton())
     
