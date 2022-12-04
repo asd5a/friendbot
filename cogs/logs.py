@@ -142,9 +142,9 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             playerDouble = player["Double"]
                 
             dmDouble = False
+            bonusDouble = "Bonus" in sessionInfo and sessionInfo["Bonus"]
             
-            
-            treasureArray  = calculateTreasure(player["Level"], player["Character CP"], duration, guildDouble, playerDouble, dmDouble, gold_modifier)
+            treasureArray  = calculateTreasure(player["Level"], player["Character CP"], duration, guildDouble, playerDouble, dmDouble, bonusDouble, gold_modifier)
             treasureString = f"{treasureArray[0]} CP, {sum(treasureArray[1].values())} TP, {treasureArray[2]} GP"
             
             
@@ -154,7 +154,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         groupString = ""
         groupString += guildDouble * "2xR "
         groupString += playerDouble * "Fanatic "
-            
+        groupString += bonusDouble * "Bonus "
         groupString += f'{role} Friend {"Full"*(player["CP"]==dm["CP"])+"Partial"*(not player["CP"]==dm["CP"])} Rewards:\n{treasureString}'
         
         # if the player was not present the whole game and it was a no rewards game
@@ -228,12 +228,14 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                         player[i[0]]["Add"].append(i[1])
             
             dmDouble = player["DM Double"] and sessionInfo["DDMRW"]
+            bonusDouble = "Bonus" in sessionInfo and sessionInfo["Bonus"]
             
             dm_double_string += guildDouble * "2xR "
             dm_double_string += playerDouble * "Fanatic "
             dm_double_string += dmDouble * "DDMRW "
+            dm_double_string += bonusDouble * "Bonus "
             
-            dmtreasureArray  = calculateTreasure(player["Level"], player["Character CP"], duration, guildDouble, playerDouble, dmDouble)
+            dmtreasureArray  = calculateTreasure(player["Level"], player["Character CP"], duration, guildDouble, playerDouble, dmDouble, bonusDouble)
             
         
         # add the items that the DM awarded themselves to the items list
@@ -548,9 +550,9 @@ class Log(commands.Cog):
                 player["Double"] = str(character["User ID"]) in userDBEntriesDic.keys() and "Double" in userDBEntriesDic[str(character["User ID"])] and userDBEntriesDic[str(character["User ID"])]["Double"] >0
                 playerDouble = player["Double"]
                 dmDouble = False
+                bonusDouble = "Bonus" in sessionInfo and sessionInfo["Bonus"]
                 
-                
-                treasureArray  = calculateTreasure(player["Level"], character["CP"] , duration, guildDouble, playerDouble, dmDouble, gold_modifier)
+                treasureArray  = calculateTreasure(player["Level"], character["CP"] , duration, guildDouble, playerDouble, dmDouble, bonusDouble, gold_modifier)
                 
                 if(guild_valid and 
                         guilds[player["Guild"]]["Items"] and 
@@ -689,9 +691,9 @@ class Log(commands.Cog):
                 playerDouble = player["Double"]
                 
                 dmDouble = player["DM Double"] and sessionInfo["DDMRW"]
+                bonusDouble = "Bonus" in sessionInfo and sessionInfo["Bonus"]
                 
-                
-                treasureArray  = calculateTreasure(charLevel, character["CP"], duration, guildDouble, playerDouble, dmDouble)
+                treasureArray  = calculateTreasure(charLevel, character["CP"], duration, guildDouble, playerDouble, dmDouble, bonusDouble)
                     
                     
                 if(guild_valid and 
@@ -1152,6 +1154,16 @@ class Log(commands.Cog):
                     await ctx.channel.send("This session has already been processed")
             else:
                 await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
+     
+    @commands.has_any_role('Mod Friend', 'Admins')      
+    @session.command()
+    async def denyBonus(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Bonus", False)
+        
+    @commands.has_any_role('Mod Friend', 'Admins')
+    @session.command()
+    async def approveBonus(self, ctx,  num : int):
+        await self.session_set(ctx, num, "Bonus", True)
      
     @commands.has_any_role('Mod Friend', 'Admins')      
     @session.command()
