@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime,timedelta
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import roleArray, calculateTreasure, timeConversion, db, traceBack
+from bfunc import db, traceBack
 
 class Apps(commands.Cog):
     def __init__ (self, bot):

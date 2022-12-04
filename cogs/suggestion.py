@@ -1,16 +1,14 @@
 import discord
-import asyncio
-from datetime import datetime,timedelta
-from discord.utils import get        
+import asyncio 
 from discord.ext import commands
-from bfunc import roleArray, calculateTreasure, timeConversion, db, traceBack
+from bfunc import traceBack
 
 class Suggestions(commands.Cog):
     def __init__ (self, bot):
         self.bot = bot
+    
     async def cog_command_error(self, ctx, error):
         msg = None
-        
         
         if isinstance(error, commands.BadArgument):
             # convert string to int failed
