@@ -70,9 +70,12 @@ class Stats(commands.Cog):
         currentDate = datetime.now(pytz.timezone(timezoneVar)).strftime("%b-%y")
         if not year:
             year = int(currentDate.split("-")[1])
-        else:
+        elif year.isnumeric():
             year = int(year)%100
-        
+        else:
+            await ctx.channel.send(f"Year needs to be a number.")
+            ctx.command.reset_cooldown(ctx)
+            return
         if month:
             if month.isnumeric() and int(month)>0 and int(month) < 13:
                 currentDate = datetime.now(pytz.timezone(timezoneVar)).replace(year=2000+int(year), month= int(month), day=1).strftime("%b-%y")
