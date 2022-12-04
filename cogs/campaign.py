@@ -398,13 +398,13 @@ class Campaign(commands.Cog):
             campaignName = campaignName[0]  
             campaignRecords = db.campaigns.find_one({"Channel ID": {"$regex": f"{campaignName.id}", '$options': 'i' }})
         else:
-            campaignRecords = db.campaigns.find_one({"Channel Name": campaignName})
+            campaignRecords = db.campaigns.find_one({"Name": campaignName})
         if not campaignRecords:
-            await channel.send(f"**{campaignName.mention}** doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
+            await channel.send(f"**{campaignName}** doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
             return
 
         try:
-            db.users.update({f'Campaigns.{campaignRecords["Name"]}': {"$exists": True}}, {"$set": {f'Campaigns{campaignRecords["Name"]}.Active': False}})
+            db.users.update_many({f'Campaigns.{campaignRecords["Name"]}': {"$exists": True}}, {"$set": {f'Campaigns.{campaignRecords["Name"]}.Active': False}})
         except Exception as e:
             print ('MONGO ERROR: ' + str(e))
             campaignEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try ending the campaign again.")
