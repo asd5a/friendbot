@@ -1342,25 +1342,16 @@ class Log(commands.Cog):
         botUser = self.bot.user
 
         # Logs channel 
-        # channel = self.bot.get_channel(577227687962214406) 
         channel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Sessions"]) 
+        editMessage = await channel.fetch_message(num)
 
-
-        limit = 100
-        msgFound = False
         async with channel.typing():
-            async for message in channel.history(oldest_first=False, limit=limit):
-                if int(num) == message.id and message.author == botUser:
-                    editMessage = message
-                    msgFound = True
-                    break 
-
-        if not msgFound:
-            delMessage = await ctx.channel.send(content=f"I couldn't find your session with ID `{num}` in the last {limit} sessions. Please try again. I will delete your message and this message in 10 seconds.\n\n:warning: **DO NOT DELETE YOUR OWN MESSAGE.** :warning")
-            await asyncio.sleep(10) 
-            await delMessage.delete()
-            await ctx.message.delete() 
-            return
+            if not editMessage or editMessage.author != self.bot.user:
+                delMessage = await ctx.channel.send(content=f"I couldn't find your session with ID `{num}`. Please try again. I will delete your message and this message in 10 seconds.\n\n:warning: **DO NOT DELETE YOUR OWN MESSAGE.** :warning")
+                await asyncio.sleep(10) 
+                await delMessage.delete()
+                await ctx.message.delete() 
+                return
 
 
         logData =db.logdata
