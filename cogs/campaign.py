@@ -381,6 +381,40 @@ class Campaign(commands.Cog):
             campaignEmbed.description = f"{author.name} has removed {user[0].mention} from **{campaignRecords['Name']}**!"
             campaignEmbedmsg = await channel.send(embed=campaignEmbed)
         return
+        
+    @campaign.command()
+    @commands.has_any_role("Mod Friend", "Bot Friend", "A d m i n")
+    async def end(self,ctx, campaignName):
+        channel = ctx.channel
+        campaignEmbed = discord.Embed()
+        campaignEmbedmsg = None
+        if ctx.message.channel_mentions != list():
+            campaignName = ctx.message.channel_mentions
+
+            if len(campaignName) > 1:
+                await channel.send(f"I couldn't find the campaign you were trying add to. Please try again.")
+                return
+            
+            campaignName = campaignName[0]  
+            campaignRecords = db.campaigns.find_one({"Channel ID": {"$regex": f"{campaignName.id}", '$options': 'i' }})
+        else:
+            campaignRecords = db.campaigns.find_one({"Channel Name": campaignName})
+        if not campaignRecords:
+            await channel.send(f"**{campaignName.mention}** doesn\'t exist! Check to see if it is a valid campaign and check your spelling.")
+            return
+
+        try:
+            db.users.update({f'Campaigns.{campaignRecords["Name"]}': {"$exists": True}}, {"$set": {f'Campaigns{campaignRecords["Name"]}.Active': False}})
+        except Exception as e:
+            print ('MONGO ERROR: ' + str(e))
+            campaignEmbedmsg = await channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try ending the campaign again.")
+        else:
+            campaignEmbed.title = f"Campaign: {campaignRecords['Name']}"
+            campaignEmbed.description = f"All players have been removed from the campaign!"
+            campaignEmbedmsg = await channel.send(embed=campaignEmbed)
+        return
+        
+        
     @campaign.group(aliases=['t'])
     async def timer(self, ctx):	
         pass
