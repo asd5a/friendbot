@@ -484,60 +484,7 @@ class Admin(commands.Cog, name="Admin"):
     
         except Exception as e:
             traceback.print_exc()
-            
-    #@commands.command()
-    #@admin_or_owner()
-    async def removeAllGID(self, ctx):
-        msg = await ctx.channel.send("Are you sure you want to remove every GID entry from characters in the database?\n No: ❌\n Yes: ✅")
-        author = ctx.author
-        
-        # if( not await self.doubleVerify(ctx, msg)):
-            # return
-        try:
-            db.players.update_many(
-               {"GID": {"$exists": True}},
-               {"$unset" : {"GID" : 1}},
-            )
-            await msg.edit(content=f"Successfully remove the GID entry from all characters.")
-    
-        except Exception as e:
-            traceback.print_exc()
-    
-    
-    #@commands.command()
-    #@admin_or_owner()
-    async def removeAllPlayers(self, ctx):
-        msg = ctx.channel.send("Are you sure you want to remove every character in the database?\n No: ❌\n Yes: ✅")
-        author = ctx.author
-        
-        if(not self.doubleVerify(ctx, msg)):
-            return
-        try:
-            count = db.players.delete_many(
-               {}
-            )
-            await msg.edit(content=f"Successfully deleted {count.deleted_count} characters.")
-    
-        except Exception as e:
-            traceback.print_exc()
-      
-    #@commands.command()      
-    #@admin_or_owner()
-    async def removeUserCharacters(self, ctx, userID):
-        msg = await ctx.channel.send("Are you sure you want to remove every character in the database?\n No: ❌\n Yes: ✅")
-        author = ctx.author
-        
-        if(not await self.doubleVerify(ctx, msg)):
-            return
-        
-        try:
-            count = db.players.delete_many(
-               {"User ID": userID}
-            )
-            await msg.edit(content=f"Successfully deleted {count.deleted_count} characters.")
-    
-        except Exception as e:
-            traceback.print_exc()        
+                   
     @commands.command()
     @admin_or_owner()
     async def generateBoard(self, ctx):
@@ -975,54 +922,6 @@ class Admin(commands.Cog, name="Admin"):
         await message.add_reaction(emote)
         await ctx.message.delete()
     
-    #@commands.command()
-    #@admin_or_owner()
-    async def makeItClean(self, ctx):
-        msg = await ctx.channel.send("Are you sure you want to delete basically everything?\n No: ❌\n Yes: ✅")
-        author = ctx.author
-        
-        if( not await self.doubleVerify(ctx, msg)):
-            return
-        try:
-            obj = db.players.delete_many(
-               {}
-            )
-            obj2 = db.campaigns.delete_many(
-               {}
-            )
-            obj3 = db.guilds.delete_many(
-               {}
-            )
-            obj4 = db.users.delete_many(
-               {}
-            )
-            obj5 = db.dead.delete_many(
-               {}
-            )
-            obj6 = db.logdata.delete_many(
-               {}
-            )
-            count = obj.deleted_count + obj2.deleted_count + obj3.deleted_count + obj4.deleted_count +obj5.deleted_count + obj6.deleted_count
-            
-            await msg.edit(content=f"Successfully deleted {count} entries.")
-    
-        except Exception as e:
-            traceback.print_exc()
-    
-    #@commands.command()
-    #@admin_or_owner()
-    async def deleteStats(self, ctx):
-        # if(not self.doubleVerify(ctx, msg)):
-            # return
-        try:
-            count = db.stats.delete_many(
-               {}
-            )
-            db.stats.insert_one({"Life": 1, "Games": 0,  "Class":{}, "Race" : {}, "Background" : {}, "Feats":{}, "Unique Players" : [], "DM":{}, "Magic Items" : {}})
-            await ctx.channel.send(content=f"Successfully deleted {count.deleted_count} stat entries.")
-    
-        except Exception as e:
-            traceback.print_exc()
     
     @commands.command()
     @admin_or_owner()
@@ -1033,8 +932,6 @@ class Admin(commands.Cog, name="Admin"):
     
         except Exception as e:
             traceback.print_exc()
-            
-            
     
     @commands.command()
     @commands.has_any_role("Mod Friend")
