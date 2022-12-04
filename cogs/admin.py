@@ -1292,6 +1292,25 @@ class Admin(commands.Cog, name="Admin"):
         filtered_total = sum(filtered_data)//(3600*3)
         noodles = dm_data["Noodles"]
         await ctx.channel.send(f"Current: {noodles}\nTotal Time: {noodles+cut_total}\nOver 3h: {noodles+filtered_total}")
+        
+    @commands.command()
+    @commands.has_any_role("Bot Friend", "A d m i n")
+    async def noodleReshape(self, ctx):
+        
+        game_data = list(db.logdata.find({"Status": "Approved"}))
+        player_times = {}
+        for game in game_data:
+            time = game["End"] - game["Start"]
+            dm_id = game["DM"]["ID"]
+            # if time < 10800:
+                # continue
+            if dm_id not in player_times:
+                player_times[dm_id] = 0
+            player_times[dm_id] += time%10800
+            
+        dm_data = list([UpdateOne({'User ID': key}, {'$inc': {'Noodles': int(time//10800),'DM Time': time%10800}}, upsert=True) for key, time in player_times])
+        db.users.bulk_write(dm_data)
+        await ctx.channel.send(f"Updated")
 async def setup(bot):
     await bot.add_cog(Admin(bot))
 

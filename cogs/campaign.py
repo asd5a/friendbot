@@ -1094,7 +1094,15 @@ Command Checklist
                 stopEmbed.add_field(name=key, value=temp, inline=False)
             if 'Noodles' not in dmChar['DB Entry']:
                 dmChar['DB Entry']['Noodles'] = 0
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\nCurrent :star:: {dmChar['DB Entry']['Noodles']}\nGained :star:: {int((total_duration/3600)//3)}\nTotal :star:: {dmChar['DB Entry']['Noodles']+int((total_duration/3600)//3)}", inline=False)
+            if 'DM Time' not in dmChar['DB Entry']:
+                dmChar['DB Entry']['DM Time'] = 0
+            noodles = dmChar['DB Entry']['Noodles']
+            duration = end - startTime
+            if duration < 3*3600:
+                duration = 0
+            noodlesGained = int((duration + dmEntry["DM Time"])//(3*3600))
+            noodlesTotal = noodles + noodlesGained
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\n{noodlesTotal}:star: = {noodlesTotal}:star: + {noodlesGained}:star:", inline=False)
 
             try:   
                 usersCollection = db.users
@@ -1103,8 +1111,7 @@ Command Checklist
                                             {"$set": {campaignRecord["Name"]+" inc" : 
                                                 {f"Campaigns.{campaignRecord['Name']}.Time": total_duration,
                                                  f"Campaigns.{campaignRecord['Name']}.TimeAvailable": total_duration,
-                                                 f"Campaigns.{campaignRecord['Name']}.Sessions": 1,
-                                                 'Noodles': int((total_duration/3600)//3)}}}, upsert=True)
+                                                 f"Campaigns.{campaignRecord['Name']}.Sessions": 1}}}, upsert=True)
                 # update the player entries in bulk
                 usersData = list(map(lambda item: UpdateOne({'_id': item["DB Entry"]['_id']}, {'$set': {campaignRecord["Name"]+" inc" : item["inc"]}}, upsert=True), playerData))
                 usersCollection.bulk_write(usersData)
@@ -1387,6 +1394,12 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             for charDict in userRecordsList:
                 if f'{campaignRecord["Name"]} inc' in charDict:
                     charRewards = charDict[f'{campaignRecord["Name"]} inc']
+                    if charDict["User ID"] == dmID:
+                        if 'DM Time' not in charDict:
+                            charDict['DM Time'] = 0
+                        #if charRewards[f'Campaigns.{campaignRecord["Name"]}.Time'] > 3*3600:
+                        charRewards["DM Time"] = (charRewards[f'Campaigns.{campaignRecord["Name"]}.Time'] + charDict["DM Time"])%(3*3600) - charDict["DM Time"]
+                        charRewards["Noodles"] = int((charRewards[f'Campaigns.{campaignRecord["Name"]}.Time'] + charDict["DM Time"])//(3*3600))
                     data.append({'_id': charDict['_id'], "fields": {"$inc": charRewards, "$unset": {f'{campaignRecord["Name"]} inc': 1} }})
 
             playersData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), data))

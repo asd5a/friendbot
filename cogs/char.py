@@ -3026,15 +3026,17 @@ class Character(commands.Cog):
         if "Campaigns" in userRecords:
             campaignString = ""
             for u, v in userRecords['Campaigns'].items():
-                campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, Available: {timeConversion(v['TimeAvailable'],hmformat=True)}/{timeConversion(v['Time'],hmformat=True)}\n"
-
-            
+                if not ("Hidden" in v and v["Hidden"]):
+                    campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, Available: {timeConversion(v['TimeAvailable'],hmformat=True)}/{timeConversion(v['Time'],hmformat=True)}\n"
             contents.append((f"Campaigns", campaignString, False))
 
+        noodles_text = "Noodles: 0:star: (Try hosting sessions to receive Noodles!)"
         if 'Noodles' in userRecords:
-            description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: {userRecords['Noodles']}\n"
-        else:
-            description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\nNoodles: 0 (Try hosting sessions to receive Noodles!)\n"
+            dm_time = ""
+            if "DM Time" in userRecords and userRecords["DM Time"] > 0:
+                dm_time = f" ({int(userRecords['DM Time']/10800*100)}%)"
+            noodles_text = f"Noodles: {userRecords['Noodles']}:star:"
+        description = f"Total One-shots Played/Hosted: {totalGamesPlayed}\n{noodles_text}{dm_time}\n"
     
         description += f"Total Characters: {len(charRecords)}\nTier 1 Characters: {len(charDictTiers[0])}\nTier 2 Characters: {len(charDictTiers[1])}\nTier 3 Characters: {len(charDictTiers[2])}\nTier 4 Characters: {len(charDictTiers[3])}\nTier 5 Characters: {len(charDictTiers[4])}"
 

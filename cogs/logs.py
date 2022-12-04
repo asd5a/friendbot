@@ -246,22 +246,26 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     
     # get the collections of characters
     playersCollection = db.players
-    
-    noodles = dm["Noodles"]
+    dmEntry = userDBEntriesDic[dm["ID"]]
+    if "DM Time" not in dmEntry:
+        dmEntry["DM Time"] = 0
+    noodles = dmEntry["Noodles"]
     # Noodles Math
+    
+    duration = end - start
+    if duration < 3*3600:
+        duration = 0
+    noodlesGained = int((duration + dmEntry["DM Time"])//(3*3600))
     
     # calculate the hour duration and calculate how many 3h segements were played
     hoursPlayed = maximumCP
     # that is the base line of sparkles and noodles gained
-    noodlesGained = sparklesGained = int(hoursPlayed) // 3
+    sparklesGained = int(hoursPlayed) // 3
     # add the noodles to the record or start a record if needed
-    
-    #update noodle role if dm
-    noodleString = "Current :star:: " + str(noodles)
-    
+        
     #new noodle total
     noodleFinal = noodles + noodlesGained
-    noodleFinalString = "Total :star:: " + str(noodleFinal) 
+    noodleFinalString = f"{str(noodleFinal)}:star: = {noodles}:star: + {noodlesGained}:star:"
 
     # if the game received rewards
     if role != "": 
@@ -365,7 +369,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             paused = "Paused" in dm_char and dm_char["Paused"]
             dm_text = f"{'[PAUSED] ' * paused + dm['Character Name']} {', '.join(dmRewardsList* (not paused))}"
             dm_name_text = f"DM {dm_double_string}Rewards (Tier {dm_tier_num}):\n**{dmtreasureArray[0]} CP, {sum(dmtreasureArray[1].values())} TP, {dmtreasureArray[2]} GP**\n"
-        sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{noodleString}\n{'Gained :star:: ' + str(noodlesGained)} \n{noodleFinalString}", name=dm_name_text)
+        sessionLogEmbed.add_field(value=f"{dm['Mention']} | {dm_text}\n{noodleFinalString}", name=dm_name_text)
         
         # if there are guild rewards then add a field with relevant information
         if guildRewardsStr != "":
@@ -787,13 +791,10 @@ class Log(commands.Cog):
                                         "$inc": {"Stored": duration,
                                                     "Games": 1,
                                                     "Event Token" : event_inc}}})
-        
-        noodles = dm["Noodles"]
-        # Noodles Math
+
         hoursPlayed = maximumCP
         # that is the base line of sparkles and noodles gained
-        noodlesGained = sparklesGained = int(hoursPlayed) // 3
-        
+        sparklesGained = int(hoursPlayed) // 3
         timerData = list(map(lambda item: UpdateOne({'_id': item['_id']}, item['fields']), playerUpdates))
         players[dm["ID"]] = dm
         guildsData = []
@@ -822,11 +823,26 @@ class Log(commands.Cog):
                                                    {"$inc": {"Games": 1, "Reputation": int(gain- reputationCost), "Total Reputation": gain}}))
         
         del players[dm["ID"]]
+        
+        end = sessionInfo["End"]
+        start = sessionInfo["Start"]
+        
+        # Noodles Math
+        dmEntry = userDBEntriesDic[dm["ID"]]
+        
+        if "DM Time" not in dmEntry:
+            dmEntry["DM Time"] = 0
+        if "Noodles" not in dmEntry:
+            dmEntry["Noodles"] = 0
+        noodles = dmEntry["Noodles"]
+        duration = totalDuration = end - start
+        duration = end - start
+        # if duration < 3*3600:
+            # duration = 0
+        noodlesGained = int((duration + dmEntry["DM Time"])//(3*3600))
+        new_dm_time = (duration + dmEntry["DM Time"])%(3*3600)
+        noodles += noodlesGained
         try:
-            end = sessionInfo["End"]
-            start = sessionInfo["Start"]
-            
-            totalDuration = end - start
             
             # get the stats for the month and create an entry if it doesnt exist yet
             statsIncrement ={"Games": 1, "Playtime": totalDuration, 'Players': len(players.keys())}
@@ -878,7 +894,7 @@ class Log(commands.Cog):
             statsCollection.update_one({'Life': 1}, {"$inc": statsIncrement, "$addToSet": statsAddToSet}, upsert=True)
             # update the DM' stats
             
-            usersCollection.update_one({'User ID': str(dm["ID"])}, {"$set": {'User ID':str(dm["ID"])}, "$inc": {'Games': 1, 'Noodles': noodlesGained, 'Double': -1*dm["Double"]}}, upsert=True)
+            usersCollection.update_one({'User ID': str(dm["ID"])}, {"$set": {'User ID':str(dm["ID"]),'DM Time': new_dm_time}, "$inc": {'Games': 1, 'Noodles': noodlesGained, 'Double': -1*dm["Double"]}}, upsert=True)
             playersCollection.bulk_write(timerData)
             
             usersData = list([UpdateOne({'User ID': key}, {'$inc': {'Games': 1, 'Double': -1*item["Double"] }}, upsert=True) for key, item in {character["User ID"] : players[character["User ID"] ] for character in characterDBentries}.items()])
@@ -920,8 +936,6 @@ class Log(commands.Cog):
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
         if dmUser:
-            dmEntry = usersCollection.find_one({"User ID" : str(dm["ID"])})
-            noodles = dmEntry["Noodles"]
             noodleString = ""
             dmRoleNames = [r.name for r in dmUser.roles]
             # for the relevant noodle role cut-off check if the user would now qualify for the role and if they do not have it and remove the old role
