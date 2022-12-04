@@ -3333,6 +3333,8 @@ class Character(commands.Cog):
                 description +=  f"• Extra Training: {charDict['Proficiency']}\n"
             if 'NoodleTraining' in charDict:
                 description +=  f"• Noodle Training: {charDict['NoodleTraining']}\n"
+            if 'Event Token' in charDict and charDict['Event Token'] > 0:
+                description +=  f"• Event Tokens: {charDict['Event Token']}\n"
             description += f":moneybag: {charDict['GP']} GP\n"
             charLevel = charDict['Level']
             if charLevel < 5:
