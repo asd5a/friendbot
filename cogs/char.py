@@ -173,56 +173,7 @@ class Character(commands.Cog):
     @commands.command()
     async def create(self,ctx, name, level: int, race, cclass, bg, sStr : int, sDex :int, sCon:int, sInt:int, sWis:int, sCha :int, consumes="", campaignName = "", timeTransfer = None):
         name = name.strip()
-        characterCog = self.bot.get_cog('Character')
-        roleCreationDict = {
-            'D&D Friend':[2],
-            'Journeyfriend':[3],
-            'Elite Friend':[3],
-            'True Friend':[3],
-            'Ascended Friend':[3],
-            'Good Noodle':[4],
-            'Elite Noodle':[4,5],
-            'True Noodle':[4,5,6],
-            'Ascended Noodle':[4,5,6,7],
-            'Immortal Noodle':[4,5,6,7,8],
-            'Eternal Noodle':[4,5,6,7,8,9]
-            #'Friend Fanatic': [11,10,9],
-            #'Guild Fanatic':[11,10,9]
-        }
-        roles = [r.name for r in ctx.author.roles]
-        author = ctx.author
-        guild = ctx.guild
-        channel = ctx.channel
-        charEmbed = discord.Embed ()
-        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
-        charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
-        charEmbedmsg = None
-        statNames = ['STR','DEX','CON','INT','WIS','CHA']
-
-        charDict = {
-          'User ID': str(author.id),
-          'Name': name,
-          'Level': int(level),
-          'HP': 0,
-          'Class': cclass,
-          'Background': bg,
-          'STR': int(sStr),
-          'DEX': int(sDex),
-          'CON': int(sCon),
-          'INT': int(sInt),
-          'WIS': int(sWis),
-          'CHA': int(sCha),
-          'Alignment': 'Unknown',
-          'CP' : 0,
-          'GP': 0,
-          'Magic Items': 'None',
-          'Consumables': 'None',
-          'Feats': 'None',
-          'Inventory': {},
-          'Predecessor': {},
-          'Games': 0
-        }
-
+        
         # Prevents name, level, race, class, background from being blank. Resets infinite cooldown and prompts
         if not name:
             await channel.send(content=":warning: The name of your character cannot be blank! Please try again.\n")
@@ -249,7 +200,55 @@ class Character(commands.Cog):
             await channel.send(content=":warning: The background of your character cannot be blank! Please try again.\n")
             self.bot.get_command('create').reset_cooldown(ctx)
             return
-
+        
+        characterCog = self.bot.get_cog('Character')
+        roleCreationDict = {
+            'D&D Friend':[2],
+            'Journeyfriend':[3],
+            'Elite Friend':[3],
+            'True Friend':[3],
+            'Ascended Friend':[3],
+            'Good Noodle':[4],
+            'Elite Noodle':[4,5],
+            'True Noodle':[4,5,6],
+            'Ascended Noodle':[4,5,6,7],
+            'Immortal Noodle':[4,5,6,7,8],
+            'Eternal Noodle':[4,5,6,7,8,9]
+            #'Friend Fanatic': [11,10,9],
+            #'Guild Fanatic':[11,10,9]
+        }
+        roles = [r.name for r in ctx.author.roles]
+        author = ctx.author
+        guild = ctx.guild
+        channel = ctx.channel
+        charEmbed = discord.Embed ()
+        charEmbed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        charEmbed.set_footer(text= "React with ❌ to cancel.\nPlease react with a choice even if no reactions appear.")
+        charEmbedmsg = None
+        statNames = ['STR','DEX','CON','INT','WIS','CHA']
+        charDict = {
+          'User ID': str(author.id),
+          'Name': name,
+          'Level': int(level),
+          'HP': 0,
+          'Class': cclass,
+          'Background': bg,
+          'STR': int(sStr),
+          'DEX': int(sDex),
+          'CON': int(sCon),
+          'INT': int(sInt),
+          'WIS': int(sWis),
+          'CHA': int(sCha),
+          'Alignment': 'Unknown',
+          'CP' : 0,
+          'GP': 0,
+          'Magic Items': 'None',
+          'Consumables': 'None',
+          'Feats': 'None',
+          'Inventory': {},
+          'Predecessor': {},
+          'Games': 0
+        }
 
         lvl = int(level)
         # Provides an error message at the end. If there are more than one, it will join msg.
@@ -458,7 +457,6 @@ class Character(commands.Cog):
                 rewardConsumables = []
                 rewardMagics = []
                 rewardInv = []
-                tierRewards = [[], [], [], [], []]
                 tierConsumableCounts = [0,0,0,0,0,0]
                 if 'Good Noodle' in roles:
                     tierConsumableCounts[0] = 1
