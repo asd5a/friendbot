@@ -27,13 +27,24 @@ class Campaign(commands.Cog):
         self.bot = bot
        
 
-    @commands.group(aliases=['c'], case_insensitive=True)
-    async def campaign(self, ctx):	
-        pass
+    @commands.group(aliases=['c'], case_insensitive=True, invoke_without_command=True)
+    async def campaign(self, ctx):
+        usersCollection = db.users
+        userRecords = usersCollection.find_one({"User ID": str(ctx.author.id)})	
+        contents = []
+        campaignString = ""
+        if "Campaigns" in userRecords:
+            for u, v in userRecords['Campaigns'].items():
+                campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, Available: {timeConversion(v['TimeAvailable'],hmformat=True)}/{timeConversion(v['Time'],hmformat=True)}\n"
+
+        contents.append((f"Campaigns", campaignString, False))
+        await paginate(ctx, self.bot, "" , contents, separator="\n", author = ctx.author)
+   
+    
     def is_log_channel():
-            async def predicate(ctx):
-                return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"])
-            return commands.check(predicate)
+        async def predicate(ctx):
+            return (ctx.channel.category_id == settingsRecord[str(ctx.guild.id)]["Mod Rooms"])
+        return commands.check(predicate)
     async def cog_command_error(self, ctx, error):
         msg = None
         if isinstance(error, commands.CommandNotFound):
@@ -78,6 +89,43 @@ class Campaign(commands.Cog):
                 await ctx.channel.send(f"This timer has crashed. The DM can use `{commandPrefix}campaign timer resume` to continue the timer.")
             ctx.command.reset_cooldown(ctx)
             await traceBack(ctx,error)
+    
+    
+    @campaign.command()
+    async def show(self, ctx, campaign_name):
+        await self.hideKernel(ctx,campaign_name, False)
+    
+    
+    @campaign.command()
+    async def hide(self, ctx, campaign_name):
+        await self.hideKernel(ctx,campaign_name, True)
+    
+    async def hideKernel(self, ctx, campaign_name, target_value):
+        usersCollection = db.users
+        userRecords = usersCollection.find_one({"User ID": str(ctx.author.id)})
+        campaignFind = False        
+        campaignChannels = ctx.message.channel_mentions
+        if len(campaignChannels) > 1 or campaignChannels == list():
+            for key in userRecords["Campaigns"].keys():
+                if campaign_name.lower() in key.lower(): 
+                    campaignFind = True
+                    campaignKey = key
+                    break
+            error_name = campaign_name
+        else:
+            for key in userRecords["Campaigns"].keys():
+                if key.lower().replace(",", "") == (campaignChannels[0].name.replace('-', ' ')):
+                    campaignFind = True
+                    campaignKey = key
+                    break
+            error_name = campaignChannels[0].mention
+        if not campaignFind:
+            msg = f"I could not find {error_name} in your records!"
+        else:
+            usersCollection.update_one({'_id': userRecords['_id']}, {"$set": {f"Campaigns.{campaignKey}.Hidden": target_value}})
+            msg = f"You have {'un'*(not target_value)}hidden {campaignKey} in your profile"
+        await ctx.channel.send(msg)
+            
     @campaign.command()
     async def info(self, ctx, channel="", full=""):
         campaignChannel = ctx.message.channel_mentions
