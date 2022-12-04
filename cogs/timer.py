@@ -154,51 +154,27 @@ class Timer(commands.Cog):
 
         # set up the user communication for tier selection, this is done even if norewards is selected
         prepEmbed.add_field(name=f"React with [A-F] for the tier of your quest: **{game}**.\n", 
-                            value=f"""{alphaEmojis[0]} Tutorial One-shot (Level 1)
-        {alphaEmojis[1]} Junior Friend (Level 1-4)
-        {alphaEmojis[2]} Journeyfriend (Level 5-10)
-        {alphaEmojis[3]} Elite Friend (Level 11-16)
-        {alphaEmojis[4]} True Friend (Level 17-19)
-        {alphaEmojis[5]} Ascended Friend (Level 17+)\n""", inline=False)
+                            value=f"""{numberEmojis[0]} Tutorial One-shot (Level 1)
+        {numberEmojis[1]} Junior Friend (Level 1-4)
+        {numberEmojis[2]} Journeyfriend (Level 5-10)
+        {numberEmojis[3]} Elite Friend (Level 11-16)
+        {numberEmojis[4]} True Friend (Level 17-19)
+        {numberEmojis[5]} Ascended Friend (Level 17+)\n""", inline=False)
         # the discord name is used for listing the owner of the timer
         prepEmbed.set_author(name=user, icon_url=author.display_avatar)
         prepEmbed.set_footer(text= "React with ❌ to cancel.")
         # setup the variable to access the message for user communication
-        prepEmbedMsg = None
-
-        try:
-            #if the channel is not a campaign channel we need the user to select a tier for the game
-            if not isCampaign:
-                #create the message to begin talking to the user
-                prepEmbedMsg = await channel.send(embed=prepEmbed)
-                # the emojis for the user to react with
-                for num in range(0,6): await prepEmbedMsg.add_reaction(alphaEmojis[num])
-                await prepEmbedMsg.add_reaction('❌')
-                # get the user who reacted and what they reacted with, this has already been limited to the proper emoji's and proper user
-                tReaction, tUser = await self.bot.wait_for("reaction_add", check=startEmbedcheck, timeout=60)
-        except asyncio.TimeoutError:
-            # the user does not respond within the time limit, then stop the command execution and inform the user
-            await prepEmbedMsg.delete()
-            await channel.send('Timer timed out! Try starting the timer again.')
+        
+        #create the message to begin talking to the user
+        prepEmbedMsg = await channel.send(embed=prepEmbed)
+        choice = await disambiguate(6, prepEmbedMsg, author, emojies = numberEmojis)
+        if choice is None or choice == -1:
+            await prepEmbedMsg.edit(embed=None, content=f"""Timer cancelled. {prepFormat}""")
             self.timer.get_command('prep').reset_cooldown(ctx)
             return
-
-        else:
-            #create the role variable for future use, default it to no role
-            role = ""
-            #continue our Tier check from above in case it is not a campaign
-            if not isCampaign:
-                await asyncio.sleep(1) 
-                #clear reactions to make future communication easier
-                await prepEmbedMsg.clear_reactions()
-                #cancel the command based on user desire
-                if tReaction.emoji == '❌':
-                    await prepEmbedMsg.edit(embed=None, content=f"""Timer cancelled. {prepFormat}""")
-                    self.timer.get_command('prep').reset_cooldown(ctx)
-                    return
-                # otherwise take the role based on which emoji the user reacted with
-                # the array is stored in bfunc and the options are 'New', 'Junior', 'Journey', 'Elite' and 'True' in this order
-                role = roleArray[alphaEmojis.index(tReaction.emoji)]
+        #create the role variable for future use
+        # the array is stored in bfunc and the options are 'New', 'Junior', 'Journey', 'Elite' and 'True' in this order
+        role = roleArray[choice]
 
         command_checklist_string = f"""__**Command Checklist**__
 **1. Players and DM sign up:**
@@ -214,11 +190,9 @@ class Timer(commands.Cog):
 
         #clear the embed message
         prepEmbed.clear_fields()
-        await prepEmbedMsg.clear_reactions()
         # if is not a campaign add the selected tier to the message title and inform the users about the possible commands (signup, add player, remove player, add guild)
-        if not isCampaign:
-            prepEmbed.title = f"{game} (Tier {roleArray.index(role)})"
-            prepEmbed.description = command_checklist_string
+        prepEmbed.title = f"{game} (Tier {choice})"
+        prepEmbed.description = command_checklist_string
 
         guildsList = []
         guildCategoryID = settingsRecord[str(ctx.guild.id)]["Guild Rooms"]
@@ -663,30 +637,18 @@ class Timer(commands.Cog):
             for i in range(0, min(len(item_list), queryLimit)):
                 item_name, item_type = item_list[i]
                 infoString += f"{alphaEmojis[i]}: {item_name}\n"
-            #check if the response from the user matches the limits
-            def apiEmbedCheck(r, u):
-                sameMessage = False
-                if apiEmbedmsg.id == r.message.id:
-                    sameMessage = True
-                return ((r.emoji in alphaEmojis[:min(len(item_list), queryLimit)]) or (str(r.emoji) == '❌')) and u == msg.author and sameMessage
             #inform the user of the current information and ask for their selection of an item
             apiEmbed.add_field(name=f"There seems to be multiple results for \"**{searchItem}**\"! Please choose the correct one.\nThe maximum number of results shown is {queryLimit}. If the result you are looking for is not here, please react with ❌ and be more specific.", value=infoString, inline=False)
             apiEmbedmsg = await channel.send(embed=apiEmbed)
-            await apiEmbedmsg.add_reaction('❌')
-
-            try:
-                tReaction, tUser = await self.bot.wait_for("reaction_add", check=apiEmbedCheck, timeout=60)
-                await apiEmbedmsg.delete()
-            except asyncio.TimeoutError:
+            
+            #check if the response from the user matches the limits
+            choice = await disambiguate(min(queryLimit, len(item_list)), apiEmbedmsg, msg.author)
+            if choice is None or choice == -1:
                 #stop if no response was given within the timeframe
-                await channel.send('Timed out! Try using the command again.')
+                await apiEmbedmsg.edit(embed=None, content="Command cancelled. Try using the command again.")
                 return userInfo
-            else:
-                #stop if the cancel emoji was given and reenable the command
-                if tReaction.emoji == '❌':
-                    await channel.send("Command cancelled. Try using the command again.")
-                    return userInfo
-            choice_key = alphaEmojis.index(tReaction.emoji) 
+            await apiEmbedmsg.delete()
+            choice_key = choice
         item_name, item_type = item_list[choice_key]
         if item_type == "Consumables":
             # remove the item from the brought consumables
@@ -916,7 +878,6 @@ class Timer(commands.Cog):
                     
                     rewardMajorLimit += max((totalDurationTimeMultiplier -1)// 2, 0)
                     rewardMinorLimit += max((totalDurationTimeMultiplier -1), 0)
-                    
                     
                     mnc_limit = dmMnc
                     player_type = "Players"
