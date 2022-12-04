@@ -4580,54 +4580,13 @@ class Character(commands.Cog):
     async def pointBuy(self,ctx, statsArray, rRecord, charEmbed, charEmbedmsg):
         author = ctx.author
         channel = ctx.channel
-        def anyCharEmbedcheck(r, u):
-            sameMessage = False
-            if charEmbedmsg.id == r.message.id:
-                sameMessage = True
-            if (r.emoji in uniqueReacts or r.emoji == '❌') and u == author:
-                anyList[charEmbedmsg.id].add(r.emoji)
-            return sameMessage and ((len(anyList[charEmbedmsg.id]) == anyCheck) or str(r.emoji) == '❌') and u == author
-
-        def slashCharEmbedcheck(r, u):
-            sameMessage = False
-            if charEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and ((r.emoji in alphaEmojis[:len(statSplit)]) or (str(r.emoji) == '❌')) and u == author
-
         if rRecord:
             statsBonus = rRecord['Modifiers'].replace(" ", "").split(',')
             uniqueArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
             allStatsArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
             
             for s in statsBonus:
-                if '/' in s:
-                    statSplit = s[:len(s)-2].replace(" ", "").split('/')
-                    statSplitString = ""
-                    for num in range(len(statSplit)):
-                        statSplitString += f'{alphaEmojis[num]}: {statSplit[num]}\n'
-                    try:
-                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose between {s}. React [A-{alphaEmojis[len(statSplit)]}] below with the stat(s) you would like to choose.", value=statSplitString, inline=False)
-                        if charEmbedmsg:
-                            await charEmbedmsg.edit(embed=charEmbed)
-                        else: 
-                            charEmbedmsg = await channel.send(embed=charEmbed)
-                        for num in range(0,len(statSplit)): await charEmbedmsg.add_reaction(alphaEmojis[num])
-                        await charEmbedmsg.add_reaction('❌')
-                        tReaction, tUser = await self.bot.wait_for("reaction_add", check=slashCharEmbedcheck, timeout=60)
-                    except asyncio.TimeoutError:
-                        await charEmbedmsg.delete()
-                        await channel.send(f'Character creation timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
-                        self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                        return None, None
-                    else:
-                        if tReaction.emoji == '❌':
-                            await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}char {ctx.invoked_with}```")
-                            await charEmbedmsg.clear_reactions()
-                            self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                            return None, None
-                    await charEmbedmsg.clear_reactions()
-                    s = statSplit[alphaEmojis.index(tReaction.emoji)] + s[-2:]
-
+                
                 if 'STR' in s:
                     statsArray[0] += int(s[len(s)-1]) if s[len(s)-2] == "+" else int("-" + s[len(s)-1])
                     uniqueArray.remove('STR')
@@ -4648,93 +4607,65 @@ class Character(commands.Cog):
                     uniqueArray.remove('CHA')
 
                 elif 'AOU' in s or 'ANY' in s:
-                    try:
-                        anyList = dict()
-                        anyCheck = [int(charL) for charL in s if charL.isnumeric()][0]
-                        anyAmount = int(s[len(s)-1])
-                        anyList = {charEmbedmsg.id:set()}
-                        uniqueStatStr = ""
-                        uniqueReacts = []
+                    anyAmount = int(s[len(s)-1])
+                    uniqueStatStr = ""
+                    uniqueReacts = []
 
-                        if 'ANY' in s:
-                            uniqueArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
+                    if 'ANY' in s:
+                        uniqueArray = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
 
-                        for u in range(0,len(uniqueArray)):
-                            uniqueStatStr += f'{alphaEmojis[u]}: {uniqueArray[u]}\n'
-                            uniqueReacts.append(alphaEmojis[u])
+                    for u in range(0,len(uniqueArray)):
+                        uniqueStatStr += f'{alphaEmojis[u]}: {uniqueArray[u]}\n'
+                        uniqueReacts.append(alphaEmojis[u])
 
-                        charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose {anyCheck} extra stats to increase by {anyAmount}. React below with the stat(s) you would like to choose.", value=uniqueStatStr, inline=False)
-                        if charEmbedmsg:
-                            await charEmbedmsg.edit(embed=charEmbed)
-                        else: 
-                            charEmbedmsg = await channel.send(embed=charEmbed)
-                        for num in range(0,len(uniqueArray)): await charEmbedmsg.add_reaction(alphaEmojis[num])
-                        await charEmbedmsg.add_reaction('❌')
-                        tReaction, tUser = await self.bot.wait_for("reaction_add", check=anyCharEmbedcheck, timeout=60)
-                        
-                    except asyncio.TimeoutError:
-                        await charEmbedmsg.delete()
-                        await channel.send(f'Point buy timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
+                    charEmbed.add_field(name=f"The {rRecord['Name']} race lets you choose **1** extra stats to increase by {anyAmount}. React below with the stat you would like to choose.", value=uniqueStatStr, inline=False)
+                    if charEmbedmsg:
+                        await charEmbedmsg.edit(embed=charEmbed)
+                    else: 
+                        charEmbedmsg = await channel.send(embed=charEmbed)
+                    
+                    choice = await disambiguate(7, charEmbedmsg, author)
+                    if choice is None:
+                        await charEmbedmsg.edit(embed=None, content=f'Point buy timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
                         self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                         return None, None
-
-                    else:
-                        if tReaction.emoji == '❌':
-                            await charEmbedmsg.edit(embed=None, content=f'Point buy cancelled out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
-                            await charEmbedmsg.clear_reactions()
-                            self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                            return None, None 
-                        
+                    elif choice == -1:
+                        await charEmbedmsg.edit(embed=None, content=f'Point buy cancelled out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
+                        self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+                        return None, None 
 
                     charEmbed.clear_fields()
-                    await charEmbedmsg.clear_reactions()
                     if 'AOU' in s:
-                        for s in anyList[charEmbedmsg.id]:
-                            statsArray[allStatsArray.index(uniqueArray.pop(alphaEmojis.index(tReaction.emoji)))] += anyAmount
+                        statsArray[allStatsArray.index(uniqueArray.pop(choice))] += anyAmount
                     else:
-
-                        for s in anyList[charEmbedmsg.id]:
-                            statsArray[(alphaEmojis.index(tReaction.emoji))] += anyAmount
+                        statsArray[choice] += anyAmount
             return statsArray, charEmbedmsg
 
     async def chooseSubclass(self, ctx, subclassesList, charClass, charEmbed, charEmbedmsg):
         author = ctx.author
         channel = ctx.channel
-        def classEmbedCheck(r, u):
-            sameMessage = False
-            if charEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and ((r.emoji in alphaEmojis[:alphaIndex]) or (str(r.emoji) == '❌')) and u == author
+        subclassString = ""
+        for num in range(len(subclassesList)):
+            subclassString += f'{alphaEmojis[num]}: {subclassesList[num]}\n'
 
-        try:
-            subclassString = ""
-            for num in range(len(subclassesList)):
-                subclassString += f'{alphaEmojis[num]}: {subclassesList[num]}\n'
-
-            charEmbed.clear_fields()
-            charEmbed.add_field(name=f"The {charClass} class allows you to pick a subclass at this level. React to the choices below to select your subclass.", value=subclassString, inline=False)
-            alphaIndex = len(subclassesList)
-            if charEmbedmsg:
-                await charEmbedmsg.edit(embed=charEmbed)
-            else: 
-                charEmbedmsg = await channel.send(embed=charEmbed)
-            await charEmbedmsg.add_reaction('❌')
-            tReaction, tUser = await self.bot.wait_for("reaction_add", check=classEmbedCheck, timeout=60)
-        except asyncio.TimeoutError:
-            await charEmbedmsg.delete()
-            await channel.send(f'Character creation timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
+        charEmbed.clear_fields()
+        charEmbed.add_field(name=f"The {charClass} class allows you to pick a subclass at this level. React to the choices below to select your subclass.", value=subclassString, inline=False)
+        if charEmbedmsg:
+            await charEmbedmsg.edit(embed=charEmbed)
+        else: 
+            charEmbedmsg = await channel.send(embed=charEmbed)
+            
+        choice = await disambiguate(len(subclassesList), charEmbedmsg, author)
+        if choice is None:
+            await charEmbedmsg.edit(embed=None, content=f'Character creation timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
             self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
             return None, None
-        else:
-            if tReaction.emoji == '❌':
-                await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
-                await charEmbedmsg.clear_reactions()
-                self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
-                return None, None
-        await charEmbedmsg.clear_reactions()
+        elif choice == -1:
+            await charEmbedmsg.edit(embed=None, content=f"Character creation cancelled. Try again using the same command:\n```yaml\n{commandPrefix}create \"character name\" level \"race\" \"class\" \"background\" STR DEX CON INT WIS CHA \"reward item1, reward item2, [...]\"```")
+            self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
+            return None, None
         charEmbed.clear_fields()
-        choiceIndex = alphaEmojis.index(tReaction.emoji)
-        subclass = subclassesList[choiceIndex].strip()
+        subclass = subclassesList[choice].strip()
 
         return subclass, charEmbedmsg
 
