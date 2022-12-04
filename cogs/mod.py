@@ -4,7 +4,7 @@ import re
 from discord.utils import get        
 from discord.ext import commands
 from bfunc import db, commandPrefix, numberEmojis, roleArray
-from cogs.misc import callAPI, checkForChar, checkForGuild
+from cogs.util import callAPI, checkForChar, checkForGuild
 
 class Mod(commands.Cog):
     def __init__ (self, bot):

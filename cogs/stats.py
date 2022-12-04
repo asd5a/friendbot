@@ -10,8 +10,8 @@ from discord.utils import get
 from math import floor
 from datetime import datetime, timezone, timedelta 
 from discord.ext import commands
-from cogs.char import paginate
-from bfunc import alphaEmojis, timezoneVar, commandPrefix, left,right,back, db, timeConversion, traceBack, settingsRecord
+from cogs.util import paginate, disambiguate, timeConversion
+from bfunc import alphaEmojis, timezoneVar, commandPrefix, left,right,back, db, traceBack, settingsRecord
 
 
 class Stats(commands.Cog):

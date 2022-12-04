@@ -6,8 +6,8 @@ from discord.utils import get
 from discord.ext import commands  
 from discord.errors import Forbidden
 from datetime import datetime, timezone,timedelta
-from bfunc import db, traceBack, timeConversion, calculateTreasure, roleArray,timeConversion, settingsRecord, timezoneVar
-from cogs.misc import callAPI
+from bfunc import db, traceBack, roleArray, settingsRecord, timezoneVar, noodleRoleArray
+from cogs.util import calculateTreasure, callAPI, timeConversion
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 

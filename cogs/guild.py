@@ -3,10 +3,9 @@ import asyncio
 import pytz
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import  timezoneVar, numberEmojis, numberEmojisMobile, commandPrefix, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
+from bfunc import  timezoneVar, commandPrefix, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
 from datetime import datetime, timezone,timedelta
-from cogs.char import paginate
-from cogs.misc import checkForChar, checkForGuild
+from cogs.util import checkForChar, checkForGuild, paginate
 
 async def pin_control(self, ctx, goal):
         author = ctx.author

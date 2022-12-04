@@ -12,8 +12,8 @@ from itertools import product
 from discord.utils import get        
 from datetime import datetime, timezone,timedelta
 from discord.ext import commands
-from bfunc import numberEmojis, timeConversion, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, tier_reward_dictionary, cp_bound_array, settingsRecord
-from cogs.misc import callAPI, checkForChar
+from bfunc import numberEmojis, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, cp_bound_array, settingsRecord
+from cogs.util import callAPI, checkForChar, disambiguate, timeConversion
 
 from pymongo import UpdateOne
 from cogs.logs import generateLog

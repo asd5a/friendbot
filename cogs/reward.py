@@ -2,8 +2,8 @@ import discord
 import re
 import asyncio
 from discord.ext import commands
-from bfunc import db, roleArray, calculateTreasure, timeConversion, commandPrefix, tier_reward_dictionary, alphaEmojis
-from cogs.misc import checkForChar
+from bfunc import db, roleArray, commandPrefix, tier_reward_dictionary, alphaEmojis, traceback
+from cogs.util import checkForChar, calculateTreasure, timeConversion
 from random import *
 
 async def randomReward(self,ctx, tier, rewardType, block=[], player_type=None, amount=None, start=None):
