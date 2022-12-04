@@ -104,12 +104,6 @@ class Stats(commands.Cog):
         bgString = ""
         author = ctx.author
 
-        def statsEmbedCheck(r, u):
-            sameMessage = False
-            if statsEmbedmsg.id == r.message.id:
-                sameMessage = True
-            return sameMessage and ((r.emoji in alphaEmojis[:7]) or (str(r.emoji) == '❌')) and u == author
-        
         def userCheck(r,u):
             sameMessage = False
             if statsEmbedmsg.id == r.message.id:
@@ -117,25 +111,17 @@ class Stats(commands.Cog):
             return sameMessage and u == ctx.author and (r.emoji == left or r.emoji == right)
         statsEmbed.description = f"Please choose a category:\n{alphaEmojis[0]}: Monthly Stats\n{alphaEmojis[1]}: Lifetime Main Stats\n{alphaEmojis[2]}: Lifetime Class Stats\n{alphaEmojis[3]}: Lifetime Race Stats\n{alphaEmojis[4]}: Lifetime Background Stats\n{alphaEmojis[5]}: Lifetime Feat Stats\n{alphaEmojis[6]}: Lifetime Magic Items Stats"
         statsEmbedmsg = await ctx.channel.send(embed=statsEmbed)
-        for num in range(0,7): await statsEmbedmsg.add_reaction(alphaEmojis[num])
-        try:
-            
-            tReaction, tUser = await self.bot.wait_for("reaction_add", check=statsEmbedCheck , timeout=60)
-        except asyncio.TimeoutError:
-            await statsEmbedmsg.delete()
-            await channel.send(f'Stats cancelled. Try again using the same command!')
+        choice = await disambiguate(7, statsEmbedmsg, author)
+        statsEmbed.description = ""
+        if choice is None or choice == -1:
+            await statsEmbedmsg.edit(embed=None, content=f'Stats cancelled. Try again using the same command!')
             ctx.command.reset_cooldown(ctx)
             return
-        else:
-            statsEmbed.description = ""
-        
         contents = []
         # Lets the user choose a category to view stats
-        if tReaction.emoji == alphaEmojis[0] or tReaction.emoji == alphaEmojis[1]:
-        
-            
+        if choice == 0 or choice == 1:
             identity_strings = ["Monthly", "Month"]
-            if tReaction.emoji == alphaEmojis[1]:
+            if choice == 1:
                 identity_strings = ["Server", "Server"]
                 statRecords = statRecordsLife
             if statRecords is None:
@@ -233,7 +219,7 @@ class Stats(commands.Cog):
           
         # Below are lifetime stats which consists of character data
         # Lifetime Class Stats
-        elif tReaction.emoji == alphaEmojis[2]: 
+        elif choice == 2: 
             
             charString = ""
             srClass = collections.OrderedDict(sorted(statRecordsLife['Class'].items()))
@@ -252,7 +238,7 @@ class Stats(commands.Cog):
             contents.append(("Character Class Stats (Lifetime)", charString, False))
             await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "━━━━━\n")
         # Lifetime race stats
-        elif tReaction.emoji == alphaEmojis[3]:
+        elif choice == 3:
             raceString = ""
             srRace = collections.OrderedDict(sorted(statRecordsLife['Race'].items()))
             for k, v in srRace.items():
@@ -265,7 +251,7 @@ class Stats(commands.Cog):
             await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
 
         # Lifetime background Stats
-        elif tReaction.emoji == alphaEmojis[4]:
+        elif choice == 4:
             bgString = ""
             srBg = collections.OrderedDict(sorted(statRecordsLife['Background'].items()))
 
@@ -278,7 +264,7 @@ class Stats(commands.Cog):
             contents.append(("Character Background Stats (Lifetime)", bgString, False))
             await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
         # Lifetime Feats Stats
-        elif tReaction.emoji == alphaEmojis[5]:
+        elif choice == 5:
             bgString = ""
             srBg = collections.OrderedDict(sorted(statRecordsLife['Feats'].items()))
 
@@ -290,7 +276,7 @@ class Stats(commands.Cog):
             contents.append(("Character Feats Stats (Lifetime)", bgString, False))
             await paginate(ctx, self.bot, "Stats", contents, statsEmbedmsg, "\n")
         # Lifetime Magic Items Stats
-        elif tReaction.emoji == alphaEmojis[6]:
+        elif choice == 6:
             bgString = ""
             srBg = collections.OrderedDict(sorted(statRecordsLife['Magic Items'].items()))
 
