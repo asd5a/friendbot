@@ -319,19 +319,13 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
                     guildRewardsStr += f"{g['Name']}: +{int(gain)} :sparkles:\n"
         
         noodleCongrats = ""
-        if noodles < 210 and noodleFinal >= 210:
-            noodleCongrats = "Congratulations! You have reached Eternal Noodle!"
-        elif noodles < 150 and noodleFinal >= 150:
-            noodleCongrats = "Congratulations! You have reached Immortal Noodle!"
-        elif noodles < 100 and noodleFinal >= 100:
-            noodleCongrats = "Congratulations! You have reached Ascended Noodle!"
-        elif noodles < 60 and noodleFinal >= 60:
-            noodleCongrats = "Congratulations! You have reached True Noodle!"
-        elif noodles < 30 and noodleFinal >= 30:
-            noodleCongrats = "Congratulations! You have reached Elite Noodle!"
-        elif noodles < 10 and noodleFinal >= 10:
-            noodleCongrats = "Congratulations! You have reached Good Noodle!"
-        elif noodles < 1 and noodleFinal >= 1:
+        # for the relevant noodle role cut-off check if the user would now qualify for the role and if they do not have it and remove the old role
+        noodles_barrier = 0
+        for i in range(len(noodleRoleArray)):
+            noodles_barrier += 10*(i+1)
+            if noodles < noodles_barrier and noodleFinal >= noodles_barrier:
+                noodleCongrats = f"Congratulations! You have reached {noodleRoleArray[i]}!"
+        if noodles < 1 and noodleFinal >= 1:
             noodleCongrats = "Congratulations on hosting your first game!"
         game_channel = get(ctx.guild.text_channels, name = sessionInfo['Channel'])
         if not game_channel:
@@ -932,50 +926,25 @@ class Log(commands.Cog):
             noodles = dmEntry["Noodles"]
             noodleString = ""
             dmRoleNames = [r.name for r in dmUser.roles]
-            # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
-            if noodles >= 210:
-                if 'Eternal Noodle' not in dmRoleNames:
-                    noodleRole = get(guild.roles, name = 'Eternal Noodle')
-                    await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
-                    if 'Immortal Noodle' in dmRoleNames:
-                        await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
-                    noodleString += "\n**Eternal Noodle** role received! :tada:"
-            elif noodles >= 150:
-                if 'Immortal Noodle' not in dmRoleNames:
-                    noodleRole = get(guild.roles, name = 'Immortal Noodle')
-                    await dmUser.add_roles(noodleRole, reason=f"Hosted 150 sessions. This user has 150+ Noodles.")
-                    if 'Ascended Noodle' in dmRoleNames:
-                        await dmUser.remove_roles(get(guild.roles, name = 'Ascended Noodle'))
-                    noodleString += "\n**Immortal Noodle** role received! :tada:"
-            elif noodles >= 100:
-                if 'Ascended Noodle' not in dmRoleNames:
-                    noodleRole = get(guild.roles, name = 'Ascended Noodle')
-                    await dmUser.add_roles(noodleRole, reason=f"Hosted 100 sessions. This user has 100+ Noodles.")
-                    if 'True Noodle' in dmRoleNames:
-                        await dmUser.remove_roles(get(guild.roles, name = 'True Noodle'))
-                    noodleString += "\n**Ascended Noodle** role received! :tada:"
-
-            elif noodles >= 60:
-                if 'True Noodle' not in dmRoleNames:
-                    noodleRole = get(guild.roles, name = 'True Noodle')
-                    await dmUser.add_roles(noodleRole, reason=f"Hosted 60 sessions. This user has 60+ Noodles.")
-                    if 'Elite Noodle' in dmRoleNames:
-                        await dmUser.remove_roles(get(guild.roles, name = 'Elite Noodle'))
-                    noodleString += "\n**True Noodle** role received! :tada:"
+            # for the relevant noodle role cut-off check if the user would now qualify for the role and if they do not have it and remove the old role
+            noodles_barrier=0
+            broken_barrier=0
+            noodles_position = -1
+            for i in range(len(noodleRoleArray)):
+                noodles_barrier += 10*(i+1)
+                if noodles >= noodles_barrier:
+                    noodles_position = i
+                    broken_barrier = noodles_barrier
+            if noodles_position >= 0:
+                noodle_name = noodleRoleArray[noodles_position]
+                if noodle_name not in dmRoleNames:
+                    noodleRole = get(guild.roles, name = noodle_name)
+                    await dmUser.add_roles(noodleRole, reason=f"Hosted {broken_barrier} sessions. This user has {broken_barrier}+ Noodles.")
+                    if i>0:
+                        remove_role = noodleRoleArray[noodles_position-1]
+                        if remove_role in dmRoleNames:
+                            await dmUser.remove_roles(get(guild.roles, name = remove_role))
             
-            elif noodles >= 30:
-                if 'Elite Noodle' not in dmRoleNames:
-                    noodleRole = get(guild.roles, name = 'Elite Noodle')
-                    await dmUser.add_roles(noodleRole, reason=f"Hosted 30 sessions. This user has 30+ Noodles.")
-                    if 'Good Noodle' in dmRoleNames:
-                        await dmUser.remove_roles(get(guild.roles, name = 'Good Noodle'))
-                    noodleString += "\n**Elite Noodle** role received! :tada:"
-
-            elif noodles >= 10:
-                if 'Good Noodle' not in dmRoleNames:
-                    noodleRole = get(guild.roles, name = 'Good Noodle')
-                    await dmUser.add_roles(noodleRole, reason=f"Hosted 10 sessions. This user has 10+ Noodles.")
-                    noodleString += "\n**Good Noodle** role received! :tada:"
       
     @commands.has_any_role('Mod Friend', 'A d m i n')
     @session.command()

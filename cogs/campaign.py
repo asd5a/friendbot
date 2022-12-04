@@ -1336,51 +1336,24 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 noodles = dmEntry["Noodles"]
                 noodleString = ""
                 dmRoleNames = [r.name for r in dmUser.roles]
-                # for each noodle roll cut-off check if the user would now qualify for the roll and if they do not have it and remove the old roll
-                if noodles >= 210:
-                    if 'Eternal Noodle' not in dmRoleNames:
-                        noodleRole = get(guild.roles, name = 'Eternal Noodle')
-                        await dmUser.add_roles(noodleRole, reason=f"Hosted 210 sessions. This user has 210+ Noodles.")
-                        if 'Immortal Noodle' in dmRoleNames:
-                            await dmUser.remove_roles(get(guild.roles, name = 'Immortal Noodle'))
-                        noodleString += "\n**Eternal Noodle** role received! :tada:"
-                elif noodles >= 150:
-                    if 'Immortal Noodle' not in dmRoleNames:
-                        noodleRole = get(guild.roles, name = 'Immortal Noodle')
-                        await dmUser.add_roles(noodleRole, reason=f"Hosted 150 sessions. This user has 150+ Noodles.")
-                        if 'Ascended Noodle' in dmRoleNames:
-                            await dmUser.remove_roles(get(guild.roles, name = 'Ascended Noodle'))
-                        noodleString += "\n**Immortal Noodle** role received! :tada:"
-                elif noodles >= 100:
-                    if 'Ascended Noodle' not in dmRoleNames:
-                        noodleRole = get(guild.roles, name = 'Ascended Noodle')
-                        await dmUser.add_roles(noodleRole, reason=f"Hosted 100 sessions. This user has 100+ Noodles.")
-                        if 'True Noodle' in dmRoleNames:
-                            await dmUser.remove_roles(get(guild.roles, name = 'True Noodle'))
-                        noodleString += "\n**Ascended Noodle** role received! :tada:"
-
-                elif noodles >= 60:
-                    if 'True Noodle' not in dmRoleNames:
-                        noodleRole = get(guild.roles, name = 'True Noodle')
-                        await dmUser.add_roles(noodleRole, reason=f"Hosted 60 sessions. This user has 60+ Noodles.")
-                        if 'Elite Noodle' in dmRoleNames:
-                            await dmUser.remove_roles(get(guild.roles, name = 'Elite Noodle'))
-                        noodleString += "\n**True Noodle** role received! :tada:"
-                
-                elif noodles >= 30:
-                    if 'Elite Noodle' not in dmRoleNames:
-                        noodleRole = get(guild.roles, name = 'Elite Noodle')
-                        await dmUser.add_roles(noodleRole, reason=f"Hosted 30 sessions. This user has 30+ Noodles.")
-                        if 'Good Noodle' in dmRoleNames:
-                            await dmUser.remove_roles(get(guild.roles, name = 'Good Noodle'))
-                        noodleString += "\n**Elite Noodle** role received! :tada:"
-
-                elif noodles >= 10:
-                    if 'Good Noodle' not in dmRoleNames:
-                        noodleRole = get(guild.roles, name = 'Good Noodle')
-                        await dmUser.add_roles(noodleRole, reason=f"Hosted 10 sessions. This user has 10+ Noodles.")
-                        noodleString += "\n**Good Noodle** role received! :tada:"
-      
+                # for the relevant noodle role cut-off check if the user would now qualify for the role and if they do not have it and remove the old role
+                noodles_barrier=0
+                broken_barrier=0
+                noodles_position = -1
+                for i in range(len(noodleRoleArray)):
+                    noodles_barrier += 10*(i+1)
+                    if noodles >= noodles_barrier:
+                        noodles_position = i
+                        broken_barrier = noodles_barrier
+                if noodles_position >= 0:
+                    noodle_name = noodleRoleArray[noodles_position]
+                    if noodle_name not in dmRoleNames:
+                        noodleRole = get(guild.roles, name = noodle_name)
+                        await dmUser.add_roles(noodleRole, reason=f"Hosted {broken_barrier} sessions. This user has {broken_barrier}+ Noodles.")
+                        if i>0:
+                            remove_role = noodleRoleArray[noodles_position-1]
+                            if remove_role in dmRoleNames:
+                                await dmUser.remove_roles(get(guild.roles, name = remove_role))
         else:
             await ctx.channel.send('Log has already been processed! ')
             

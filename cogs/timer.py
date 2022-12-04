@@ -866,58 +866,32 @@ class Timer(commands.Cog):
                     dmMajor = len([x for x in dm_item_rewards if x['Minor/Major'] == 'Major'])
                     dmMinor = len([x for x in dm_item_rewards if x['Minor/Major'] == 'Minor'])
                     
-                    # if the DM has to pick a non-consumable
-                    dmMnc = False
-                    # if the DM has to pick a reward of a lower tier
-                    lowerTier = False
-                    # if the DM has to choose between major and minor
-                    chooseOr = False
-
                     totalDurationTimeMultiplier = int(totalDurationTime // 180)
                     # set up the total reward item limits based on noodle roles
                     # check out hosting-a-one-shot for details
                     # Minor limit is the total sum of rewards allowed
-                    
-                    rewardMajorLimit = 1
-                    rewardMinorLimit = 2
-                    dmMajorLimit = 0
-                    dmMinorLimit = 1
-                    
-                    if dmChar["Noodle"] == 'Eternal Noodle':
-                        rewardMajorLimit = 4
-                        rewardMinorLimit = 8
-                        dmMajorLimit = 2
-                        dmMinorLimit = 4
-                    elif dmChar["Noodle"] == 'Immortal Noodle':
-                        rewardMajorLimit = 3
-                        rewardMinorLimit = 7
-                        dmMajorLimit = 1
-                        dmMinorLimit = 3
-                    elif dmChar["Noodle"] == 'Ascended Noodle':
-                        rewardMajorLimit = 3
-                        rewardMinorLimit =  6
-                        dmMajorLimit = 1
-                        dmMinorLimit = 2
-                    elif dmChar["Noodle"] == 'True Noodle':
-                        rewardMajorLimit = 2
-                        rewardMinorLimit = 5
-                        dmMajorLimit = 1
-                        dmMinorLimit = 1
-                    elif dmChar["Noodle"] == 'Elite Noodle':
-                        rewardMajorLimit = 2
-                        rewardMinorLimit = 4
-                        dmMajorLimit = 1
-                        dmMinorLimit = 1
-                        lowerTier = True
+                    noodle_value = 0
+                    if dmChar["Noodle"] in noodleRoleArray:
+                        noodle_value = noodleRoleArray.index(dmChar["Noodle"]) + 1
+                    rewardMajorLimit = (noodle_value)//2+1
+                    rewardMinorLimit = (noodle_value)+2
+                    dmMajorLimit = max(0,(noodle_value - 3)//2+1)
+                    dmMinorLimit = max(1,(noodle_value - 3)+2)
+                    dmMajorLimit = max(0,(noodle_value - 3)//2+1)
+                    dmMinorLimit = max(0,(noodle_value - 3))+1
+                    # if the DM has to pick a reward of a lower tier
+                    lowerTier = noodle_value < 3
+                    # if the DM has to pick a non-consumable
+                    dmMnc = noodle_value == 0
+                    # if the DM has to choose between major and minor
+                    chooseOr = False
+                    # exceptions to the general progression starting at True
+                    if dmChar["Noodle"] == 'True Noodle':
                         chooseOr = True
-                    elif dmChar["Noodle"] == 'Good Noodle':
-                        rewardMajorLimit = 1
-                        rewardMinorLimit = 3
-                        dmMajorLimit = 0
-                        dmMinorLimit = 1
-                        lowerTier = True
-                    else:
-                        dmMnc = True
+                    elif dmChar["Noodle"] == 'Elite Noodle':
+                        dmMajorLimit = 1
+                        chooseOr = True
+                        
                     tierNum=5
                     # calculate the tier of the rewards
                     if charLevel < 5:
@@ -937,17 +911,17 @@ class Timer(commands.Cog):
                         else:
                             tierNum -= 1
                     
-                    dmMajorLimit += max(floor((totalDurationTimeMultiplier -1) / 2), 0)
+                    dmMajorLimit += max((totalDurationTimeMultiplier -1)//2, 0)
                     dmMinorLimit += max((totalDurationTimeMultiplier -1), 0)
                     
-                    rewardMajorLimit += max(floor((totalDurationTimeMultiplier -1) / 2), 0)
+                    rewardMajorLimit += max((totalDurationTimeMultiplier -1)// 2, 0)
                     rewardMinorLimit += max((totalDurationTimeMultiplier -1), 0)
                     
                     
                     mnc_limit = dmMnc
                     player_type = "Players"
-                    if rewardUser == dmChar["Member"]:
-                        if dmMnc:
+                    if dmMnc:
+                        if rewardUser == dmChar["Member"]:
                             for dm_item in dm_item_rewards:
                                 if (dm_item['Minor/Major'] == 'Minor' and dm_item["Type"] == "Magic Items"):
                                     mnc_limit = False
