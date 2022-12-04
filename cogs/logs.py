@@ -917,10 +917,6 @@ class Log(commands.Cog):
         except BulkWriteError as bwe:
             print(bwe.details)
             charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
-        #except Exception as e:
-        #    print ('MONGO ERROR: ' + str(e))
-        #    charEmbedmsg = await ctx.channel.send(embed=None, content="Uh oh, looks like something went wrong. Please try the timer again.")
-
         guild = ctx.guild
         dmUser = ctx.guild.get_member(int(dm["ID"]))
         if dmUser:
@@ -1216,9 +1212,6 @@ class Log(commands.Cog):
         else:
             await ctx.channel.send("The session could not be found, please double check your number or if the session has already been approved.")
                         
-                        
-    
-    
     @session.group()
     async def ddmrw(self, ctx):	
         pass
@@ -1229,8 +1222,6 @@ class Log(commands.Cog):
     @ddmrw.command()
     async def optin(self, ctx, num : int):
         await self.ddmrwOpt(ctx, num, True)
-    
-    
     
     # allows DMs to opt in or out of DDMRW
     async def ddmrwOpt(self, ctx, num : int, goal):
@@ -1327,14 +1318,12 @@ class Log(commands.Cog):
     async def genLog(self, ctx,  num : int):
         logData = db.logdata
         sessionInfo = logData.find_one({"Log ID": int(num)})
-        if( sessionInfo):
+        if(sessionInfo):
             await generateLog(self, ctx, num) 
             await ctx.channel.send("Log has been generated.")
     
         else:
             await ctx.channel.send("The session could not be found, please double check your number.")
-    
-    
     
     @session.command()
     async def log(self, ctx,  num : int, *, editString=""):
@@ -1391,9 +1380,5 @@ class Log(commands.Cog):
             pass
         await delMessage.delete()
         
-        
-        
-
-
 async def setup(bot):
     await bot.add_cog(Log(bot))

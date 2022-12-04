@@ -217,7 +217,7 @@ class Reward(commands.Cog):
             durationString = timeConversion(totalTime)
             treasureString = f"{treasureArray[0]} CP, {treasureArray[1]} TP, and {treasureArray[2]} GP"
             
-            charEmbed.description = f"A {durationString} game would give a **{tierName}** Friend\n{treasureString}"
+            charEmbed.description = f"A {durationString} game would give a **{tierName}** Friend:\n{treasureString}"
             charEmbed.clear_fields()
             if charEmbedmsg:
                 await charEmbedmsg.edit(embed=charEmbed)

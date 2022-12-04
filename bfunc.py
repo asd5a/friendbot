@@ -23,17 +23,6 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-
-def timeConversion (time,hmformat=False):
-        hours = time//3600
-        time = time - 3600*hours
-        minutes = time//60
-        if hmformat is False:
-            return ('%d Hours %d Minutes' %(hours,minutes))
-        else:
-            return ('%dh%dm' %(hours,minutes))
-        
-
 async def traceBack (ctx,error,silent=False):
     ctx.command.reset_cooldown(ctx)
     etype = type(error)
@@ -59,62 +48,6 @@ async def traceBack (ctx,error,silent=False):
         await ctx.channel.send(f"Uh oh, looks like this is some unknown error I have ran into. {dorfer.mention} has been notified.")
     raise error
 
-
-def calculateTreasure(level, charcp, seconds, guildDouble=False, playerDouble=False, dmDouble=False, gold_modifier = 100):
-    # calculate the CP gained during the game
-    cp = ((seconds) // 1800) / 2
-    cp_multiplier = 1 + guildDouble + playerDouble + dmDouble
-       
-        
-    crossTier = None
-    
-    # calculate the CP with the bonuses included
-    cp *= cp_multiplier
-    
-    gainedCP = cp
-    
-    #######role = role.lower()
-    
-    tier = 5
-    # calculate the tier of the rewards
-    if level < 5:
-        tier = 1
-    elif level < 11:
-        tier = 2
-    elif level < 17:
-        tier = 3
-    elif level < 20:
-        tier = 4
-        
-    #unreasonably large number as a cap
-    cpThreshHoldArray = [16, 16+60, 16+60+60, 16+60+60+30, 90000000]
-    # calculate how far into the current level CP the character is after the game
-    leftCP = charcp
-    gp= 0
-    tp = {}
-    charLevel = level
-    levelCP = (((charLevel-5) * 10) + 16)
-    if charLevel < 5:
-        levelCP = ((charLevel -1) * 4)
-    while(cp>0):
-        
-        # Level 20 characters haves access to exclusive items
-        # create a string representing which tier the character is in in order to create/manipulate the appropriate TP entry in the DB
-        tierTP = f"T{tier} TP"
-            
-        if levelCP + leftCP + cp > cpThreshHoldArray[tier-1]:
-            consideredCP = cpThreshHoldArray[tier-1] - (levelCP + leftCP)
-            leftCP -= min(leftCP, cpThreshHoldArray[tier-1]-levelCP)
-            levelCP = cpThreshHoldArray[tier-1]
-        else:
-            consideredCP = cp
-        if consideredCP > 0:
-            cp -=  consideredCP
-            tp[tierTP] = consideredCP * tier_reward_dictionary[tier-1][1]
-            gp += consideredCP * tier_reward_dictionary[tier-1][0]
-        tier += 1
-    gp = math.ceil(gold_modifier * gp/100)
-    return [gainedCP, tp, int(gp)]
         
 def refreshKey (timeStarted):
     if (time.time() - timeStarted > 60 * 59):
@@ -153,7 +86,6 @@ discordClient = discord.Client(intents = intents)
 async def change_status():
     await bot.wait_until_ready()
     statusLoop = cycle(statuses)
-
     while not bot.is_closed():
         current_status = next(statusLoop)
         await bot.change_presence(activity=discord.Activity(name=current_status, type=discord.ActivityType.watching))

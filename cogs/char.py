@@ -492,7 +492,6 @@ class Character(commands.Cog):
                 startt1MNC = tierConsumableCounts[0]
 
                 for item in allRewardItemsString:
-                    
                     if item['Minor/Major'] == 'Minor' and item["Type"] == 'Magic Items':
                         item['Tier'] -= 1
                     i = item["Tier"]
@@ -4989,9 +4988,6 @@ class Character(commands.Cog):
                             await charEmbedmsg.clear_reactions()
                             self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
                             return None, None, None
-                        # elif react.emoji == back:
-                        #     await charEmbedmsg.delete()
-                        #     await ctx.reinvoke()
                         elif react.emoji in alphaEmojis:
                             await charEmbedmsg.clear_reactions()
                             break

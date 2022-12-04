@@ -8,22 +8,22 @@ from datetime import datetime, timezone,timedelta
 from cogs.util import checkForChar, checkForGuild, paginate
 
 async def pin_control(self, ctx, goal):
-        author = ctx.author
-        channel = ctx.channel
-        infoMessage = await channel.send(f"You have 60 seconds to react to the message you want to {ctx.invoked_with} with the 📌 emoji (`:pushpin:`)!")
-        def pinnedEmbedCheck(event):
-            return str(event.emoji) == '📌' and event.user_id == author.id
-        try:
-            event = await self.bot.wait_for("raw_reaction_add", check=pinnedEmbedCheck , timeout=60)
-        except asyncio.TimeoutError:
-            await infoMessage.edit(content=f'The `{ctx.invoked_with}` command has timed out! Try again.')
-            return
-        message = await channel.fetch_message(event.message_id)
-        await (getattr(message, goal))()
-        await ctx.message.delete()
-        await infoMessage.edit(content = f"You have successfully {ctx.invoked_with}ned the message! This message will self-destruct in 10 seconds.")            
-        await asyncio.sleep(10) 
-        await infoMessage.delete()
+    author = ctx.author
+    channel = ctx.channel
+    infoMessage = await channel.send(f"You have 60 seconds to react to the message you want to {ctx.invoked_with} with the 📌 emoji (`:pushpin:`)!")
+    def pinnedEmbedCheck(event):
+        return str(event.emoji) == '📌' and event.user_id == author.id
+    try:
+        event = await self.bot.wait_for("raw_reaction_add", check=pinnedEmbedCheck , timeout=60)
+    except asyncio.TimeoutError:
+        await infoMessage.edit(content=f'The `{ctx.invoked_with}` command has timed out! Try again.')
+        return
+    message = await channel.fetch_message(event.message_id)
+    await (getattr(message, goal))()
+    await ctx.message.delete()
+    await infoMessage.edit(content = f"You have successfully {ctx.invoked_with}ned the message! This message will self-destruct in 10 seconds.")            
+    await asyncio.sleep(10) 
+    await infoMessage.delete()
 
 class Guild(commands.Cog):
     def __init__ (self, bot):

@@ -10,19 +10,8 @@ import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, traceBack, settingsRecord, liner_dic, calculateTreasure, noodleRoleArray
-from cogs.misc import callAPI, checkForChar
-from cogs.char import paginate
-
-
-
-def admin_or_owner():
-    async def predicate(ctx):
-        
-       
-        output = ctx.message.author.id in [220742049631174656, 203948352973438995] or (get(ctx.message.guild.roles, name = "A d m i n") in ctx.message.author.roles)
-        return  output
-    return commands.check(predicate)
+from bfunc import db, traceBack, settingsRecord, liner_dic, noodleRoleArray
+from cogs.util import calculateTreasure, callAPI, checkForChar, paginate, admin_or_owner
 
 class Admin(commands.Cog, name="Admin"):
     def __init__ (self, bot):
@@ -495,7 +484,6 @@ class Admin(commands.Cog, name="Admin"):
                 
         for u in all_users:
             if u['Noodles'] < cut_off:
-            
                 if curr_message:
                     count += 1
                     next_message = await ctx.channel.send(str(count))
@@ -532,7 +520,6 @@ class Admin(commands.Cog, name="Admin"):
             next_message = await ctx.channel.send(str(count))
             all_messages.append([next_message, curr_message])
             
-        
         count += 1
         next_message = await ctx.channel.send(str(count))
         all_messages.append([next_message, f"``` ```Last updated {date.today().strftime('%B %d, %Y')}"])
@@ -1093,12 +1080,9 @@ class Admin(commands.Cog, name="Admin"):
             #return the unchanged parameters
             return 
         else:
+            # get the first user mentioned
             rewardUser = guild.get_member(rewardList[0])
             charDict, charEmbedmsg = await checkForChar(ctx, charName, charEmbed, rewardUser, customError=True)
-            # get the first user mentioned
-            
-            
-            
             if charDict:
                 # character level
                 charLevel = int(charDict['Level'])
