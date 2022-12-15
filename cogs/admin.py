@@ -10,8 +10,8 @@ import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, traceBack, settingsRecord, liner_dic, noodleRoleArray
-from cogs.util import calculateTreasure, callAPI, checkForChar, paginate, admin_or_owner
+from bfunc import db, traceBack, settingsRecord, liner_dic
+from cogs.util import calculateTreasure, callAPI, checkForChar, paginate, admin_or_owner, noodleRoleArray
 
 class Admin(commands.Cog, name="Admin"):
     def __init__ (self, bot):
@@ -460,66 +460,64 @@ class Admin(commands.Cog, name="Admin"):
         deleted = await ctx.channel.purge(limit=100, check=is_me)
         all_users = list(db.users.find( {"Noodles": {"$gt":0}}))
         all_users = list(filter(lambda x: ctx.guild.get_member(int(x['User ID'])), all_users))
-        all_users.sort(key = lambda x: x["Noodles"], reverse=True)
-        all_messages = []
-        curr_message = ""
-        count = 0
-        new_stuff = False
         
-        cut_offs = []
-        cut_off_count = 0
+        cut_off_num = 0
+        cut_off_list = []
         for i in range(0,len(noodleRoleArray)):
-            cut_off_count += 10*(i+1)
-            cut_offs.append((get(ctx.guild.roles, name=noodleRoleArray[i]).mention, cut_off_count))
-        cut_offs.insert(0, ("Junior Noodle", 1))
-        cut_offs.reverse()
-        current_noodle_index = 0
-        symbol_count_fix = [0,0,0]
-        count += 1
+            cut_off_list.append(max(1, cut_off_num))
+            cut_off_num += 10*(i+1)
+        cut_offs = {}
+        i = 0
+        for cut_off_num in cut_off_list:
+            cut_offs[cut_off_num] = {"Users": [], "Role": get(ctx.guild.roles, name=noodleRoleArray[i]).mention}
+            i+=1
         
-        role_name, cut_off = cut_offs[0]
-        next_message = await ctx.channel.send(str(count))
-        all_messages.append([next_message, f"{role_name}s have run {cut_off}+ Games"])
-        #role_name, cut_off = cut_offs[current_noodle_index]
-                
-        for u in all_users:
-            if u['Noodles'] < cut_off:
-                if curr_message:
+        cut_off_list.reverse()
+        for user in all_users:
+            for cut_off_num in cut_off_list:
+                if user["Noodles"] >= cut_off_num:
+                    break
+            cut_offs[cut_off_num]["Users"].append(user)
+        
+        
+        all_messages = []
+        count = 0
+        for cut_off_num in cut_off_list:
+            noodle_group = cut_offs[cut_off_num]
+            if len(noodle_group["Users"]) == 0:
+                continue
+            curr_message = ""
+            new_stuff = False
+            symbol_count_fix = [0,0,0]
+            role = noodle_group["Role"]
+            
+            count += 1
+            next_message = await ctx.channel.send(str(count))
+            all_messages.append([next_message, f"``` ```{role}s have run {cut_off_num}+ Games"])
+            noodle_group["Users"].sort(key = lambda x: x["Noodles"], reverse=True)
+            for u in noodle_group["Users"]:
+                crown_count = u['Noodles']//100
+                big_star_count = (u['Noodles']%100)//10
+                star_count = u['Noodles']%10
+                curr_message += f"<@!{u['User ID']}>: {u['Noodles']} {'👑'*(crown_count)}{'🌟'*big_star_count}{'⭐'* star_count}\n"
+                symbol_count_fix[0] +=crown_count
+                symbol_count_fix[1] +=big_star_count
+                symbol_count_fix[2] +=star_count
+                if len(curr_message) >1900-19*symbol_count_fix[0] - 19*symbol_count_fix[1] - 19*symbol_count_fix[2]:
                     count += 1
                     next_message = await ctx.channel.send(str(count))
                     all_messages.append([next_message, curr_message])
                     curr_message = ""
-                new_stuff = False
-                symbol_count_fix = [0,0,0]
-                
-                current_noodle_index += 1
-                role_name, cut_off = cut_offs[current_noodle_index]
-                count += 1
-                next_message = await ctx.channel.send(str(count))
-                all_messages.append([next_message, f"``` ```{role_name}s have DM'd {cut_off}+ Games"])
-                
-            crown_count = u['Noodles']//100
-            big_star_count = (u['Noodles']%100)//10
-            star_count = u['Noodles']%10
-            curr_message += f"<@!{u['User ID']}>: {u['Noodles']} {'👑'*(crown_count)}{'🌟'*big_star_count}{'⭐'* star_count}\n"
-            symbol_count_fix[0] +=crown_count
-            symbol_count_fix[1] +=big_star_count
-            symbol_count_fix[2] +=star_count
-            if len(curr_message) >1900-19*symbol_count_fix[0] - 19*symbol_count_fix[1] - 19*symbol_count_fix[2]:
+                    new_stuff = False
+                    symbol_count_fix = [0,0,0]
+                else:
+                    new_stuff = True
+                    
+            if new_stuff:
                 count += 1
                 next_message = await ctx.channel.send(str(count))
                 all_messages.append([next_message, curr_message])
-                curr_message = ""
-                new_stuff = False
-                symbol_count_fix = [0,0,0]
-            else:
-                new_stuff = True
                 
-        if new_stuff:
-            count += 1
-            next_message = await ctx.channel.send(str(count))
-            all_messages.append([next_message, curr_message])
-            
         count += 1
         next_message = await ctx.channel.send(str(count))
         all_messages.append([next_message, f"``` ```Last updated {date.today().strftime('%B %d, %Y')}"])
