@@ -4628,7 +4628,7 @@ class Character(commands.Cog):
                     else: 
                         charEmbedmsg = await channel.send(embed=charEmbed)
                     
-                    choice = await disambiguate(7, charEmbedmsg, author)
+                    choice = await disambiguate(len(uniqueArray), charEmbedmsg, author)
                     if choice is None:
                         await charEmbedmsg.edit(embed=None, content=f'Point buy timed out! Try again using the same command:\n```yaml\n{commandPrefix}create "character name" level "race" "class" "background" STR DEX CON INT WIS CHA "reward item1, reward item2, [...]"```')
                         self.bot.get_command(ctx.invoked_with).reset_cooldown(ctx)
