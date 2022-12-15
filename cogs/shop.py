@@ -5,8 +5,8 @@ import re
 from discord.utils import get        
 from discord.ext import commands
 from cogs.admin import liner_dic
-from bfunc import db, commandPrefix,  alphaEmojis, roleArray, noodleRoleArray, traceBack, numberEmojis, settingsRecord
-from cogs.util import callAPI, checkForChar
+from bfunc import db, commandPrefix,  alphaEmojis, roleArray, traceBack, numberEmojis, settingsRecord
+from cogs.util import callAPI, checkForChar, noodleRoleArray
 from math import floor
 
 
@@ -1168,7 +1168,7 @@ class Shop(commands.Cog):
                 return    
             
             #find which rank it is based on the positioning in the array in bfunc
-            noodleLimit = noodleRoleArray.index(noodleRole.name)
+            noodleLimit = noodleRoleArray.index(noodleRole.name) - 1
             
             #establish the data record if it does not exist yet
             if 'NoodleTraining' not in charRecords:
@@ -1183,7 +1183,7 @@ class Shop(commands.Cog):
             gpNeeded = max(0, 500 - charRecords['NoodleTraining'] * 100)
             
             #call the extracted function
-            await self.purchaseProficiency('NoodleTraining', 'Noodle',noodleRoleArray[charRecords['NoodleTraining']], 3, 2, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
+            await self.purchaseProficiency('NoodleTraining', 'Noodle', noodleRoleArray[charRecords['NoodleTraining']+1], 3, 2, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
             
            
 

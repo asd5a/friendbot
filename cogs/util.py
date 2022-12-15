@@ -29,6 +29,8 @@ def timeConversion (time,hmformat=False):
     else:
         return ('%dh%dm' %(hours,minutes))
 
+noodleRoleArray = ['Newdle', 'Good Noodle', 'Elite Noodle', 'True Noodle', 'Ascended Noodle', 'Immortal Noodle', 'Eternal Noodle', 'Infinity Noodle', 'Beyond Noodle']
+
 """
 Paginate is a function that given a list of text contents turns them into an embed menu system displaying them while creating pagination when required
 ctx -> command call context

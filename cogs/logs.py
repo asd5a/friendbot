@@ -6,8 +6,8 @@ from discord.utils import get
 from discord.ext import commands  
 from discord.errors import Forbidden
 from datetime import datetime, timezone,timedelta
-from bfunc import db, traceBack, roleArray, settingsRecord, timezoneVar, noodleRoleArray
-from cogs.util import calculateTreasure, callAPI, timeConversion
+from bfunc import db, traceBack, roleArray, settingsRecord, timezoneVar
+from cogs.util import calculateTreasure, callAPI, timeConversion, noodleRoleArray
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
@@ -265,7 +265,7 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         
     #new noodle total
     noodleFinal = noodles + noodlesGained
-    noodleFinalString = f"{str(noodleFinal)}:star: = {noodles}:star: + {noodlesGained}:star:"
+    noodleFinalString = f"{str(noodleFinal)}:star: (+{noodlesGained}:star:)"
 
     # if the game received rewards
     if role != "": 
@@ -328,11 +328,10 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
         # for the relevant noodle role cut-off check if the user would now qualify for the role and if they do not have it and remove the old role
         noodles_barrier = 0
         for i in range(len(noodleRoleArray)):
-            noodles_barrier += 10*(i+1)
-            if noodles < noodles_barrier and noodleFinal >= noodles_barrier:
+            if noodles < max(noodles_barrier, 1) and noodleFinal >= max(noodles_barrier, 1):
                 noodleCongrats = f"Congratulations! You have reached {noodleRoleArray[i]}!"
-        if noodles < 1 and noodleFinal >= 1:
-            noodleCongrats = "Congratulations on hosting your first game!"
+            noodles_barrier += 10*(i+1)
+        print(noodles_barrier, noodleCongrats)
         game_channel = get(ctx.guild.text_channels, name = sessionInfo['Channel'])
         if not game_channel:
             game_channel = sessionInfo['Channel']
@@ -419,20 +418,6 @@ class Log(commands.Cog):
             else:
                 ctx.command.reset_cooldown(ctx)
                 await traceBack(ctx,error)
-        
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self,payload):
-    
-        pass
-
-        
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self,payload):
-        pass
-        
-
-    
 
     @commands.has_any_role('Mod Friend', 'Admins')
     @session.command()
@@ -453,12 +438,12 @@ class Log(commands.Cog):
         if not sessionInfo:
             return await ctx.channel.send("Session could not be found.")
             
-        # if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
-            # await ctx.channel.send("This session has already been processed")
-            # return
-        # if ctx.author.id == int(sessionInfo["DM"]["ID"]):
-            # await ctx.channel.send("You cannot approve your own log.")
-            # return
+        if sessionInfo["Status"] == "Approved" or sessionInfo["Status"] == "Denied":
+            await ctx.channel.send("This session has already been processed")
+            return
+        if ctx.author.id == int(sessionInfo["DM"]["ID"]):
+            await ctx.channel.send("You cannot approve your own log.")
+            return
         if not editMessage or editMessage.author != self.bot.user:
             return await ctx.channel.send("Session has no corresponding message in the log channel.")
 
@@ -943,21 +928,21 @@ class Log(commands.Cog):
             broken_barrier=0
             noodles_position = -1
             for i in range(len(noodleRoleArray)):
-                noodles_barrier += 10*(i+1)
-                if noodles >= noodles_barrier:
+                if noodles >= max(noodles_barrier, 1):
                     noodles_position = i
-                    broken_barrier = noodles_barrier
+                    broken_barrier = max(noodles_barrier, 1)
+                noodles_barrier += 10*(i+1)
             if noodles_position >= 0:
                 noodle_name = noodleRoleArray[noodles_position]
                 if noodle_name not in dmRoleNames:
                     noodleRole = get(guild.roles, name = noodle_name)
                     await dmUser.add_roles(noodleRole, reason=f"Hosted {broken_barrier} sessions. This user has {broken_barrier}+ Noodles.")
-                    if i>0:
+                    if noodles_position>0:
                         remove_role = noodleRoleArray[noodles_position-1]
                         if remove_role in dmRoleNames:
                             await dmUser.remove_roles(get(guild.roles, name = remove_role))
-            
-      
+
+
     @commands.has_any_role('Mod Friend', 'A d m i n')
     @session.command()
     async def deny(self,ctx,  num : int):

@@ -213,9 +213,9 @@ class Character(commands.Cog):
             'True Noodle':[4,5,6],
             'Ascended Noodle':[4,5,6,7],
             'Immortal Noodle':[4,5,6,7,8],
-            'Eternal Noodle':[4,5,6,7,8,9]
-            #'Friend Fanatic': [11,10,9],
-            #'Guild Fanatic':[11,10,9]
+            'Eternal Noodle':[4,5,6,7,8,9],
+            'Infinity Noodle':[4,5,6,7,8,9,10],
+            'Beyond Noodle':[4,5,6,7,8,9,10,11]
         }
         roles = [r.name for r in ctx.author.roles]
         author = ctx.author
@@ -478,7 +478,14 @@ class Character(commands.Cog):
                     tierConsumableCounts[0] = 1
                     tierConsumableCounts[1] = 2
                     tierConsumableCounts[2] = 2
-
+                elif 'Infinity Noodle' in roles:
+                    tierConsumableCounts[0] = 1
+                    tierConsumableCounts[1] = 3
+                    tierConsumableCounts[2] = 2
+                elif 'Beyond Noodle' in roles:
+                    tierConsumableCounts[0] = 1
+                    tierConsumableCounts[1] = 3
+                    tierConsumableCounts[2] = 3
                 if 'Nitro Booster' in roles:
                     tierConsumableCounts[0] += 2
 
@@ -3031,8 +3038,8 @@ class Character(commands.Cog):
             contents.append((f"Campaigns", campaignString, False))
 
         noodles_text = "Noodles: 0:star: (Try hosting sessions to receive Noodles!)"
+        dm_time = ""
         if 'Noodles' in userRecords:
-            dm_time = ""
             if "DM Time" in userRecords and userRecords["DM Time"] > 0:
                 dm_time = f" ({int(userRecords['DM Time']/10800*100)}%)"
             noodles_text = f"Noodles: {userRecords['Noodles']}:star:"

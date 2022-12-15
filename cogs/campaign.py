@@ -13,8 +13,8 @@ from discord.ext import commands
 from math import ceil, floor
 from itertools import product      
 from datetime import datetime, timezone,timedelta
-from bfunc import gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, roleArray, cp_bound_array, settingsRecord
-from cogs.util import callAPI, paginate, timeConversion
+from bfunc import gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, traceBack, settingsRecord, alphaEmojis, roleArray, cp_bound_array, settingsRecord
+from cogs.util import callAPI, paginate, timeConversion, noodleRoleArray
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
@@ -35,7 +35,8 @@ class Campaign(commands.Cog):
         campaignString = ""
         if "Campaigns" in userRecords:
             for u, v in userRecords['Campaigns'].items():
-                campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, Available: {timeConversion(v['TimeAvailable'],hmformat=True)}/{timeConversion(v['Time'],hmformat=True)}\n"
+                hidden = ("Hidden" in v and v["Hidden"])
+                campaignString += f"• {(not v['Active'])*'~~'}{'*'*hidden}{u}{'*'*hidden}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, Available: {timeConversion(v['TimeAvailable'],hmformat=True)}/{timeConversion(v['Time'],hmformat=True)}\n"
 
         contents.append((f"Campaigns", campaignString, False))
         await paginate(ctx, self.bot, "" , contents, separator="\n", author = ctx.author)
@@ -492,7 +493,10 @@ class Campaign(commands.Cog):
 
         campaignCollection = db.campaigns
         campaignRecords = campaignCollection.find_one({"Channel ID": f"{ctx.channel.id}"})
-
+        if not campaignRecords:
+            await channel.send(f"There are no campaigns in this channel")
+            self.timer.get_command('prep').reset_cooldown(ctx)
+            return 
         usersCollection = db.users
         dm_record_check = list(usersCollection.find({"User ID": str(author.id)}))
         if len(dm_record_check) < 1:
@@ -1098,11 +1102,11 @@ Command Checklist
                 dmChar['DB Entry']['DM Time'] = 0
             noodles = dmChar['DB Entry']['Noodles']
             duration = end - startTime
-            if duration < 3*3600:
-                duration = 0
-            noodlesGained = int((duration + dmEntry["DM Time"])//(3*3600))
+            # if duration < 3*3600:
+                # duration = 0
+            noodlesGained = int((duration + dmChar['DB Entry']["DM Time"])//(3*3600))
             noodlesTotal = noodles + noodlesGained
-            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\n{noodlesTotal}:star: = {noodlesTotal}:star: + {noodlesGained}:star:", inline=False)
+            stopEmbed.add_field(name="DM", value=f"{dmChar['Member'].mention}\n{noodlesTotal}:star: (+{noodlesGained}:star:)", inline=False)
 
             try:   
                 usersCollection = db.users
@@ -1436,19 +1440,20 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
                 broken_barrier=0
                 noodles_position = -1
                 for i in range(len(noodleRoleArray)):
-                    noodles_barrier += 10*(i+1)
-                    if noodles >= noodles_barrier:
+                    if noodles >= max(noodles_barrier, 1):
                         noodles_position = i
-                        broken_barrier = noodles_barrier
+                        broken_barrier = max(noodles_barrier, 1)
+                    noodles_barrier += 10*(i+1)
                 if noodles_position >= 0:
                     noodle_name = noodleRoleArray[noodles_position]
                     if noodle_name not in dmRoleNames:
                         noodleRole = get(guild.roles, name = noodle_name)
                         await dmUser.add_roles(noodleRole, reason=f"Hosted {broken_barrier} sessions. This user has {broken_barrier}+ Noodles.")
-                        if i>0:
+                        if noodles_position>0:
                             remove_role = noodleRoleArray[noodles_position-1]
                             if remove_role in dmRoleNames:
                                 await dmUser.remove_roles(get(guild.roles, name = remove_role))
+
         else:
             await ctx.channel.send('Log has already been processed! ')
             
@@ -1507,7 +1512,7 @@ Reminder: do not deny any logs until we have spoken about it as a team."""
             
             try:
                 usersCollection = db.users
-                usersCollection.update({"User ID" : {"$in": charData }}, {"$unset": {f'{campaignRecord["Name"]} inc': 1}})
+                usersCollection.update_many({"User ID" : {"$in": charData }}, {"$unset": {f'{campaignRecord["Name"]} inc': 1}})
 
             except Exception as e:
                 print ('MONGO ERROR: ' + str(e))

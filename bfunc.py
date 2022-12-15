@@ -62,7 +62,6 @@ currentTimers = {}
 
 gameCategory = ["🎲 game rooms", "🐉 campaigns", "mod friends"]
 roleArray = ['New', 'Junior', 'Journey', 'Elite', 'True', 'Ascended', '']
-noodleRoleArray = ['Good Noodle', 'Elite Noodle', 'True Noodle', 'Ascended Noodle', 'Immortal Noodle', 'Eternal Noodle']
 commandPrefix = '$'
 timezoneVar = 'US/Eastern'
 
@@ -74,13 +73,12 @@ left = '\N{BLACK LEFT-POINTING TRIANGLE}'
 right = '\N{BLACK RIGHT-POINTING TRIANGLE}'
 back = '\N{LEFTWARDS ARROW WITH HOOK}'
 
-numberEmojisMobile = ['1⃣','2⃣','3⃣','4⃣','5⃣','6⃣','7⃣','8⃣','9⃣']
-numberEmojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','0️⃣']
+numberEmojis = ['0️⃣', '1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣']
 
 alphaEmojis = ['🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮','🇯','🇰',
 '🇱','🇲','🇳','🇴','🇵','🇶','🇷','🇸','🇹','🇺','🇻','🇼','🇽','🇾','🇿']
 
-statuses = [f'D&D Friends | {commandPrefix}help', "We're all friends here!", f"See a bug? tell @MSchildorfer!", "Practicing social distancing!", "Wearing a mask!", "Being a good boio.", "Vibing", "Hippity Hoppity", "These Logs Are My Property", "UwU", "Morbin"]
+statuses = [f'D&D Friends | {commandPrefix}help', "We're all friends here!", f"See a bug? tell @MSchildorfer!", "Practicing social distancing!", "Wearing a mask!", "Being a good boio.", "Vibing", "Hippity Hoppity", "These Logs Are My Property", "UwU", "Morbin", "Angy", "O.O", "ABOUT TO LOG ALL OVER YOU"]
 discordClient = discord.Client(intents = intents)
 @tasks.loop(minutes=10)
 async def change_status():

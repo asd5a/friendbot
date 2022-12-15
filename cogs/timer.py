@@ -12,8 +12,8 @@ from itertools import product
 from discord.utils import get        
 from datetime import datetime, timezone,timedelta
 from discord.ext import commands
-from bfunc import numberEmojis, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, traceBack, settingsRecord, alphaEmojis, noodleRoleArray, cp_bound_array, settingsRecord
-from cogs.util import callAPI, checkForChar, disambiguate, timeConversion
+from bfunc import numberEmojis, gameCategory, commandPrefix, roleArray, timezoneVar, currentTimers, db, traceBack, settingsRecord, alphaEmojis, cp_bound_array, settingsRecord
+from cogs.util import callAPI, checkForChar, disambiguate, timeConversion, noodleRoleArray
 
 from pymongo import UpdateOne
 from cogs.logs import generateLog
@@ -153,7 +153,7 @@ class Timer(commands.Cog):
             return
 
         # set up the user communication for tier selection, this is done even if norewards is selected
-        prepEmbed.add_field(name=f"React with [A-F] for the tier of your quest: **{game}**.\n", 
+        prepEmbed.add_field(name=f"React with [0-5] for the tier of your quest: **{game}**.\n", 
                             value=f"""{numberEmojis[0]} Tutorial One-shot (Level 1)
         {numberEmojis[1]} Junior Friend (Level 1-4)
         {numberEmojis[2]} Journeyfriend (Level 5-10)
@@ -712,7 +712,7 @@ class Timer(commands.Cog):
 
         # find the name of which noodle role the DM has
         for r in userInfo["DM"]["Member"].roles:
-            if 'Noodle' in r.name:
+            if r.name in noodleRoleArray:
                 userInfo["DM"]["Noodle"] = r.name
                 break
         
@@ -834,12 +834,10 @@ class Timer(commands.Cog):
                     # Minor limit is the total sum of rewards allowed
                     noodle_value = 0
                     if dmChar["Noodle"] in noodleRoleArray:
-                        noodle_value = noodleRoleArray.index(dmChar["Noodle"]) + 1
+                        noodle_value = noodleRoleArray.index(dmChar["Noodle"])
                     rewardMajorLimit = (noodle_value)//2+1
                     rewardMinorLimit = (noodle_value)+2
-                    dmMajorLimit = max(0,(noodle_value - 3)//2+1)
-                    dmMinorLimit = max(1,(noodle_value - 3)+2)
-                    dmMajorLimit = max(0,(noodle_value - 3)//2+1)
+                    dmMajorLimit = max(0,(noodle_value - 4)//2+1)
                     dmMinorLimit = max(0,(noodle_value - 3))+1
                     # if the DM has to pick a reward of a lower tier
                     lowerTier = noodle_value < 3
@@ -848,12 +846,10 @@ class Timer(commands.Cog):
                     # if the DM has to choose between major and minor
                     chooseOr = False
                     # exceptions to the general progression starting at True
-                    if dmChar["Noodle"] == 'True Noodle':
-                        chooseOr = True
-                    elif dmChar["Noodle"] == 'Elite Noodle':
+                    if dmChar["Noodle"] in ['Elite Noodle', 'True Noodle']:
                         dmMajorLimit = 1
                         chooseOr = True
-                        
+                    
                     tierNum=5
                     # calculate the tier of the rewards
                     if charLevel < 5:
@@ -1708,7 +1704,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
         player_type = "Players"
         item_rewards = []
         if rewardUser == dmChar["Member"]:
-            if dmChar["Noodle"] in ["Junior Noodle", "Good Noodle", "Elite Noodle"]:
+            if dmChar["Noodle"] in ["Newdle", "Junior Noodle", "Good Noodle", "Elite Noodle"]:
                 tierNum = max(tierNum - 1, 1)
             player_type = "DM"
             item_rewards = dmChar["Inventory"]["Add"] + dmChar["Consumables"]["Add"] + dmChar["Magic Items"]

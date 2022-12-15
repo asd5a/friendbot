@@ -3,9 +3,9 @@ import asyncio
 import pytz
 from discord.utils import get        
 from discord.ext import commands
-from bfunc import  timezoneVar, commandPrefix, noodleRoleArray, db, traceBack, alphaEmojis, settingsRecord
+from bfunc import  timezoneVar, commandPrefix, db, traceBack, alphaEmojis, settingsRecord
 from datetime import datetime, timezone,timedelta
-from cogs.util import checkForChar, checkForGuild, paginate
+from cogs.util import checkForChar, checkForGuild, paginate, noodleRoleArray
 
 async def pin_control(self, ctx, goal):
     author = ctx.author
@@ -151,7 +151,7 @@ class Guild(commands.Cog):
         roles = author.roles
         noodleRole = None
         for r in roles:
-            if r.name in noodleRoleArray and r.name != 'Good Noodle':
+            if r.name in noodleRoleArray and r.name not in ['Newdle', 'Good Noodle']:
                 noodleRole = r
 
         if noodleRole:
@@ -179,7 +179,7 @@ class Guild(commands.Cog):
 
                     charDict['GP'] -= float(gpNeeded)
 
-                    noodleRep = ["Elite Noodle (0)", "True Noodle (10)", "Ascended Noodle (20)", "Immortal Noodle (30)", "Eternal Noodle (40)"]
+                    noodleRep = ["Elite Noodle (0)", "True Noodle (10)", "Ascended Noodle (20)", "Immortal Noodle (30)", "Eternal Noodle (40)", "Infinity Noodle (50)", "Beyond Noodle (60)"]
                     charID = charDict['_id']
                     if 'Guilds' not in userRecords: 
                         userRecords['Guilds'] = []
@@ -189,7 +189,7 @@ class Guild(commands.Cog):
                         return
 
                     # Available Noodle Roles.
-                    for i in range (noodleRoleArray.index(noodleRole.name) + 1, len(noodleRoleArray)):
+                    for i in range (noodleRoleArray.index(noodleRole.name) + 2, len(noodleRoleArray)):
                         del noodleRep[-1]
 
                     # Look through Noodles and filter used noodles for base rep.
