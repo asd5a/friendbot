@@ -247,6 +247,8 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
     # get the collections of characters
     playersCollection = db.players
     dmEntry = userDBEntriesDic[dm["ID"]]
+    if 'Noodles' not in dmEntry:
+        dmEntry['Noodles'] = 0
     if "DM Time" not in dmEntry:
         dmEntry["DM Time"] = 0
     noodles = dmEntry["Noodles"]
