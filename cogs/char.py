@@ -404,6 +404,8 @@ class Character(commands.Cog):
                     
             if any([s < 8 for s in statsArray]):
                 msg += f":warning: You have at least one stat below the minimum of 8.\n"
+            if any([s > 15 for s in statsArray]):
+                msg += f":warning: You have at least one stat above the maximum of 15.\n"
             if totalPoints != 27:
                 msg += f":warning: Your stats do not add up to 27 using point buy ({totalPoints}/27). Remember that you must list your stats before applying racial modifiers! Please check your point allocation using this calculator: <https://chicken-dinner.com/5e/5e-point-buy.html>\n"
             
