@@ -5,12 +5,13 @@ from discord.utils import get
 from discord.ext import commands
 from datetime import date
 import sys
+import io
 import traceback
 import collections
 from math import ceil, floor
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
-from bfunc import db, traceBack, settingsRecord, liner_dic
+from bfunc import db, traceBack, settingsRecord, liner_dic, currentTimers
 from cogs.util import calculateTreasure, callAPI, checkForChar, paginate, admin_or_owner, noodleRoleArray
 
 class Admin(commands.Cog, name="Admin"):
@@ -1276,39 +1277,20 @@ class Admin(commands.Cog, name="Admin"):
         await paginate(ctx, self.bot, f"Game Channel Use", contents=contents, separator="\n")
         
     @commands.command()
-    @commands.has_any_role("Mod Friend", "Bot Friend", "A d m i n")
-    async def noodleRecalc(self, ctx, dm_id):
-        
-        data = list(map(lambda x: (x["End"] - x["Start"]) ,list(db.logdata.find(
-               {"DM.ID": dm_id, "Status": "Approved"})
-            )))
-        cut_data = list([x%(3600*3) for x in data])
-        filtered_data = list([x%(3600*3) for x in data if x>(3600*3)])
-        dm_data = db.users.find_one(
-               {"User ID": dm_id})
-        cut_total = sum(cut_data)//(3600*3)
-        filtered_total = sum(filtered_data)//(3600*3)
-        noodles = dm_data["Noodles"]
-        await ctx.channel.send(f"Current: {noodles}\nTotal Time: {noodles+cut_total}\nOver 3h: {noodles+filtered_total}")
-        
+    @commands.has_any_role("Bot Friend", "A d m i n")
+    async def noodleData(self, ctx):
+        channel = ctx.channel
+        data = db.users.find({"Noodles": {"$gt": 0}})
+        with io.StringIO('\n'.join([f"{entry['User ID']}, {entry['Noodles']}" for entry in data])) as f:
+            await channel.send(file=discord.File(f, f"noodles.csv"))
+                
     @commands.command()
     @commands.has_any_role("Bot Friend", "A d m i n")
-    async def noodleReshape(self, ctx):
-        
-        game_data = list(db.logdata.find({"Status": "Approved"}))
-        player_times = {}
-        for game in game_data:
-            time = game["End"] - game["Start"]
-            dm_id = game["DM"]["ID"]
-            # if time < 10800:
-                # continue
-            if dm_id not in player_times:
-                player_times[dm_id] = 0
-            player_times[dm_id] += time%10800
-            
-        dm_data = list([UpdateOne({'User ID': key}, {'$inc': {'Noodles': int(time//10800),'DM Time': time%10800}}, upsert=True) for key, time in player_times])
-        db.users.bulk_write(dm_data)
-        await ctx.channel.send(f"Updated")
+    async def timerData(self, ctx):
+        channel = ctx.channel
+        with io.StringIO(str(currentTimers)) as f:
+            await channel.send(file=discord.File(f, f"data.csv"))
+    
 async def setup(bot):
     await bot.add_cog(Admin(bot))
 
