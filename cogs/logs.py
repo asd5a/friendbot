@@ -874,7 +874,7 @@ class Log(commands.Cog):
 
 
             
-            dateyear = datetime.fromtimestamp(start).strftime("%b-%y")
+            dateyear = datetime.fromtimestamp(start).astimezone(pytz.timezone(timezoneVar)).strftime("%b-%y")
             # update all the other data entries
             # update the DB stats
             statsCollection.update_one({'Date': dateyear}, {"$set": {'Date': dateyear}, "$inc": statsIncrement, "$addToSet": statsAddToSet}, upsert=True)
