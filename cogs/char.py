@@ -4362,7 +4362,7 @@ class Character(commands.Cog):
             elif len(mList) == 1:
                 m = mList[0]
             else:
-                await channel.send(f"`{m}` isn't in {charRecords['Name']}'s inventory. Please try the command again.")
+                await channel.send(f"`{m}` isn't in {charRecords['Name']}'s inventory or is already attuned. Please try the command again.")
                 return
 
             # Check if magic item's actually exist, and grab properties. (See if they're attuneable)
