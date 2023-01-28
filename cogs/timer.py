@@ -1526,7 +1526,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
                 dmDBEntry["2xI"] = True
                 dmDBEntry["Guild Rank"] = player["Character"]["Guild Rank"]
             dmDBEntry["Character CP"] = player["Character"]["CP"]
-            dmDBEntry["DM Double"] = dbEntry["DDMRW"]
+            dmDBEntry["DM Double"] = True
             playerList.append(player)
                 
         dmDBEntry["ID"] = str(dmChar["Member"].id)
