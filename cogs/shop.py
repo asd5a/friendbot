@@ -6,7 +6,7 @@ from discord.utils import get
 from discord.ext import commands
 from cogs.admin import liner_dic
 from bfunc import db, commandPrefix,  alphaEmojis, roleArray, traceBack, numberEmojis, settingsRecord
-from cogs.util import callAPI, checkForChar, noodleRoleArray
+from cogs.util import callAPI, checkForChar, noodleRoleArray, paginate, disambiguate
 from math import floor
 
 
@@ -1185,7 +1185,46 @@ class Shop(commands.Cog):
             #call the extracted function
             await self.purchaseProficiency('NoodleTraining', 'Noodle', noodleRoleArray[charRecords['NoodleTraining']+1], 3, 2, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
             
-           
+    @commands.cooldown(1, 5, type=commands.BucketType.member)
+    @shop.command(aliases=["list", "peruse", "view"])
+    async def browse(self,ctx):
+        channel = ctx.channel
+        author = ctx.author
+        charEmbed = discord.Embed()
+        charEmbedmsg = None
+        contents = []
+        options = ['Adventuring Gear', 'Ammunition', 'Armor \\(Heavy\\)', 'Armor \\(Light\\)', 'Armor \\(Medium\\)', 'Consumable Spell Components', 'Mount', 'Non-Consumable Spell Components', 'Poison', 'Potion', 'Shield', 'Spellcasting Focus', 'Tack and Harness', 'Tool', 'Trade Good', 'Vehicle', 'Weapon \\(Firearm, Ranged\\)', 'Weapon \\(Martial, Melee\\)', 'Weapon \\(Martial, Ranged\\)', 'Weapon \\(Simple, Melee\\)', 'Weapon \\(Simple, Ranged)']
+        infoString = ""
+        print(len(options))
+        for i in range(len(options)):
+            infoString += f"{alphaEmojis[i]}: {options[i]}\n"
+        charEmbed.add_field(name=f"Which category would you like to see?", value=infoString, inline=False)
+            
+        if charEmbedmsg:
+            await charEmbedmsg.edit(embed=charEmbed)
+        else: 
+            charEmbedmsg = await channel.send(embed=charEmbed)
+                    
+        choice = await disambiguate(len(options), charEmbedmsg, author)
+        if choice is None:
+            await charEmbedmsg.edit(embed=None, content=f'The menu has timed out.')
+            return None, None
+        elif choice == -1:
+            await charEmbedmsg.edit(embed=None, content=f'Cancelled')
+            return None, None 
+        
+        results = list(db.shop.find({"$query": {"Type": {"$regex": options[choice]}}, "$orderby": {"Type": 1, "Name": 1}}))
+        spellBookString = ""
+        for r in results:
+            if type(r['Name']) is list:
+                for name in r['Name']:
+                    spellBookString += f"• {name} ({r['GP']} GP)\n"   
+            else:
+                spellBookString += f"• {r['Name']} ({r['GP']} GP)\n"
+        
+        contents.append((options[choice], spellBookString, False, False))
+        await paginate(ctx, self.bot, f"General Items", contents, msg=charEmbedmsg)
+
 
 
 async def setup(bot):
