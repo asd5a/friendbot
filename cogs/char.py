@@ -2843,18 +2843,17 @@ class Character(commands.Cog):
                 color = (roleColors['True Friend'])
 
             # Show Spellbook in inventory
-            if 'Spellbook' in charDict:
-                spellBookString = ""
-                for s in charDict['Spellbook']:
-                    spellBookString += f"• {s['Name']} ({s['School']})\n" 
-                contents.append(("Spellbook", spellBookString, False))
+            if "Spellbook" in charDict:
+                spellbook_string = ""
+                for spell in sorted(charDict["Spellbook"], key=lambda s: s["Name"]):
+                    spellbook_string += f"• {spell['Name']} ({spell['School']})\n"
+                contents.append(("Spellbook", spellbook_string, False))
             if 'Ritual Book' in charDict:
-                ritualBookString = ""
-                for s in charDict['Ritual Book']:
-                    ritualBookString += f"• {s['Name']} ({s['School']})\n" 
-                contents.append(("Ritual Book", ritualBookString, False))
+                ritualbook_string = ""
+                for ritual in sorted(charDict['Ritual Book'], key=lambda s: s["Name"]):
+                    ritualbook_string += f"• {ritual['Name']} ({ritual['School']})\n"
+                contents.append(("Ritual Book", ritualbook_string, False))
 
-    
             # Show Consumables in inventory.
             consumesString = ""
             consumesCount = collections.Counter(charDict['Consumables'].split(', '))
