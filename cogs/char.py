@@ -2841,18 +2841,37 @@ class Character(commands.Cog):
             elif charLevel < 21:
                 role = 4
                 color = (roleColors['True Friend'])
-
-            # Show Spellbook in inventory
+            spell_list = []
             if "Spellbook" in charDict:
-                spellbook_string = ""
-                for spell in sorted(charDict["Spellbook"], key=lambda s: s["Name"]):
-                    spellbook_string += f"• {spell['Name']} ({spell['School']})\n"
-                contents.append(("Spellbook", spellbook_string, False))
-            if 'Ritual Book' in charDict:
-                ritualbook_string = ""
-                for ritual in sorted(charDict['Ritual Book'], key=lambda s: s["Name"]):
-                    ritualbook_string += f"• {ritual['Name']} ({ritual['School']})\n"
-                contents.append(("Ritual Book", ritualbook_string, False))
+                spell_list = [spell["Name"] for spell in charDict["Spellbook"]]
+            if "Ritual Book" in charDict:
+                spell_list += [spell["Name"] for spell in charDict["Ritual Book"]]
+            if spell_list:
+                spell_dict = {x["Name"] : x for x in db.spells.find({"Name": {"$in": spell_list}})}
+                # Show Spellbook in inventory
+                if "Spellbook" in charDict:
+                    spellbook_string = ""
+                    spell_levels = {x: [] for x in range(0,10)}
+                    print(spell_levels)
+                    for spell in charDict["Spellbook"]:
+                        spell_levels[spell_dict[spell["Name"]]["Level"]].append(spell_dict[spell["Name"]])
+                    for level, spells in spell_levels.items():
+                        if spells:
+                            spellbook_string+= f"**Level {level}**\n"
+                            for spell in sorted(spells, key=lambda s: s["Name"]):
+                                spellbook_string += f"• {spell['Name']} ({spell['School']})\n"
+                    contents.append(("Spellbook", spellbook_string, False))
+                if 'Ritual Book' in charDict:
+                    ritualbook_string = ""
+                    spell_levels = {x: [] for x in range(0,10)}
+                    for spell in charDict["Ritual Book"]:
+                        spell_levels[spell_dict[spell["Name"]]["Level"]].append(spell_dict[spell["Name"]])
+                    for level, spells in spell_levels.items():
+                        if spells:
+                            ritualbook_string+= f"**Level {level}**\n"
+                            for spell in sorted(spells, key=lambda s: s["Name"]):
+                                ritualbook_string += f"• {spell['Name']} ({spell['School']})\n"
+                    contents.append(("Ritual Book", ritualbook_string, False))
 
             # Show Consumables in inventory.
             consumesString = ""
