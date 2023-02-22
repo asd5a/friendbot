@@ -1186,7 +1186,7 @@ class Shop(commands.Cog):
             await self.purchaseProficiency('NoodleTraining', 'Noodle', noodleRoleArray[charRecords['NoodleTraining']+1], 3, 2, gpNeeded, charRecords, shopEmbed, shopEmbedmsg, channel, author )
             
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @shop.command(aliases=["list", "peruse", "view"])
+    @shop.command(aliases=["peruse", "view"])
     async def browse(self,ctx):
         channel = ctx.channel
         author = ctx.author
@@ -1207,10 +1207,10 @@ class Shop(commands.Cog):
                     
         choice = await disambiguate(len(options), charEmbedmsg, author)
         if choice is None:
-            await charEmbedmsg.edit(embed=None, content=f'The menu has timed out.')
+            await charEmbedmsg.edit(embed=None, content=f'The browse menu has timed out.')
             return None, None
         elif choice == -1:
-            await charEmbedmsg.edit(embed=None, content=f'Cancelled')
+            await charEmbedmsg.edit(embed=None, content=f'Shop browse menu cancelled')
             return None, None 
         
         results = list(db.shop.find({"$query": {"Type": {"$regex": options[choice]}}, "$orderby": {"Type": 1, "Name": 1}}))

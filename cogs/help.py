@@ -266,6 +266,8 @@ class Help(commands.Cog):
     # SHOP COMMANDS MENU ($help shop)
 
         helpEmbedShop.title = 'Shop Commands'
+        
+        helpEmbedShop.add_field(name=f'▫️ Looking for a Shop Item', value=f'{commandPrefix}shop browse/view/peruse', inline=False)
 
         helpEmbedShop.add_field(name=f'▫️ Buying a Shop Item', value=f'{commandPrefix}shop buy "character name" "item" #', inline=False)
 
