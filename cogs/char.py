@@ -2852,7 +2852,6 @@ class Character(commands.Cog):
                 if "Spellbook" in charDict:
                     spellbook_string = ""
                     spell_levels = {x: [] for x in range(0,10)}
-                    print(spell_levels)
                     for spell in charDict["Spellbook"]:
                         spell_levels[spell_dict[spell["Name"]]["Level"]].append(spell_dict[spell["Name"]])
                     for level, spells in spell_levels.items():
