@@ -3871,9 +3871,7 @@ class Character(commands.Cog):
 
 
                 levelUpEmbed.clear_fields()
-                lvl = charLevel
-                newLevel = charLevel + 1
-                levelUpEmbed.title = f"{charName}: Level Up! {lvl} → {newLevel}"
+                levelUpEmbed.title = f"{charName}: Level Up! {charLevel} → {newCharLevel}"
                 levelUpEmbed.description = f"{infoRecords['Race']}: {charClass}\n**STR**: {charStats['STR']} **DEX**: {charStats['DEX']} **CON**: {charStats['CON']} **INT**: {charStats['INT']} **WIS**: {charStats['WIS']} **CHA**: {charStats['CHA']}"
                 chooseClassString = ""
                 alphaIndex = 0
@@ -4078,7 +4076,7 @@ class Character(commands.Cog):
                         featLevels.append(int(c['Level']))
                 
                 statsFeats = {}
-                
+                infoRecords['Level'] += 1
                 charFeatsGained = ""
                 charFeatsGainedStr = ""
                 if featLevels != list():
