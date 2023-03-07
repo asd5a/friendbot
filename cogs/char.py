@@ -3977,9 +3977,9 @@ class Character(commands.Cog):
 
                             if '/' not in charClass:
                                 if '(' in charClass and ')' in charClass:
-                                    charClass = charClass.replace('(', f"{lvl} (")
+                                    charClass = charClass.replace('(', f"{charLevel} (")
                                 else:
-                                    charClass += ' ' + str(lvl)
+                                    charClass += ' ' + str(charLevel)
                                 
                             charClassChoice = classes[alphaEmojis.index(tReaction.emoji)]
                             charClass += f' / {charClassChoice} 1'
