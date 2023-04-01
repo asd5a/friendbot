@@ -7,6 +7,7 @@ from itertools import cycle
 import aiohttp
 from random import sample
 from bfunc import *
+from cogs.util import uwuize
 
 cogs_dir = "cogs"
 
@@ -60,9 +61,9 @@ async def on_command_error(ctx,error):
     elif isinstance(error, commands.CommandNotFound):
         try:
             amount = float(ctx.invoked_with)
-            await ctx.channel.send(f'{sample(liner_dic["Money"], 1)[0]}'.replace("<cashmoney>", f"${ctx.invoked_with}").replace("<user>", ctx.author.display_name)) 
+            await ctx.channel.send(uwuize(f'{sample(liner_dic["Money"], 1)[0]}'.replace("<cashmoney>", f"${ctx.invoked_with}").replace("<user>", ctx.author.display_name)) )
         except ValueError:
-            await ctx.channel.send(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!')
+            await ctx.channel.send(uwuize(f'Sorry, the command **`{commandPrefix}{ctx.invoked_with}`** is not valid, please try again!'))
         return 
     else:
         ctx.command.reset_cooldown(ctx)

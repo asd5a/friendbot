@@ -13,7 +13,7 @@ from datetime import datetime, timezone, timedelta
 from discord.ext import commands
 from urllib.parse import urlparse 
 from bfunc import alphaEmojis, commandPrefix, left,right,back, db, traceBack, cp_bound_array, settingsRecord
-from cogs.util import calculateTreasure, callAPI, checkForChar, paginate, disambiguate, timeConversion
+from cogs.util import calculateTreasure, callAPI, checkForChar, paginate, disambiguate, timeConversion, uwuize
                 
 class Character(commands.Cog):
     def __init__ (self, bot):
@@ -3054,7 +3054,7 @@ class Character(commands.Cog):
             for u, v in userRecords['Campaigns'].items():
                 if not ("Hidden" in v and v["Hidden"]):
                     campaignString += f"• {(not v['Active'])*'~~'}{u}{(not v['Active'])*'~~'}: {v['Sessions']} sessions, Available: {timeConversion(v['TimeAvailable'],hmformat=True)}/{timeConversion(v['Time'],hmformat=True)}\n"
-            contents.append((f"Campaigns", campaignString, False))
+            contents.append((f"Campaigns", uwuize(campaignString), False))
 
         noodles_text = "Noodles: 0:star: (Try hosting sessions to receive Noodles!)"
         dm_time = ""
@@ -3066,9 +3066,9 @@ class Character(commands.Cog):
     
         description += f"Total Characters: {len(charRecords)}\nTier 1 Characters: {len(charDictTiers[0])}\nTier 2 Characters: {len(charDictTiers[1])}\nTier 3 Characters: {len(charDictTiers[2])}\nTier 4 Characters: {len(charDictTiers[3])}\nTier 5 Characters: {len(charDictTiers[4])}"
 
-        contents.insert(0, (f"General Information",description, False))
+        contents.insert(0, (f"General Information",uwuize(description), False))
         
-        contents.append((f"Characters", charString, False))
+        contents.append((f"Characters", uwuize(charString), False))
 
         await paginate(ctx, self.bot, f"{search_author.display_name}" , contents, separator="\n", author = search_author)
    
@@ -3087,7 +3087,7 @@ class Character(commands.Cog):
         statusEmoji = ""
         charDict, charEmbedmsg = await checkForChar(ctx, char, charEmbed)
         if charDict:
-            footer = f"Attuned magic items are bolded."
+            footer = uwuize(f"Attuned magic items are bolded.")
             if 'Image' in charDict:
                 charEmbed.set_thumbnail(url=charDict['Image'])
             char_race = charDict['Race']
@@ -3128,10 +3128,10 @@ class Character(commands.Cog):
                 description += "No Guild"
             charDictAuthor = guild.get_member(int(charDict['User ID']))
             charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.display_avatar)
-            charEmbed.description = description
+            charEmbed.description = uwuize(description)
             charEmbed.clear_fields()   
             paused = "Paused" in charDict and charDict["Paused"]
-            charEmbed.title = f"{'[PAUSED] '* paused}{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
+            charEmbed.title = uwuize(f"{'[PAUSED] '* paused}{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP")
             
             
             notValidConsumables = ""
@@ -3197,9 +3197,9 @@ class Character(commands.Cog):
             if cPages > 1:
                 for p in range(len(cPageStops)-1):
                     if(cPageStops[p+1] > cPageStops[p]):
-                        charEmbed.add_field(name=f'Consumables - p. {p+1}', value=consumesString[cPageStops[p]:cPageStops[p+1]], inline=True)
+                        charEmbed.add_field(name=f'Consumables - p. {p+1}', value=uwuize(consumesString[cPageStops[p]:cPageStops[p+1]]), inline=True)
             else:
-                charEmbed.add_field(name='Consumables', value=consumesString, inline=True)
+                charEmbed.add_field(name='Consumables', value=uwuize(consumesString), inline=True)
 
             # Show Magic items in inventory.
             mPages = 1
@@ -3280,9 +3280,9 @@ class Character(commands.Cog):
             if mPages > 1:
                 for p in range(len(mPageStops)-1):
                     if(mPageStops[p+1] > mPageStops[p]):
-                        charEmbed.add_field(name=f'Magic Items - p. {p+1}', value=miString[mPageStops[p]:mPageStops[p+1]], inline=True)
+                        charEmbed.add_field(name=f'Magic Items - p. {p+1}', value=uwuize(miString[mPageStops[p]:mPageStops[p+1]]), inline=True)
             else:
-                charEmbed.add_field(name='Magic Items', value=miString, inline=True)
+                charEmbed.add_field(name='Magic Items', value=uwuize(miString), inline=True)
             
             charEmbed.set_footer(text=footer)
                 
@@ -3396,11 +3396,11 @@ class Character(commands.Cog):
 
             charDictAuthor = guild.get_member(int(charDict['User ID']))
             charEmbed.set_author(name=charDictAuthor, icon_url=charDictAuthor.display_avatar)
-            charEmbed.description = description
+            charEmbed.description = uwuize(description)
             charEmbed.clear_fields()    
             
             paused = "Paused" in charDict and charDict["Paused"]
-            charEmbed.title = f"{'[PAUSED] '*paused}{charDict['Name']} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
+            charEmbed.title = f"{'[PAUSED] '*paused}{uwuize(charDict['Name'])} (Lv {charLevel}) - {charDict['CP']}/{cp_bound_array[role-1][1]} CP"
             tpString = ""
             for i in range (1,6):
                 if f"T{i} TP" in charDict:
@@ -3408,8 +3408,8 @@ class Character(commands.Cog):
             if tpString:
                 charEmbed.add_field(name='TP', value=f"{tpString}", inline=True)
             if 'Guild' in charDict:
-                charEmbed.add_field(name='Guild', value=f"{charDict['Guild']}: Rank {charDict['Guild Rank']}", inline=True)
-            charEmbed.add_field(name='Feats', value=charDict['Feats'], inline=False)
+                charEmbed.add_field(name='Guild', value=uwuize(f"{charDict['Guild']}: Rank {charDict['Guild Rank']}"), inline=True)
+            charEmbed.add_field(name='Feats', value=uwuize(charDict['Feats']), inline=False)
 
             if 'Free Spells' in charDict:
                 fsString = ""
@@ -3446,7 +3446,7 @@ class Character(commands.Cog):
 
             # Check for stat increases in attuned magic items.
             if 'Attuned' in charDict:
-                charEmbed.add_field(name='Attuned', value='• ' + charDict['Attuned'].replace(', ', '\n• '), inline=False)
+                charEmbed.add_field(name='Attuned', value=uwuize('• ' + charDict['Attuned'].replace(', ', '\n• ')), inline=False)
                 statBonusDict = { 'STR': 0 ,'DEX': 0,'CON': 0, 'INT': 0, 'WIS': 0,'CHA': 0}
                 for a in charDict['Attuned'].split(', '):
                     if '[' in a and ']' in a:

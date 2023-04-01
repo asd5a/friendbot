@@ -3,7 +3,7 @@ import random
 import asyncio
 import re
 from cogs.view import AlphaView
-from cogs.util import admin_or_owner
+from cogs.util import admin_or_owner, uwuize
 from discord.utils import get
 from discord.ext import commands
 from bfunc import settingsRecord, settingsRecord, alphaEmojis, commandPrefix, db, left,right,back
@@ -17,42 +17,12 @@ class Misc(commands.Cog):
         self.past_message_check= 0
 
     @commands.cooldown(1, 5, type=commands.BucketType.member)
-    @admin_or_owner()
     @commands.command()
-    async def uwu(self,ctx):
+    async def uwu(self,ctx, *, text=""):
         channel = ctx.channel
-        vowels = ['a','e','i','o','u']
-        faces = ['rawr XD', 'OwO', 'owo', 'UwU', 'uwu']
         async with channel.typing():
-            async for message in channel.history(before=ctx.message, limit=1, oldest_first=False):
-                uwuMessage = message.content.replace('r', 'w')
-                uwuMessage = uwuMessage.replace('l', 'w')
-                uwuMessage = uwuMessage.replace('ove', 'uv')
-                uwuMessage = uwuMessage.replace('.', '!')
-                uwuMessage = uwuMessage.replace(' th', ' d')
-                uwuMessage = uwuMessage.replace('th', 'f')
-                uwuMessage = uwuMessage.replace('mom', 'yeshh')
-
-                for v in vowels:
-                  uwuMessage = uwuMessage.replace('n'+ v, 'ny'+v)
-
-        i = 0
-        while i < len(uwuMessage):
-            if uwuMessage[i] == '!':
-                randomFace = random.choice(faces)
-                if i == len(uwuMessage):
-                    uwuMessage = uwuMessage + ' ' + randomFace
-                    break
-                else:
-                  uwuList = list(uwuMessage)
-                  uwuList.insert(i+1, " " + randomFace)
-                  uwuMessage = ''.join(uwuList)
-                  i += len(randomFace)
-            i += 1
-            
-
-        await channel.send(content=message.author.display_name + ":\n" +  uwuMessage)
-        await ctx.message.delete()
+            uwuMessage = uwuize(text)
+            await channel.send(content="UwU\n" +  uwuMessage)
         
     #this function is passed in with the channel which has been created/moved
     #relies on there being a message to use
@@ -109,7 +79,6 @@ class Misc(commands.Cog):
         #block any check but the first one
         if(not self.past_message_check):
             self.past_message_check= 1
-            
             self.current_message = await discord.utils.get(self.bot.get_channel(channel_id).history(), author__id = self.bot.user.id)
     
     @commands.Cog.listener()
@@ -195,11 +164,11 @@ class Misc(commands.Cog):
                     time_text = ""
                     hammer_times = re.findall("<t:(\\d+)(?::.)?>", content)
                     if hammer_times:
-                        time_text = f" - <t:{hammer_times[0]}>"
+                        time_text = f" - [<t:{hammer_times[0]}>]({elem.jump_url})"
                     else:
                         timing = re.findall("When.*?:.*? (.*?)\n", content)
                         if timing:
-                            time_text = f" - {timing[0]}"
+                            time_text = (f" - [{uwuize(timing[0])}]({elem.jump_url})")
                     if tier_list or time_text:
                         channel_dm_dic[mention.mention][1].append("/".join(sorted(tier_list))+ time_text)
         #build the message using the pairs built above
@@ -208,7 +177,7 @@ class Misc(commands.Cog):
                 tierAddendum = ""
                 if(len(channel_dm_dic[c.mention][1])> 0):
                     tierAddendum = "\n       "+"\n       ".join(channel_dm_dic[c.mention][1])
-                build_message+=""+channel_dm_dic[c.mention][0]+tierAddendum+"\n"
+                build_message+=""+uwuize(channel_dm_dic[c.mention][0])+tierAddendum+"\n"
         return build_message
     
         
@@ -219,33 +188,37 @@ class Misc(commands.Cog):
             await self.find_message(payload.channel_id)
             #Since we dont know whose post was deleted we need to cover all the posts to find availablities
             #Also protects against people misposting
+            postEmbed = discord.Embed()
             new_text = await self.generateMessageText(payload.channel_id)
+            postEmbed.description = new_text
             #if we created the last message during current runtime we can just edit
             if(self.current_message and self.past_message_check != 1):
-                await self.current_message.edit(content=new_text)
+                await self.current_message.edit(embed=postEmbed)
             else:
                 #otherwise delete latest message if possible and resend to get back to the bottom
                 if(self.current_message):
                     await self.current_message.delete()
                 self.past_message_check = 2
-                self.current_message = await self.bot.get_channel(payload.channel_id).send(content=new_text)
+                self.current_message = await self.bot.get_channel(payload.channel_id).send(embed=postEmbed)
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
-    
         if(str(payload.channel_id) in settingsRecord["QB List"].keys() and (not self.current_message or payload.message_id != self.current_message.id)):
             await self.find_message(payload.channel_id)
+            
+            postEmbed = discord.Embed()
             new_text = await self.generateMessageText(payload.channel_id)
+            postEmbed.description = new_text
             if(self.current_message and self.past_message_check != 1):
                 #in case a message is posted without a game channel which is then edited in we need to this extra check
                 msgAfter = False
                 async for message in self.bot.get_channel(payload.channel_id).history(after=self.current_message, limit=1):
                     msgAfter = True
                 if( not msgAfter):
-                    await self.current_message.edit(content=new_text)
+                    await self.current_message.edit(embed=postEmbed)
                 else:
                     await self.current_message.delete()
-                    self.current_message = await self.current_message.channel.send(content=new_text)
+                    self.current_message = await self.current_message.channel.send(embed=postEmbed)
             else:
                 self.past_message_check = 2
                 if(self.current_message):                
@@ -253,22 +226,25 @@ class Misc(commands.Cog):
                     async for message in self.bot.get_channel(payload.channel_id).history(after=self.current_message, limit=1):
                         msgAfter = True
                     if(not msgAfter):
-                        await self.current_message.edit(content=new_text)
+                        await self.current_message.edit(embed=postEmbed)
                         return
                     else:
                         await self.current_message.delete()
-                self.current_message = await self.bot.get_channel(payload.channel_id).send(content=new_text)
+                self.current_message = await self.bot.get_channel(payload.channel_id).send(embed=postEmbed)
 
     @commands.Cog.listener()
     async def on_message(self,msg):
-        if msg.guild == None: 
+        if msg.guild == None or msg.author.id == self.bot.user.id: 
             return
         tChannel = settingsRecord[str(msg.guild.id)]["QB"]
-        if any(word in msg.content.lower() for word in ['thank', 'thanks', 'thank you', 'thx', 'gracias', 'danke', 'arigato', 'xie xie', 'merci']) and 'bot' in msg.content.lower():
+        if any(word in msg.content.lower() for word in ['uwu', 'owo']):
+            await msg.add_reaction('🇴')
+            await msg.add_reaction('🇼')
+            await msg.add_reaction('0️⃣')
+        if any(word in msg.content.lower() for word in ['thank', 'thx', 'gracias', 'danke', 'arigato', 'xie xie', 'merci']) and 'bot' in msg.content.lower():
             await msg.add_reaction('❤️')
-            await msg.channel.send("You're welcome friend!")
-        elif msg.channel.id == tChannel and msg.author.id != self.bot.user.id:
-
+            await msg.channel.send(uwuize("You're welcome friend!"))
+        elif msg.channel.id == tChannel:
             await self.find_message(msg.channel.id)
             server = msg.guild
             channel = msg.channel
@@ -277,16 +253,19 @@ class Misc(commands.Cog):
             game_channel_ids = list(map(lambda c: c.id, game_channel_category.text_channels))
             for mention in cMentionArray:
                 if mention.id in game_channel_ids:
+                    postEmbed = discord.Embed()
                     new_text = await self.generateMessageText(channel.id)
+                    postEmbed.description = new_text
+                    
                     if(self.past_message_check == 2):
                         await self.current_message.delete()
-                        self.current_message = await msg.channel.send(content=new_text)
+                        self.current_message = await msg.channel.send(embed=postEmbed)
                         return
                     #if there is an old message our record could be out of date so we need to regather info and go to the bottom
                     elif(self.past_message_check == 1 and self.current_message):
                         await self.current_message.delete()
                     self.past_message_check = 2
-                    self.current_message = await msg.channel.send(content=new_text)
+                    self.current_message = await msg.channel.send(embed=postEmbed)
                     return
             return
 async def setup(bot):

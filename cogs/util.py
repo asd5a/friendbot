@@ -13,6 +13,37 @@ def admin_or_owner():
         return  output
     return commands.check(predicate)
 
+def uwuize(text):
+    vowels = ['a','e','i','o','u']
+    faces = ['rawr XD', 'OwO', 'owo', 'UwU', 'uwu']
+    uwuMessage = text.replace('r', 'w')
+    uwuMessage = uwuMessage.replace('l', 'w')
+    uwuMessage = uwuMessage.replace('ove', 'uv')
+    uwuMessage = uwuMessage.replace('. ', '!')
+    uwuMessage = uwuMessage.replace(' th', ' d')
+    uwuMessage = uwuMessage.replace('th', 'f')
+    uwuMessage = uwuMessage.replace('mom', 'yeshh')
+
+    for v in vowels:
+      uwuMessage = uwuMessage.replace('n'+ v, 'ny'+v)
+
+    i = 0
+    while i < len(uwuMessage):
+        if uwuMessage[i] == '!':
+            randomFace = random.choice(faces)
+            if i == len(uwuMessage):
+                uwuMessage = uwuMessage + ' ' + randomFace
+                break
+            else:
+              uwuList = list(uwuMessage)
+              uwuList.insert(i+1, " " + randomFace)
+              uwuMessage = ''.join(uwuList)
+              i += len(randomFace)
+        i += 1
+    return uwuMessage
+            
+
+
 async def disambiguate(options, msg, author, cancel=True, emojies = alphaEmojis):
     view = AlphaView(options, author, emojies, cancel)
     msg = await msg.edit(view = view)

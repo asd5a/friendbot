@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.errors import Forbidden
 from datetime import datetime, timezone,timedelta
 from bfunc import db, traceBack, roleArray, settingsRecord, timezoneVar
-from cogs.util import calculateTreasure, callAPI, timeConversion, noodleRoleArray
+from cogs.util import calculateTreasure, callAPI, timeConversion, noodleRoleArray, uwuize
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
@@ -1330,7 +1330,6 @@ class Log(commands.Cog):
     async def log(self, ctx,  num : int, *, editString=""):
         # The real Bot
         botUser = self.bot.user
-
         # Logs channel 
         channel = self.bot.get_channel(settingsRecord[str(ctx.guild.id)]["Sessions"]) 
         editMessage = await channel.fetch_message(num)
@@ -1361,7 +1360,7 @@ class Log(commands.Cog):
 
         if sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
             summaryIndex = sessionLogEmbed.description.find('Summary**')
-            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Summary**\n" + editString+"\n"
+            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Summary**\n" + uwuize(editString)+"\n"
         else:
             sessionLogEmbed.description += "\n"+editString
         try:
