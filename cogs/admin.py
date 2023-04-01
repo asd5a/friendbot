@@ -78,11 +78,6 @@ class Admin(commands.Cog, name="Admin"):
         await message.add_reaction(emote)
         await ctx.message.delete()
         
-    @react.command()
-    async def boopme(self, ctx):
-        await ctx.message.add_reaction('<a:owoo:633820509053648908>')
-        await ctx.message.add_reaction('<a:owow:633820509540188176>')
-        await ctx.message.add_reaction('<a:owooo:634494313040183316>')
     
     #Allows the sending of messages
     @commands.command()

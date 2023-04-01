@@ -238,9 +238,9 @@ class Misc(commands.Cog):
             return
         tChannel = settingsRecord[str(msg.guild.id)]["QB"]
         if any(word in msg.content.lower() for word in ['uwu', 'owo']):
-            await msg.add_reaction('🇴')
-            await msg.add_reaction('🇼')
-            await msg.add_reaction('0️⃣')
+            await ctx.message.add_reaction('<a:owoo:633820509053648908>')
+            await ctx.message.add_reaction('<a:owow:633820509540188176>')
+            await ctx.message.add_reaction('<a:owooo:634494313040183316>')
         if any(word in msg.content.lower() for word in ['thank', 'thx', 'gracias', 'danke', 'arigato', 'xie xie', 'merci']) and 'bot' in msg.content.lower():
             await msg.add_reaction('❤️')
             await msg.channel.send("You're welcome friend!")
