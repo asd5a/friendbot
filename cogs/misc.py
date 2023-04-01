@@ -168,7 +168,7 @@ class Misc(commands.Cog):
                     else:
                         timing = re.findall("When.*?:.*? (.*?)\n", content)
                         if timing:
-                            time_text = (f" - [{uwuize(timing[0])}]({elem.jump_url})")
+                            time_text = (f" - [{timing[0]}]({elem.jump_url})")
                     if tier_list or time_text:
                         channel_dm_dic[mention.mention][1].append("/".join(sorted(tier_list))+ time_text)
         #build the message using the pairs built above
@@ -177,7 +177,7 @@ class Misc(commands.Cog):
                 tierAddendum = ""
                 if(len(channel_dm_dic[c.mention][1])> 0):
                     tierAddendum = "\n       "+"\n       ".join(channel_dm_dic[c.mention][1])
-                build_message+=""+uwuize(channel_dm_dic[c.mention][0])+tierAddendum+"\n"
+                build_message+=""+channel_dm_dic[c.mention][0]+tierAddendum+"\n"
         return build_message
     
         
@@ -243,7 +243,7 @@ class Misc(commands.Cog):
             await msg.add_reaction('0️⃣')
         if any(word in msg.content.lower() for word in ['thank', 'thx', 'gracias', 'danke', 'arigato', 'xie xie', 'merci']) and 'bot' in msg.content.lower():
             await msg.add_reaction('❤️')
-            await msg.channel.send(uwuize("You're welcome friend!"))
+            await msg.channel.send("You're welcome friend!")
         elif msg.channel.id == tChannel:
             await self.find_message(msg.channel.id)
             server = msg.guild

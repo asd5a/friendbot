@@ -1360,7 +1360,7 @@ class Log(commands.Cog):
 
         if sessionInfo["Status"] != "Approved" and sessionInfo["Status"] != "Denied":
             summaryIndex = sessionLogEmbed.description.find('Summary**')
-            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Summary**\n" + uwuize(editString)+"\n"
+            sessionLogEmbed.description = sessionLogEmbed.description[:summaryIndex]+"Summary**\n" + editString+"\n"
         else:
             sessionLogEmbed.description += "\n"+editString
         try:

@@ -1425,7 +1425,6 @@ React with :x: if you have denied the session log.
 React with :classical_building: if you have denied one of the guilds.
 
 Reminder: do not deny any session logs until we have spoken about it as a team."""
-        modEmbed.description = uwuize(modEmbed.description)
         modMessage = await modChannel.send(embed=modEmbed)
         for e in ["🚧", "📝", "✅", "❌", "🏛️"]:
             await modMessage.add_reaction(e)    
@@ -1436,7 +1435,7 @@ Reminder: do not deny any session logs until we have spoken about it as a team."
         dbEntry["Log ID"] = sessionMessage.id
         
         stopEmbed.title = f"Timer: {game} [END] - {totalDuration}"
-        stopEmbed.description = "**General Summary**" + uwuize("""
+        stopEmbed.description = "**General Summary**" + """
 • Give context to pillars and guild quest guidelines.
 • Focus on the outline of quest and shouldn't include "fluff".
 • Must list which pillar(s) were fulfilled.
@@ -1464,7 +1463,7 @@ In order to help determine if the adventurers fulfilled a pillar or a guild's qu
 • How were guilds central to plot and setting, main objectives, core elements, and overall progression of your one-shot?
 • Which guidelines were fulfilled and how?
 • If guidelines were not fulfilled, how/why did the party fail?
-""" )
+""" 
         # get the collections of characters
         playersCollection = db.players
         logCollection = db.logdata
