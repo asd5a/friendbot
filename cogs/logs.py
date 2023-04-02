@@ -333,7 +333,6 @@ async def generateLog(self, ctx, num : int, sessionInfo=None, guildDBEntriesDic=
             if noodles < max(noodles_barrier, 1) and noodleFinal >= max(noodles_barrier, 1):
                 noodleCongrats = f"Congratulations! You have reached {noodleRoleArray[i]}!"
             noodles_barrier += 10*(i+1)
-        print(noodles_barrier, noodleCongrats)
         game_channel = get(ctx.guild.text_channels, name = sessionInfo['Channel'])
         if not game_channel:
             game_channel = sessionInfo['Channel']
