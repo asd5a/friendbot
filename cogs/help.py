@@ -107,6 +107,8 @@ class Help(commands.Cog):
         helpEmbedGen.add_field(name=f'▫️ Viewing Fanatic Competition Stats', value=f'{commandPrefix}fanatic', inline=False)
 
         helpEmbedGen.add_field(name=f'▫️ Submitting a Suggestion (only available in Direct Messages with Bot Friend)', value=f'{commandPrefix}inbox', inline=False)
+        
+        helpEmbedGen.add_field(name=f'▫️ Spice up a message', value=f'{commandPrefix}uwu your sentence', inline=False)
 
 
 
